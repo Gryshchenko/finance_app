@@ -1,0 +1,7 @@
+export enum ErrorCode {
+    CANT_STORE_DATA = 0,
+    EMAIL_INVALID = 4000,
+    NAME_INVALID = 4001,
+    PASSWORD_INVALID = 4002,
+    EMAIL_ALREADY_EXIST = 4003,
+}

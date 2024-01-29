@@ -1,0 +1,23 @@
+{
+    "compilerOptions": {
+        "sourceMap": true,
+        "target": "es2019",
+        "module": "commonjs",
+        "moduleResolution": "node",
+        "outDir": "./dist",
+        "baseUrl": "./",
+        "rootDir": "./src",
+        "strict": true,
+        "skipLibCheck": true,
+        "forceConsistentCasingInFileNames": true,
+        "esModuleInterop": true,
+        "paths": {
+            "interfaces/*": ["src/interfaces/*"],
+            "types/*": ["types/*"],
+            "src/*": ["src/*"]
+        }
+    },
+    "include": ["src/**/*", "types.d.ts"],
+    "exclude": ["node_modules", "dist"],
+    "types": ["node"],
+}

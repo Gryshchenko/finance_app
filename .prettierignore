@@ -1,0 +1,8 @@
+submodule/
+dist
+src/**/*.d.ts
+npm-shrinkwrap.json
+package-lock.json
+package.json
+playwright-report
+.pnpm-store

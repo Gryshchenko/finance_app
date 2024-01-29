@@ -1,0 +1,45 @@
+{
+  "name": "Volodymyr Gryshchenko",
+  "description": "К",
+  "version": "0.0.1",
+  "private": true,
+  "copyright": "",
+  "scripts": {
+    "start": "node dist/app.js",
+    "dev": "nodemon --exec ts-node src/app.ts"
+  },
+  "_moduleAliases": {
+    "@utils": "./src/utils/",
+    "@logger": "./src/logger/"
+  },
+  "license": "All rights reserved",
+  "dependencies": {
+    "@types/pg": "^8.11.0",
+    "connect-redis": "^7.1.1",
+    "crypto-js": "^4.2.0",
+    "dotenv": "16.3.1",
+    "express": "4.18.2",
+    "express-session": "^1.17.3",
+    "express-validator": "^7.0.1",
+    "graphql": "16.8.1",
+    "helmet": "7.1.0",
+    "jsonwebtoken": "^9.0.2",
+    "passport": "^0.7.0",
+    "passport-jwt": "^4.0.1",
+    "pg": "8.11.3",
+    "redis": "^4.6.12"
+  },
+  "devDependencies": {
+    "@types/express": "^4.17.21",
+    "@types/express-session": "^1.17.10",
+    "@types/node": "^20.11.0",
+    "@typescript-eslint/eslint-plugin": "6.19.0",
+    "@typescript-eslint/parser": "6.19.0",
+    "eslint": "8.56.0",
+    "nodemon": "^3.0.3",
+    "prettier": "3.2.4",
+    "ts-node": "^10.9.2",
+    "tslib": "2.6.2",
+    "typescript": "5.3.3"
+  }
+}
