@@ -25,18 +25,28 @@ router.use((req: Response, res: Response, next: NextFunction) => {
 router.post(
     '/signup',
     checkAuthentication,
-    [body('password').isString(), body('email').isEmail()],
+    [body('password').isString(), body('email').isEmail(), body('userName').isString(), body('password').isStrongPassword()],
     async (req: Request, res: Response) => {
         const errors = validationResult(req);
         const responseBuilder = new ResponseBuilder();
         if (!errors.isEmpty()) {
+            const getErrorType = (path: string) => {
+                switch (path) {
+                    case 'email':
+                        return ErrorCode.EMAIL_INVALID;
+                    case 'password':
+                        return ErrorCode.PASSWORD_INVALID;
+                    case 'userName':
+                        return ErrorCode.USER_NAME_INVALID;
+                }
+            };
             return res.status(400).json(
                 responseBuilder
                     .setStatus(ResponseStatusType.INTERNAL)
                     .setErrors(
                         errors.array().map((data: { path: string; msg: string }) => {
                             return {
-                                errorCode: data.path === 'email' ? ErrorCode.EMAIL_INVALID : ErrorCode.PASSWORD_INVALID,
+                                errorCode: getErrorType(data.path),
                                 msg: data.msg,
                             };
                         }),
@@ -59,7 +69,7 @@ router.post(
                             .build(),
                     );
             }
-            const createdUser = await userService.createUser(req.body.email, req.body.password);
+            const createdUser = await userService.createUser(req.body.email, req.body.password, req.body.userName);
             req.session.regenerate((err) => {
                 if (err) {
                     res.status(400).json(
@@ -196,6 +206,8 @@ router.post(
                         .setData({
                             userId: user.userId,
                             mail: user.email,
+                            userName: user.userName,
+                            status: user.status,
                         })
                         .build(),
                 );

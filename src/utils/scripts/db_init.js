@@ -20,7 +20,7 @@ _db.connect();
 const createUserTableQuery = `
     CREATE TABLE users (
         "userId" SERIAL PRIMARY KEY,
-        "userName" VARCHAR(50),
+        "userName" VARCHAR(50) NOT NULL,
         "email" VARCHAR(100) UNIQUE NOT NULL,
         "passwordHash" VARCHAR(256) NOT NULL,
         "salt" VARCHAR(256) NOT NULL, 

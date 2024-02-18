@@ -2,6 +2,7 @@ import { IUserDataAccess } from 'interfaces/IUserDataAccess';
 import { IDatabaseConnection } from 'interfaces/IDatabaseConnection';
 import { IUser } from 'interfaces/IUser';
 import { LoggerBase } from 'src/helper/logger/LoggerBase';
+import { IUserStatus } from 'interfaces/IUserStatus';
 
 module.exports = class UserDataService extends LoggerBase implements IUserDataAccess {
     private readonly _db: IDatabaseConnection;
@@ -30,15 +31,24 @@ module.exports = class UserDataService extends LoggerBase implements IUserDataAc
             throw error;
         }
     }
-    public async createUser(email: string, passwordHash: string, salt: string): Promise<IUser> {
+    public async createUser(email: string, passwordHash: string, salt: string, userName: string): Promise<IUser> {
         try {
+            console.log({
+                email,
+                passwordHash,
+                salt,
+                userName,
+                status: IUserStatus.MAIL_VERIFICATION,
+            });
             const data = await this._db.engine()('users').insert(
                 {
                     email,
                     passwordHash,
                     salt,
+                    userName,
+                    status: IUserStatus.MAIL_VERIFICATION,
                 },
-                ['email', 'passwordHash', 'salt', 'userId', 'createdAt'],
+                ['email', 'passwordHash', 'salt', 'userId', 'createdAt', 'userName', 'status'],
             );
             return data[0];
         } catch (error) {

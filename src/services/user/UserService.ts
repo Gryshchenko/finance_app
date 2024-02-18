@@ -11,14 +11,8 @@ module.exports = class UserService {
     public async getUserByEmail(email: string): Promise<IUser | undefined> {
         return await this._userDataAccess.getUserByEmail(email);
     }
-    public async createUser(email: string, password: string): Promise<IUser | undefined> {
+    public async createUser(email: string, password: string, userName: string): Promise<IUser | undefined> {
         const salt = UserServiceUtils.getRandomSalt();
-        return await this._userDataAccess.createUser(email, UserServiceUtils.hashPassword(password, salt), salt);
-    }
-    public async updateUser(id: string): Promise<boolean> {
-        return new Promise((resolve) => true);
-    }
-    public async deleteUser(id: string): Promise<boolean> {
-        return new Promise((resolve) => true);
+        return await this._userDataAccess.createUser(email, UserServiceUtils.hashPassword(password, salt), salt, userName);
     }
 };
