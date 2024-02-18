@@ -1,3 +1,3 @@
-export enum PermissionType {
+export enum RoleType {
     Default = 0,
 }

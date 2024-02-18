@@ -1,9 +1,9 @@
-import { PermissionType } from 'src/types/PermissionType';
+import { RoleType } from 'types/RoleType';
 
 export interface IUserSession {
     userId: string;
     sessionId: string;
-    premission: PermissionType;
+    premission: RoleType;
     createdate: string;
     updatedate: string;
     ip: string | undefined;

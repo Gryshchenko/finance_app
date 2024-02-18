@@ -2,7 +2,7 @@ require('dotenv').config();
 const session = require('express-session');
 const redis = require('redis');
 const RedisStore = require('connect-redis').default;
-const Logger = require('../../logger/Logger');
+const Logger = require('../../helper/logger/Logger');
 
 module.exports = () => {
     const redisClient = redis.createClient();

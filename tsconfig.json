@@ -12,12 +12,17 @@
         "forceConsistentCasingInFileNames": true,
         "esModuleInterop": true,
         "paths": {
+            "translationsKeys/*":["src/translationsKeys/*"],
             "interfaces/*": ["src/interfaces/*"],
-            "types/*": ["types/*"],
-            "src/*": ["src/*"]
+            "types/*": ["src/types/*"],
+            "src/*": ["src/*"],
         }
     },
-    "include": ["src/**/*", "types.d.ts"],
+    "ts-node": {
+        "require": ["tsconfig-paths/register"]
+    },
+    "files": ["./types.d.ts"],
+    "include": ["src/**/*"],
     "exclude": ["node_modules", "dist"],
     "types": ["node"],
 }

@@ -1,8 +1,9 @@
 export interface IUser {
     userId: string;
     email: string;
-    username: string;
+    salt: string;
+    userName: string;
     createdat: string;
     updatedat: string;
-    passwordhash: string;
+    passwordHash: string;
 }

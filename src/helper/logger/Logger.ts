@@ -1,4 +1,4 @@
-const Utils = require('../utils/Utils');
+const Utils = require('../../utils/Utils');
 enum LogLevel {
     DISABLED,
     ERROR,

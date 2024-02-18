@@ -1,8 +1,7 @@
 import { IUserDataAccess } from 'interfaces/IUserDataAccess';
 import { IDatabaseConnection } from 'interfaces/IDatabaseConnection';
 import { IUser } from 'interfaces/IUser';
-import { LoggerBase } from '../../logger/LoggerBase';
-import { printSchema } from 'graphql/utilities';
+import { LoggerBase } from 'src/helper/logger/LoggerBase';
 
 module.exports = class UserDataService extends LoggerBase implements IUserDataAccess {
     private readonly _db: IDatabaseConnection;
@@ -10,46 +9,41 @@ module.exports = class UserDataService extends LoggerBase implements IUserDataAc
         super();
         this._db = db;
     }
-    public async getUserByEmail(mail: string): Promise<Partial<IUser>> {
+    public async getUserByEmail(email: string): Promise<IUser | undefined> {
         try {
-            return await this._db.query<IUser>('SELECT userid, email FROM users WHERE email = $1', [mail]);
+            const users = await this._db
+                .engine()<IUser>('users')
+                .where({ email })
+                .select('userId', 'email', 'userName', 'passwordHash')
+                .first();
+            return users as IUser;
         } catch (error) {
             this._logger.error(error);
             throw error;
         }
     }
-    public async getUser(email: string, password: string): Promise<IUser> {
+    public async getUser(email: string, passwordHash: string): Promise<IUser> {
         try {
-            return await this._db.query<IUser>('SELECT * FROM users WHERE email = $1 AND passwordhash = $2', [email, password]);
+            return (await this._db.engine()<IUser>('users').where({ email, passwordHash }).select('*').first()) as IUser;
         } catch (error) {
             this._logger.error(error);
             throw error;
         }
     }
-    public async createUser(email: string, password: string, salt: string): Promise<IUser> {
+    public async createUser(email: string, passwordHash: string, salt: string): Promise<IUser> {
         try {
-            const data = await this._db.query<IUser>(
-                'INSERT INTO users(email, passwordhash, salt) VALUES($1, $2, $3) RETURNING *',
-                [email, password, salt],
+            const data = await this._db.engine()('users').insert(
+                {
+                    email,
+                    passwordHash,
+                    salt,
+                },
+                ['email', 'passwordHash', 'salt', 'userId', 'createdAt'],
             );
-            return data;
+            return data[0];
         } catch (error) {
             this._logger.error(error);
             throw error;
         }
     }
-    // public async updateUser(id: string) {
-    //     try {
-    //     } catch (error) {
-    //         this._logger.error(error);
-    //         throw error;
-    //     }
-    // }
-    // public async deleteUser(id: string): void {
-    //     try {
-    //     } catch (error) {
-    //         this._logger.error(error);
-    //         throw error;
-    //     }
-    // }
 };

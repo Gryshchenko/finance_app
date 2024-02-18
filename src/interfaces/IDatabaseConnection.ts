@@ -1,4 +1,6 @@
+import { Knex } from 'knex';
+
 export interface IDatabaseConnection {
-    query<T>(sql: string, args: Array<unknown>): Promise<T>;
+    engine(): Knex;
     close(): Promise<void>;
 }
