@@ -1,10 +1,13 @@
+const https = require('https');
+const fs = require('fs');
+const path = require('path');
+
 const passport = require('passport');
 const express = require('express');
 const helmet = require('helmet');
 
 const passportSetup = require('./services/auth/passport-setup');
 const sessionSetup = require('./services/session/session-setup');
-const authMiddleware = require('./middleware/authMiddleware');
 
 const authRouter = require('./routes/auth');
 
@@ -14,6 +17,11 @@ const port = process.env.PORT || 3000;
 
 passportSetup(passport);
 
+const privateKey = fs.readFileSync(path.join(__dirname, 'localhost.key'), 'utf8');
+const certificate = fs.readFileSync(path.join(__dirname, 'localhost.cert'), 'utf8');
+
+const credentials = { key: privateKey, cert: certificate };
+
 app.use(express.json());
 app.use(helmet());
 app.use(passport.initialize());
@@ -21,11 +29,13 @@ app.use(sessionSetup());
 
 app.use('/auth', authRouter);
 
-app.get('/', authMiddleware, (req: any, res: any) => {
+app.get('/', (req: any, res: any) => {
     res.send('Hello World!');
 });
 
-app.listen(port, () => {
+const httpsServer = https.createServer(credentials, app);
+
+httpsServer.listen(port, () => {
     console.log(`Example app listening on port ${port}`);
 });
 

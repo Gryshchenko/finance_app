@@ -1,3 +1,5 @@
+import * as process from 'process';
+
 require('dotenv').config();
 const session = require('express-session');
 const redis = require('redis');
@@ -5,8 +7,11 @@ const RedisStore = require('connect-redis').default;
 const Logger = require('../../helper/logger/Logger');
 
 module.exports = () => {
-    const redisClient = redis.createClient();
-    redisClient.connect().catch(console.error);
+    const redisClient = redis.createClient({
+        host: process.env.REDIS_HOST,
+        port: process.env.REDIS_PORT,
+    });
+    redisClient.connect().catch(Logger.Of('Redis').error);
 
     const redisStore = new RedisStore({
         client: redisClient,
@@ -29,7 +34,6 @@ module.exports = () => {
             secure: true,
             httpOnly: true,
             maxAge: 1000 * 60 * 60,
-            expires: new Date(Date.now() + 60 * 60 * 1000),
         },
     });
 };
