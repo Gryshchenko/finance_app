@@ -1,9 +1,10 @@
 import { IUserDataAccess } from 'interfaces/IUserDataAccess';
 import { IUser } from 'interfaces/IUser';
+import { IUserService } from 'interfaces/IUserService';
 
 const UserServiceUtils = require('./UserServiceUtils');
 
-module.exports = class UserService {
+module.exports = class UserService implements IUserService {
     private _userDataAccess: IUserDataAccess;
     public constructor(userDataAccess: IUserDataAccess) {
         this._userDataAccess = userDataAccess;

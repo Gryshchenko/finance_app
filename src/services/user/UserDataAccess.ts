@@ -12,11 +12,13 @@ module.exports = class UserDataService extends LoggerBase implements IUserDataAc
     }
     public async getUserByEmail(email: string): Promise<IUser | undefined> {
         try {
+            this._logger.info('getUserByEmail request');
             const users = await this._db
                 .engine()<IUser>('users')
                 .where({ email })
                 .select('email', 'passwordHash', 'salt', 'userId', 'createdAt', 'userName', 'status')
                 .first();
+            this._logger.info('getUserByEmail response');
             return users as IUser;
         } catch (error) {
             this._logger.error(error);
@@ -25,7 +27,14 @@ module.exports = class UserDataService extends LoggerBase implements IUserDataAc
     }
     public async getUser(email: string, passwordHash: string): Promise<IUser> {
         try {
-            return (await this._db.engine()<IUser>('users').where({ email, passwordHash }).select('*').first()) as IUser;
+            this._logger.info('getUser request');
+            const response = (await this._db
+                .engine()<IUser>('users')
+                .where({ email, passwordHash })
+                .select('*')
+                .first()) as IUser;
+            this._logger.info('getUser response');
+            return response;
         } catch (error) {
             this._logger.error(error);
             throw error;
@@ -33,13 +42,7 @@ module.exports = class UserDataService extends LoggerBase implements IUserDataAc
     }
     public async createUser(email: string, passwordHash: string, salt: string, userName: string): Promise<IUser> {
         try {
-            console.log({
-                email,
-                passwordHash,
-                salt,
-                userName,
-                status: IUserStatus.MAIL_VERIFICATION,
-            });
+            this._logger.info('createUser request');
             const data = await this._db.engine()('users').insert(
                 {
                     email,
@@ -50,6 +53,7 @@ module.exports = class UserDataService extends LoggerBase implements IUserDataAc
                 },
                 ['email', 'passwordHash', 'salt', 'userId', 'createdAt', 'userName', 'status'],
             );
+            this._logger.info('createUser response');
             return data[0];
         } catch (error) {
             this._logger.error(error);

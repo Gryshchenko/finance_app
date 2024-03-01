@@ -1,18 +1,16 @@
 const { Client } = require('pg');
-const { readFileSync } = require('fs');
+const dbConfig = require('../../config/dbConfig');
 require('dotenv').config();
 
-const caCert = readFileSync('./eu-central-1-bundle.pem').toString();
-
 const _db = new Client({
-    database: null,
-    port: Number(process.env.DB_PORT),
-    password: process.env.DB_PASS,
-    user: process.env.DB_USER,
-    host: process.env.DB_HOST,
+    database: dbConfig.database,
+    port: dbConfig.port,
+    password: dbConfig.password,
+    user: dbConfig.user,
+    host: dbConfig.host,
     ssl: {
         rejectUnauthorized: false,
-        ca: caCert,
+        cert: dbConfig.cert,
     },
 });
 _db.connect();
@@ -53,7 +51,7 @@ const createUserGroupsTableQuery = `
         "userGroupId" SERIAL PRIMARY KEY,
         "userId" INT,
         "groupRole" INT,
-        "groupName" varchar(128),
+        "groupName" varchar(128) NOT NULL,
         UNIQUE ("userId", "userGroupId"),
         FOREIGN KEY ("userId") REFERENCES users("userId"),
         "createdAt" TIMESTAMP NOT NULL,
@@ -74,11 +72,21 @@ const createGroupInvitationsTableQuery = `
     );
 `;
 
+const createCurrencyTypeTableQuery = `
+    CREATE TABLE currencyType (
+        "currencyTypeId" SERIAL PRIMARY KEY,
+        "currencyType" INT NOT NULL,
+        "currencyTypeName" VARCHAR(56) UNIQUE NOT NULL
+    );
+`;
+
 const createCurrencyTableQuery = `
     CREATE TABLE currencies (
         "currencyId" SERIAL PRIMARY KEY,
         "currencyCode" VARCHAR(56) UNIQUE NOT NULL,
-        "currencyName" VARCHAR(56) UNIQUE NOT NULL 
+        "currencyName" VARCHAR(56) UNIQUE NOT NULL,
+        "currencyTypeId" INT NOT NULL,
+        FOREIGN KEY ("currencyTypeId") REFERENCES currencyType("currencyTypeId")
     );
 `;
 
@@ -87,7 +95,6 @@ const createIncomeTableQuery = `
         "incomeId" SERIAL PRIMARY KEY,
         "userId" INT NOT NULL,
         "incomeName" VARCHAR(128) NOT NULL,
-        "amount" DECIMAL NOT NULL,
         "currencyId" INT NOT NULL,
         "createdAt" TIMESTAMP NOT NULL,
         FOREIGN KEY ("userId") REFERENCES users("userId"),
@@ -163,6 +170,7 @@ const run = async () => {
     await initTable(createUserRolesTableQuery);
     await initTable(createUserGroupsTableQuery);
     await initTable(createGroupInvitationsTableQuery);
+    await initTable(createCurrencyTypeTableQuery);
     await initTable(createCurrencyTableQuery);
     await initTable(createIncomeTableQuery);
     await initTable(createAccountTableQuery);

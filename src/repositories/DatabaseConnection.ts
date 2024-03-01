@@ -1,8 +1,5 @@
 import { IDatabaseConnection } from 'interfaces/IDatabaseConnection';
-import { readFileSync } from 'fs';
 import { Knex } from 'knex';
-
-const caCert = readFileSync('./eu-central-1-bundle.pem').toString();
 
 const knex = require('knex');
 
@@ -15,12 +12,14 @@ module.exports = class DatabaseConnection implements IDatabaseConnection {
         database,
         user,
         password,
+        cert,
     }: {
         host: string;
         port: number;
         database: string;
         user: string;
         password: string;
+        cert: string;
     }) {
         this._db = knex({
             client: 'pg',
@@ -31,7 +30,7 @@ module.exports = class DatabaseConnection implements IDatabaseConnection {
                 user,
                 password,
                 ssl: {
-                    ca: caCert,
+                    ca: cert,
                 },
             },
         });
