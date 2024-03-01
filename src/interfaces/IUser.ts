@@ -1,7 +1,7 @@
 import { IUserStatus } from 'interfaces/IUserStatus';
 
 export interface IUser {
-    userId: string;
+    userId: number;
     email: string;
     salt: string;
     status: IUserStatus;

@@ -49,7 +49,7 @@ const createUserRolesTableQuery = `
 const createUserGroupsTableQuery = `
     CREATE TABLE userGroups (
         "userGroupId" SERIAL PRIMARY KEY,
-        "userId" INT,
+        "userId" INT NOT NULL,
         "groupRole" INT,
         "groupName" varchar(128) NOT NULL,
         UNIQUE ("userId", "userGroupId"),
