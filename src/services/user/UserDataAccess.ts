@@ -40,7 +40,7 @@ module.exports = class UserDataService extends LoggerBase implements IUserDataAc
             throw error;
         }
     }
-    public async createUser(email: string, passwordHash: string, salt: string, userName: string): Promise<IUser> {
+    public async createUser(email: string, passwordHash: string, salt: string): Promise<IUser> {
         try {
             this._logger.info('createUser request');
             const data = await this._db.engine()('users').insert(
@@ -48,10 +48,9 @@ module.exports = class UserDataService extends LoggerBase implements IUserDataAc
                     email,
                     passwordHash,
                     salt,
-                    userName,
                     status: IUserStatus.MAIL_VERIFICATION,
                 },
-                ['email', 'passwordHash', 'salt', 'userId', 'createdAt', 'userName', 'status'],
+                ['email', 'passwordHash', 'salt', 'userId', 'createdAt', 'status'],
             );
             this._logger.info('createUser response');
             return data[0];

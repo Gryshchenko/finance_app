@@ -1,5 +1,6 @@
 import { IIncome } from 'interfaces/IIncome';
+import { ICreateIncome } from 'interfaces/ICreateIncome';
 
 export interface IIncomeDataAccess {
-    createIncome(userId: number, incomeName: string[], currencyId: number): Promise<IIncome[]>;
+    createIncomes(userId: number, incomes: ICreateIncome[]): Promise<IIncome[]>;
 }

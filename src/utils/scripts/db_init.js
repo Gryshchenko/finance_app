@@ -18,7 +18,6 @@ _db.connect();
 const createUserTableQuery = `
     CREATE TABLE users (
         "userId" SERIAL PRIMARY KEY,
-        "userName" VARCHAR(50) NOT NULL,
         "email" VARCHAR(100) UNIQUE NOT NULL,
         "passwordHash" VARCHAR(256) NOT NULL,
         "salt" VARCHAR(256) NOT NULL, 
@@ -90,6 +89,20 @@ const createCurrencyTableQuery = `
     );
 `;
 
+const createProfileTableQuery = `
+    CREATE TABLE profiles (
+        profileId SERIAL PRIMARY KEY,
+        userId INT UNIQUE NOT NULL,
+        userName VARCHAR(50),
+        currencyId INT,
+        additionalInfo JSONB,
+        createdAt TIMESTAMP NOT NULL,
+        updatedAt TIMESTAMP,
+        FOREIGN KEY (userId) REFERENCES users(userId) ON DELETE CASCADE,
+        FOREIGN KEY ("currencyId") REFERENCES currencies("currencyId")
+    );
+`;
+
 const createIncomeTableQuery = `
     CREATE TABLE incomes (
         "incomeId" SERIAL PRIMARY KEY,
@@ -148,6 +161,19 @@ const createTransactionsTableQuery = `
     );
 `;
 
+const createEmailConfirmationTableQuery = `
+    CREATE TABLE email_confirmations (
+        "confirmationId" SERIAL PRIMARY KEY,
+        "userId" INT NOT NULL,
+        "email" VARCHAR(100) NOT NULL,
+        "confirmationCode" VARCHAR(255) NOT NULL,
+        "confirmed" BOOLEAN DEFAULT FALSE,
+        "createdAt" TIMESTAMP NOT NULL,
+        "expiresAt" TIMESTAMP NOT NULL,
+        FOREIGN KEY ("userId") REFERENCES users("userId") ON DELETE CASCADE
+    );
+`;
+
 const initTable = (query) => {
     const match = query.match(/CREATE TABLE (\w+)/i);
     if (!match) {
@@ -172,10 +198,12 @@ const run = async () => {
     await initTable(createGroupInvitationsTableQuery);
     await initTable(createCurrencyTypeTableQuery);
     await initTable(createCurrencyTableQuery);
+    await initTable(createProfileTableQuery);
     await initTable(createIncomeTableQuery);
     await initTable(createAccountTableQuery);
     await initTable(createCategoriesTableQuery);
     await initTable(createTransactionsTableQuery);
+    await initTable(createEmailConfirmationTableQuery);
     _db.end();
 };
 

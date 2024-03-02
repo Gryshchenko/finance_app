@@ -6,12 +6,11 @@ import { IGroupService } from 'interfaces/IGroupService';
 import { LanguageType } from 'types/LanguageType';
 import { IIncomeService } from 'interfaces/IIncomeService';
 
-const preMadeData = require(`../config/create_user_initial`);
+const preMadeData = require(`../../config/create_user_initial`);
 
 interface IUserData {
     email: string;
     password: string;
-    userName: string;
     language?: LanguageType;
 }
 
@@ -48,8 +47,8 @@ class UserRegistrationService extends LoggerBase {
         return preMadeData[language];
     }
 
-    async createUserWithDependencies(userData: IUserData) {
-        const user = await this.userService.createUser(userData.email, userData.password, userData.userName);
+    async createUser(userData: IUserData) {
+        const user = await this.userService.createUser(userData.email, userData.password);
         if (user) {
             const translatedDefaultData = this.getTranslatedDefaultData(userData.language);
             this._logger.info('user created');
@@ -57,15 +56,34 @@ class UserRegistrationService extends LoggerBase {
             const group = await this.groupService.createGroup(user.userId, translatedDefaultData.group);
             this._logger.info('group created');
 
-            const income = await this.incomeService.createIncome(user.userId, translatedDefaultData.income, 10);
+            const income = await this.incomeService.createIncomes(
+                user.userId,
+                translatedDefaultData.income.map((incomeName) => ({
+                    incomeName,
+                    currencyId: 10,
+                })),
+            );
             this._logger.info('income created');
 
-            // const accounts = await this.accountService.createAccountsForUser(user.id, translatedDefaultData.accounts);
-            // this._logger.info('accounts created');
+            const accounts = await this.accountService.createAccounts(
+                user.userId,
+                translatedDefaultData.accounts.map((accountName: string) => ({
+                    accountName,
+                    amount: 0,
+                    currencyId: 10,
+                })),
+            );
+            this._logger.info('accounts created');
             //
-            // const categories = await this.categoryService.createDefaultCategories(user.id, translatedDefaultData.categories);
-            // this._logger.info('categories created');
-            // return { user, accounts, categories };
+            const categories = await this.categoryService.createCategories(
+                user.userId,
+                translatedDefaultData.categories.map((categoryName: string) => ({
+                    categoryName,
+                    currencyId: 10,
+                })),
+            );
+            this._logger.info('categories created');
+            return { user, accounts, categories, group, income };
         }
         this._logger.info('user not created');
     }

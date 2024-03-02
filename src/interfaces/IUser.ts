@@ -5,7 +5,6 @@ export interface IUser {
     email: string;
     salt: string;
     status: IUserStatus;
-    userName: string;
     createdat: string;
     updatedat: string;
     passwordHash: string;
