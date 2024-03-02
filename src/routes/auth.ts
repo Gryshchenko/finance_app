@@ -137,7 +137,10 @@ const handleSessionRegeneration = (
                 logger.info('Session regenerated successfully: ' + sessionId);
                 res.setHeader('Authorization', `Bearer ${token}`);
                 res.status(200).json(
-                    responseBuilder.setStatus(ResponseStatusType.OK).setData({ userId: user.userId, email: user.email }).build(),
+                    responseBuilder
+                        .setStatus(ResponseStatusType.OK)
+                        .setData({ userId: user.userId, email: user.email, status: user.status })
+                        .build(),
                 );
             },
         });

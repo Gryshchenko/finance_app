@@ -13,28 +13,28 @@ module.exports = class UserDataService extends LoggerBase implements IUserDataAc
     public async getUserByEmail(email: string): Promise<IUser | undefined> {
         try {
             this._logger.info('getUserByEmail request');
-            const users = await this._db
+            const user = await this._db
                 .engine()<IUser>('users')
                 .where({ email })
-                .select('email', 'passwordHash', 'salt', 'userId', 'createdAt', 'userName', 'status')
+                .select('email', 'passwordHash', 'salt', 'userId', 'createdAt', 'status')
                 .first();
             this._logger.info('getUserByEmail response');
-            return users as IUser;
+            return user as IUser;
         } catch (error) {
             this._logger.error(error);
             throw error;
         }
     }
-    public async getUser(email: string, passwordHash: string): Promise<IUser> {
+    public async getUser(email: string, passwordHash: string): Promise<IUser | undefined> {
         try {
             this._logger.info('getUser request');
-            const response = (await this._db
+            const user = await this._db
                 .engine()<IUser>('users')
                 .where({ email, passwordHash })
-                .select('*')
-                .first()) as IUser;
+                .select('email', 'passwordHash', 'salt', 'userId', 'createdAt', 'status')
+                .first();
             this._logger.info('getUser response');
-            return response;
+            return user;
         } catch (error) {
             this._logger.error(error);
             throw error;

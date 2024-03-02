@@ -1,7 +1,7 @@
 import { RoleType } from 'types/RoleType';
 
 export interface IUserSession {
-    userId: string;
+    userId: number;
     sessionId: string;
     premission: RoleType;
     createdate: string;
