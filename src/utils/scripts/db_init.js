@@ -1,16 +1,17 @@
 const { Client } = require('pg');
-const dbConfig = require('../../config/dbConfig');
+const { readFileSync } = require('fs');
 require('dotenv').config();
+const caCert = readFileSync('/etc/ssl/cert.pem').toString();
 
 const _db = new Client({
-    database: dbConfig.database,
-    port: dbConfig.port,
-    password: dbConfig.password,
-    user: dbConfig.user,
-    host: dbConfig.host,
+    database: process.env.DB_NAME,
+    port: Number(process.env.DB_PORT),
+    password: process.env.DB_PASS,
+    user: process.env.DB_USER,
+    host: process.env.DB_HOST,
     ssl: {
         rejectUnauthorized: false,
-        cert: dbConfig.cert,
+        cert: caCert,
     },
 });
 _db.connect();
@@ -91,14 +92,14 @@ const createCurrencyTableQuery = `
 
 const createProfileTableQuery = `
     CREATE TABLE profiles (
-        profileId SERIAL PRIMARY KEY,
-        userId INT UNIQUE NOT NULL,
-        userName VARCHAR(50),
-        currencyId INT,
-        additionalInfo JSONB,
-        createdAt TIMESTAMP NOT NULL,
-        updatedAt TIMESTAMP,
-        FOREIGN KEY (userId) REFERENCES users(userId) ON DELETE CASCADE,
+        "profileId" SERIAL PRIMARY KEY,
+        "userId" INT UNIQUE NOT NULL,
+        "userName" VARCHAR(50),
+        "currencyId" INT,
+        "additionalInfo" JSONB,
+        "createdAt" TIMESTAMP NOT NULL,
+        "updatedAt" TIMESTAMP,
+        FOREIGN KEY ("userId") REFERENCES users("userId") ON DELETE CASCADE,
         FOREIGN KEY ("currencyId") REFERENCES currencies("currencyId")
     );
 `;
