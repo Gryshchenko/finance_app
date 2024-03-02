@@ -43,6 +43,5 @@ module.exports = class SessionUtils {
                 handleSuccess(req.session.id);
             }
         });
-        console.log(1, req.session);
     }
 };

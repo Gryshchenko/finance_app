@@ -47,8 +47,6 @@ const getErrorType = (path: string) => {
             return ErrorCode.EMAIL_INVALID;
         case 'password':
             return ErrorCode.PASSWORD_INVALID;
-        case 'userName':
-            return ErrorCode.USER_NAME_INVALID;
         default:
             return ErrorCode.UNKNOWN_ERROR;
     }
@@ -57,7 +55,7 @@ const getErrorType = (path: string) => {
 router.post(
     '/signup',
     ensureGuest,
-    validate([body('password').isStrongPassword(), body('email').isEmail(), body('userName').isString()]),
+    validate([body('password').isStrongPassword(), body('email').isEmail()]),
     async (req: Request, res: Response) => {
         const _logger = Logger.Of('AuthRouteSignup');
         const responseBuilder = new ResponseBuilder();
@@ -80,7 +78,7 @@ router.post(
                     );
             }
 
-            const createdUser = await userService.createUser(req.body.email, req.body.password, req.body.userName);
+            const createdUser = await userService.createUser(req.body.email, req.body.password);
             if (!createdUser) {
                 throw new Error('Unable to store user');
             }
