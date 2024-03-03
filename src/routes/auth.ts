@@ -148,22 +148,7 @@ const handleSessionRegeneration = (
 router.get('/logout', tokenVerify, sessionVerify, (req: Request, res: Response) => {
     const _logger = Logger.Of('AuthRouteLogout');
     const responseBuilder = new ResponseBuilder();
-    req.session.destroy((err) => {
-        if (err) {
-            _logger.error('logout error: ' + err);
-            res.status(400).json(
-                responseBuilder
-                    .setStatus(ResponseStatusType.INTERNAL)
-                    .setError({
-                        errorCode: ErrorCode.SESSION_DESTROY_ERROR,
-                        msg: TranslationsKeys.SOMETHING_WRONG,
-                    })
-                    .build(),
-            );
-        }
-
-        _logger.error('logout success');
-        res.clearCookie(process.env.SS_NAME as string, { path: '/' });
+    SessionUtils.deleteSession(req, res, () => {
         res.status(200).json(responseBuilder.setStatus(ResponseStatusType.OK).build());
     });
 });
