@@ -9,7 +9,7 @@ module.exports = class GroupDataService extends LoggerBase implements IGroupData
         super();
         this._db = db;
     }
-    public async createGroup(userId: string, groupName: string): Promise<IGroup> {
+    public async createGroup(userId: number, groupName: string): Promise<IGroup> {
         try {
             this._logger.info('createGroup request');
             const data = await this._db

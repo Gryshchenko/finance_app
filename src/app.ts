@@ -10,6 +10,7 @@ const passportSetup = require('./services/auth/passport-setup');
 const sessionSetup = require('./services/session/session-setup');
 
 const authRouter = require('./routes/auth');
+const mailVerificationRouter = require('./routes/mailVerification');
 
 require('dotenv').config();
 const app = express();
@@ -28,6 +29,7 @@ app.use(passport.initialize());
 app.use(sessionSetup());
 
 app.use('/auth', authRouter);
+app.use('/verification', mailVerificationRouter);
 
 app.get('/', (req: any, res: any) => {
     res.send('Hello World!');

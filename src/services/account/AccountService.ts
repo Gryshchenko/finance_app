@@ -9,7 +9,7 @@ module.exports = class AccountService implements IAccountService {
         this._accountDataAccess = accountDataAccess;
     }
 
-    async createAccounts(userId: number, accounts: ICreateAccount[]): Promise<IAccount> {
+    async createAccounts(userId: number, accounts: ICreateAccount[]): Promise<IAccount[]> {
         return await this._accountDataAccess.createAccounts(userId, accounts);
     }
 };

@@ -171,7 +171,8 @@ const createEmailConfirmationTableQuery = `
         "confirmed" BOOLEAN DEFAULT FALSE,
         "createdAt" TIMESTAMP NOT NULL,
         "expiresAt" TIMESTAMP NOT NULL,
-        FOREIGN KEY ("userId") REFERENCES users("userId") ON DELETE CASCADE
+        FOREIGN KEY ("userId") REFERENCES users("userId") ON DELETE CASCADE,
+        UNIQUE ("userId", "email")
     );
 `;
 

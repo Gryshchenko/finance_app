@@ -7,7 +7,7 @@ module.exports = class GroupService implements IGroupService {
     public constructor(accountDataAccess: IGroupDataAccess) {
         this._accountDataAccess = accountDataAccess;
     }
-    public async createGroup(userId: string, groupName: string): Promise<IGroup> {
+    public async createGroup(userId: number, groupName: string): Promise<IGroup> {
         return await this._accountDataAccess.createGroup(userId, groupName);
     }
 };

@@ -25,6 +25,8 @@
     "https": "^1.0.0",
     "jsonwebtoken": "9.0.2",
     "knex": "3.1.0",
+    "mailersend": "^2.2.0",
+    "nodemailer": "^6.9.11",
     "passport": "0.7.0",
     "passport-jwt": "4.0.1",
     "pg": "8.11.3",

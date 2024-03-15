@@ -15,10 +15,13 @@ const ensureGuest = require('../middleware/ensureGuest');
 const sessionVerify = require('../middleware/sessionVerify');
 const ResponseBuilder = require('../helper/responseBuilder/ResponseBuilder');
 const UserService = require('../services/user/UserService');
+const UserRegistrationServiceBuilder = require('../services/registration/UserRegistrationServiceBuilder');
 const DatabaseConnection = require('../repositories/DatabaseConnection');
 const UserDataAccess = require('../services/user/UserDataAccess');
 const Logger = require('../helper/logger/Logger');
 const express = require('express');
+const Success = require('../utils/success/Success');
+const Failure = require('../utils/failure/Failure');
 const router = express.Router();
 
 const validate = (validations: any[]) => {
@@ -78,13 +81,23 @@ router.post(
                     );
             }
 
-            const createdUser = await userService.createUser(req.body.email, req.body.password);
-            if (!createdUser) {
+            const createdUser = await UserRegistrationServiceBuilder.build().createUserInitialData(
+                req.body.email,
+                req.body.password,
+            );
+            if (createdUser instanceof Success) {
+                const newToken = AuthUtils.createJWToken(createdUser.userId, RoleType.Default);
+                handleSessionRegeneration(req, res, createdUser, newToken, _logger, responseBuilder, () => {
+                    res.status(200).json(
+                        responseBuilder
+                            .setStatus(ResponseStatusType.OK)
+                            .setData({ email: createdUser.email, status: createdUser.status })
+                            .build(),
+                    );
+                });
+            } else {
                 throw new Error('Unable to store user');
             }
-
-            const newToken = AuthUtils.createJWToken(createdUser.userId, RoleType.Default);
-            handleSessionRegeneration(req, res, createdUser, newToken, _logger, responseBuilder);
         } catch (error) {
             _logger.error(error);
             res.status(400).json(
@@ -104,6 +117,8 @@ const handleSessionRegeneration = (
     token: string,
     logger: typeof Logger,
     responseBuilder: typeof ResponseBuilder,
+    handleSuccess: () => void,
+    handleError?: (error: string) => void,
 ) => {
     req.session.regenerate((err) => {
         if (err) {
@@ -130,16 +145,16 @@ const handleSessionRegeneration = (
                         .setError({ errorCode: ErrorCode.SESSION_CREATE_ERROR, msg: TranslationsKeys.SESSION_CREATE_ERROR })
                         .build(),
                 );
+                if (handleError) {
+                    handleError(error);
+                }
             },
             handleSuccess: (sessionId: string) => {
                 logger.info('Session regenerated successfully: ' + sessionId);
                 res.setHeader('Authorization', `Bearer ${token}`);
-                res.status(200).json(
-                    responseBuilder
-                        .setStatus(ResponseStatusType.OK)
-                        .setData({ userId: user.userId, email: user.email, status: user.status })
-                        .build(),
-                );
+                if (handleSuccess) {
+                    handleSuccess();
+                }
             },
         });
     });
@@ -206,7 +221,11 @@ router.post(
             }
             _logger.info('password good');
             const newToken = AuthUtils.createJWToken(user.userId, RoleType.Default);
-            handleSessionRegeneration(req, res, user, newToken, _logger, responseBuilder);
+            handleSessionRegeneration(req, res, user, newToken, _logger, responseBuilder, () => {
+                res.status(200).json(
+                    responseBuilder.setStatus(ResponseStatusType.OK).setData({ email: user.email, status: user.status }).build(),
+                );
+            });
         } catch (error) {
             _logger.error('request user data error: ' + error);
             return res

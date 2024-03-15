@@ -1,6 +1,7 @@
 import { IIncomeDataAccess } from 'interfaces/IIncomeDataAccess';
 import { IIncomeService } from 'interfaces/IIncomeService';
 import { IIncome } from 'interfaces/IIncome';
+import { ICreateIncome } from 'interfaces/ICreateIncome';
 
 module.exports = class IncomeService implements IIncomeService {
     private _accountDataAccess: IIncomeDataAccess;
@@ -8,7 +9,7 @@ module.exports = class IncomeService implements IIncomeService {
         this._accountDataAccess = accountDataAccess;
     }
 
-    public async createIncome(userId: number, incomeName: string[], currencyId: number): Promise<IIncome[]> {
-        return await this._accountDataAccess.createIncome(userId, incomeName, currencyId);
+    public async createIncomes(userId: number, incomes: ICreateIncome[]): Promise<IIncome[]> {
+        return await this._accountDataAccess.createIncomes(userId, incomes);
     }
 };
