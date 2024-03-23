@@ -1,9 +1,8 @@
 import { Request, Response, NextFunction } from 'express';
 import { VerifyErrors } from 'jsonwebtoken';
 import { ErrorCode } from 'types/ErrorCode';
-import { TranslationsKeys } from 'src/utils/translationsKeys/TranslationsKeys';
+import { TranslationKey } from 'src/types/TranslationKey';
 
-require('dotenv').config();
 const jwt = require('jsonwebtoken');
 const _logger = require('../helper/logger/Logger').Of('TokenVerify');
 const SessionUtils = require('../services/session/SessionUtils');
@@ -17,7 +16,7 @@ const extractToken = (req: Request) => {
 
 const extractSessionToken = (req: Request) => {
     // @ts-ignore
-    return req.session?.user.token;
+    return req.session?.user?.token;
 };
 
 const tokenVerify = (req: Request, res: Response, next: NextFunction) => {
@@ -26,14 +25,14 @@ const tokenVerify = (req: Request, res: Response, next: NextFunction) => {
     if (!token) {
         _logger.info('token not verify, token = null');
         SessionUtils.deleteSession(req, res, () => {
-            res.status(401).json({ errorCode: ErrorCode.AUTH, msg: TranslationsKeys.INVALID_TOKEN });
+            res.status(401).json({ errorCode: ErrorCode.AUTH, msg: TranslationKey.INVALID_TOKEN });
         });
         return;
     }
     if (token !== sessionToken) {
         _logger.info('token not verify, token and session token not same');
         SessionUtils.deleteSession(req, res, () => {
-            res.status(401).json({ errorCode: ErrorCode.AUTH, msg: TranslationsKeys.INVALID_TOKEN });
+            res.status(401).json({ errorCode: ErrorCode.AUTH, msg: TranslationKey.INVALID_TOKEN });
         });
         return;
     }
@@ -41,12 +40,12 @@ const tokenVerify = (req: Request, res: Response, next: NextFunction) => {
         if (err) {
             if (err.name === 'TokenExpiredError') {
                 SessionUtils.deleteSession(req, res, () => {
-                    res.status(401).json({ errorCode: ErrorCode.AUTH, msg: TranslationsKeys.TOKEN_EXPIRED });
+                    res.status(401).json({ errorCode: ErrorCode.AUTH, msg: TranslationKey.TOKEN_EXPIRED });
                 });
                 _logger.info('token not verify, token expired');
             } else {
                 SessionUtils.deleteSession(req, res, () => {
-                    res.status(401).json({ errorCode: ErrorCode.AUTH, msg: TranslationsKeys.INVALID_TOKEN });
+                    res.status(401).json({ errorCode: ErrorCode.AUTH, msg: TranslationKey.INVALID_TOKEN });
                 });
                 _logger.info('token not verify, token invalid');
             }

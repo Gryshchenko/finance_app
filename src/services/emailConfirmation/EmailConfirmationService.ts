@@ -4,7 +4,11 @@ import { LoggerBase } from 'src/helper/logger/LoggerBase';
 import { ErrorCode } from 'types/ErrorCode';
 import { IMailService } from 'interfaces/IMailService';
 import { IMailTemplateService } from 'interfaces/IMailTemplateService';
+import { TranslationKey } from 'types/TranslationKey';
 
+require('dotenv').config();
+
+const Translations = require('../translations/Translations');
 const TimeManagerUTC = require('../../utils/TimeManagerUTC');
 const Success = require('../../utils/success/Success');
 const Failure = require('../../utils/failure/Failure');
@@ -33,13 +37,18 @@ module.exports = class EmailConfirmationService extends LoggerBase implements IE
     private async sendConfirmationMailToUser(email: string, confirmationCode: number): Promise<ISuccess<unknown> | IFailure> {
         const response = await this.mailService.sendMail({
             subject: 'Test mail',
-            sender: { mail: 'MS_c5djdt@trial-jy7zpl991r3l5vx6.mlsender.net', name: 'fin_app' },
-            recipients: [{ mail: email, name: 'Dear Guest' }],
+            sender: { mail: String(process.env.MAIL_NO_REPLY), name: String(process.env.APP_NAME) },
+            recipients: [{ mail: email, name: Translations.text(TranslationKey.HELLO_GUEST) }],
             tags: {
                 code: confirmationCode,
-                company: 'Data',
+                company: String(process.env.APP_NAME),
+                CONFIRM_MAIL_ADDRESS: Translations.text(TranslationKey.CONFIRM_MAIL_ADDRESS),
+                HELLO_GUEST: Translations.text(TranslationKey.HELLO_GUEST),
+                CONFIRM_MAIL_TEXT: Translations.text(TranslationKey.CONFIRM_MAIL_TEXT),
+                CONFIRM_MAIL_TEXT2: Translations.text(TranslationKey.CONFIRM_MAIL_TEXT2),
+                SINCERELY: Translations.text(TranslationKey.SINCERELY),
             },
-            text: 'Test mail',
+            text: Translations.text(TranslationKey.CONFIRM_MAIL_TEXT),
             template: this.mailTemplateService.getConfirmMailTemplate(),
         });
         return new Success();

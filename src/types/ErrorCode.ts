@@ -12,6 +12,7 @@ export enum ErrorCode {
     EMAIL_CANT_SEND = 4008,
     UNKNOWN_ERROR = 6000,
     AUTH = 5000,
+    SIGNUP,
     SESSION_CREATE_ERROR = 5001,
     SESSION_DESTROY_ERROR = 5002,
 }

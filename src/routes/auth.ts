@@ -1,9 +1,9 @@
 import { NextFunction, Request, Response } from 'express';
 import { ErrorCode } from 'types/ErrorCode';
-import { TranslationsKeys } from 'src/utils/translationsKeys/TranslationsKeys';
 import { RoleType } from 'types/RoleType';
 import { ResponseStatusType } from 'types/ResponseStatusType';
 import { IUser } from 'interfaces/IUser';
+import { TranslationKey } from 'types/TranslationKey';
 
 const dbConfig = require('../config/dbConfig');
 const { body, validationResult } = require('express-validator');
@@ -21,7 +21,6 @@ const UserDataAccess = require('../services/user/UserDataAccess');
 const Logger = require('../helper/logger/Logger');
 const express = require('express');
 const Success = require('../utils/success/Success');
-const Failure = require('../utils/failure/Failure');
 const router = express.Router();
 
 const validate = (validations: any[]) => {
@@ -76,7 +75,7 @@ router.post(
                     .json(
                         responseBuilder
                             .setStatus(ResponseStatusType.INTERNAL)
-                            .setError({ errorCode: ErrorCode.EMAIL_ALREADY_EXIST, msg: TranslationsKeys.EMAIL_ALREADY_EXIST })
+                            .setError({ errorCode: ErrorCode.EMAIL_ALREADY_EXIST, msg: TranslationKey.EMAIL_ALREADY_EXIST })
                             .build(),
                     );
             }
@@ -103,7 +102,7 @@ router.post(
             res.status(400).json(
                 responseBuilder
                     .setStatus(ResponseStatusType.INTERNAL)
-                    .setError({ errorCode: ErrorCode.CANT_STORE_DATA, msg: TranslationsKeys.SOMETHING_WRONG })
+                    .setError({ errorCode: ErrorCode.CANT_STORE_DATA, msg: TranslationKey.SOMETHING_WRONG })
                     .build(),
             );
         }
@@ -126,7 +125,7 @@ const handleSessionRegeneration = (
             res.status(400).json(
                 responseBuilder
                     .setStatus(ResponseStatusType.INTERNAL)
-                    .setError({ errorCode: ErrorCode.SESSION_CREATE_ERROR, msg: TranslationsKeys.SESSION_CREATE_ERROR })
+                    .setError({ errorCode: ErrorCode.SESSION_CREATE_ERROR, msg: TranslationKey.SESSION_CREATE_ERROR })
                     .build(),
             );
             return;
@@ -142,7 +141,7 @@ const handleSessionRegeneration = (
                 res.status(400).json(
                     responseBuilder
                         .setStatus(ResponseStatusType.INTERNAL)
-                        .setError({ errorCode: ErrorCode.SESSION_CREATE_ERROR, msg: TranslationsKeys.SESSION_CREATE_ERROR })
+                        .setError({ errorCode: ErrorCode.SESSION_CREATE_ERROR, msg: TranslationKey.SESSION_CREATE_ERROR })
                         .build(),
                 );
                 if (handleError) {
@@ -182,7 +181,7 @@ router.post(
                     .setStatus(ResponseStatusType.INTERNAL)
                     .setError({
                         errorCode: ErrorCode.CREDENTIALS_ERROR,
-                        msg: TranslationsKeys.CREDENTIALS_ERROR,
+                        msg: TranslationKey.CREDENTIALS_ERROR,
                     })
                     .build(),
             );
@@ -201,7 +200,7 @@ router.post(
                     .json(
                         responseBuilder
                             .setStatus(ResponseStatusType.INTERNAL)
-                            .setError({ errorCode: ErrorCode.CREDENTIALS_ERROR, msg: TranslationsKeys.CREDENTIALS_ERROR })
+                            .setError({ errorCode: ErrorCode.CREDENTIALS_ERROR, msg: TranslationKey.CREDENTIALS_ERROR })
                             .build(),
                     );
             }
@@ -215,7 +214,7 @@ router.post(
                     .json(
                         responseBuilder
                             .setStatus(ResponseStatusType.INTERNAL)
-                            .setError({ errorCode: ErrorCode.CREDENTIALS_ERROR, msg: TranslationsKeys.CREDENTIALS_ERROR })
+                            .setError({ errorCode: ErrorCode.CREDENTIALS_ERROR, msg: TranslationKey.CREDENTIALS_ERROR })
                             .build(),
                     );
             }
@@ -233,7 +232,7 @@ router.post(
                 .json(
                     responseBuilder
                         .setStatus(ResponseStatusType.INTERNAL)
-                        .setError({ errorCode: ErrorCode.CANT_STORE_DATA, msg: TranslationsKeys.SOMETHING_WRONG }),
+                        .setError({ errorCode: ErrorCode.CANT_STORE_DATA, msg: TranslationKey.SOMETHING_WRONG }),
                 );
         }
     },

@@ -4,7 +4,7 @@ import { RoleType } from 'types/RoleType';
 import { Request, Response } from 'express';
 import { ResponseStatusType } from 'types/ResponseStatusType';
 import { ErrorCode } from 'types/ErrorCode';
-import { TranslationsKeys } from 'src/utils/translationsKeys/TranslationsKeys';
+import { TranslationKey } from 'src/types/TranslationKey';
 const ResponseBuilder = require('../../helper/responseBuilder/ResponseBuilder');
 const Logger = require('../../helper/logger/Logger');
 
@@ -21,7 +21,7 @@ module.exports = class SessionUtils {
                         .setStatus(ResponseStatusType.INTERNAL)
                         .setError({
                             errorCode: ErrorCode.SESSION_DESTROY_ERROR,
-                            msg: TranslationsKeys.SOMETHING_WRONG,
+                            msg: TranslationKey.SOMETHING_WRONG,
                         })
                         .build(),
                 );

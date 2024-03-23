@@ -1,4 +1,5 @@
 const Utils = require('../../utils/Utils');
+
 enum LogLevel {
     DISABLED,
     ERROR,

@@ -5,8 +5,9 @@
   "private": true,
   "copyright": "",
   "scripts": {
-    "start": "node dist/app.js",
-    "dev": "nodemon --exec ts-node --files src/app.ts",
+    "build-translation": "node ./src/utils/scripts/translations.js",
+    "start": "npm run build-translation && node dist/app.js",
+    "dev": "npm run build-translation && nodemon --exec ts-node --files src/app.ts",
     "redis": "redis-server",
     "jest-test": "jest --verbose --runInBand --no-cache false ./ --config ./jest.config.js"
   },

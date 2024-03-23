@@ -1,6 +1,6 @@
 import { NextFunction, Request, Response } from 'express';
 import { ErrorCode } from 'types/ErrorCode';
-import { TranslationsKeys } from 'src/utils/translationsKeys/TranslationsKeys';
+import { TranslationKey } from 'src/types/TranslationKey';
 import { ResponseStatusType } from 'types/ResponseStatusType';
 
 const { body, validationResult } = require('express-validator');
@@ -46,7 +46,7 @@ router.post(
             res.status(400).json(
                 responseBuilder
                     .setStatus(ResponseStatusType.INTERNAL)
-                    .setError({ errorCode: ErrorCode.CANT_STORE_DATA, msg: TranslationsKeys.SOMETHING_WRONG })
+                    .setError({ errorCode: ErrorCode.CANT_STORE_DATA, msg: TranslationKey.SOMETHING_WRONG })
                     .build(),
             );
         }

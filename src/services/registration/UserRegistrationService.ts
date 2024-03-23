@@ -9,10 +9,13 @@ import { IMailService } from 'interfaces/IMailService';
 import { IMailTemplateService } from 'interfaces/IMailTemplateService';
 import { IEmailConfirmationService } from 'interfaces/IEmailConfirmationService';
 import { IUser } from 'interfaces/IUser';
+import { ErrorCode } from 'types/ErrorCode';
 
 const preMadeData = require(`../../config/create_user_initial`);
 const Success = require('../../utils/success/Success');
 const Failure = require('../../utils/failure/Failure');
+const TranslationLoaderImpl = require('../translations/TranslationLoaderImpl');
+const Translations = require('../translations/Translations');
 
 interface IDefaultData {
     group: string;
@@ -56,50 +59,63 @@ module.exports = class UserRegistrationService extends LoggerBase {
         return preMadeData[language];
     }
 
-    async createUserInitialData(email: string, password: string): Promise<ISuccess<IUser> | IFailure> {
-        const user = await this.userService.createUser(email, password);
-        if (user) {
-            const confirmationMailResponse = await this.emailConfirmationService.sendConfirmationMail(user.userId, user.email);
-            return new Success();
-            // const translatedDefaultData = this.getTranslatedDefaultData(userData.language);
-            // this._logger.info('user created');
-            //
-            // const group = await this.groupService.createGroup(user.userId, translatedDefaultData.group);
-            // this._logger.info('group created');
-            //
-            // const income = await this.incomeService.createIncomes(
-            //     user.userId,
-            //     translatedDefaultData.income.map((incomeName) => ({
-            //         incomeName,
-            //         currencyId: 10,
-            //     })),
-            // );
-            // this._logger.info('income created');
-            //
-            // const accounts = await this.accountService.createAccounts(
-            //     user.userId,
-            //     translatedDefaultData.accounts.map((accountName: string) => ({
-            //         accountName,
-            //         amount: 0,
-            //         currencyId: 10,
-            //     })),
-            // );
-            // this._logger.info('accounts created');
-            // //
-            // const categories = await this.categoryService.createCategories(
-            //     user.userId,
-            //     translatedDefaultData.categories.map((categoryName: string) => ({
-            //         categoryName,
-            //         currencyId: 10,
-            //     })),
-            // );
-            // this._logger.info('categories created');
-            // // return new Su
-            // // return { user, accounts, categories, group, income };
-            this._logger.info('user created');
-        } else {
-            this._logger.info('user not created');
-            return new Failure();
+    async createUserInitialData(
+        email: string,
+        password: string,
+        locale: LanguageType = LanguageType.US,
+    ): Promise<ISuccess<IUser> | IFailure> {
+        try {
+            const user = await this.userService.createUser(email, password);
+            if (user) {
+                await Translations.load(locale, TranslationLoaderImpl.instance());
+                const confirmationMailResponse = await this.emailConfirmationService.sendConfirmationMail(
+                    user.userId,
+                    user.email,
+                );
+                // const translatedDefaultData = this.getTranslatedDefaultData(userData.language);
+                // this._logger.info('user created');
+                //
+                // const group = await this.groupService.createGroup(user.userId, translatedDefaultData.group);
+                // this._logger.info('group created');
+                //
+                // const income = await this.incomeService.createIncomes(
+                //     user.userId,
+                //     translatedDefaultData.income.map((incomeName) => ({
+                //         incomeName,
+                //         currencyId: 10,
+                //     })),
+                // );
+                // this._logger.info('income created');
+                //
+                // const accounts = await this.accountService.createAccounts(
+                //     user.userId,
+                //     translatedDefaultData.accounts.map((accountName: string) => ({
+                //         accountName,
+                //         amount: 0,
+                //         currencyId: 10,
+                //     })),
+                // );
+                // this._logger.info('accounts created');
+                // //
+                // const categories = await this.categoryService.createCategories(
+                //     user.userId,
+                //     translatedDefaultData.categories.map((categoryName: string) => ({
+                //         categoryName,
+                //         currencyId: 10,
+                //     })),
+                // );
+                // this._logger.info('categories created');
+                // // return new Su
+                // // return { user, accounts, categories, group, income };
+                this._logger.info('user created');
+                return new Success();
+            } else {
+                this._logger.info('user not created');
+                return new Failure(ErrorCode.SIGNUP);
+            }
+        } catch (e) {
+            this._logger.info('user not created error: ' + e);
+            return new Failure(ErrorCode.SIGNUP);
         }
     }
 };
