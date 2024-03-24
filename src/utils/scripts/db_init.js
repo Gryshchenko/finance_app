@@ -96,6 +96,7 @@ const createProfileTableQuery = `
         "userId" INT UNIQUE NOT NULL,
         "userName" VARCHAR(50),
         "currencyId" INT,
+        "locale" VARCHAR(10),
         "additionalInfo" JSONB,
         "createdAt" TIMESTAMP NOT NULL,
         "updatedAt" TIMESTAMP,

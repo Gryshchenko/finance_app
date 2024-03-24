@@ -36,7 +36,7 @@ module.exports = class EmailConfirmationService extends LoggerBase implements IE
     }
     private async sendConfirmationMailToUser(email: string, confirmationCode: number): Promise<ISuccess<unknown> | IFailure> {
         const response = await this.mailService.sendMail({
-            subject: 'Test mail',
+            subject: Translations.text(TranslationKey.CONFIRM_MAIL_TEXT),
             sender: { mail: String(process.env.MAIL_NO_REPLY), name: String(process.env.APP_NAME) },
             recipients: [{ mail: email, name: Translations.text(TranslationKey.HELLO_GUEST) }],
             tags: {
@@ -51,7 +51,7 @@ module.exports = class EmailConfirmationService extends LoggerBase implements IE
             text: Translations.text(TranslationKey.CONFIRM_MAIL_TEXT),
             template: this.mailTemplateService.getConfirmMailTemplate(),
         });
-        return new Success();
+        return new Success(response);
     }
 
     private isConfirmationCodeAlreadySend(payload: IEmailConfirmationData): boolean {

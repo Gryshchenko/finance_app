@@ -10,12 +10,17 @@ import { IMailTemplateService } from 'interfaces/IMailTemplateService';
 import { IEmailConfirmationService } from 'interfaces/IEmailConfirmationService';
 import { IUser } from 'interfaces/IUser';
 import { ErrorCode } from 'types/ErrorCode';
+import { IProfileService } from 'interfaces/IProfileService';
+import { IProfile } from 'interfaces/IProfile';
+import { RoleType } from 'types/RoleType';
+import { IAuthService } from 'interfaces/IAuthService';
 
 const preMadeData = require(`../../config/create_user_initial`);
 const Success = require('../../utils/success/Success');
 const Failure = require('../../utils/failure/Failure');
 const TranslationLoaderImpl = require('../translations/TranslationLoaderImpl');
 const Translations = require('../translations/Translations');
+const AuthService = require('../auth/AuthService');
 
 interface IDefaultData {
     group: string;
@@ -33,89 +38,95 @@ module.exports = class UserRegistrationService extends LoggerBase {
     protected mailService: IMailService;
     protected mailTemplateService: IMailTemplateService;
     protected emailConfirmationService: IEmailConfirmationService;
+    protected profileService: IProfileService;
 
-    constructor(
-        userService: IUserService,
-        accountService: IAccountService,
-        categoryService: ICategoryService,
-        groupService: IGroupService,
-        incomeService: IIncomeService,
-        mailService: IMailService,
-        mailTemplateService: IMailTemplateService,
-        emailConfirmationService: IEmailConfirmationService,
-    ) {
+    constructor(services: {
+        userService: IUserService;
+        accountService: IAccountService;
+        categoryService: ICategoryService;
+        groupService: IGroupService;
+        incomeService: IIncomeService;
+        mailService: IMailService;
+        mailTemplateService: IMailTemplateService;
+        emailConfirmationService: IEmailConfirmationService;
+        profileService: IProfileService;
+    }) {
         super();
-        this.userService = userService;
-        this.accountService = accountService;
-        this.categoryService = categoryService;
-        this.groupService = groupService;
-        this.incomeService = incomeService;
-        this.mailService = mailService;
-        this.mailTemplateService = mailTemplateService;
-        this.emailConfirmationService = emailConfirmationService;
+        this.userService = services.userService;
+        this.accountService = services.accountService;
+        this.categoryService = services.categoryService;
+        this.groupService = services.groupService;
+        this.incomeService = services.incomeService;
+        this.mailService = services.mailService;
+        this.mailTemplateService = services.mailTemplateService;
+        this.emailConfirmationService = services.emailConfirmationService;
+        this.profileService = services.profileService;
     }
 
     private getTranslatedDefaultData(language: LanguageType = LanguageType.US): IDefaultData {
         return preMadeData[language];
     }
 
-    async createUserInitialData(
+    async createUser(
         email: string,
         password: string,
         locale: LanguageType = LanguageType.US,
-    ): Promise<ISuccess<IUser> | IFailure> {
+    ): Promise<ISuccess<{ user: IUser; token: string }> | IFailure> {
         try {
+            const otherUser = await this.userService.getUserByEmail(email);
+            if (otherUser) {
+                return new Failure('user already exists', ErrorCode.EMAIL_ALREADY_EXIST);
+            }
             const user = await this.userService.createUser(email, password);
             if (user) {
                 await Translations.load(locale, TranslationLoaderImpl.instance());
-                const confirmationMailResponse = await this.emailConfirmationService.sendConfirmationMail(
-                    user.userId,
-                    user.email,
-                );
-                // const translatedDefaultData = this.getTranslatedDefaultData(userData.language);
-                // this._logger.info('user created');
-                //
-                // const group = await this.groupService.createGroup(user.userId, translatedDefaultData.group);
-                // this._logger.info('group created');
-                //
-                // const income = await this.incomeService.createIncomes(
-                //     user.userId,
-                //     translatedDefaultData.income.map((incomeName) => ({
-                //         incomeName,
-                //         currencyId: 10,
-                //     })),
-                // );
-                // this._logger.info('income created');
-                //
-                // const accounts = await this.accountService.createAccounts(
-                //     user.userId,
-                //     translatedDefaultData.accounts.map((accountName: string) => ({
-                //         accountName,
-                //         amount: 0,
-                //         currencyId: 10,
-                //     })),
-                // );
-                // this._logger.info('accounts created');
-                // //
-                // const categories = await this.categoryService.createCategories(
-                //     user.userId,
-                //     translatedDefaultData.categories.map((categoryName: string) => ({
-                //         categoryName,
-                //         currencyId: 10,
-                //     })),
-                // );
-                // this._logger.info('categories created');
-                // // return new Su
-                // // return { user, accounts, categories, group, income };
-                this._logger.info('user created');
-                return new Success();
+                const newToken = AuthService.createJWToken(user.userId, RoleType.Default);
+                await Promise.all([
+                    await this.emailConfirmationService.sendConfirmationMail(user.userId, user.email),
+                    await this.profileService.createProfile(user.userId, locale),
+                ]);
+                return new Success({ user, token: newToken });
             } else {
-                this._logger.info('user not created');
-                return new Failure(ErrorCode.SIGNUP);
+                return new Failure('user not created', ErrorCode.SIGNUP);
             }
         } catch (e) {
-            this._logger.info('user not created error: ' + e);
-            return new Failure(ErrorCode.SIGNUP);
+            return new Failure('user not created error: ' + e, ErrorCode.SIGNUP);
+        }
+    }
+
+    async createUserInitialData(user: IUser, profile: IProfile): Promise<ISuccess<IUser> | IFailure> {
+        try {
+            const { currencyId, locale } = profile;
+            const translatedDefaultData = this.getTranslatedDefaultData(locale);
+            await Promise.all([
+                await this.groupService.createGroup(user.userId, translatedDefaultData.group),
+                await this.incomeService.createIncomes(
+                    user.userId,
+                    translatedDefaultData.income.map((incomeName) => ({
+                        incomeName,
+                        currencyId,
+                    })),
+                ),
+                await this.accountService.createAccounts(
+                    user.userId,
+                    translatedDefaultData.accounts.map((accountName: string) => ({
+                        accountName,
+                        amount: 0,
+                        currencyId,
+                    })),
+                ),
+                await this.categoryService.createCategories(
+                    user.userId,
+                    translatedDefaultData.categories.map((categoryName: string) => ({
+                        categoryName,
+                        currencyId,
+                    })),
+                ),
+            ]);
+            return new Success();
+        } catch (e) {
+            this._logger.info('failed create initial user data error: ' + e);
+            return new Failure(ErrorCode.SIGNUP_INITIAL);
         }
     }
 };

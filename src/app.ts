@@ -5,9 +5,10 @@ const path = require('path');
 const passport = require('passport');
 const express = require('express');
 const helmet = require('helmet');
+const rateLimit = require('express-rate-limit');
 
 const passportSetup = require('./services/auth/passport-setup');
-const sessionSetup = require('./services/session/session-setup');
+const SessionService = require('./services/session/SessionService');
 
 const authRouter = require('./routes/auth');
 const mailVerificationRouter = require('./routes/mailVerification');
@@ -23,10 +24,25 @@ const certificate = fs.readFileSync(path.join(__dirname, 'localhost.cert'), 'utf
 
 const credentials = { key: privateKey, cert: certificate };
 
+const limiter = rateLimit({
+    windowMs: 15 * 60 * 1000, // 15 min
+    limit: 100,
+});
+
+// app.use((req: Request, res: Response, next: NextFunction) => {
+//     res.setTimeout(10000, () => { // 10 seconds timeout
+//         console.log('Request has timed out.');
+//         res.status(408).send('Request timed out');
+//     });
+//     next();
+// });
+app.use(express.json({ limit: '10kb' })); // JSON  10kb
+app.use(express.urlencoded({ limit: '10kb', extended: true })); // URL-encoded  10kb
+app.use(limiter);
 app.use(express.json());
 app.use(helmet());
 app.use(passport.initialize());
-app.use(sessionSetup());
+app.use(SessionService.setup());
 
 app.use('/auth', authRouter);
 app.use('/verification', mailVerificationRouter);

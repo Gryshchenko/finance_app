@@ -31,7 +31,7 @@ module.exports = class UserDataService extends LoggerBase implements IUserDataAc
             const user = await this._db
                 .engine()<IUser>('users')
                 .where({ email, passwordHash })
-                .select('email', 'passwordHash', 'salt', 'userId', 'createdAt', 'status')
+                .select('email', 'passwordHash', 'salt', 'userId', 'createdAt', 'updatedAt', 'status')
                 .first();
             this._logger.info('getUser response');
             return user;

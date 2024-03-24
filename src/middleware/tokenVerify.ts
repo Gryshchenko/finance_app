@@ -5,7 +5,7 @@ import { TranslationKey } from 'src/types/TranslationKey';
 
 const jwt = require('jsonwebtoken');
 const _logger = require('../helper/logger/Logger').Of('TokenVerify');
-const SessionUtils = require('../services/session/SessionUtils');
+const SessionService = require('../services/session/SessionService');
 
 const extractToken = (req: Request) => {
     if (req.headers.authorization && req.headers.authorization.split(' ')[0] === 'Bearer') {
@@ -24,14 +24,14 @@ const tokenVerify = (req: Request, res: Response, next: NextFunction) => {
     const sessionToken = extractSessionToken(req);
     if (!token) {
         _logger.info('token not verify, token = null');
-        SessionUtils.deleteSession(req, res, () => {
+        SessionService.deleteSession(req, res, () => {
             res.status(401).json({ errorCode: ErrorCode.AUTH, msg: TranslationKey.INVALID_TOKEN });
         });
         return;
     }
     if (token !== sessionToken) {
         _logger.info('token not verify, token and session token not same');
-        SessionUtils.deleteSession(req, res, () => {
+        SessionService.deleteSession(req, res, () => {
             res.status(401).json({ errorCode: ErrorCode.AUTH, msg: TranslationKey.INVALID_TOKEN });
         });
         return;
@@ -39,12 +39,12 @@ const tokenVerify = (req: Request, res: Response, next: NextFunction) => {
     jwt.verify(token, process.env.JWT_SECRET, (err: VerifyErrors & { complete: boolean }) => {
         if (err) {
             if (err.name === 'TokenExpiredError') {
-                SessionUtils.deleteSession(req, res, () => {
+                SessionService.deleteSession(req, res, () => {
                     res.status(401).json({ errorCode: ErrorCode.AUTH, msg: TranslationKey.TOKEN_EXPIRED });
                 });
                 _logger.info('token not verify, token expired');
             } else {
-                SessionUtils.deleteSession(req, res, () => {
+                SessionService.deleteSession(req, res, () => {
                     res.status(401).json({ errorCode: ErrorCode.AUTH, msg: TranslationKey.INVALID_TOKEN });
                 });
                 _logger.info('token not verify, token invalid');

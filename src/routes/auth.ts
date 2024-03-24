@@ -1,26 +1,20 @@
 import { NextFunction, Request, Response } from 'express';
 import { ErrorCode } from 'types/ErrorCode';
-import { RoleType } from 'types/RoleType';
 import { ResponseStatusType } from 'types/ResponseStatusType';
-import { IUser } from 'interfaces/IUser';
 import { TranslationKey } from 'types/TranslationKey';
 
-const dbConfig = require('../config/dbConfig');
 const { body, validationResult } = require('express-validator');
-const AuthUtils = require('../services/auth/AuthUtils');
-const SessionUtils = require('../services/session/SessionUtils');
-const UserServiceUtils = require('../services/user/UserServiceUtils');
+const SessionService = require('../services/session/SessionService');
 const tokenVerify = require('../middleware/tokenVerify');
 const ensureGuest = require('../middleware/ensureGuest');
 const sessionVerify = require('../middleware/sessionVerify');
 const ResponseBuilder = require('../helper/responseBuilder/ResponseBuilder');
-const UserService = require('../services/user/UserService');
 const UserRegistrationServiceBuilder = require('../services/registration/UserRegistrationServiceBuilder');
-const DatabaseConnection = require('../repositories/DatabaseConnection');
-const UserDataAccess = require('../services/user/UserDataAccess');
+const AuthServiceBuilder = require('../services/auth/AuthServiceBuilder');
 const Logger = require('../helper/logger/Logger');
 const express = require('express');
 const Success = require('../utils/success/Success');
+const Failure = require('../utils/failure/Failure');
 const router = express.Router();
 
 const validate = (validations: any[]) => {
@@ -63,106 +57,38 @@ router.post(
         const responseBuilder = new ResponseBuilder();
 
         try {
-            const dbConnection = new DatabaseConnection(dbConfig);
-            const userDataAccess = new UserDataAccess(dbConnection);
-            const userService = new UserService(userDataAccess);
-
-            const user = await userService.getUserByEmail(req.body.email);
-            if (user) {
-                _logger.error('user already exists');
+            const response = await UserRegistrationServiceBuilder.build().createUser(req.body.email, req.body.password);
+            if (response instanceof Failure) {
+                _logger.error(response.error);
                 return res
                     .status(400)
-                    .json(
-                        responseBuilder
-                            .setStatus(ResponseStatusType.INTERNAL)
-                            .setError({ errorCode: ErrorCode.EMAIL_ALREADY_EXIST, msg: TranslationKey.EMAIL_ALREADY_EXIST })
-                            .build(),
-                    );
+                    .json(responseBuilder.setStatus(ResponseStatusType.INTERNAL).setError({ errorCode: response.code }).build());
             }
 
-            const createdUser = await UserRegistrationServiceBuilder.build().createUserInitialData(
-                req.body.email,
-                req.body.password,
-            );
-            if (createdUser instanceof Success) {
-                const newToken = AuthUtils.createJWToken(createdUser.userId, RoleType.Default);
-                handleSessionRegeneration(req, res, createdUser, newToken, _logger, responseBuilder, () => {
+            if (response instanceof Success) {
+                const { user, token } = response.value;
+                SessionService.handleSessionRegeneration(req, res, user, token, _logger, responseBuilder, () => {
                     res.status(200).json(
                         responseBuilder
                             .setStatus(ResponseStatusType.OK)
-                            .setData({ email: createdUser.email, status: createdUser.status })
+                            .setData({ email: user.email, status: user.status })
                             .build(),
                     );
                 });
-            } else {
-                throw new Error('Unable to store user');
             }
         } catch (error) {
             _logger.error(error);
             res.status(400).json(
-                responseBuilder
-                    .setStatus(ResponseStatusType.INTERNAL)
-                    .setError({ errorCode: ErrorCode.CANT_STORE_DATA, msg: TranslationKey.SOMETHING_WRONG })
-                    .build(),
+                responseBuilder.setStatus(ResponseStatusType.INTERNAL).setError({ errorCode: ErrorCode.CANT_STORE_DATA }).build(),
             );
         }
     },
 );
 
-const handleSessionRegeneration = (
-    req: Request,
-    res: Response,
-    user: IUser,
-    token: string,
-    logger: typeof Logger,
-    responseBuilder: typeof ResponseBuilder,
-    handleSuccess: () => void,
-    handleError?: (error: string) => void,
-) => {
-    req.session.regenerate((err) => {
-        if (err) {
-            logger.error('Session regeneration error: ' + err);
-            res.status(400).json(
-                responseBuilder
-                    .setStatus(ResponseStatusType.INTERNAL)
-                    .setError({ errorCode: ErrorCode.SESSION_CREATE_ERROR, msg: TranslationKey.SESSION_CREATE_ERROR })
-                    .build(),
-            );
-            return;
-        }
-
-        SessionUtils.regenerateSession({
-            err,
-            user,
-            token,
-            req,
-            handleError: (error: string) => {
-                logger.error('Session regenerate error: ' + error);
-                res.status(400).json(
-                    responseBuilder
-                        .setStatus(ResponseStatusType.INTERNAL)
-                        .setError({ errorCode: ErrorCode.SESSION_CREATE_ERROR, msg: TranslationKey.SESSION_CREATE_ERROR })
-                        .build(),
-                );
-                if (handleError) {
-                    handleError(error);
-                }
-            },
-            handleSuccess: (sessionId: string) => {
-                logger.info('Session regenerated successfully: ' + sessionId);
-                res.setHeader('Authorization', `Bearer ${token}`);
-                if (handleSuccess) {
-                    handleSuccess();
-                }
-            },
-        });
-    });
-};
-
 router.get('/logout', tokenVerify, sessionVerify, (req: Request, res: Response) => {
     const _logger = Logger.Of('AuthRouteLogout');
     const responseBuilder = new ResponseBuilder();
-    SessionUtils.deleteSession(req, res, () => {
+    SessionService.deleteSession(req, res, () => {
         res.status(200).json(responseBuilder.setStatus(ResponseStatusType.OK).build());
     });
 });
@@ -173,58 +99,27 @@ router.post(
     [body('password').isString(), body('email').isString()],
     async (req: Request, res: Response) => {
         const responseBuilder = new ResponseBuilder();
-        const errors = validationResult(req);
         const _logger = Logger.Of('AuthRouteLogin');
-        if (!errors.isEmpty()) {
-            return res.status(400).json(
-                responseBuilder
-                    .setStatus(ResponseStatusType.INTERNAL)
-                    .setError({
-                        errorCode: ErrorCode.CREDENTIALS_ERROR,
-                        msg: TranslationKey.CREDENTIALS_ERROR,
-                    })
-                    .build(),
-            );
-        }
-
         try {
-            const dbConnection = new DatabaseConnection(dbConfig);
-            const userDataAccess = new UserDataAccess(dbConnection);
-            const userService = new UserService(userDataAccess);
-            _logger.info('request user data');
-            const user = await userService.getUserByEmail(req.body.email);
-            if (!user) {
-                _logger.info('response user data: credential error');
-                return res
-                    .status(400)
-                    .json(
-                        responseBuilder
-                            .setStatus(ResponseStatusType.INTERNAL)
-                            .setError({ errorCode: ErrorCode.CREDENTIALS_ERROR, msg: TranslationKey.CREDENTIALS_ERROR })
-                            .build(),
-                    );
+            const errors = validationResult(req);
+            if (!errors.isEmpty()) {
+                throw new Error('validation error');
             }
 
-            _logger.info('response user data userID: ' + user?.userId);
-            const hashPassword = UserServiceUtils.hashPassword(req.body.password, user.salt);
-            if (hashPassword !== user.passwordHash) {
-                _logger.info('password not match');
-                return res
-                    .status(400)
-                    .json(
+            const response = await AuthServiceBuilder.build().login(req.body.email, req.body.password);
+            if (typeof response === Success) {
+                const { user, token } = response.value;
+                SessionService.handleSessionRegeneration(req, res, user, token, _logger, responseBuilder, () => {
+                    res.status(200).json(
                         responseBuilder
-                            .setStatus(ResponseStatusType.INTERNAL)
-                            .setError({ errorCode: ErrorCode.CREDENTIALS_ERROR, msg: TranslationKey.CREDENTIALS_ERROR })
+                            .setStatus(ResponseStatusType.OK)
+                            .setData({ email: user.email, status: user.status })
                             .build(),
                     );
+                });
+            } else if (typeof response === Failure) {
+                throw new Error(response.error);
             }
-            _logger.info('password good');
-            const newToken = AuthUtils.createJWToken(user.userId, RoleType.Default);
-            handleSessionRegeneration(req, res, user, newToken, _logger, responseBuilder, () => {
-                res.status(200).json(
-                    responseBuilder.setStatus(ResponseStatusType.OK).setData({ email: user.email, status: user.status }).build(),
-                );
-            });
         } catch (error) {
             _logger.error('request user data error: ' + error);
             return res
