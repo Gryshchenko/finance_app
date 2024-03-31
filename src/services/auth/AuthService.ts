@@ -20,7 +20,7 @@ module.exports = class AuthService extends LoggerBase implements IAuthService {
     }
 
     async login(email: string, password: string): Promise<ISuccess<{ user: IUser; token: string }> | IFailure> {
-        const user = await this.userService.getUserByEmail(email);
+        const user = await this.userService.getUser(email, password);
         if (!user) {
             return new Failure('response user data: credential error', ErrorCode.CREDENTIALS_ERROR);
         }

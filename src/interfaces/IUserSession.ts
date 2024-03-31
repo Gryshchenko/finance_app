@@ -8,4 +8,5 @@ export interface IUserSession {
     updatedate: string;
     ip: string | undefined;
     token: string;
+    email: string;
 }

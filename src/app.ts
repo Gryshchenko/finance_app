@@ -11,7 +11,8 @@ const passportSetup = require('./services/auth/passport-setup');
 const SessionService = require('./services/session/SessionService');
 
 const authRouter = require('./routes/auth');
-const mailVerificationRouter = require('./routes/mailVerification');
+const registerRouter = require('./routes/register');
+const profileRouter = require('./routes/profile');
 
 require('dotenv').config();
 const app = express();
@@ -45,7 +46,8 @@ app.use(passport.initialize());
 app.use(SessionService.setup());
 
 app.use('/auth', authRouter);
-app.use('/verification', mailVerificationRouter);
+app.use('/profile', profileRouter);
+app.use('/register', registerRouter);
 
 app.get('/', (req: any, res: any) => {
     res.send('Hello World!');

@@ -5,6 +5,7 @@ import { ErrorCode } from 'types/ErrorCode';
 import { IMailService } from 'interfaces/IMailService';
 import { IMailTemplateService } from 'interfaces/IMailTemplateService';
 import { TranslationKey } from 'types/TranslationKey';
+import { IUserService } from 'interfaces/IUserService';
 
 require('dotenv').config();
 
@@ -18,15 +19,18 @@ module.exports = class EmailConfirmationService extends LoggerBase implements IE
     protected emailConfirmationDataAccess: IEmailConfirmationDataAccess;
     protected mailService: IMailService;
     protected mailTemplateService: IMailTemplateService;
+    protected userService: IUserService;
     public constructor(
         emailConfirmationDataAccess: IEmailConfirmationDataAccess,
         emailService: IMailService,
         mailTemplateService: IMailTemplateService,
+        userService: IUserService,
     ) {
         super();
         this.emailConfirmationDataAccess = emailConfirmationDataAccess;
         this.mailService = emailService;
         this.mailTemplateService = mailTemplateService;
+        this.userService = userService;
     }
 
     private createConfirmationKey(): number {
@@ -86,6 +90,10 @@ module.exports = class EmailConfirmationService extends LoggerBase implements IE
     }
 
     public async sendConfirmationMail(userId: number, email: string): Promise<ISuccess<IEmailConfirmationData> | IFailure> {
+        const userConfirmationData = await this.emailConfirmationDataAccess.getUserConfirmation(userId, email);
+        if (userConfirmationData && userConfirmationData.confirmed) {
+            return new Failure('Already confirmed', ErrorCode.EMAIL_VERIFICATION_ALREADY_DONE, true);
+        }
         const confirmationCode = this.createConfirmationKey();
         this._logger.info('confirmationCode created');
         const confirmation = await this.storeConfirmationMailData(userId, email, confirmationCode);
@@ -105,13 +113,13 @@ module.exports = class EmailConfirmationService extends LoggerBase implements IE
         }
     }
 
-    public async sendAgainConfirmationMail(
-        userId: number,
-        email: string,
-        confirmationCode: number = this.createConfirmationKey(),
-    ): Promise<ISuccess<IEmailConfirmationData> | IFailure> {
+    public async sendAgainConfirmationMail(userId: number, email: string): Promise<ISuccess<IEmailConfirmationData> | IFailure> {
         const userConfirmationData = await this.emailConfirmationDataAccess.getUserConfirmation(userId, email);
+        const confirmationCode: number = this.createConfirmationKey();
         try {
+            if (userConfirmationData.confirmed) {
+                return new Failure('Already confirmed', ErrorCode.EMAIL_VERIFICATION_ALREADY_DONE, true);
+            }
             if (!this.isConfirmationCodeAlreadySend(userConfirmationData)) {
                 const timeManager = new TimeManagerUTC();
                 timeManager.addTime(1);
@@ -121,6 +129,7 @@ module.exports = class EmailConfirmationService extends LoggerBase implements IE
                     email,
                     confirmationCode,
                     expiresAt,
+                    confirmationId: userConfirmationData.confirmationId,
                 });
                 return new Success(result);
             } else {
@@ -129,5 +138,11 @@ module.exports = class EmailConfirmationService extends LoggerBase implements IE
         } catch (error) {
             return new Failure(error, ErrorCode.EMAIL_CANT_SEND, false);
         }
+    }
+    async confirmUserMail(payload: { userId: number; email: string; confirmationId: number }): Promise<IEmailConfirmationData> {
+        return await this.emailConfirmationDataAccess.confirmUserMail(payload);
+    }
+    async getUserConfirmation(userId: number, email: string): Promise<IEmailConfirmationData> {
+        return await this.emailConfirmationDataAccess.getUserConfirmation(userId, email);
     }
 };

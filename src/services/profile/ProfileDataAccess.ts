@@ -21,4 +21,18 @@ module.exports = class ProfileDataService extends LoggerBase implements IProfile
             throw error;
         }
     }
+    async getProfile(userId: number): Promise<IProfile | undefined> {
+        try {
+            this._logger.info('getProfile request');
+            const data = await this._db.engine()<IProfile>('profiles').where({ userId }).select(['*']).first();
+            this._logger.info('getProfile response');
+            if (data && data[0]) {
+                return data[0];
+            }
+            return undefined;
+        } catch (error) {
+            this._logger.error(error);
+            throw error;
+        }
+    }
 };

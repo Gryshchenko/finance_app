@@ -5,6 +5,7 @@ import { TranslationKey } from 'types/TranslationKey';
 import { IUser } from 'interfaces/IUser';
 import { IUserSession } from 'interfaces/IUserSession';
 import { RoleType } from 'types/RoleType';
+
 const ResponseBuilder = require('../../helper/responseBuilder/ResponseBuilder');
 
 require('dotenv').config();
@@ -69,7 +70,7 @@ module.exports = class SessionService {
             handleError(err);
         }
         // @ts-ignore
-        req.session.user = SessionUtils.buildSessionObject(user, token, req.ip || req.connection.remoteAddress, req.sessionID);
+        req.session.user = SessionService.buildSessionObject(user, token, req.ip || req.connection.remoteAddress, req.sessionID);
         req.session.save((err: string) => {
             if (err) {
                 handleError(err);

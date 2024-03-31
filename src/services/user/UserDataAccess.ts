@@ -10,16 +10,12 @@ module.exports = class UserDataService extends LoggerBase implements IUserDataAc
         super();
         this._db = db;
     }
-    public async getUserByEmail(email: string): Promise<IUser | undefined> {
+    public async getUserByEmail(email: string): Promise<string | undefined> {
         try {
             this._logger.info('getUserByEmail request');
-            const user = await this._db
-                .engine()<IUser>('users')
-                .where({ email })
-                .select('email', 'passwordHash', 'salt', 'userId', 'createdAt', 'status')
-                .first();
+            const response = await this._db.engine()<{ email: string }>('users').where({ email }).select('email').first();
             this._logger.info('getUserByEmail response');
-            return user as IUser;
+            return response?.email ? response.email : undefined;
         } catch (error) {
             this._logger.error(error);
             throw error;
@@ -48,7 +44,23 @@ module.exports = class UserDataService extends LoggerBase implements IUserDataAc
                     email,
                     passwordHash,
                     salt,
-                    status: IUserStatus.MAIL_VERIFICATION,
+                    status: IUserStatus.PROFILE_VERIFICATION,
+                },
+                ['email', 'passwordHash', 'salt', 'userId', 'createdAt', 'status'],
+            );
+            this._logger.info('createUser response');
+            return data[0];
+        } catch (error) {
+            this._logger.error(error);
+            throw error;
+        }
+    }
+    public async updateUserEmail(userId: number, email: string): Promise<IUser | undefined> {
+        try {
+            this._logger.info('createUser request');
+            const data = await this._db.engine()('users').where({ userId }).update(
+                {
+                    email,
                 },
                 ['email', 'passwordHash', 'salt', 'userId', 'createdAt', 'status'],
             );

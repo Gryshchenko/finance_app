@@ -11,5 +11,7 @@ export interface IEmailConfirmationDataAccess {
         confirmationCode: number;
         email: string;
         expiresAt: Date;
+        confirmationId: number;
     }): Promise<IEmailConfirmationData>;
+    confirmUserMail(payload: { userId: number; email: string; confirmationId: number }): Promise<IEmailConfirmationData>;
 }

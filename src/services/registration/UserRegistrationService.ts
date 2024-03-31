@@ -93,8 +93,24 @@ module.exports = class UserRegistrationService extends LoggerBase {
             return new Failure('user not created error: ' + e, ErrorCode.SIGNUP);
         }
     }
+    async confirmUserMail(userId: number, email: string, code: number): Promise<ISuccess<unknown> | IFailure> {
+        try {
+            const userConfirmationData = await this.emailConfirmationService.getUserConfirmation(userId, email);
+            if (!userConfirmationData || userConfirmationData.confirmationCode !== code) {
+                return new Failure('Confirmation code not same', ErrorCode.EMAIL_VERIFICATION_CODE_INVALID);
+            }
+            await this.emailConfirmationService.confirmUserMail({
+                userId,
+                email,
+                confirmationId: userConfirmationData.confirmationId,
+            });
+            return new Success({ email });
+        } catch (error) {
+            return new Failure(error, ErrorCode.EMAIL_VERIFICATION_CODE_INVALID, false);
+        }
+    }
 
-    async createUserInitialData(user: IUser, profile: IProfile): Promise<ISuccess<IUser> | IFailure> {
+    async createInitialDataForNewUser(user: IUser, profile: IProfile): Promise<ISuccess<IUser> | IFailure> {
         try {
             const { currencyId, locale } = profile;
             const translatedDefaultData = this.getTranslatedDefaultData(locale);

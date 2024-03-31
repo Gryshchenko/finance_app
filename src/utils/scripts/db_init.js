@@ -54,7 +54,7 @@ const createUserGroupsTableQuery = `
         "groupName" varchar(128) NOT NULL,
         UNIQUE ("userId", "userGroupId"),
         FOREIGN KEY ("userId") REFERENCES users("userId"),
-        "createdAt" TIMESTAMP NOT NULL,
+        "createdAt" TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
         "updatedAt" TIMESTAMP
     );
 `;
@@ -66,7 +66,7 @@ const createGroupInvitationsTableQuery = `
         "invitedEmail" varchar(128),
         "status" INT,
         FOREIGN KEY ("userGroupId") REFERENCES userGroups("userGroupId"),
-        "createdAt" TIMESTAMP NOT NULL,
+        "createdAt" TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
         "updatedAt" TIMESTAMP,
         UNIQUE ("userGroupId", "invitedEmail")
     );
@@ -98,7 +98,7 @@ const createProfileTableQuery = `
         "currencyId" INT,
         "locale" VARCHAR(10),
         "additionalInfo" JSONB,
-        "createdAt" TIMESTAMP NOT NULL,
+        "createdAt" TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
         "updatedAt" TIMESTAMP,
         FOREIGN KEY ("userId") REFERENCES users("userId") ON DELETE CASCADE,
         FOREIGN KEY ("currencyId") REFERENCES currencies("currencyId")
@@ -111,7 +111,7 @@ const createIncomeTableQuery = `
         "userId" INT NOT NULL,
         "incomeName" VARCHAR(128) NOT NULL,
         "currencyId" INT NOT NULL,
-        "createdAt" TIMESTAMP NOT NULL,
+        "createdAt" TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
         FOREIGN KEY ("userId") REFERENCES users("userId"),
         FOREIGN KEY ("currencyId") REFERENCES currencies("currencyId")
     );
@@ -124,7 +124,7 @@ const createAccountTableQuery = `
         "accountName" VARCHAR(128) NOT NULL,
         "amount" DECIMAL NOT NULL,
         "currencyId" INT NOT NULL,
-        "createdAt" TIMESTAMP NOT NULL,
+        "createdAt" TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
         FOREIGN KEY ("userId") REFERENCES users("userId"),
         FOREIGN KEY ("currencyId") REFERENCES currencies("currencyId")
     );
@@ -137,7 +137,7 @@ const createCategoriesTableQuery = `
         "userId" INT NOT NULL,
         "currencyId" INT NOT NULL,
         "accountId" INT NOT NULL,
-        "createdAt" TIMESTAMP NOT NULL,
+        "createdAt" TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
         FOREIGN KEY ("accountId") REFERENCES accounts("accountId"),
         FOREIGN KEY ("userId") REFERENCES users("userId"),
         FOREIGN KEY ("currencyId") REFERENCES currencies("currencyId")
@@ -154,7 +154,7 @@ const createTransactionsTableQuery = `
         "amount" DECIMAL NOT NULL,
         "description" VARCHAR(256),
         "currencyId" INT NOT NULL,
-        "createdAt" TIMESTAMP NOT NULL,
+        "createdAt" TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
         FOREIGN KEY ("accountId") REFERENCES accounts("accountId"),
         FOREIGN KEY ("userId") REFERENCES users("userId"),
         FOREIGN KEY ("currencyId") REFERENCES currencies("currencyId"),
@@ -170,7 +170,7 @@ const createEmailConfirmationTableQuery = `
         "email" VARCHAR(100) NOT NULL,
         "confirmationCode" VARCHAR(255) NOT NULL,
         "confirmed" BOOLEAN DEFAULT FALSE,
-        "createdAt" TIMESTAMP NOT NULL,
+        "createdAt" TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
         "expiresAt" TIMESTAMP NOT NULL,
         FOREIGN KEY ("userId") REFERENCES users("userId") ON DELETE CASCADE,
         UNIQUE ("userId", "email")

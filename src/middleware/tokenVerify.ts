@@ -18,7 +18,7 @@ const extractSessionToken = (req: Request) => {
     // @ts-ignore
     return req.session?.user?.token;
 };
-
+// TODO add origin and reffere validation
 const tokenVerify = (req: Request, res: Response, next: NextFunction) => {
     const token = extractToken(req);
     const sessionToken = extractSessionToken(req);

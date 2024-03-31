@@ -10,16 +10,37 @@ module.exports = class EmailConfDataService extends LoggerBase implements IEmail
         this._db = db;
     }
 
+    public async confirmUserMail(payload: {
+        userId: number;
+        email: string;
+        confirmationId: number;
+    }): Promise<IEmailConfirmationData> {
+        try {
+            this._logger.info('confirmUserMail request');
+            const { userId, email, confirmationId } = payload;
+            const data = await this._db
+                .engine()<IEmailConfirmationData>('email_confirmations')
+                .where({ userId, email, confirmationId })
+                .update({ confirmed: true }, ['*'])
+                .first();
+            this._logger.info('confirmUserMail response');
+            return data as IEmailConfirmationData;
+        } catch (error) {
+            this._logger.error(error);
+            throw error;
+        }
+    }
+
     public async getUserConfirmation(userId: number, email: string): Promise<IEmailConfirmationData> {
         try {
             this._logger.info('getUserConfirmation request');
-            const user = await this._db
+            const data = await this._db
                 .engine()<IEmailConfirmationData>('email_confirmations')
                 .where({ userId, email })
                 .select('*')
                 .first();
             this._logger.info('getUserConfirmation response');
-            return user as IEmailConfirmationData;
+            return data as IEmailConfirmationData;
         } catch (error) {
             this._logger.error(error);
             throw error;
@@ -57,15 +78,17 @@ module.exports = class EmailConfDataService extends LoggerBase implements IEmail
         confirmationCode: number;
         email: string;
         expiresAt: Date;
+        confirmationId: number;
     }): Promise<IEmailConfirmationData> {
         try {
             this._logger.info('createUserConfirmation request');
-            const { userId, confirmationCode, email, expiresAt } = payload;
+            const { userId, confirmationCode, email, expiresAt, confirmationId } = payload;
             const data = await this._db
                 .engine()<IEmailConfirmationData>('email_confirmations')
                 .where({
                     userId,
                     email,
+                    confirmationId,
                 })
                 .update(
                     {
