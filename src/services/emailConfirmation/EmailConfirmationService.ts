@@ -40,7 +40,7 @@ module.exports = class EmailConfirmationService extends LoggerBase implements IE
     }
     private async sendConfirmationMailToUser(email: string, confirmationCode: number): Promise<ISuccess<unknown> | IFailure> {
         const response = await this.mailService.sendMail({
-            subject: Translations.text(TranslationKey.CONFIRM_MAIL_TEXT),
+            subject: Translations.text(TranslationKey.CONFIRM_MAIL_ADDRESS),
             sender: { mail: String(process.env.MAIL_NO_REPLY), name: String(process.env.APP_NAME) },
             recipients: [{ mail: email, name: Translations.text(TranslationKey.HELLO_GUEST) }],
             tags: {

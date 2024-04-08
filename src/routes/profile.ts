@@ -126,4 +126,5 @@ namespace Profile {
             }
         },
     );
+    module.exports = router;
 }

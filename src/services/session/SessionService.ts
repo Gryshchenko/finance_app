@@ -46,6 +46,7 @@ module.exports = class SessionService {
             premission: RoleType.Default,
             createdate: user.createdAt,
             updatedate: user.updatedAt,
+            email: user.email,
             ip,
             token,
         };

@@ -2,7 +2,6 @@ import { IProfileDataAccess } from 'interfaces/IProfileDataAccess';
 import { IProfileService } from 'interfaces/IProfileService';
 import { IProfile } from 'interfaces/IProfile';
 import { LanguageType } from 'types/LanguageType';
-import { ErrorCode } from 'types/ErrorCode';
 import { IEmailConfirmationDataAccess } from 'interfaces/IEmailConfirmationDataAccess';
 import { IMailService } from 'interfaces/IMailService';
 import { IMailTemplateService } from 'interfaces/IMailTemplateService';

@@ -11,14 +11,13 @@ import { IEmailConfirmationService } from 'interfaces/IEmailConfirmationService'
 import { IUser } from 'interfaces/IUser';
 import { ErrorCode } from 'types/ErrorCode';
 import { IProfileService } from 'interfaces/IProfileService';
-import { IProfile } from 'interfaces/IProfile';
 import { RoleType } from 'types/RoleType';
-import { IAuthService } from 'interfaces/IAuthService';
 
 const preMadeData = require(`../../config/create_user_initial`);
 const Success = require('../../utils/success/Success');
 const Failure = require('../../utils/failure/Failure');
 const TranslationLoaderImpl = require('../translations/TranslationLoaderImpl');
+const TranslationsUtils = require('../translations/TranslationsUtils');
 const Translations = require('../translations/Translations');
 const AuthService = require('../auth/AuthService');
 
@@ -70,9 +69,10 @@ module.exports = class UserRegistrationService extends LoggerBase {
     async createUser(
         email: string,
         password: string,
-        locale: LanguageType = LanguageType.US,
+        localeFromUser: LanguageType = LanguageType.US,
     ): Promise<ISuccess<{ user: IUser; token: string }> | IFailure> {
         try {
+            const locale = TranslationsUtils.convertToSupportLocale(localeFromUser);
             const otherUser = await this.userService.getUserByEmail(email);
             if (otherUser) {
                 return new Failure('user already exists', ErrorCode.EMAIL_ALREADY_EXIST);
@@ -110,21 +110,25 @@ module.exports = class UserRegistrationService extends LoggerBase {
         }
     }
 
-    async createInitialDataForNewUser(user: IUser, profile: IProfile): Promise<ISuccess<IUser> | IFailure> {
+    async createInitialDataForNewUser(userId: number, currencyId: number): Promise<ISuccess<IUser> | IFailure> {
         try {
-            const { currencyId, locale } = profile;
-            const translatedDefaultData = this.getTranslatedDefaultData(locale);
+            const profile = await this.profileService.getProfile(userId);
+            if (!profile) {
+                this._logger.info('cant find profile');
+                return new Failure(ErrorCode.SIGNUP_INITIAL);
+            }
+            const translatedDefaultData = this.getTranslatedDefaultData(profile?.locale);
             await Promise.all([
-                await this.groupService.createGroup(user.userId, translatedDefaultData.group),
+                await this.groupService.createGroup(userId, translatedDefaultData.group),
                 await this.incomeService.createIncomes(
-                    user.userId,
+                    userId,
                     translatedDefaultData.income.map((incomeName) => ({
                         incomeName,
                         currencyId,
                     })),
                 ),
                 await this.accountService.createAccounts(
-                    user.userId,
+                    userId,
                     translatedDefaultData.accounts.map((accountName: string) => ({
                         accountName,
                         amount: 0,
@@ -132,7 +136,7 @@ module.exports = class UserRegistrationService extends LoggerBase {
                     })),
                 ),
                 await this.categoryService.createCategories(
-                    user.userId,
+                    userId,
                     translatedDefaultData.categories.map((categoryName: string) => ({
                         categoryName,
                         currencyId,

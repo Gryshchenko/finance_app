@@ -16,8 +16,8 @@ module.exports = function routesInputValidation(validations: any[]) {
 
         const responseBuilder = new ResponseBuilder().setStatus(ResponseStatusType.INTERNAL).setErrors(
             errors.array().map((value, index, array) => ({
-                errorCode: getErrorType(err.param),
-                msg: err.msg,
+                // errorCode: getErrorType(err.param),
+                // msg: err.msg,
             })),
         );
 

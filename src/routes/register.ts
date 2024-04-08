@@ -19,12 +19,48 @@ const sessionVerify = require('../middleware/sessionVerify');
 const router = express.Router();
 
 router.post(
+    '/confirm-profile',
+    tokenVerify,
+    sessionVerify,
+    routesInputValidation([body('currency').isString()]),
+    async (req: Request, res: Response) => {
+        const _logger = Logger.Of('RegistrationConfirmProfile');
+        const responseBuilder = new ResponseBuilder();
+        try {
+            // @ts-ignore
+            const userFromSession = req.session.user as IUserSession;
+            const response = await UserRegistrationServiceBuilder.build().createInitialDataForNewUser(
+                userFromSession.userId,
+                req.body.currency,
+            );
+            if (typeof response === Success) {
+                res.status(200).json(
+                    responseBuilder.setStatus(ResponseStatusType.OK).setData({}).build({
+                        email: req.body.email,
+                    }),
+                );
+            } else {
+                _logger.error(response.error);
+                return res
+                    .status(400)
+                    .json(responseBuilder.setStatus(ResponseStatusType.INTERNAL).setError({ errorCode: response.code }).build());
+            }
+        } catch (error) {
+            _logger.error(error);
+            res.status(400).json(
+                responseBuilder.setStatus(ResponseStatusType.INTERNAL).setError({ errorCode: ErrorCode.CANT_STORE_DATA }).build(),
+            );
+        }
+    },
+);
+
+router.post(
     '/confirm-email',
     tokenVerify,
     sessionVerify,
     routesInputValidation([body('email').isEmail(), body('code').isNumeric()]),
     async (req: Request, res: Response) => {
-        const _logger = Logger.Of('ProfileSendConfirmation');
+        const _logger = Logger.Of('RegistrationSendConfirmation');
         const responseBuilder = new ResponseBuilder();
         try {
             // @ts-ignore
@@ -69,7 +105,7 @@ router.post(
     ensureGuest,
     routesInputValidation([body('password').isStrongPassword(), body('email').isEmail()]),
     async (req: Request, res: Response) => {
-        const _logger = Logger.Of('AuthRouteSignup');
+        const _logger = Logger.Of('RegistrationSignup');
         const responseBuilder = new ResponseBuilder();
 
         try {
@@ -100,3 +136,5 @@ router.post(
         }
     },
 );
+
+module.exports = router;
