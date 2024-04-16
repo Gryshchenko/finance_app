@@ -3,7 +3,7 @@ const fs = require('fs');
 const path = require('path');
 
 const passport = require('passport');
-const express = require('express');
+import express, { Request, Response } from 'express';
 const helmet = require('helmet');
 const rateLimit = require('express-rate-limit');
 
@@ -49,7 +49,7 @@ app.use('/auth', authRouter);
 app.use('/profile', profileRouter);
 app.use('/register', registerRouter);
 
-app.get('/', (req: any, res: any) => {
+app.get('/', (req: Request, res: Response) => {
     res.send('Hello World!');
 });
 
