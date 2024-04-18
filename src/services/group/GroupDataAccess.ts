@@ -3,7 +3,7 @@ import { IDatabaseConnection } from 'interfaces/IDatabaseConnection';
 import { LoggerBase } from 'src/helper/logger/LoggerBase';
 import { IGroup } from 'interfaces/IGroup';
 
-module.exports = class GroupDataService extends LoggerBase implements IGroupDataAccess {
+export default class GroupDataService extends LoggerBase implements IGroupDataAccess {
     private readonly _db: IDatabaseConnection;
     public constructor(db: IDatabaseConnection) {
         super();
@@ -22,4 +22,4 @@ module.exports = class GroupDataService extends LoggerBase implements IGroupData
             throw error;
         }
     }
-};
+}

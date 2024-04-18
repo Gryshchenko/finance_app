@@ -1,24 +1,23 @@
-import { Request, Response } from 'express';
+import express, { Request, Response } from 'express';
 import { ErrorCode } from 'types/ErrorCode';
 import { ResponseStatusType } from 'types/ResponseStatusType';
 import { IUserSession } from 'interfaces/IUserSession';
 
 const { body } = require('express-validator');
-const routesInputValidation = require('../utils/validation/routesInputValidation');
-const SessionService = require('../services/session/SessionService');
-const ensureGuest = require('../middleware/ensureGuest');
+import routesInputValidation from '../utils/validation/routesInputValidation';
+import SessionService from '../services/session/SessionService';
+import tokenVerify from '../middleware/tokenVerify';
+import ensureGuest from '../middleware/ensureGuest';
+import sessionVerify from '../middleware/sessionVerify';
 const ResponseBuilder = require('../helper/responseBuilder/ResponseBuilder');
 const UserRegistrationServiceBuilder = require('../services/registration/UserRegistrationServiceBuilder');
 const Logger = require('../helper/logger/Logger');
-const express = require('express');
 const Success = require('../utils/success/Success');
 const Failure = require('../utils/failure/Failure');
 
-const tokenVerify = require('../middleware/tokenVerify');
-const sessionVerify = require('../middleware/sessionVerify');
-const router = express.Router();
+const registerRouter = express.Router();
 
-router.post(
+registerRouter.post(
     '/confirm-profile',
     tokenVerify,
     sessionVerify,
@@ -54,7 +53,7 @@ router.post(
     },
 );
 
-router.post(
+registerRouter.post(
     '/confirm-email',
     tokenVerify,
     sessionVerify,
@@ -100,7 +99,7 @@ router.post(
     },
 );
 
-router.post(
+registerRouter.post(
     '/signup',
     ensureGuest,
     routesInputValidation([body('password').isStrongPassword(), body('email').isEmail()]),
@@ -137,4 +136,4 @@ router.post(
     },
 );
 
-module.exports = router;
+export default registerRouter;

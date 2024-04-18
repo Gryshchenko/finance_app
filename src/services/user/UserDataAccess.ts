@@ -4,7 +4,7 @@ import { IUser } from 'interfaces/IUser';
 import { LoggerBase } from 'src/helper/logger/LoggerBase';
 import { IUserStatus } from 'interfaces/IUserStatus';
 
-module.exports = class UserDataService extends LoggerBase implements IUserDataAccess {
+export default class UserDataService extends LoggerBase implements IUserDataAccess {
     private readonly _db: IDatabaseConnection;
     public constructor(db: IDatabaseConnection) {
         super();
@@ -71,4 +71,4 @@ module.exports = class UserDataService extends LoggerBase implements IUserDataAc
             throw error;
         }
     }
-};
+}

@@ -1,4 +1,4 @@
-module.exports = class Utils {
+export default class Utils {
     public static isNumber(value: string): boolean {
         return /^\d+$/.test(value);
     }
@@ -250,4 +250,4 @@ module.exports = class Utils {
     public static capitalizeFirstLetter = (string: string): string => {
         return string?.charAt(0).toUpperCase() + string?.slice(1).toLowerCase();
     };
-};
+}

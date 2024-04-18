@@ -2,9 +2,10 @@ import { Request, Response, NextFunction } from 'express';
 import { ErrorCode } from 'types/ErrorCode';
 import { TranslationKey } from 'src/types/TranslationKey';
 import { IUserSession } from 'interfaces/IUserSession';
+import Logger from 'src/helper/logger/Logger';
 
-const SessionService = require('../services/session/SessionService');
-const _logger = require('../helper/logger/Logger').Of('SessionVerify');
+import SessionService from '../services/session/SessionService';
+const _logger = Logger.Of('SessionVerify');
 
 const extractSession = (req: Request): IUserSession => {
     // @ts-ignore
@@ -24,4 +25,4 @@ const sessionVerify = (req: Request, res: Response, next: NextFunction) => {
     }
 };
 
-module.exports = sessionVerify;
+export default sessionVerify;

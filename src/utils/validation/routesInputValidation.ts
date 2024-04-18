@@ -5,7 +5,7 @@ import { ErrorCode } from 'types/ErrorCode';
 
 const ResponseBuilder = require('../../helper/responseBuilder/ResponseBuilder');
 
-module.exports = function routesInputValidation(validations: any[]) {
+export default function routesInputValidation(validations: any[]) {
     return async (req: Request, res: Response, next: NextFunction) => {
         await Promise.all(validations.map((validation) => validation.run(req)));
 
@@ -23,8 +23,9 @@ module.exports = function routesInputValidation(validations: any[]) {
 
         res.status(400).json(responseBuilder.build());
     };
-};
+}
 
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
 const getErrorType = (path: string): ErrorCode => {
     switch (path) {
         case 'code':

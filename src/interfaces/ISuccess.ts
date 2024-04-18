@@ -1,3 +1,3 @@
-interface ISuccess<T> {
+export interface ISuccess<T> {
     value: T;
 }

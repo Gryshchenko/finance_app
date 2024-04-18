@@ -9,4 +9,4 @@ const config = {
     host: process.env.DB_HOST,
     cert: caCert,
 };
-module.exports = config;
+export default config;

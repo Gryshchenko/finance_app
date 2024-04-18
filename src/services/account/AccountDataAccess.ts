@@ -4,7 +4,7 @@ import { LoggerBase } from 'src/helper/logger/LoggerBase';
 import { IAccount } from 'interfaces/IAccount';
 import { ICreateAccount } from 'interfaces/ICreateAccount';
 
-module.exports = class AccountDataService extends LoggerBase implements IAccountDataAccess {
+export default class AccountDataService extends LoggerBase implements IAccountDataAccess {
     private readonly _db: IDatabaseConnection;
     public constructor(db: IDatabaseConnection) {
         super();
@@ -26,4 +26,4 @@ module.exports = class AccountDataService extends LoggerBase implements IAccount
             throw error;
         }
     }
-};
+}

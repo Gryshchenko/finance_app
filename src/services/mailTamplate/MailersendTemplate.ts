@@ -1,6 +1,6 @@
 import { IMailTemplateEngine } from 'interfaces/IMailTemplateEngine';
 
-module.exports = class MailTemplateEngine implements IMailTemplateEngine {
+export default class MailTemplateEngine implements IMailTemplateEngine {
     constructor() {}
 
     getConfirmMailTemplate(): string {
@@ -9,4 +9,4 @@ module.exports = class MailTemplateEngine implements IMailTemplateEngine {
     getForgetPasswordTemplate(): string {
         return 'z3m5jgrnpeoldpyo';
     }
-};
+}

@@ -1,12 +1,12 @@
 const Utils = require('../../utils/Utils');
-const Logger = require('../../helper/logger/Logger');
+import Logger from 'src/helper/logger/Logger';
 const Parameter = require('./Parameter');
 
 import { TranslationUnit } from './TranslationUnit';
 import { TranslationLoader } from './TranslationLoader';
 
-module.exports = class Translations {
-    private static LOGGER: typeof Logger = Logger.Of('Translations');
+export default class Translations {
+    private static LOGGER = Logger.Of('Translations');
     private static TEXTS: Record<string, any> = {};
     private static ENG_TEXTS: Record<string, any> = {};
     private static LANG_CODE: string;
@@ -144,4 +144,4 @@ module.exports = class Translations {
         }
         return result;
     }
-};
+}

@@ -1,8 +1,9 @@
 import { IEmailConfirmationDataAccess } from 'interfaces/IEmailConfirmationDataAccess';
 import { IDatabaseConnection } from 'interfaces/IDatabaseConnection';
 import { LoggerBase } from 'src/helper/logger/LoggerBase';
+import { IEmailConfirmationData } from 'interfaces/IEmailConfirmationData';
 
-module.exports = class EmailConfDataService extends LoggerBase implements IEmailConfirmationDataAccess {
+export default class EmailConfDataService extends LoggerBase implements IEmailConfirmationDataAccess {
     private readonly _db: IDatabaseConnection;
 
     public constructor(db: IDatabaseConnection) {
@@ -104,4 +105,4 @@ module.exports = class EmailConfDataService extends LoggerBase implements IEmail
             throw error;
         }
     }
-};
+}

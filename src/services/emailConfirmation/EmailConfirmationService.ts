@@ -6,6 +6,9 @@ import { IMailService } from 'interfaces/IMailService';
 import { IMailTemplateService } from 'interfaces/IMailTemplateService';
 import { TranslationKey } from 'types/TranslationKey';
 import { IUserService } from 'interfaces/IUserService';
+import { IFailure } from 'interfaces/IFailure';
+import { ISuccess } from 'interfaces/ISuccess';
+import { IEmailConfirmationData } from 'interfaces/IEmailConfirmationData';
 
 require('dotenv').config();
 
@@ -15,7 +18,7 @@ const Success = require('../../utils/success/Success');
 const Failure = require('../../utils/failure/Failure');
 const { randomBytes } = require('crypto');
 
-module.exports = class EmailConfirmationService extends LoggerBase implements IEmailConfirmationService {
+export default class EmailConfirmationService extends LoggerBase implements IEmailConfirmationService {
     protected emailConfirmationDataAccess: IEmailConfirmationDataAccess;
     protected mailService: IMailService;
     protected mailTemplateService: IMailTemplateService;
@@ -35,7 +38,7 @@ module.exports = class EmailConfirmationService extends LoggerBase implements IE
 
     private createConfirmationKey(): number {
         const buffer = randomBytes(4);
-        let number = buffer.readUInt32BE(0);
+        const number = buffer.readUInt32BE(0);
         return Number(number.toString().padStart(8, '0').substring(0, 8));
     }
     private async sendConfirmationMailToUser(email: string, confirmationCode: number): Promise<ISuccess<unknown> | IFailure> {
@@ -145,4 +148,4 @@ module.exports = class EmailConfirmationService extends LoggerBase implements IE
     async getUserConfirmation(userId: number, email: string): Promise<IEmailConfirmationData> {
         return await this.emailConfirmationDataAccess.getUserConfirmation(userId, email);
     }
-};
+}

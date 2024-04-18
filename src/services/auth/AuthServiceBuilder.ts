@@ -1,12 +1,12 @@
-const AuthService = require('./AuthService');
+import AuthService from './AuthService';
 const DatabaseConnectionAuth = require('../../repositories/DatabaseConnection');
 const dbConfigAuth = require('../../config/dbConfig');
 
-module.exports = class AuthServiceBuilder {
+export default class AuthServiceBuilder {
     public static build() {
         const databaseConnection = new DatabaseConnectionAuth(dbConfigAuth);
         return new AuthService({
             userService: new UserService(new UserDataAccess(databaseConnection)),
         });
     }
-};
+}

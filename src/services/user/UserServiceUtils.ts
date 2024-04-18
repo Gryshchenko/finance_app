@@ -1,7 +1,7 @@
 const CryptoJS = require('crypto-js');
 const cryptoModule = require('crypto');
 
-module.exports = class UserService {
+export default class UserService {
     public static getRandomSalt(): string {
         return cryptoModule.randomBytes(16).toString('hex');
     }
@@ -16,4 +16,4 @@ module.exports = class UserService {
         });
         return key.toString(CryptoJS.enc.Hex);
     }
-};
+}

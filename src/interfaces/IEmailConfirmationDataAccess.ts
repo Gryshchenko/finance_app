@@ -1,3 +1,5 @@
+import { IEmailConfirmationData } from './IEmailConfirmationData';
+
 export interface IEmailConfirmationDataAccess {
     getUserConfirmation(userId: number, email: string): Promise<IEmailConfirmationData>;
     createUserConfirmation(payload: {

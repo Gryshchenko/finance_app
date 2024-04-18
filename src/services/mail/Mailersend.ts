@@ -9,9 +9,9 @@ const Sender = require('mailersend').Sender;
 const EmailParams = require('mailersend').EmailParams;
 const MailerSendSource = require('mailersend').MailerSend;
 
-module.exports = class MailerSend implements IMailEngine {
+export default class MailerSend implements IMailEngine {
     private mailerSend: MailerSendType;
-    constructor(apiKey: string) {
+    constructor(apiKey: string | undefined) {
         this.mailerSend = new MailerSendSource({
             apiKey,
         });
@@ -44,4 +44,4 @@ module.exports = class MailerSend implements IMailEngine {
             payload: response.body,
         };
     }
-};
+}

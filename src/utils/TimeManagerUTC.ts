@@ -1,4 +1,4 @@
-module.exports = class TimeManagerUTC {
+export default class TimeManagerUTC {
     private currentTime: Date;
 
     constructor() {
@@ -31,4 +31,4 @@ module.exports = class TimeManagerUTC {
     isFirstDateLessThanSecond(date1: Date, date2: Date): boolean {
         return date1.getTime() < date2.getTime();
     }
-};
+}

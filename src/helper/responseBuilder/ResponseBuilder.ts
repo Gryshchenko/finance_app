@@ -7,7 +7,7 @@ interface IResponse<T = unknown> {
     errors: IResponseError[] | null;
 }
 
-module.exports = class ResponseBuilder<T = unknown> {
+export default class ResponseBuilder<T = unknown> {
     protected _response: IResponse = {
         status: null,
         data: {},
@@ -49,4 +49,4 @@ module.exports = class ResponseBuilder<T = unknown> {
         this.reset();
         return response;
     }
-};
+}

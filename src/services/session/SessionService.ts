@@ -12,9 +12,9 @@ require('dotenv').config();
 const session = require('express-session');
 const redis = require('redis');
 const RedisStore = require('connect-redis').default;
-const Logger = require('../../helper/logger/Logger');
+import Logger from 'src/helper/logger/Logger';
 
-module.exports = class SessionService {
+export default class SessionService {
     public static deleteSession(req: Request, res: Response, cb: () => void): void {
         const _logger = Logger.Of('deleteSession');
         _logger.info('start session delete procedure');
@@ -117,7 +117,7 @@ module.exports = class SessionService {
         res: Response,
         user: IUser,
         token: string,
-        logger: typeof Logger,
+        logger: Logger,
         responseBuilder: typeof ResponseBuilder,
         handleSuccess: () => void,
         handleError?: (error: string) => void,
@@ -161,4 +161,4 @@ module.exports = class SessionService {
             });
         });
     }
-};
+}

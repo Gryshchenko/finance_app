@@ -3,7 +3,7 @@ import { Knex } from 'knex';
 
 const knex = require('knex');
 
-module.exports = class DatabaseConnection implements IDatabaseConnection {
+export default class DatabaseConnection implements IDatabaseConnection {
     private _db: Knex;
 
     public constructor({
@@ -47,4 +47,4 @@ module.exports = class DatabaseConnection implements IDatabaseConnection {
     public async close(): Promise<void> {
         await this._db.destroy();
     }
-};
+}

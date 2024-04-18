@@ -12,8 +12,10 @@ import { IUser } from 'interfaces/IUser';
 import { ErrorCode } from 'types/ErrorCode';
 import { IProfileService } from 'interfaces/IProfileService';
 import { RoleType } from 'types/RoleType';
+import { IFailure } from 'interfaces/IFailure';
+import { ISuccess } from 'interfaces/ISuccess';
 
-const preMadeData = require(`../../config/create_user_initial`);
+const preMadeData = require('../../config/create_user_initial');
 const Success = require('../../utils/success/Success');
 const Failure = require('../../utils/failure/Failure');
 const TranslationLoaderImpl = require('../translations/TranslationLoaderImpl');
@@ -28,7 +30,7 @@ interface IDefaultData {
     categories: string[];
 }
 
-module.exports = class UserRegistrationService extends LoggerBase {
+export default class UserRegistrationService extends LoggerBase {
     protected userService: IUserService;
     protected accountService: IAccountService;
     protected categoryService: ICategoryService;
@@ -149,4 +151,4 @@ module.exports = class UserRegistrationService extends LoggerBase {
             return new Failure(ErrorCode.SIGNUP_INITIAL);
         }
     }
-};
+}

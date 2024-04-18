@@ -1,4 +1,4 @@
-interface IEmailConfirmationData {
+export interface IEmailConfirmationData {
     confirmationId: number;
     userId: number;
     email: string;

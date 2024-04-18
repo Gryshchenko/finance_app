@@ -1,7 +1,7 @@
 import { LanguageType } from 'types/LanguageType';
 import { TranslationLoader } from 'src/services/translations/TranslationLoader';
 
-module.exports = class TranslationLoaderImpl implements TranslationLoader {
+export default class TranslationLoaderImpl implements TranslationLoader {
     private static _instance: TranslationLoader;
 
     public static instance(): TranslationLoader {
@@ -15,4 +15,4 @@ module.exports = class TranslationLoaderImpl implements TranslationLoader {
                 return import('../../locales/' + LanguageType.US + '.json').then((response) => response);
             });
     }
-};
+}

@@ -4,9 +4,9 @@ import { ISendMailResponse } from 'interfaces/ISendMailResponse';
 import { IMailEngine } from 'interfaces/IMailEngine';
 import { LoggerBase } from 'src/helper/logger/LoggerBase';
 
-const MailEngineBuilder = require('./MailEngineBuilder');
+import MailEngineBuilder from './MailEngineBuilder';
 
-module.exports = class MailService extends LoggerBase implements IMailService {
+export default class MailService extends LoggerBase implements IMailService {
     private engine: IMailEngine;
     public constructor() {
         super();
@@ -19,4 +19,4 @@ module.exports = class MailService extends LoggerBase implements IMailService {
         this._logger.info('receive mail response');
         return response;
     }
-};
+}

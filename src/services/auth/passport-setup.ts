@@ -9,7 +9,7 @@ const options = {
     audience: 'myapp.net',
 };
 
-module.exports = (passport: any) => {
+const passportSetup = (passport: any) => {
     passport.use(
         new JwtStrategy(options, (jwt_payload: any, done: any) => {
             console.log(1, jwt_payload);
@@ -28,3 +28,5 @@ module.exports = (passport: any) => {
         }),
     );
 };
+
+export default passportSetup;

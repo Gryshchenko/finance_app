@@ -5,6 +5,8 @@ import { LoggerBase } from 'src/helper/logger/LoggerBase';
 import { IAuthService } from 'interfaces/IAuthService';
 import { IUser } from 'interfaces/IUser';
 import { ErrorCode } from 'types/ErrorCode';
+import { ISuccess } from 'interfaces/ISuccess';
+import { IFailure } from 'interfaces/IFailure';
 
 require('dotenv').config();
 const Success = require('../../utils/success/Success');
@@ -12,7 +14,7 @@ const Failure = require('../../utils/failure/Failure');
 const UserServiceUtils = require('../user/UserServiceUtils');
 const jwt = require('jsonwebtoken');
 
-module.exports = class AuthService extends LoggerBase implements IAuthService {
+export default class AuthService extends LoggerBase implements IAuthService {
     protected userService: IUserService;
     constructor(services: { userService: IUserService }) {
         super();
@@ -46,4 +48,4 @@ module.exports = class AuthService extends LoggerBase implements IAuthService {
         const timeLeft = expirationTime - currentTime;
         return timeLeft < 10 * 60;
     }
-};
+}

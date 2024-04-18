@@ -1,18 +1,18 @@
-const https = require('https');
-const fs = require('fs');
-const path = require('path');
+import express, { Request, Response } from 'express';
+import https from 'https';
+import fs from 'fs';
+import path from 'path';
 
 const passport = require('passport');
-import express, { Request, Response } from 'express';
-const helmet = require('helmet');
-const rateLimit = require('express-rate-limit');
+import helmet from 'helmet';
+import rateLimit from 'express-rate-limit';
 
-const passportSetup = require('./services/auth/passport-setup');
-const SessionService = require('./services/session/SessionService');
+import passportSetup from './services/auth/passport-setup';
+import SessionService from './services/session/SessionService';
 
-const authRouter = require('./routes/auth');
-const registerRouter = require('./routes/register');
-const profileRouter = require('./routes/profile');
+import authRouter from './routes/auth';
+import registerRouter from './routes/register';
+import profileRouter from './routes/profile';
 
 require('dotenv').config();
 const app = express();
@@ -50,7 +50,8 @@ app.use('/profile', profileRouter);
 app.use('/register', registerRouter);
 
 app.get('/', (req: Request, res: Response) => {
-    res.send('Hello World!');
+    console.log('hello!');
+    res.send('Hello World!!!');
 });
 
 const httpsServer = https.createServer(credentials, app);

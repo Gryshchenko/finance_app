@@ -4,7 +4,7 @@ import { LoggerBase } from 'src/helper/logger/LoggerBase';
 import { ICreateCategory } from 'interfaces/ICreateCategory';
 import { ICategory } from 'interfaces/ICategory';
 
-module.exports = class CategoryDataService extends LoggerBase implements ICategoryDataAccess {
+export default class CategoryDataService extends LoggerBase implements ICategoryDataAccess {
     private readonly _db: IDatabaseConnection;
     public constructor(db: IDatabaseConnection) {
         super();
@@ -26,4 +26,4 @@ module.exports = class CategoryDataService extends LoggerBase implements ICatego
             throw error;
         }
     }
-};
+}

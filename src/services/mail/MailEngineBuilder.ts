@@ -2,10 +2,10 @@ import { IMailEngine } from 'interfaces/IMailEngine';
 import * as process from 'process';
 require('dotenv').config();
 
-const MailerSend = require('./Mailersend');
+import MailerSend from './Mailersend';
 
-module.exports = class MailEngineBuilder {
+export default class MailEngineBuilder {
     public static build(): IMailEngine {
         return new MailerSend(process.env.MAIL_API_KEY);
     }
-};
+}

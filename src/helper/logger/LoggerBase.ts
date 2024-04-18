@@ -1,4 +1,4 @@
-const Logger = require('./Logger');
+import Logger from './Logger';
 
 export abstract class LoggerBase {
     // @ts-ignore

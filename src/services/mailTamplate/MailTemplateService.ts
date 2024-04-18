@@ -2,13 +2,13 @@ import { LoggerBase } from 'src/helper/logger/LoggerBase';
 import { IMailTemplateService } from 'interfaces/IMailTemplateService';
 import { IMailTemplateEngine } from 'interfaces/IMailTemplateEngine';
 
-const MailTemplateBuilder = require('./MailTemplateBuilder');
+import MailEngineBuilder from './MailTemplateBuilder';
 
-module.exports = class MailTemplateService extends LoggerBase implements IMailTemplateService {
+export default class MailTemplateService extends LoggerBase implements IMailTemplateService {
     private engine: IMailTemplateEngine;
     public constructor() {
         super();
-        this.engine = MailTemplateBuilder.build();
+        this.engine = MailEngineBuilder.build();
     }
 
     public getConfirmMailTemplate(): string {
@@ -17,4 +17,4 @@ module.exports = class MailTemplateService extends LoggerBase implements IMailTe
     getForgetPasswordTemplate(): string {
         return this.engine.getForgetPasswordTemplate();
     }
-};
+}

@@ -4,7 +4,7 @@ import { LoggerBase } from 'src/helper/logger/LoggerBase';
 import { IProfile } from 'interfaces/IProfile';
 import { LanguageType } from 'types/LanguageType';
 
-module.exports = class ProfileDataService extends LoggerBase implements IProfileDataAccess {
+export default class ProfileDataService extends LoggerBase implements IProfileDataAccess {
     private readonly _db: IDatabaseConnection;
     public constructor(db: IDatabaseConnection) {
         super();
@@ -35,4 +35,4 @@ module.exports = class ProfileDataService extends LoggerBase implements IProfile
             throw error;
         }
     }
-};
+}

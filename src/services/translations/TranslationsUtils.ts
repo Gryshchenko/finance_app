@@ -1,6 +1,6 @@
 import { LanguageType } from 'types/LanguageType';
 
-module.exports = class TranslationsUtils {
+export default class TranslationsUtils {
     public static convertToSupportLocale(locale: string): LanguageType {
         let language: string;
         if (locale?.includes('_')) {
@@ -75,4 +75,4 @@ module.exports = class TranslationsUtils {
                 return LanguageType.US;
         }
     }
-};
+}

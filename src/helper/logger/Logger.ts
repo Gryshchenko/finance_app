@@ -1,4 +1,4 @@
-const Utils = require('../../utils/Utils');
+import Utils from 'src/utils/Utils';
 
 enum LogLevel {
     DISABLED,
@@ -25,7 +25,7 @@ const deserialize = (logLevel: string): LogLevel => {
     return LogLevel.DISABLED;
 };
 
-module.exports = class Logger {
+export default class Logger {
     private static LOG_LEVEL: LogLevel = LogLevel.DEBUG;
     private name: string;
 
@@ -101,4 +101,4 @@ module.exports = class Logger {
             date.getMilliseconds().toString()
         );
     }
-};
+}

@@ -3,7 +3,7 @@ import { IDatabaseConnection } from 'interfaces/IDatabaseConnection';
 import { LoggerBase } from 'src/helper/logger/LoggerBase';
 import { ICurrency } from 'interfaces/ICurrency';
 
-module.exports = class CurrencyDataService extends LoggerBase implements ICurrencyDataAccess {
+export default class CurrencyDataService extends LoggerBase implements ICurrencyDataAccess {
     private readonly _db: IDatabaseConnection;
     public constructor(db: IDatabaseConnection) {
         super();
@@ -35,4 +35,4 @@ module.exports = class CurrencyDataService extends LoggerBase implements ICurren
             throw error;
         }
     }
-};
+}

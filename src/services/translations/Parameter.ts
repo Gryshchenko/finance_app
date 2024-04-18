@@ -1,4 +1,6 @@
-module.exports = class Parameter {
+import Utils from '../../utils/Utils';
+
+export default class Parameter {
     private readonly _key: string;
     private readonly _value: any;
 
@@ -40,4 +42,4 @@ module.exports = class Parameter {
     public get value(): any {
         return this._value;
     }
-};
+}

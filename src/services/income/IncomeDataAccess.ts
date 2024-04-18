@@ -4,7 +4,7 @@ import { LoggerBase } from 'src/helper/logger/LoggerBase';
 import { IIncome } from 'interfaces/IIncome';
 import { ICreateIncome } from 'interfaces/ICreateIncome';
 
-module.exports = class IncomeDataService extends LoggerBase implements IIncomeDataAccess {
+export default class IncomeDataService extends LoggerBase implements IIncomeDataAccess {
     private readonly _db: IDatabaseConnection;
     public constructor(db: IDatabaseConnection) {
         super();
@@ -26,4 +26,4 @@ module.exports = class IncomeDataService extends LoggerBase implements IIncomeDa
             throw error;
         }
     }
-};
+}

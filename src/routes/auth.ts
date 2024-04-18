@@ -1,56 +1,58 @@
-import { Request, Response } from 'express';
+import express, { Request, Response } from 'express';
 import { ErrorCode } from 'types/ErrorCode';
 import { ResponseStatusType } from 'types/ResponseStatusType';
 import { TranslationKey } from 'types/TranslationKey';
 
-const { body, validationResult } = require('express-validator');
-const routesInputValidation = require('../utils/validation/routesInputValidation');
-const SessionService = require('../services/session/SessionService');
-const tokenVerify = require('../middleware/tokenVerify');
-const ensureGuest = require('../middleware/ensureGuest');
-const sessionVerify = require('../middleware/sessionVerify');
-const ResponseBuilder = require('../helper/responseBuilder/ResponseBuilder');
-const AuthServiceBuilder = require('../services/auth/AuthServiceBuilder');
-const Logger = require('../helper/logger/Logger');
-const express = require('express');
-const Success = require('../utils/success/Success');
-const Failure = require('../utils/failure/Failure');
-const router = express.Router();
+import { body, validationResult } from 'express-validator';
+import routesInputValidation from '../utils/validation/routesInputValidation';
+import SessionService from '../services/session/SessionService';
+import tokenVerify from '../middleware/tokenVerify';
+import ensureGuest from '../middleware/ensureGuest';
+import sessionVerify from '../middleware/sessionVerify';
+import ResponseBuilder from 'src/helper/responseBuilder/ResponseBuilder';
+import AuthServiceBuilder from 'src/services/auth/AuthServiceBuilder';
+import Logger from '../helper/logger/Logger';
+import Success from 'src/utils/success/Success';
+import Failure from 'src/utils/failure/Failure';
+import { IFailure } from 'interfaces/IFailure';
+import { IUser } from 'interfaces/IUser';
+import { ISuccess } from 'interfaces/ISuccess';
+const authRouter = express.Router();
 
-router.get('/logout', tokenVerify, sessionVerify, (req: Request, res: Response) => {
+authRouter.get('/logout', tokenVerify, sessionVerify, (req: Request, res: Response) => {
     const responseBuilder = new ResponseBuilder();
     SessionService.deleteSession(req, res, () => {
         res.status(200).json(responseBuilder.setStatus(ResponseStatusType.OK).build());
     });
 });
 
-router.post(
+authRouter.post(
     '/login',
     ensureGuest,
     routesInputValidation([body('password').isString(), body('email').isString()]),
     async (req: Request, res: Response) => {
         const responseBuilder = new ResponseBuilder();
-        const _logger = Logger.Of('AuthRouteLogin');
+        const _logger: Logger = Logger.Of('AuthRouteLogin');
         try {
             const errors = validationResult(req);
             if (!errors.isEmpty()) {
                 throw new Error('validation error');
             }
-
-            const response = await AuthServiceBuilder.build().login(req.body.email, req.body.password);
-            if (typeof response === Success) {
-                const { user, token } = response.value;
-                SessionService.handleSessionRegeneration(req, res, user, token, _logger, responseBuilder, () => {
-                    res.status(200).json(
-                        responseBuilder
-                            .setStatus(ResponseStatusType.OK)
-                            .setData({ email: user.email, status: user.status })
-                            .build(),
-                    );
-                });
-            } else if (typeof response === Failure) {
-                throw new Error(response.error);
-            }
+            // ***** Need to check types ****
+            // const response = await AuthServiceBuilder.build().login(req.body.email, req.body.password);
+            // if (typeof response === Success) {
+            //     const { user, token } = response.value;
+            //     SessionService.handleSessionRegeneration(req, res, user, token, _logger, responseBuilder, () => {
+            //         res.status(200).json(
+            //             responseBuilder
+            //                 .setStatus(ResponseStatusType.OK)
+            //                 .setData({ email: user.email, status: user.status })
+            //                 .build(),
+            //         );
+            //     });
+            // } else if (typeof response === typeof Failure) {
+            //     throw new Error(response.error);
+            // }
         } catch (error) {
             _logger.error('request user data error: ' + error);
             return res
@@ -63,4 +65,5 @@ router.post(
         }
     },
 );
-module.exports = router;
+
+export default authRouter;

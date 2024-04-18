@@ -4,7 +4,7 @@ import { IUserService } from 'interfaces/IUserService';
 
 const UserServiceUtils = require('./UserServiceUtils');
 
-module.exports = class UserService implements IUserService {
+export default class UserService implements IUserService {
     private _userDataAccess: IUserDataAccess;
     public constructor(userDataAccess: IUserDataAccess) {
         this._userDataAccess = userDataAccess;
@@ -22,4 +22,4 @@ module.exports = class UserService implements IUserService {
     public async updateUserEmail(userId: number, email: string): Promise<IUser | undefined> {
         return await this._userDataAccess.updateUserEmail(userId, email);
     }
-};
+}

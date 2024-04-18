@@ -7,11 +7,13 @@ import { IMailService } from 'interfaces/IMailService';
 import { IMailTemplateService } from 'interfaces/IMailTemplateService';
 import { IUserService } from 'interfaces/IUserService';
 import { LoggerBase } from 'src/helper/logger/LoggerBase';
+import { IFailure } from 'interfaces/IFailure';
+import { ISuccess } from 'interfaces/ISuccess';
 
 const Success = require('../../utils/success/Success');
 const Failure = require('../../utils/failure/Failure');
 
-module.exports = class ProfileService extends LoggerBase implements IProfileService {
+export default class ProfileService extends LoggerBase implements IProfileService {
     private _profileDataAccess: IProfileDataAccess;
     protected emailConfirmationDataAccess: IEmailConfirmationDataAccess;
     protected mailService: IMailService;
@@ -62,4 +64,4 @@ module.exports = class ProfileService extends LoggerBase implements IProfileServ
         //     return new Failure(error, ErrorCode.EMAIL_VERIFICATION_CODE_INVALID, false);
         // }
     }
-};
+}

@@ -1,9 +1,9 @@
 import { IMailTemplateEngine } from 'interfaces/IMailTemplateEngine';
 
-const MailerSendTemplate = require('./MailersendTemplate');
+import MailTemplateEngine from './MailersendTemplate';
 
-module.exports = class MailEngineBuilder {
+export default class MailEngineBuilder {
     public static build(): IMailTemplateEngine {
-        return new MailerSendTemplate();
+        return new MailTemplateEngine();
     }
-};
+}
