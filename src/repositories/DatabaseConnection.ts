@@ -14,12 +14,12 @@ export default class DatabaseConnection implements IDatabaseConnection {
         password,
         cert,
     }: {
-        host: string;
-        port: number;
-        database: string;
-        user: string;
-        password: string;
-        cert: string;
+        host: string | undefined;
+        port: number | undefined;
+        database: string | undefined;
+        user: string | undefined;
+        password: string | undefined;
+        cert: string | undefined;
     }) {
         this._db = knex({
             client: 'pg',

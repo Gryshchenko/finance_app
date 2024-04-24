@@ -5,8 +5,8 @@ export default class TimeManagerUTC {
         this.currentTime = new Date();
     }
 
-    getCurrentTime(): string {
-        return this.currentTime.toISOString();
+    getCurrentTime(): Date {
+        return this.currentTime;
     }
 
     addTime(hours: number = 0, minutes: number = 0, seconds: number = 0): void {

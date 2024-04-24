@@ -2,8 +2,7 @@ import { NextFunction, Request, Response } from 'express';
 import { validationResult } from 'express-validator';
 import { ResponseStatusType } from 'types/ResponseStatusType';
 import { ErrorCode } from 'types/ErrorCode';
-
-const ResponseBuilder = require('../../helper/responseBuilder/ResponseBuilder');
+import ResponseBuilder from 'src/helper/responseBuilder/ResponseBuilder';
 
 export default function routesInputValidation(validations: any[]) {
     return async (req: Request, res: Response, next: NextFunction) => {
@@ -15,6 +14,7 @@ export default function routesInputValidation(validations: any[]) {
         }
 
         const responseBuilder = new ResponseBuilder().setStatus(ResponseStatusType.INTERNAL).setErrors(
+            // @ts-ignore
             errors.array().map((value, index, array) => ({
                 // errorCode: getErrorType(err.param),
                 // msg: err.msg,

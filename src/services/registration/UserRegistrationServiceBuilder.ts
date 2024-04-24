@@ -1,3 +1,5 @@
+import config from 'src/config/dbConfig';
+
 const UserRegistrationService = require('./UserRegistrationService');
 import MailService from '../mail/MailService';
 import AccountService from '../account/AccountService';
@@ -18,11 +20,10 @@ import IncomeDataAccess from '../income/IncomeDataAccess';
 const EmailConfirmationDataAccess = require('../emailConfirmation/EmailConfirmationDataAccess');
 
 import DatabaseConnection from 'src/repositories/DatabaseConnection';
-const dbConfig = require('../../config/dbConfig');
 
 export default class UserRegistrationServiceBuilder {
     public static build() {
-        const databaseConnection = new DatabaseConnection(dbConfig);
+        const databaseConnection = new DatabaseConnection(config);
         return new UserRegistrationService({
             userService: new UserService(new UserDataAccess(databaseConnection)),
             accountService: new AccountService(new AccountDataAccess(databaseConnection)),

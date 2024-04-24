@@ -1,9 +1,9 @@
-const Utils = require('../../utils/Utils');
 import Logger from 'src/helper/logger/Logger';
-const Parameter = require('./Parameter');
 
 import { TranslationUnit } from './TranslationUnit';
 import { TranslationLoader } from './TranslationLoader';
+import Utils from 'src/utils/Utils';
+import Parameter from 'src/services/translations/Parameter';
 
 export default class Translations {
     private static LOGGER = Logger.Of('Translations');

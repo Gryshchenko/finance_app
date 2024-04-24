@@ -14,14 +14,14 @@ import { IProfileService } from 'interfaces/IProfileService';
 import { RoleType } from 'types/RoleType';
 import { IFailure } from 'interfaces/IFailure';
 import { ISuccess } from 'interfaces/ISuccess';
+import Failure from 'src/utils/failure/Failure';
+import TranslationsUtils from 'src/services/translations/TranslationsUtils';
+import Translations from 'src/services/translations/Translations';
+import TranslationLoaderImpl from 'src/services/translations/TranslationLoaderImpl';
+import AuthService from 'src/services/auth/AuthService';
+import Success from 'src/utils/success/Success';
 
 const preMadeData = require('../../config/create_user_initial');
-const Success = require('../../utils/success/Success');
-const Failure = require('../../utils/failure/Failure');
-const TranslationLoaderImpl = require('../translations/TranslationLoaderImpl');
-const TranslationsUtils = require('../translations/TranslationsUtils');
-const Translations = require('../translations/Translations');
-const AuthService = require('../auth/AuthService');
 
 interface IDefaultData {
     group: string;
@@ -108,7 +108,7 @@ export default class UserRegistrationService extends LoggerBase {
             });
             return new Success({ email });
         } catch (error) {
-            return new Failure(error, ErrorCode.EMAIL_VERIFICATION_CODE_INVALID, false);
+            return new Failure(String(error), ErrorCode.EMAIL_VERIFICATION_CODE_INVALID, false);
         }
     }
 
@@ -117,7 +117,7 @@ export default class UserRegistrationService extends LoggerBase {
             const profile = await this.profileService.getProfile(userId);
             if (!profile) {
                 this._logger.info('cant find profile');
-                return new Failure(ErrorCode.SIGNUP_INITIAL);
+                return new Failure('cant find profile', ErrorCode.SIGNUP_INITIAL);
             }
             const translatedDefaultData = this.getTranslatedDefaultData(profile?.locale);
             await Promise.all([
@@ -145,10 +145,11 @@ export default class UserRegistrationService extends LoggerBase {
                     })),
                 ),
             ]);
-            return new Success();
+            // @ts-ignore
+            return new Success(undefined);
         } catch (e) {
             this._logger.info('failed create initial user data error: ' + e);
-            return new Failure(ErrorCode.SIGNUP_INITIAL);
+            return new Failure('failed create initial user data error: ' + e, ErrorCode.SIGNUP_INITIAL);
         }
     }
 }

@@ -1,4 +1,4 @@
-const Parameter = require('./Parameter');
+import Parameter from 'src/services/translations/Parameter';
 
 export interface TranslationUnit {
     trKey?: string;

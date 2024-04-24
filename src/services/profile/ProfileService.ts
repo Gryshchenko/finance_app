@@ -9,9 +9,7 @@ import { IUserService } from 'interfaces/IUserService';
 import { LoggerBase } from 'src/helper/logger/LoggerBase';
 import { IFailure } from 'interfaces/IFailure';
 import { ISuccess } from 'interfaces/ISuccess';
-
-const Success = require('../../utils/success/Success');
-const Failure = require('../../utils/failure/Failure');
+import Success from 'src/utils/success/Success';
 
 export default class ProfileService extends LoggerBase implements IProfileService {
     private _profileDataAccess: IProfileDataAccess;
@@ -59,7 +57,7 @@ export default class ProfileService extends LoggerBase implements IProfileServic
         //     if (newEmail !== originEmail) {
         //         await this.userService.updateUserEmail(userId, userConfirmationData.email);
         //     }
-        return new Success();
+        return new Success(null);
         // } catch (error) {
         //     return new Failure(error, ErrorCode.EMAIL_VERIFICATION_CODE_INVALID, false);
         // }

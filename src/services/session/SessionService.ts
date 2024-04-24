@@ -5,14 +5,13 @@ import { TranslationKey } from 'types/TranslationKey';
 import { IUser } from 'interfaces/IUser';
 import { IUserSession } from 'interfaces/IUserSession';
 import { RoleType } from 'types/RoleType';
-
-const ResponseBuilder = require('../../helper/responseBuilder/ResponseBuilder');
+import Logger from 'src/helper/logger/Logger';
+import ResponseBuilder from 'src/helper/responseBuilder/ResponseBuilder';
 
 require('dotenv').config();
 const session = require('express-session');
 const redis = require('redis');
 const RedisStore = require('connect-redis').default;
-import Logger from 'src/helper/logger/Logger';
 
 export default class SessionService {
     public static deleteSession(req: Request, res: Response, cb: () => void): void {
@@ -118,7 +117,7 @@ export default class SessionService {
         user: IUser,
         token: string,
         logger: Logger,
-        responseBuilder: typeof ResponseBuilder,
+        responseBuilder: ResponseBuilder,
         handleSuccess: () => void,
         handleError?: (error: string) => void,
     ): void {

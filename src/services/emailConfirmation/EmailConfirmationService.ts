@@ -9,13 +9,13 @@ import { IUserService } from 'interfaces/IUserService';
 import { IFailure } from 'interfaces/IFailure';
 import { ISuccess } from 'interfaces/ISuccess';
 import { IEmailConfirmationData } from 'interfaces/IEmailConfirmationData';
+import Translations from 'src/services/translations/Translations';
+import Success from 'src/utils/success/Success';
+import TimeManagerUTC from 'src/utils/TimeManagerUTC';
+import Failure from 'src/utils/failure/Failure';
 
 require('dotenv').config();
 
-const Translations = require('../translations/Translations');
-const TimeManagerUTC = require('../../utils/TimeManagerUTC');
-const Success = require('../../utils/success/Success');
-const Failure = require('../../utils/failure/Failure');
 const { randomBytes } = require('crypto');
 
 export default class EmailConfirmationService extends LoggerBase implements IEmailConfirmationService {
@@ -88,7 +88,7 @@ export default class EmailConfirmationService extends LoggerBase implements IEma
                 return new Failure('Already send', ErrorCode.EMAIL_VERIFICATION_ALREADY_SEND, true);
             }
         } catch (error) {
-            return new Failure(error, ErrorCode.EMAIL_CANT_SEND, false);
+            return new Failure(String(error), ErrorCode.EMAIL_CANT_SEND, false);
         }
     }
 
@@ -105,7 +105,7 @@ export default class EmailConfirmationService extends LoggerBase implements IEma
             const mailSendResponse = await this.sendConfirmationMailToUser(email, confirmationCode);
             if (mailSendResponse instanceof Success) {
                 this._logger.info('confirmation mail send');
-                return new Success();
+                return new Success(mailSendResponse.value);
             } else {
                 this._logger.info('confirmation mail send failed');
                 return new Failure('Cant send mail');
@@ -139,7 +139,7 @@ export default class EmailConfirmationService extends LoggerBase implements IEma
                 return new Failure('Already send', ErrorCode.EMAIL_VERIFICATION_ALREADY_SEND, true);
             }
         } catch (error) {
-            return new Failure(error, ErrorCode.EMAIL_CANT_SEND, false);
+            return new Failure(String(error), ErrorCode.EMAIL_CANT_SEND, false);
         }
     }
     async confirmUserMail(payload: { userId: number; email: string; confirmationId: number }): Promise<IEmailConfirmationData> {

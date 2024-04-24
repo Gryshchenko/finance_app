@@ -7,11 +7,11 @@ import { IUser } from 'interfaces/IUser';
 import { ErrorCode } from 'types/ErrorCode';
 import { ISuccess } from 'interfaces/ISuccess';
 import { IFailure } from 'interfaces/IFailure';
+import Failure from 'src/utils/failure/Failure';
+import Success from 'src/utils/success/Success';
+import UserServiceUtils from 'src/services/user/UserServiceUtils';
 
 require('dotenv').config();
-const Success = require('../../utils/success/Success');
-const Failure = require('../../utils/failure/Failure');
-const UserServiceUtils = require('../user/UserServiceUtils');
 const jwt = require('jsonwebtoken');
 
 export default class AuthService extends LoggerBase implements IAuthService {
@@ -32,11 +32,11 @@ export default class AuthService extends LoggerBase implements IAuthService {
             return new Failure('password not match', ErrorCode.CREDENTIALS_ERROR);
         }
         this._logger.info('password good');
-        const newToken = AuthService.createJWToken(String(user.userId), RoleType.Default);
+        const newToken = AuthService.createJWToken(user.userId, RoleType.Default);
         return new Success({ user, token: newToken });
     }
 
-    public static createJWToken(userId: string, role: RoleType): string {
+    public static createJWToken(userId: number, role: RoleType): string {
         return jwt.sign({ userId, role }, process.env.JWT_SECRET, {
             expiresIn: '12h',
             issuer: process.env.JWT_ISSUER,
