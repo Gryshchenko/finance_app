@@ -9,11 +9,11 @@ import SessionService from '../services/session/SessionService';
 import tokenVerify from '../middleware/tokenVerify';
 import ensureGuest from '../middleware/ensureGuest';
 import sessionVerify from '../middleware/sessionVerify';
-const ResponseBuilder = require('../helper/responseBuilder/ResponseBuilder');
-const UserRegistrationServiceBuilder = require('../services/registration/UserRegistrationServiceBuilder');
-const Logger = require('../helper/logger/Logger');
-const Success = require('../utils/success/Success');
-const Failure = require('../utils/failure/Failure');
+import Success from 'src/utils/success/Success';
+import UserRegistrationServiceBuilder from 'src/services/registration/UserRegistrationServiceBuilder';
+import Logger from 'src/helper/logger/Logger';
+import ResponseBuilder from 'src/helper/responseBuilder/ResponseBuilder';
+import Failure from 'src/utils/failure/Failure';
 
 const registerRouter = express.Router();
 
@@ -21,7 +21,7 @@ registerRouter.post(
     '/confirm-profile',
     tokenVerify,
     sessionVerify,
-    routesInputValidation([body('currency').isString()]),
+    routesInputValidation([body('currency').isString().isLength({ max: 50 })]),
     async (req: Request, res: Response) => {
         const _logger = Logger.Of('RegistrationConfirmProfile');
         const responseBuilder = new ResponseBuilder();
@@ -32,17 +32,23 @@ registerRouter.post(
                 userFromSession.userId,
                 req.body.currency,
             );
-            if (typeof response === Success) {
+            if (response instanceof Success) {
                 res.status(200).json(
-                    responseBuilder.setStatus(ResponseStatusType.OK).setData({}).build({
-                        email: req.body.email,
-                    }),
+                    responseBuilder
+                        .setStatus(ResponseStatusType.OK)
+                        .setData({
+                            email: req.body.email,
+                        })
+                        .build(),
                 );
             } else {
-                _logger.error(response.error);
-                return res
-                    .status(400)
-                    .json(responseBuilder.setStatus(ResponseStatusType.INTERNAL).setError({ errorCode: response.code }).build());
+                _logger.error(response as Failure);
+                return res.status(400).json(
+                    responseBuilder
+                        .setStatus(ResponseStatusType.INTERNAL)
+                        .setError({ errorCode: (response as Failure).code })
+                        .build(),
+                );
             }
         } catch (error) {
             _logger.error(error);
@@ -57,7 +63,7 @@ registerRouter.post(
     '/confirm-email',
     tokenVerify,
     sessionVerify,
-    routesInputValidation([body('email').isEmail(), body('code').isNumeric()]),
+    routesInputValidation([body('email').isEmail().isLength({ max: 50 }), body('code').isNumeric().isLength({ max: 50 })]),
     async (req: Request, res: Response) => {
         const _logger = Logger.Of('RegistrationSendConfirmation');
         const responseBuilder = new ResponseBuilder();
@@ -78,17 +84,23 @@ registerRouter.post(
                 req.body.email,
                 req.body.code,
             );
-            if (typeof response === Success) {
+            if (response instanceof Success) {
                 res.status(200).json(
-                    responseBuilder.setStatus(ResponseStatusType.OK).setData({}).build({
-                        email: req.body.email,
-                    }),
+                    responseBuilder
+                        .setStatus(ResponseStatusType.OK)
+                        .setData({
+                            email: req.body.email,
+                        })
+                        .build(),
                 );
             } else {
-                _logger.error(response.error);
-                return res
-                    .status(400)
-                    .json(responseBuilder.setStatus(ResponseStatusType.INTERNAL).setError({ errorCode: response.code }).build());
+                _logger.error((response as Failure).error);
+                return res.status(400).json(
+                    responseBuilder
+                        .setStatus(ResponseStatusType.INTERNAL)
+                        .setError({ errorCode: (response as Failure).code })
+                        .build(),
+                );
             }
         } catch (error) {
             _logger.error(error);
@@ -102,13 +114,21 @@ registerRouter.post(
 registerRouter.post(
     '/signup',
     ensureGuest,
-    routesInputValidation([body('password').isStrongPassword(), body('email').isEmail()]),
+    routesInputValidation([
+        body('password').isStrongPassword().isLength({ max: 50 }),
+        body('email').isEmail().isLength({ max: 50 }),
+        body('locale').optional(true).isString().isLength({ max: 50 }),
+    ]),
     async (req: Request, res: Response) => {
         const _logger = Logger.Of('RegistrationSignup');
         const responseBuilder = new ResponseBuilder();
 
         try {
-            const response = await UserRegistrationServiceBuilder.build().createUser(req.body.email, req.body.password);
+            const response = await UserRegistrationServiceBuilder.build().createUser(
+                req.body.email,
+                req.body.password,
+                req.body.locale,
+            );
             if (response instanceof Failure) {
                 _logger.error(response.error);
                 return res

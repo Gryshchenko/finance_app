@@ -34,12 +34,13 @@ const createRolesTableQuery = `
         "roleType" INT UNIQUE NOT NULL
     );
 `;
+const createRolesTableDefaultValues = `INSERT INTO roles  ( "roleType"  ) VALUES ( 1 ), ( 2 )`;
 
 const createUserRolesTableQuery = `
     CREATE TABLE userRoles (
-        "userId" INT,
+        "userRoleId" SERIAL PRIMARY KEY,
         "roleId" INT,
-        PRIMARY KEY ("userId", "roleId"),
+        "userId" INT,
         FOREIGN KEY ("userId") REFERENCES users("userId"),
         FOREIGN KEY ("roleId") REFERENCES roles("roleId"),
         UNIQUE ("userId", "roleId")
@@ -72,22 +73,37 @@ const createGroupInvitationsTableQuery = `
     );
 `;
 
-const createCurrencyTypeTableQuery = `
-    CREATE TABLE currencyType (
-        "currencyTypeId" SERIAL PRIMARY KEY,
-        "currencyType" INT NOT NULL,
-        "currencyTypeName" VARCHAR(56) UNIQUE NOT NULL
-    );
-`;
-
 const createCurrencyTableQuery = `
     CREATE TABLE currencies (
         "currencyId" SERIAL PRIMARY KEY,
         "currencyCode" VARCHAR(56) UNIQUE NOT NULL,
         "currencyName" VARCHAR(56) UNIQUE NOT NULL,
-        "currencyTypeId" INT NOT NULL,
-        FOREIGN KEY ("currencyTypeId") REFERENCES currencyType("currencyTypeId")
+        "symbol" VARCHAR(10) UNIQUE NOT NULL,
     );
+`;
+
+const insertDefaultCurrencies = `
+    INSERT INTO currencies (currencyCode, currencyName, symbol) VALUES
+    ('USD', 'US Dollar', '$'),
+    ('EUR', 'Euro', '€'),
+    ('JPY', 'Japanese Yen', '¥'),
+    ('GBP', 'British Pound', '£'),
+    ('AUD', 'Australian Dollar', 'A$'),
+    ('CAD', 'Canadian Dollar', 'C$'),
+    ('CHF', 'Swiss Franc', 'CHF'),
+    ('CNY', 'Chinese Yuan', '¥'),
+    ('SEK', 'Swedish Krona', 'kr'),
+    ('NZD', 'New Zealand Dollar', 'NZ$'),
+    ('BTC', 'Bitcoin', '₿'),
+    ('ETH', 'Ethereum', 'Ξ'),
+    ('XRP', 'Ripple', 'XRP'),
+    ('LTC', 'Litecoin', 'Ł'),
+    ('ADA', 'Cardano', 'ADA'),
+    ('DOT', 'Polkadot', 'DOT'),
+    ('BCH', 'Bitcoin Cash', 'BCH'),
+    ('LINK', 'Chainlink', 'LINK'),
+    ('BNB', 'Binance Coin', 'BNB'),
+    ('USDT', 'Tether', '₮');
 `;
 
 const createProfileTableQuery = `
@@ -196,11 +212,12 @@ const initTable = (query) => {
 const run = async () => {
     await initTable(createUserTableQuery);
     await initTable(createRolesTableQuery);
+    await initTable(createRolesTableDefaultValues);
     await initTable(createUserRolesTableQuery);
     await initTable(createUserGroupsTableQuery);
     await initTable(createGroupInvitationsTableQuery);
-    await initTable(createCurrencyTypeTableQuery);
     await initTable(createCurrencyTableQuery);
+    await initTable(insertDefaultCurrencies);
     await initTable(createProfileTableQuery);
     await initTable(createIncomeTableQuery);
     await initTable(createAccountTableQuery);

@@ -1,7 +1,6 @@
 import { IProfileDataAccess } from 'interfaces/IProfileDataAccess';
 import { IProfileService } from 'interfaces/IProfileService';
 import { IProfile } from 'interfaces/IProfile';
-import { LanguageType } from 'types/LanguageType';
 import { IEmailConfirmationDataAccess } from 'interfaces/IEmailConfirmationDataAccess';
 import { IMailService } from 'interfaces/IMailService';
 import { IMailTemplateService } from 'interfaces/IMailTemplateService';
@@ -10,32 +9,33 @@ import { LoggerBase } from 'src/helper/logger/LoggerBase';
 import { IFailure } from 'interfaces/IFailure';
 import { ISuccess } from 'interfaces/ISuccess';
 import Success from 'src/utils/success/Success';
+import { ICreateProfile } from 'interfaces/ICreateProfile';
 
 export default class ProfileService extends LoggerBase implements IProfileService {
     private _profileDataAccess: IProfileDataAccess;
-    protected emailConfirmationDataAccess: IEmailConfirmationDataAccess;
-    protected mailService: IMailService;
-    protected mailTemplateService: IMailTemplateService;
-    protected userService: IUserService;
+    // protected emailConfirmationDataAccess: IEmailConfirmationDataAccess;
+    // protected mailService: IMailService;
+    // protected mailTemplateService: IMailTemplateService;
+    // protected userService: IUserService;
 
     public constructor(
         profileDataAccess: IProfileDataAccess,
-        emailConfirmationDataAccess: IEmailConfirmationDataAccess,
-        emailService: IMailService,
-        mailTemplateService: IMailTemplateService,
-        userService: IUserService,
+        // emailConfirmationDataAccess: IEmailConfirmationDataAccess,
+        // emailService: IMailService,
+        // mailTemplateService: IMailTemplateService,
+        // userService: IUserService,
     ) {
         super();
-        this.emailConfirmationDataAccess = emailConfirmationDataAccess;
-        this.mailService = emailService;
-        this.mailTemplateService = mailTemplateService;
-        this.userService = userService;
+        // this.emailConfirmationDataAccess = emailConfirmationDataAccess;
+        // this.mailService = emailService;
+        // this.mailTemplateService = mailTemplateService;
+        // this.userService = userService;
         this._profileDataAccess = profileDataAccess;
     }
-    async createProfile(userId: number, locale: LanguageType): Promise<IProfile> {
-        return await this._profileDataAccess.createProfile(userId, locale);
+    public async createProfile(data: ICreateProfile): Promise<IProfile | undefined> {
+        return await this._profileDataAccess.createProfile(data);
     }
-    async getProfile(userId: number): Promise<IProfile | undefined> {
+    public async getProfile(userId: number): Promise<IProfile | undefined> {
         return await this._profileDataAccess.getProfile(userId);
     }
     public async proceedMailConfirmationCode(

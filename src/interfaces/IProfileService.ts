@@ -2,9 +2,10 @@ import { IProfile } from 'interfaces/IProfile';
 import { LanguageType } from 'types/LanguageType';
 import { IFailure } from './IFailure';
 import { ISuccess } from './ISuccess';
+import { ICreateProfile } from 'interfaces/ICreateProfile';
 
 export interface IProfileService {
-    createProfile(userId: number, locale: LanguageType): Promise<IProfile>;
+    createProfile(data: ICreateProfile): Promise<IProfile | undefined>;
     getProfile(userId: number): Promise<IProfile | undefined>;
     proceedMailConfirmationCode(
         userId: number,

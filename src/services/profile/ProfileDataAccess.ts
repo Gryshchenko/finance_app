@@ -3,6 +3,7 @@ import { IDatabaseConnection } from 'interfaces/IDatabaseConnection';
 import { LoggerBase } from 'src/helper/logger/LoggerBase';
 import { IProfile } from 'interfaces/IProfile';
 import { LanguageType } from 'types/LanguageType';
+import { ICreateProfile } from 'interfaces/ICreateProfile';
 
 export default class ProfileDataService extends LoggerBase implements IProfileDataAccess {
     private readonly _db: IDatabaseConnection;
@@ -10,12 +11,16 @@ export default class ProfileDataService extends LoggerBase implements IProfileDa
         super();
         this._db = db;
     }
-    async createProfile(userId: number, locale: LanguageType): Promise<IProfile> {
+    async createProfile(data: ICreateProfile): Promise<IProfile | undefined> {
         try {
             this._logger.info('createProfile request');
-            const data = await this._db.engine()('profiles').insert({ userId, locale }, ['*']);
+            const { userId, locale, currencyId } = data;
+            const response = await this._db.engine()('profiles').insert({ userId, locale, currencyId }, ['*']);
             this._logger.info('createProfile response');
-            return data[0];
+            if (response && response[0]) {
+                return response[0];
+            }
+            return undefined;
         } catch (error) {
             this._logger.error(error);
             throw error;
@@ -24,10 +29,10 @@ export default class ProfileDataService extends LoggerBase implements IProfileDa
     async getProfile(userId: number): Promise<IProfile | undefined> {
         try {
             this._logger.info('getProfile request');
-            const data = await this._db.engine()<IProfile>('profiles').where({ userId }).select(['*']).first();
+            const data = await this._db.engine()<IProfile>('profiles').where({ userId }).select<IProfile>(['*']).first();
             this._logger.info('getProfile response');
-            if (data && data[0]) {
-                return data[0];
+            if (data) {
+                return data;
             }
             return undefined;
         } catch (error) {

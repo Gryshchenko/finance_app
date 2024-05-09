@@ -1,8 +1,7 @@
 import { IUserDataAccess } from 'interfaces/IUserDataAccess';
 import { IUser } from 'interfaces/IUser';
 import { IUserService } from 'interfaces/IUserService';
-
-const UserServiceUtils = require('./UserServiceUtils');
+import UserServiceUtils from 'src/services/user/UserServiceUtils';
 
 export default class UserService implements IUserService {
     private _userDataAccess: IUserDataAccess;

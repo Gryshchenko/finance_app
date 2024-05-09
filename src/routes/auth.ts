@@ -29,7 +29,7 @@ authRouter.get('/logout', tokenVerify, sessionVerify, (req: Request, res: Respon
 authRouter.post(
     '/login',
     ensureGuest,
-    routesInputValidation([body('password').isString(), body('email').isString()]),
+    routesInputValidation([body('password').isString().isLength({ max: 50 }), body('email').isString().isLength({ max: 50 })]),
     async (req: Request, res: Response) => {
         const responseBuilder = new ResponseBuilder();
         const _logger: Logger = Logger.Of('AuthRouteLogin');
@@ -40,7 +40,7 @@ authRouter.post(
             }
             // ***** Need to check types ****
             // const response = await AuthServiceBuilder.build().login(req.body.email, req.body.password);
-            // if (typeof response === Success) {
+            // if (response instanceof  Success) {
             //     const { user, token } = response.value;
             //     SessionService.handleSessionRegeneration(req, res, user, token, _logger, responseBuilder, () => {
             //         res.status(200).json(
@@ -50,7 +50,7 @@ authRouter.post(
             //                 .build(),
             //         );
             //     });
-            // } else if (typeof response === typeof Failure) {
+            // } else if (response instanceof  typeof Failure) {
             //     throw new Error(response.error);
             // }
         } catch (error) {

@@ -20,6 +20,9 @@ import Translations from 'src/services/translations/Translations';
 import TranslationLoaderImpl from 'src/services/translations/TranslationLoaderImpl';
 import AuthService from 'src/services/auth/AuthService';
 import Success from 'src/utils/success/Success';
+import { IUserRoleService } from 'interfaces/IUserRoleService';
+import CurrencyUtils from 'src/utils/СurrencyUtils';
+import { ICurrencyService } from 'interfaces/ICurrencyService';
 
 const preMadeData = require('../../config/create_user_initial');
 
@@ -40,6 +43,8 @@ export default class UserRegistrationService extends LoggerBase {
     protected mailTemplateService: IMailTemplateService;
     protected emailConfirmationService: IEmailConfirmationService;
     protected profileService: IProfileService;
+    protected userRoleService: IUserRoleService;
+    protected currencyService: ICurrencyService;
 
     constructor(services: {
         userService: IUserService;
@@ -51,6 +56,8 @@ export default class UserRegistrationService extends LoggerBase {
         mailTemplateService: IMailTemplateService;
         emailConfirmationService: IEmailConfirmationService;
         profileService: IProfileService;
+        userRoleService: IUserRoleService;
+        currencyService: ICurrencyService;
     }) {
         super();
         this.userService = services.userService;
@@ -62,6 +69,8 @@ export default class UserRegistrationService extends LoggerBase {
         this.mailTemplateService = services.mailTemplateService;
         this.emailConfirmationService = services.emailConfirmationService;
         this.profileService = services.profileService;
+        this.userRoleService = services.userRoleService;
+        this.currencyService = services.currencyService;
     }
 
     private getTranslatedDefaultData(language: LanguageType = LanguageType.US): IDefaultData {
@@ -81,18 +90,29 @@ export default class UserRegistrationService extends LoggerBase {
             }
             const user = await this.userService.createUser(email, password);
             if (user) {
+                const currencyCode = CurrencyUtils.getCurrencyCodeFromLocale(localeFromUser) || CurrencyUtils.defaultCurrencyCode;
+                const currency = await this.currencyService.getCurrencyByCurrencyCode(currencyCode);
+                if (!currency) {
+                    return new Failure('cant get currency for new user', ErrorCode.SIGNUP);
+                }
                 await Translations.load(locale, TranslationLoaderImpl.instance());
                 const newToken = AuthService.createJWToken(user.userId, RoleType.Default);
+
                 await Promise.all([
-                    await this.emailConfirmationService.sendConfirmationMail(user.userId, user.email),
-                    await this.profileService.createProfile(user.userId, locale),
+                    await this.userRoleService.setUserRole(user.userId, RoleType.Default),
+                    // await this.emailConfirmationService.sendConfirmationMail(user.userId, user.email),
+                    await this.profileService.createProfile({
+                        userId: user.userId,
+                        currencyId: currency.currencyId,
+                        locale,
+                    }),
                 ]);
                 return new Success({ user, token: newToken });
             } else {
                 return new Failure('user not created', ErrorCode.SIGNUP);
             }
         } catch (e) {
-            return new Failure('user not created error: ' + e, ErrorCode.SIGNUP);
+            return new Failure('user not created error: ' + JSON.stringify(e), ErrorCode.SIGNUP);
         }
     }
     async confirmUserMail(userId: number, email: string, code: number): Promise<ISuccess<unknown> | IFailure> {

@@ -25,7 +25,7 @@ class Translations {
 
     async fetchKeys() {
         this.keys = await new Promise((resolve, reject) => {
-            fs.readFile(path.join('src/locales/EN.json'), 'utf8', function (err, data) {
+            fs.readFile(path.join('src/locales/en-US.json'), 'utf8', function (err, data) {
                 if (err) throw err;
                 resolve(JSON.parse(data));
             });

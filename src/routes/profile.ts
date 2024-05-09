@@ -33,7 +33,7 @@ profileRouter.post(
             const user = req.session.user as IUserSession;
             const emailService = UserRegistrationServiceBuilder.build();
             const response = await emailService.sendAgainConfirmationMail(user.userId, req.body.email);
-            // if (typeof response === Success) {
+            // if (response instanceof  Success) {
             //     res.status(200).json(responseBuilder.setStatus(ResponseStatusType.OK).setData({}).build());
             // } else {
             //     _logger.error(response.error);
@@ -64,7 +64,7 @@ profileRouter.post(
         const _logger = Logger.Of('ProfileSendConfirmation');
         const responseBuilder = new ResponseBuilder();
         try {
-            // if (typeof response === Success) {
+            // if (response instanceof  Success) {
             //         SessionService.deleteSession(req, res, () => {
             //             res.status(200).json(responseBuilder.setStatus(ResponseStatusType.OK).setData({}).build());
             //         });
@@ -100,7 +100,7 @@ profileRouter.post(
             //     req.body.code,
             //     user.email,
             // );
-            // if (typeof response === Success) {
+            // if (response instanceof  Success) {
             //     SessionService.deleteSession(req, res, () => {
             //         res.status(200).json(responseBuilder.setStatus(ResponseStatusType.OK).setData({}).build());
             //     });

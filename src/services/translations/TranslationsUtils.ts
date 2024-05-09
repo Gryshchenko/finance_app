@@ -3,8 +3,8 @@ import { LanguageType } from 'types/LanguageType';
 export default class TranslationsUtils {
     public static convertToSupportLocale(locale: string): LanguageType {
         let language: string;
-        if (locale?.includes('_')) {
-            const arr = locale.split('_');
+        if (locale?.includes('-')) {
+            const arr = locale.split('-');
             language = arr[0]?.toUpperCase() as LanguageType;
         } else {
             language = locale?.toUpperCase() as LanguageType;
@@ -26,23 +26,18 @@ export default class TranslationsUtils {
                 return LanguageType.IT;
             case LanguageType.NL:
                 return LanguageType.NL;
-            case LanguageType.NN:
             case LanguageType.NO:
                 return LanguageType.NO;
             case LanguageType.PT:
                 return LanguageType.PT;
             case LanguageType.RU:
                 return LanguageType.RU;
-            case LanguageType.SV:
-                return LanguageType.SE;
             case LanguageType.SE:
                 return LanguageType.SE;
             case LanguageType.UA:
                 return LanguageType.UA;
             case LanguageType.US:
                 return LanguageType.US;
-            case LanguageType.AR:
-                return LanguageType.AR;
             case LanguageType.BG:
                 return LanguageType.BG;
             case LanguageType.CS:
@@ -65,10 +60,6 @@ export default class TranslationsUtils {
                 return LanguageType.SL;
             case LanguageType.TR:
                 return LanguageType.TR;
-            case LanguageType.XA:
-                return LanguageType.XA;
-            case LanguageType.HK:
-                return LanguageType.HK;
             case LanguageType.LV:
                 return LanguageType.LV;
             default:

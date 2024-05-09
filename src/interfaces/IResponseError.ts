@@ -1,6 +1,6 @@
 import { ErrorCode } from 'types/ErrorCode';
 
 export interface IResponseError {
-    errorCode: ErrorCode;
+    errorCode: ErrorCode | undefined;
     msg?: string;
 }

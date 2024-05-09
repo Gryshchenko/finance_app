@@ -1,6 +1,7 @@
 import { ICurrency } from 'interfaces/ICurrency';
 
 export interface ICurrencyService {
-    getCurrency(currencyId: number): Promise<ICurrency | undefined>;
+    getCurrencyById(currencyId: number): Promise<ICurrency | undefined>;
+    getCurrencyByCurrencyCode(currencyCode: string): Promise<ICurrency | undefined>;
     getCurrencies(): Promise<ICurrency[]>;
 }

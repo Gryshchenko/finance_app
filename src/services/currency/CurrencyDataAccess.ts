@@ -12,24 +12,45 @@ export default class CurrencyDataService extends LoggerBase implements ICurrency
     public async getCurrencies(): Promise<ICurrency[]> {
         try {
             this._logger.info('getCurrencies request');
-            const data = await this._db.engine()<ICurrency>('currencies').select(['*']);
+            const data = await this._db.engine()<ICurrency>('currencies').select<ICurrency[]>(['*']);
             this._logger.info('getCurrencies response');
-            return data[0];
+            return data;
         } catch (error) {
             this._logger.error(error);
             throw error;
         }
     }
-    public async getCurrency(currencyId: number): Promise<ICurrency | undefined> {
+    public async getCurrencyById(currencyId: number): Promise<ICurrency | undefined> {
         try {
-            this._logger.info('getCurrencies request');
+            this._logger.info('getCurrencyById request');
             const data = await this._db
                 .engine()<ICurrency>('currencies')
                 .where({ currencyId })
-                .select(['currencyId', 'currencyCode', 'currencySymbol'])
+                .select<ICurrency>(['currencyId', 'currencyCode', 'currencyCode', 'currencyName'])
                 .first();
-            this._logger.info('getCurrencies response');
-            return data;
+            this._logger.info('getCurrencyById response');
+            if (data) {
+                return data;
+            }
+            return undefined;
+        } catch (error) {
+            this._logger.error(error);
+            throw error;
+        }
+    }
+    public async getCurrencyByCurrencyCode(currencyCode: string): Promise<ICurrency | undefined> {
+        try {
+            this._logger.info('getCurrencyByCurrencyCode request');
+            const data = await this._db
+                .engine()<ICurrency>('currencies')
+                .where({ currencyCode })
+                .select<ICurrency>(['currencyId', 'currencyCode', 'currencyCode', 'currencyName'])
+                .first();
+            this._logger.info('getCurrencyByCurrencyCode response');
+            if (data) {
+                return data;
+            }
+            return undefined;
         } catch (error) {
             this._logger.error(error);
             throw error;

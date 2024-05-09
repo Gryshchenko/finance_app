@@ -7,8 +7,12 @@ export default class CurrencyService implements ICurrencyService {
     public constructor(currencyDataAccess: ICurrencyDataAccess) {
         this._currencyDataAccess = currencyDataAccess;
     }
-    public async getCurrency(currencyId: number): Promise<ICurrency | undefined> {
-        return await this._currencyDataAccess.getCurrency(currencyId);
+    public async getCurrencyByCurrencyCode(currencyCode: string): Promise<ICurrency | undefined> {
+        return await this._currencyDataAccess.getCurrencyByCurrencyCode(currencyCode);
+    }
+
+    public async getCurrencyById(currencyId: number): Promise<ICurrency | undefined> {
+        return await this._currencyDataAccess.getCurrencyById(currencyId);
     }
     public async getCurrencies(): Promise<ICurrency[]> {
         return await this._currencyDataAccess.getCurrencies();
