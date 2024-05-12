@@ -29,7 +29,7 @@ authRouter.get('/logout', tokenVerify, sessionVerify, (req: Request, res: Respon
 authRouter.post(
     '/login',
     ensureGuest,
-    routesInputValidation([body('password').isString().isLength({ max: 50 }), body('email').isString().isLength({ max: 50 })]),
+    routesInputValidation([body('password').isString(), body('email').isString()]),
     async (req: Request, res: Response) => {
         const responseBuilder = new ResponseBuilder();
         const _logger: Logger = Logger.Of('AuthRouteLogin');
@@ -38,21 +38,20 @@ authRouter.post(
             if (!errors.isEmpty()) {
                 throw new Error('validation error');
             }
-            // ***** Need to check types ****
-            // const response = await AuthServiceBuilder.build().login(req.body.email, req.body.password);
-            // if (response instanceof  Success) {
-            //     const { user, token } = response.value;
-            //     SessionService.handleSessionRegeneration(req, res, user, token, _logger, responseBuilder, () => {
-            //         res.status(200).json(
-            //             responseBuilder
-            //                 .setStatus(ResponseStatusType.OK)
-            //                 .setData({ email: user.email, status: user.status })
-            //                 .build(),
-            //         );
-            //     });
-            // } else if (response instanceof  typeof Failure) {
-            //     throw new Error(response.error);
-            // }
+            const response = await AuthServiceBuilder.build().login(req.body.email, req.body.password);
+            if (response instanceof Success) {
+                const { user, token } = response.value;
+                SessionService.handleSessionRegeneration(req, res, user, token, _logger, responseBuilder, () => {
+                    res.status(200).json(
+                        responseBuilder
+                            .setStatus(ResponseStatusType.OK)
+                            .setData({ email: user.email, status: user.status })
+                            .build(),
+                    );
+                });
+            } else if (response instanceof Failure) {
+                throw new Error(response.error);
+            }
         } catch (error) {
             _logger.error('request user data error: ' + error);
             return res

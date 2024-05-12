@@ -1,3 +1,3 @@
 export enum RoleType {
-    Default = 0,
+    Default = 1,
 }

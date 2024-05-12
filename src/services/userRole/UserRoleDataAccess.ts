@@ -20,9 +20,9 @@ export default class UserRoleDataService extends LoggerBase implements IUserRole
             throw error;
         }
     }
-    public async setUserRole(userId: number, newRoleId: number): Promise<IUserRole> {
+    public async updateUserRole(userId: number, newRoleId: number): Promise<IUserRole> {
         try {
-            this._logger.info('setUserRole request');
+            this._logger.info('updateUserRole request');
             const data = await this._db.engine()('userroles').where({ userId }).update(
                 {
                     userId,
@@ -30,7 +30,24 @@ export default class UserRoleDataService extends LoggerBase implements IUserRole
                 },
                 ['userRoleId', 'roleId', 'userId'],
             );
-            this._logger.info('setUserRole response');
+            this._logger.info('updateUserRole response');
+            return data[0];
+        } catch (error) {
+            this._logger.error(error);
+            throw error;
+        }
+    }
+    public async createUserRole(userId: number, roleId: number): Promise<IUserRole> {
+        try {
+            this._logger.info('createUserRole request');
+            const data = await this._db.engine()('userroles').insert(
+                {
+                    userId,
+                    roleId,
+                },
+                ['userRoleId', 'roleId', 'userId'],
+            );
+            this._logger.info('createUserRole response');
             return data[0];
         } catch (error) {
             this._logger.error(error);

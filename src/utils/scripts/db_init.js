@@ -39,11 +39,11 @@ const createRolesTableDefaultValues = `INSERT INTO roles  ( "roleType"  ) VALUES
 const createUserRolesTableQuery = `
     CREATE TABLE userRoles (
         "userRoleId" SERIAL PRIMARY KEY,
-        "roleId" INT,
-        "userId" INT,
+        "roleId" INT NOT NULL,
+        "userId" INT NOT NULL,
         FOREIGN KEY ("userId") REFERENCES users("userId"),
         FOREIGN KEY ("roleId") REFERENCES roles("roleId"),
-        UNIQUE ("userId", "roleId")
+        UNIQUE ("userId")
     );
 `;
 

@@ -8,11 +8,14 @@ export default class UserRoleService implements IUserRoleService {
         this._userRoleDataAccess = userDataAccess;
     }
 
-    public async getUserRole(userId: number): Promise<IUserRole> {
+    public async getUserRole(userId: number): Promise<IUserRole | undefined> {
         return await this._userRoleDataAccess.getUserRole(userId);
     }
 
-    public async setUserRole(userId: number, newRoleId: number): Promise<IUserRole> {
-        return await this._userRoleDataAccess.setUserRole(userId, newRoleId);
+    public async updateUserRole(userId: number, newRoleId: number): Promise<IUserRole | undefined> {
+        return await this._userRoleDataAccess.updateUserRole(userId, newRoleId);
+    }
+    public async createUserRole(userId: number, roleId: number): Promise<IUserRole> {
+        return await this._userRoleDataAccess.createUserRole(userId, roleId);
     }
 }

@@ -18,48 +18,6 @@ import Failure from 'src/utils/failure/Failure';
 const registerRouter = express.Router();
 
 registerRouter.post(
-    '/confirm-profile',
-    tokenVerify,
-    sessionVerify,
-    routesInputValidation([body('currency').isString().isLength({ max: 50 })]),
-    async (req: Request, res: Response) => {
-        const _logger = Logger.Of('RegistrationConfirmProfile');
-        const responseBuilder = new ResponseBuilder();
-        try {
-            // @ts-ignore
-            const userFromSession = req.session.user as IUserSession;
-            const response = await UserRegistrationServiceBuilder.build().createInitialDataForNewUser(
-                userFromSession.userId,
-                req.body.currency,
-            );
-            if (response instanceof Success) {
-                res.status(200).json(
-                    responseBuilder
-                        .setStatus(ResponseStatusType.OK)
-                        .setData({
-                            email: req.body.email,
-                        })
-                        .build(),
-                );
-            } else {
-                _logger.error(response as Failure);
-                return res.status(400).json(
-                    responseBuilder
-                        .setStatus(ResponseStatusType.INTERNAL)
-                        .setError({ errorCode: (response as Failure).code })
-                        .build(),
-                );
-            }
-        } catch (error) {
-            _logger.error(error);
-            res.status(400).json(
-                responseBuilder.setStatus(ResponseStatusType.INTERNAL).setError({ errorCode: ErrorCode.CANT_STORE_DATA }).build(),
-            );
-        }
-    },
-);
-
-registerRouter.post(
     '/confirm-email',
     tokenVerify,
     sessionVerify,

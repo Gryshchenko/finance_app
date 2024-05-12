@@ -77,7 +77,7 @@ export default class UserRegistrationService extends LoggerBase {
         return preMadeData[language];
     }
 
-    async createUser(
+    public async createUser(
         email: string,
         password: string,
         localeFromUser: LanguageType = LanguageType.US,
@@ -99,7 +99,7 @@ export default class UserRegistrationService extends LoggerBase {
                 const newToken = AuthService.createJWToken(user.userId, RoleType.Default);
 
                 await Promise.all([
-                    await this.userRoleService.setUserRole(user.userId, RoleType.Default),
+                    await this.userRoleService.createUserRole(user.userId, RoleType.Default),
                     // await this.emailConfirmationService.sendConfirmationMail(user.userId, user.email),
                     await this.profileService.createProfile({
                         userId: user.userId,
