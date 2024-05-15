@@ -4,6 +4,5 @@ export interface IEmailConfirmationData {
     email: string;
     confirmationCode: number;
     confirmed: boolean;
-    createdAt: Date;
     expiresAt: Date;
 }

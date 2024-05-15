@@ -35,15 +35,25 @@ interface IDefaultData {
 
 export default class UserRegistrationService extends LoggerBase {
     protected userService: IUserService;
+
     protected accountService: IAccountService;
+
     protected categoryService: ICategoryService;
+
     protected groupService: IGroupService;
+
     protected incomeService: IIncomeService;
+
     protected mailService: IMailService;
+
     protected mailTemplateService: IMailTemplateService;
+
     protected emailConfirmationService: IEmailConfirmationService;
+
     protected profileService: IProfileService;
+
     protected userRoleService: IUserRoleService;
+
     protected currencyService: ICurrencyService;
 
     constructor(services: {
@@ -84,7 +94,7 @@ export default class UserRegistrationService extends LoggerBase {
     ): Promise<ISuccess<{ user: IUser; token: string }> | IFailure> {
         try {
             const locale = TranslationsUtils.convertToSupportLocale(localeFromUser);
-            const otherUser = await this.userService.getUserByEmail(email);
+            const otherUser = await this.userService.getUserAuthenticationData(email);
             if (otherUser) {
                 return new Failure('user already exists', ErrorCode.EMAIL_ALREADY_EXIST);
             }
@@ -100,33 +110,32 @@ export default class UserRegistrationService extends LoggerBase {
 
                 await Promise.all([
                     await this.userRoleService.createUserRole(user.userId, RoleType.Default),
-                    // await this.emailConfirmationService.sendConfirmationMail(user.userId, user.email),
+                    await this.emailConfirmationService.sendConfirmationMail(user.userId, user.email),
                     await this.profileService.createProfile({
                         userId: user.userId,
                         currencyId: currency.currencyId,
                         locale,
                     }),
                 ]);
-                return new Success({ user, token: newToken });
-            } else {
-                return new Failure('user not created', ErrorCode.SIGNUP);
+                const readyUser = await this.userService.getUser(user.userId);
+                return new Success({ user: readyUser, token: newToken });
             }
+            return new Failure('user not created', ErrorCode.SIGNUP);
         } catch (e) {
-            return new Failure('user not created error: ' + JSON.stringify(e), ErrorCode.SIGNUP);
+            return new Failure(`user not created error: ${JSON.stringify(e)}`, ErrorCode.SIGNUP);
         }
     }
-    async confirmUserMail(userId: number, email: string, code: number): Promise<ISuccess<unknown> | IFailure> {
+
+    async confirmUserMail(userId: number, code: number): Promise<ISuccess<IUser> | IFailure> {
         try {
-            const userConfirmationData = await this.emailConfirmationService.getUserConfirmation(userId, email);
+            const userConfirmationData = await this.emailConfirmationService.getUserConfirmation(userId, code);
             if (!userConfirmationData || userConfirmationData.confirmationCode !== code) {
                 return new Failure('Confirmation code not same', ErrorCode.EMAIL_VERIFICATION_CODE_INVALID);
             }
-            await this.emailConfirmationService.confirmUserMail({
-                userId,
-                email,
-                confirmationId: userConfirmationData.confirmationId,
-            });
-            return new Success({ email });
+            await this.profileService.confirmationUserMail(userId);
+            const user = await this.userService.updateUserEmail(userId, userConfirmationData.email);
+            await this.emailConfirmationService.deleteUserConfirmation(userId, userConfirmationData.confirmationCode);
+            return new Success(user);
         } catch (error) {
             return new Failure(String(error), ErrorCode.EMAIL_VERIFICATION_CODE_INVALID, false);
         }
@@ -168,8 +177,8 @@ export default class UserRegistrationService extends LoggerBase {
             // @ts-ignore
             return new Success(undefined);
         } catch (e) {
-            this._logger.info('failed create initial user data error: ' + e);
-            return new Failure('failed create initial user data error: ' + e, ErrorCode.SIGNUP_INITIAL);
+            this._logger.info(`failed create initial user data error: ${e}`);
+            return new Failure(`failed create initial user data error: ${e}`, ErrorCode.SIGNUP_INITIAL);
         }
     }
 }

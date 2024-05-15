@@ -2,6 +2,7 @@ import Utils from '../../utils/Utils';
 
 export default class Parameter {
     private readonly _key: string;
+
     private readonly _value: any;
 
     private constructor(key: string, value: any, isWrap: boolean) {
@@ -14,7 +15,7 @@ export default class Parameter {
     }
 
     private static wrap(key: string): string {
-        return '{' + key + '}';
+        return `{${key}}`;
     }
 
     public static parameter(key: string, parameters: Parameter[]): Parameter | null {

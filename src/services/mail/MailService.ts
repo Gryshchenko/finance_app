@@ -8,6 +8,7 @@ import MailEngineBuilder from './MailEngineBuilder';
 
 export default class MailService extends LoggerBase implements IMailService {
     private engine: IMailEngine;
+
     public constructor() {
         super();
         this.engine = MailEngineBuilder.build();

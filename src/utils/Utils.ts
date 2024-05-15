@@ -65,25 +65,6 @@ export default class Utils {
         return Utils.isNull(val) || (Object.keys(val).length === 0 && val.constructor === Object);
     }
 
-    // public static isMapNotEmpty(val: TSMap<any, any>): boolean {
-    //     return typeof val !== 'undefined' && val !== null && (val.size() > 0 || val.keys().length > 0);
-    // }
-    //
-    // public static isMapEmpty(val: TSMap<any, any>): boolean {
-    //     return typeof val === 'undefined' || val === null || val.size() === 0 || val.keys().length === 0;
-    // }
-    //
-    // public static objectToMap<K, V>(obj: any): TSMap<K, V> {
-    //     if (Utils.isNotNull(obj)) {
-    //         const map: TSMap<K, V> = new TSMap();
-    //         Object.keys(obj).forEach((key: any) => {
-    //             map.set(key, obj[key]);
-    //         });
-    //         return map;
-    //     }
-    //     return null;
-    // }
-
     public static greaterThen0(val: number): boolean {
         return this.isNotNull(val) && val > 0;
     }
@@ -95,6 +76,7 @@ export default class Utils {
     public static lessThen0(val: number): boolean {
         return this.isNotNull(val) && val < 0;
     }
+
     public static compareUndefined(o1: any, o2: any): number {
         if (this.isNotNull(o1) && this.isNull(o2)) {
             return -1;
@@ -184,7 +166,7 @@ export default class Utils {
     }
 
     public static pad(v: number): string {
-        return ('0' + v.toString()).slice(-2);
+        return `0${v.toString()}`.slice(-2);
     }
 
     public static remove<T>(arr: T[], item: T): boolean {

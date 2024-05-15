@@ -14,11 +14,12 @@ export default function routesInputValidation(validations: any[]) {
         }
 
         const responseBuilder = new ResponseBuilder().setStatus(ResponseStatusType.INTERNAL).setErrors(
-            // @ts-ignore
-            errors.array().map((value, index, array) => ({
-                // errorCode: getErrorType(err.param),
-                // msg: err.msg,
-            })),
+            errors.array().map((value, index, array) => {
+                return {
+                    errorCode: getErrorType((value as unknown as { path: string }).path),
+                    msg: value.msg,
+                };
+            }),
         );
 
         res.status(400).json(responseBuilder.build());

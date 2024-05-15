@@ -5,6 +5,7 @@ import { IUserSession } from 'interfaces/IUserSession';
 import Logger from 'src/helper/logger/Logger';
 
 import SessionService from '../services/session/SessionService';
+
 const _logger = Logger.Of('SessionVerify');
 
 const extractSession = (req: Request): IUserSession => {

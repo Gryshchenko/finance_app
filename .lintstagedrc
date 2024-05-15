@@ -1,0 +1,9 @@
+{
+    "*.{ts,js,jsx,tsx,css,scss,json,yml,html}": [
+        "prettier -c"
+    ],
+    "src/**/*.{ts,tsx,js,jsx}": [
+        "eslint",
+        "bash -c 'pnpm type-check'"
+    ]
+}

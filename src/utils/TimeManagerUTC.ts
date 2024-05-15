@@ -28,6 +28,7 @@ export default class TimeManagerUTC {
 
         return format.replace('HH', hours).replace('mm', minutes).replace('ss', seconds);
     }
+
     isFirstDateLessThanSecond(date1: Date, date2: Date): boolean {
         return date1.getTime() < date2.getTime();
     }

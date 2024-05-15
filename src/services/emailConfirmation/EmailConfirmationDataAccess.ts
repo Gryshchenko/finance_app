@@ -2,6 +2,7 @@ import { IEmailConfirmationDataAccess } from 'interfaces/IEmailConfirmationDataA
 import { IDatabaseConnection } from 'interfaces/IDatabaseConnection';
 import { LoggerBase } from 'src/helper/logger/LoggerBase';
 import { IEmailConfirmationData } from 'interfaces/IEmailConfirmationData';
+import Utils from 'src/utils/Utils';
 
 export default class EmailConfirmationDataAccess extends LoggerBase implements IEmailConfirmationDataAccess {
     private readonly _db: IDatabaseConnection;
@@ -11,20 +12,30 @@ export default class EmailConfirmationDataAccess extends LoggerBase implements I
         this._db = db;
     }
 
-    public async confirmUserMail(payload: {
-        userId: number;
-        email: string;
-        confirmationId: number;
-    }): Promise<IEmailConfirmationData> {
+    public async deleteUserConfirmation(userId: number, code: number): Promise<boolean> {
         try {
-            this._logger.info('confirmUserMail request');
-            const { userId, email, confirmationId } = payload;
+            this._logger.info('deleteUserConfirmation request');
             const data = await this._db
                 .engine()<IEmailConfirmationData>('email_confirmations')
-                .where({ userId, email, confirmationId })
-                .update({ confirmed: true }, ['*'])
+                .delete()
+                .where({ userId, confirmationCode: code });
+            this._logger.info('deleteUserConfirmation response');
+            return Utils.greaterThen0(data);
+        } catch (error) {
+            this._logger.error(error);
+            throw error;
+        }
+    }
+
+    public async getUserConfirmationWithEmail(userId: number, email: string): Promise<IEmailConfirmationData | undefined> {
+        try {
+            this._logger.info('getUserConfirmationWithEmail request');
+            const data = await this._db
+                .engine()<IEmailConfirmationData>('email_confirmations')
+                .where({ userId, email })
+                .select('*')
                 .first();
-            this._logger.info('confirmUserMail response');
+            this._logger.info('getUserConfirmationWithEmail response');
             return data as IEmailConfirmationData;
         } catch (error) {
             this._logger.error(error);
@@ -32,12 +43,12 @@ export default class EmailConfirmationDataAccess extends LoggerBase implements I
         }
     }
 
-    public async getUserConfirmation(userId: number, email: string): Promise<IEmailConfirmationData> {
+    public async getUserConfirmationWithCode(userId: number, code: number): Promise<IEmailConfirmationData | undefined> {
         try {
             this._logger.info('getUserConfirmation request');
             const data = await this._db
                 .engine()<IEmailConfirmationData>('email_confirmations')
-                .where({ userId, email })
+                .where({ userId, confirmationCode: code })
                 .select('*')
                 .first();
             this._logger.info('getUserConfirmation response');
@@ -66,38 +77,6 @@ export default class EmailConfirmationDataAccess extends LoggerBase implements I
                 },
                 ['*'],
             );
-            this._logger.info('createUserConfirmation response');
-            return data[0];
-        } catch (error) {
-            this._logger.error(error);
-            throw error;
-        }
-    }
-
-    public async updateUserConfirmation(payload: {
-        userId: number;
-        confirmationCode: number;
-        email: string;
-        expiresAt: Date;
-        confirmationId: number;
-    }): Promise<IEmailConfirmationData> {
-        try {
-            this._logger.info('createUserConfirmation request');
-            const { userId, confirmationCode, email, expiresAt, confirmationId } = payload;
-            const data = await this._db
-                .engine()<IEmailConfirmationData>('email_confirmations')
-                .where({
-                    userId,
-                    email,
-                    confirmationId,
-                })
-                .update(
-                    {
-                        confirmationCode,
-                        expiresAt,
-                    },
-                    ['*'],
-                );
             this._logger.info('createUserConfirmation response');
             return data[0];
         } catch (error) {

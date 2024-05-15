@@ -1,15 +1,19 @@
 import Logger from 'src/helper/logger/Logger';
 
-import { TranslationUnit } from './TranslationUnit';
-import { TranslationLoader } from './TranslationLoader';
 import Utils from 'src/utils/Utils';
 import Parameter from 'src/services/translations/Parameter';
+import { TranslationUnit } from './TranslationUnit';
+import { TranslationLoader } from './TranslationLoader';
 
 export default class Translations {
     private static LOGGER = Logger.Of('Translations');
+
     private static TEXTS: Record<string, any> = {};
+
     private static ENG_TEXTS: Record<string, any> = {};
+
     private static LANG_CODE: string;
+
     private static DATA: any;
 
     public static async load(languageCode: string, loader: TranslationLoader): Promise<{ langCode: string; data: any }> {
@@ -18,38 +22,34 @@ export default class Translations {
                 langCode: Translations.LANG_CODE,
                 data: Translations.DATA,
             });
-        } else {
-            Translations.LOGGER.info('Loading EN translations ...');
-            Translations.TEXTS = {};
-            Translations.ENG_TEXTS = {};
-            const enAnswer: any = await Utils.to(Translations.loadLanguage((Translations.LANG_CODE = languageCode), loader));
-            let error: any = enAnswer[0];
+        }
+        Translations.LOGGER.info('Loading EN translations ...');
+        Translations.TEXTS = {};
+        Translations.ENG_TEXTS = {};
+        const enAnswer: any = await Utils.to(Translations.loadLanguage((Translations.LANG_CODE = languageCode), loader));
+        let error: any = enAnswer[0];
+        if (error) {
+            return Promise.reject(error);
+        }
+        Translations.DATA = enAnswer[1];
+        Translations.LOGGER.info(`EN translations loaded. Requested language: ${languageCode}`);
+        if (languageCode && languageCode !== Translations.LANG_CODE) {
+            Translations.LOGGER.info(`Loading ${languageCode} translations ...`);
+            const langAnswer = await Utils.to(Translations.loadLanguage(languageCode, loader));
+            error = langAnswer[0];
             if (error) {
-                return Promise.reject(error);
+                Translations.LOGGER.warn(`Can't load translation for language #{languageCode} Error: ${JSON.stringify(error)}`);
             } else {
-                Translations.DATA = enAnswer[1];
-                Translations.LOGGER.info('EN translations loaded. Requested language: ' + languageCode);
-                if (languageCode && languageCode !== Translations.LANG_CODE) {
-                    Translations.LOGGER.info('Loading ' + languageCode + ' translations ...');
-                    const langAnswer = await Utils.to(Translations.loadLanguage(languageCode, loader));
-                    error = langAnswer[0];
-                    if (error) {
-                        Translations.LOGGER.warn(
-                            `Can't load translation for language #{languageCode} Error: ${JSON.stringify(error)}`,
-                        );
-                    } else {
-                        Translations.LANG_CODE = languageCode;
-                        Translations.DATA = langAnswer[1];
-                        Translations.LOGGER.info(languageCode + ' translations loaded.');
-                    }
-                }
-                // Translations.processReferences();
-                return Promise.resolve({
-                    langCode: Translations.LANG_CODE,
-                    data: Translations.DATA,
-                });
+                Translations.LANG_CODE = languageCode;
+                Translations.DATA = langAnswer[1];
+                Translations.LOGGER.info(`${languageCode} translations loaded.`);
             }
         }
+        // Translations.processReferences();
+        return Promise.resolve({
+            langCode: Translations.LANG_CODE,
+            data: Translations.DATA,
+        });
     }
 
     private static async loadLanguage(langCode: string, loader: TranslationLoader): Promise<any> {
@@ -59,24 +59,23 @@ export default class Translations {
 
         if (error) {
             return Promise.reject(error);
-        } else {
-            const payload = {
-                translations: answer[1],
-                translationsEng: enAnswer[1],
-            };
-            if (Utils.isNotNull(payload.translations)) {
-                Object.keys(payload.translations).forEach((key: string) => {
-                    Translations.TEXTS[key] = payload.translations[key];
-                });
-            }
-            if (Utils.isNotNull(payload.translationsEng)) {
-                Object.keys(payload.translationsEng).forEach((key: string) => {
-                    Translations.ENG_TEXTS[key] = payload.translationsEng[key];
-                });
-            }
-
-            return Promise.resolve(payload);
         }
+        const payload = {
+            translations: answer[1],
+            translationsEng: enAnswer[1],
+        };
+        if (Utils.isNotNull(payload.translations)) {
+            Object.keys(payload.translations).forEach((key: string) => {
+                Translations.TEXTS[key] = payload.translations[key];
+            });
+        }
+        if (Utils.isNotNull(payload.translationsEng)) {
+            Object.keys(payload.translationsEng).forEach((key: string) => {
+                Translations.ENG_TEXTS[key] = payload.translationsEng[key];
+            });
+        }
+
+        return Promise.resolve(payload);
     }
 
     public static text(key: string, ...parameters: (typeof Parameter)[]): string {
@@ -86,9 +85,8 @@ export default class Translations {
     public static engText(key: string, ...parameters: (typeof Parameter)[]): string {
         if (Utils.isObjectEmpty(Translations.TEXTS)) {
             return key;
-        } else {
-            return Translations.replaceParameters(Translations.ENG_TEXTS[key], parameters) || key;
         }
+        return Translations.replaceParameters(Translations.ENG_TEXTS[key], parameters) || key;
     }
 
     public static textOf(unit: TranslationUnit): string {
@@ -111,9 +109,8 @@ export default class Translations {
     public static Text(key: string, parameters: (typeof Parameter)[]): string {
         if (Utils.isObjectEmpty(Translations.TEXTS)) {
             return key;
-        } else {
-            return Translations.textOrNull(key, parameters) || key;
         }
+        return Translations.textOrNull(key, parameters) || key;
     }
 
     private static textOrNull(key: string, parameters: (typeof Parameter)[]): string {

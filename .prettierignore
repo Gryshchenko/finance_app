@@ -1,8 +1,7 @@
-submodule/
-dist
 src/**/*.d.ts
-npm-shrinkwrap.json
-package-lock.json
-package.json
+submodule
+dist
+coverage
 playwright-report
+pnpm-lock.yaml
 .pnpm-store

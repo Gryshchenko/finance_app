@@ -6,10 +6,12 @@ import { ICreateAccount } from 'interfaces/ICreateAccount';
 
 export default class AccountDataService extends LoggerBase implements IAccountDataAccess {
     private readonly _db: IDatabaseConnection;
+
     public constructor(db: IDatabaseConnection) {
         super();
         this._db = db;
     }
+
     async createAccounts(userId: number, accounts: ICreateAccount[]): Promise<IAccount[]> {
         try {
             this._logger.info('createAccounts request');

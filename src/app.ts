@@ -2,8 +2,6 @@ import express, { Request, Response } from 'express';
 import https from 'https';
 import fs from 'fs';
 import path from 'path';
-
-const passport = require('passport');
 import helmet from 'helmet';
 import rateLimit from 'express-rate-limit';
 
@@ -14,7 +12,10 @@ import authRouter from './routes/auth';
 import registerRouter from './routes/register';
 import profileRouter from './routes/profile';
 
+const passport = require('passport');
+
 require('dotenv').config();
+
 const app = express();
 const port = process.env.PORT || 3000;
 
@@ -37,8 +38,8 @@ const limiter = rateLimit({
 //     });
 //     next();
 // });
-app.use(express.json({ limit: '10kb' })); // JSON  10kb
-app.use(express.urlencoded({ limit: '10kb', extended: true })); // URL-encoded  10kb
+app.use(express.json({ limit: '5kb' })); // JSON  10kb
+app.use(express.urlencoded({ limit: '5kb', extended: true })); // URL-encoded  10kb
 app.use(limiter);
 app.use(express.json());
 app.use(helmet());

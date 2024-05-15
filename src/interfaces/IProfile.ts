@@ -6,5 +6,6 @@ export interface IProfile {
     userName: string;
     currencyId: number;
     locale: LanguageType;
+    mailConfirmed: boolean;
     additionInfo: Record<string, unknown>;
 }

@@ -27,6 +27,7 @@ const deserialize = (logLevel: string): LogLevel => {
 
 export default class Logger {
     private static LOG_LEVEL: LogLevel = LogLevel.DEBUG;
+
     private name: string;
 
     private constructor(name: string) {
@@ -60,7 +61,7 @@ export default class Logger {
     public info(message?: string, optionalParams?: unknown): void {
         if (Logger.LOG_LEVEL >= LogLevel.INFO) {
             if (Utils.isNotNull(optionalParams)) {
-                console.info('%c' + this.format(' I ') + message, optionalParams);
+                console.info(`%c${this.format(' I ')}${message}`, optionalParams);
             } else {
                 console.info(this.format(' I '), message);
             }
@@ -93,12 +94,10 @@ export default class Logger {
 
     private static formatDate(): string {
         const date: Date = new Date();
-        return (
-            [Utils.pad(date.getDate()), Utils.pad(date.getMonth() + 1), date.getFullYear()].join('-') +
-            ' ' +
-            [Utils.pad(date.getHours()), Utils.pad(date.getMinutes()), Utils.pad(date.getSeconds())].join(':') +
-            '.' +
-            date.getMilliseconds().toString()
-        );
+        return `${[Utils.pad(date.getDate()), Utils.pad(date.getMonth() + 1), date.getFullYear()].join('-')} ${[
+            Utils.pad(date.getHours()),
+            Utils.pad(date.getMinutes()),
+            Utils.pad(date.getSeconds()),
+        ].join(':')}.${date.getMilliseconds().toString()}`;
     }
 }

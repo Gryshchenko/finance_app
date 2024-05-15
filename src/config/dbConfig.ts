@@ -1,4 +1,5 @@
 import { readFileSync } from 'fs';
+
 const caCert = readFileSync('/etc/ssl/cert.pem').toString();
 
 const config = {

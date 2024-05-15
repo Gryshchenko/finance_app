@@ -5,6 +5,7 @@ import { ICreateIncome } from 'interfaces/ICreateIncome';
 
 export default class IncomeService implements IIncomeService {
     private _accountDataAccess: IIncomeDataAccess;
+
     public constructor(accountDataAccess: IIncomeDataAccess) {
         this._accountDataAccess = accountDataAccess;
     }

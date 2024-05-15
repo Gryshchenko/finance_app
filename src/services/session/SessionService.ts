@@ -19,7 +19,7 @@ export default class SessionService {
         _logger.info('start session delete procedure');
         req.session.destroy((err) => {
             if (err) {
-                _logger.error('delete session error: ' + err);
+                _logger.error(`delete session error: ${err}`);
                 const responseBuilder = new ResponseBuilder();
                 res.status(400).json(
                     responseBuilder
@@ -38,13 +38,12 @@ export default class SessionService {
             }
         });
     }
+
     private static buildSessionObject(user: IUser, token: string, ip: string, sessionId: string): IUserSession {
         return {
             userId: user.userId,
-            sessionId: sessionId,
-            premission: RoleType.Default,
-            createdate: user.createdAt,
-            updatedate: user.updatedAt,
+            sessionId,
+            status: user.status,
             email: user.email,
             ip,
             token,
@@ -79,6 +78,7 @@ export default class SessionService {
             }
         });
     }
+
     public static setup(): typeof session {
         const redisClient = redis.createClient({
             host: process.env.REDIS_HOST,
@@ -123,7 +123,7 @@ export default class SessionService {
     ): void {
         req.session.regenerate((err) => {
             if (err) {
-                logger.error('Session regeneration error: ' + err);
+                logger.error(`Session regeneration error: ${err}`);
                 res.status(400).json(
                     responseBuilder
                         .setStatus(ResponseStatusType.INTERNAL)
@@ -139,7 +139,7 @@ export default class SessionService {
                 token,
                 req,
                 handleError: (error: string) => {
-                    logger.error('Session regenerate error: ' + error);
+                    logger.error(`Session regenerate error: ${error}`);
                     res.status(400).json(
                         responseBuilder
                             .setStatus(ResponseStatusType.INTERNAL)
@@ -151,7 +151,7 @@ export default class SessionService {
                     }
                 },
                 handleSuccess: (sessionId: string) => {
-                    logger.info('Session regenerated successfully: ' + sessionId);
+                    logger.info(`Session regenerated successfully: ${sessionId}`);
                     res.setHeader('Authorization', `Bearer ${token}`);
                     if (handleSuccess) {
                         handleSuccess();

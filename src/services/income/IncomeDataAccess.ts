@@ -6,10 +6,12 @@ import { ICreateIncome } from 'interfaces/ICreateIncome';
 
 export default class IncomeDataService extends LoggerBase implements IIncomeDataAccess {
     private readonly _db: IDatabaseConnection;
+
     public constructor(db: IDatabaseConnection) {
         super();
         this._db = db;
     }
+
     public async createIncomes(userId: number, incomes: ICreateIncome[]): Promise<IIncome[]> {
         try {
             this._logger.info('createIncome request');

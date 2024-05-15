@@ -3,40 +3,78 @@ import { IDatabaseConnection } from 'interfaces/IDatabaseConnection';
 import { IUser } from 'interfaces/IUser';
 import { LoggerBase } from 'src/helper/logger/LoggerBase';
 import { IUserStatus } from 'interfaces/IUserStatus';
+import { IUserServer } from 'interfaces/IUserServer';
+import { ICreateUserServer } from 'interfaces/ICreateUserServer';
+import { IGetUserAuthenticationData } from 'interfaces/IGetUserAuthenticationData';
 
 export default class UserDataService extends LoggerBase implements IUserDataAccess {
     private readonly _db: IDatabaseConnection;
+
     public constructor(db: IDatabaseConnection) {
         super();
         this._db = db;
     }
-    public async getUserByEmail(email: string): Promise<string | undefined> {
+
+    private async fetchUserDetails(userId: number): Promise<IUserServer> {
         try {
-            this._logger.info('getUserByEmail request');
-            const response = await this._db.engine()<{ email: string }>('users').where({ email }).select('email').first();
-            this._logger.info('getUserByEmail response');
-            return response?.email ? response.email : undefined;
-        } catch (error) {
-            this._logger.error(error);
-            throw error;
-        }
-    }
-    public async getUser(email: string, passwordHash: string): Promise<IUser | undefined> {
-        try {
-            this._logger.info('getUser request');
+            this._logger.info('fetchUserDetails request');
             const user = await this._db
                 .engine()<IUser>('users')
-                .where({ email, passwordHash })
-                .select('email', 'passwordHash', 'salt', 'userId', 'createdAt', 'updatedAt', 'status')
+                .select(
+                    'users.email',
+                    'users.userId',
+                    'users.createdAt',
+                    'users.updatedAt',
+                    'users.status',
+                    'profiles.locale',
+                    'profiles.userName',
+                    'profiles.additionalInfo',
+                    'profiles.mailConfirmed',
+                    'currencies.currencyCode',
+                    'currencies.currencyName',
+                    'currencies.symbol',
+                )
+                .innerJoin('profiles', 'users.userId', 'profiles.userId')
+                .innerJoin('currencies', 'profiles.currencyId', 'currencies.currencyId')
+                .where('users.userId', userId)
                 .first();
-            this._logger.info('getUser response');
+            this._logger.info('fetchUserDetails response');
             return user;
         } catch (error) {
             this._logger.error(error);
             throw error;
         }
     }
-    public async createUser(email: string, passwordHash: string, salt: string): Promise<IUser> {
+
+    public async getUserAuthenticationData(email: string): Promise<IGetUserAuthenticationData | undefined> {
+        try {
+            this._logger.info('getUserAuthenticationData request');
+            const response = await this._db
+                .engine()<{ email: string }>('users')
+                .select('userId', 'email', 'salt', 'passwordHash')
+                .where({ email })
+                .first();
+            this._logger.info('getUserAuthenticationData response');
+            if (response) {
+                return response;
+            }
+            return undefined;
+        } catch (error) {
+            this._logger.error(error);
+            throw error;
+        }
+    }
+
+    public async getUser(userId: number): Promise<IUserServer> {
+        try {
+            return this.fetchUserDetails(userId);
+        } catch (error) {
+            this._logger.error(error);
+            throw error;
+        }
+    }
+
+    public async createUser(email: string, passwordHash: string, salt: string): Promise<ICreateUserServer> {
         try {
             this._logger.info('createUser request');
             const data = await this._db.engine()('users').insert(
@@ -46,7 +84,7 @@ export default class UserDataService extends LoggerBase implements IUserDataAcce
                     salt,
                     status: IUserStatus.ACTIVE,
                 },
-                ['email', 'passwordHash', 'salt', 'userId', 'createdAt', 'status'],
+                ['userId', 'status', 'email', 'createdAt', 'updatedAt'],
             );
             this._logger.info('createUser response');
             return data[0];
@@ -55,17 +93,30 @@ export default class UserDataService extends LoggerBase implements IUserDataAcce
             throw error;
         }
     }
-    public async updateUserEmail(userId: number, email: string): Promise<IUser | undefined> {
+
+    public async getUserEmail(userId: number): Promise<{ email: string } | undefined> {
+        try {
+            this._logger.info('getUserEmail request');
+            const response = await this._db.engine()<IUser>('users').select('email').where({ userId }).first();
+            this._logger.info('getUserEmail response');
+            if (response) {
+                return response;
+            }
+            return undefined;
+        } catch (error) {
+            this._logger.error(error);
+            throw error;
+        }
+    }
+
+    public async updateUserEmail(userId: number, email: string): Promise<IUserServer> {
         try {
             this._logger.info('createUser request');
-            const data = await this._db.engine()('users').where({ userId }).update(
-                {
-                    email,
-                },
-                ['email', 'passwordHash', 'salt', 'userId', 'createdAt', 'status'],
-            );
+            await this._db.engine()('users').where({ userId }).update({
+                email,
+            });
             this._logger.info('createUser response');
-            return data[0];
+            return await this.fetchUserDetails(userId);
         } catch (error) {
             this._logger.error(error);
             throw error;

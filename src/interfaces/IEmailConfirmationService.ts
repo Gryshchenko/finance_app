@@ -4,7 +4,7 @@ import { ISuccess } from './ISuccess';
 
 export interface IEmailConfirmationService {
     sendConfirmationMail(userId: number, email: string): Promise<ISuccess<IEmailConfirmationData> | IFailure>;
-    sendAgainConfirmationMail(userId: number, email: string): Promise<ISuccess<IEmailConfirmationData> | IFailure>;
-    getUserConfirmation(userId: number, email: string): Promise<IEmailConfirmationData>;
-    confirmUserMail(payload: { userId: number; email: string; confirmationId: number }): Promise<IEmailConfirmationData>;
+    // sendAgainConfirmationMail(userId: number, email: string): Promise<ISuccess<IEmailConfirmationData> | IFailure>;
+    getUserConfirmation(userId: number, code: number): Promise<IEmailConfirmationData | undefined>;
+    deleteUserConfirmation(userId: number, code: number): Promise<boolean>;
 }

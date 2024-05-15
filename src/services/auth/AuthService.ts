@@ -16,22 +16,24 @@ const jwt = require('jsonwebtoken');
 
 export default class AuthService extends LoggerBase implements IAuthService {
     protected userService: IUserService;
+
     constructor(services: { userService: IUserService }) {
         super();
         this.userService = services.userService;
     }
 
     async login(email: string, password: string): Promise<ISuccess<{ user: IUser; token: string }> | IFailure> {
-        const user = await this.userService.getUser(email, password);
-        if (!user) {
+        const userForCheck = await this.userService.getUserAuthenticationData(email);
+        if (!userForCheck) {
             return new Failure('response user data: credential error', ErrorCode.CREDENTIALS_ERROR);
         }
-        this._logger.info('response user data userID: ' + user?.userId);
-        const hashPassword = UserServiceUtils.hashPassword(password, user.salt);
-        if (hashPassword !== user.passwordHash) {
+        this._logger.info(`response user data userID: ${userForCheck?.userId}`);
+        const hashPassword = UserServiceUtils.hashPassword(password, userForCheck.salt);
+        if (hashPassword !== userForCheck.passwordHash) {
             return new Failure('password not match', ErrorCode.CREDENTIALS_ERROR);
         }
         this._logger.info('password good');
+        const user = await this.userService.getUser(userForCheck.userId);
         const newToken = AuthService.createJWToken(user.userId, RoleType.Default);
         return new Success({ user, token: newToken });
     }
@@ -43,6 +45,7 @@ export default class AuthService extends LoggerBase implements IAuthService {
             audience: process.env.JWT_AUDIENCE,
         });
     }
+
     public static tokenNeedsRefresh(expirationTime: number) {
         const currentTime = Math.floor(Date.now() / 1000);
         const timeLeft = expirationTime - currentTime;

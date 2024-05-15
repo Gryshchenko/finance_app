@@ -1,14 +1,14 @@
 const request = require('supertest');
 const app_test = require('../../../src/app');
-const { getUserByEmail } = require('../../../src/services/user/UserService');
+const { getUserAuthenticationData } = require('../../../src/services/user/UserService');
 const { createJWToken } = require('../../../src/services/auth/AuthUtils');
 
 jest.mock('../../../src/services/user/userService', () => ({
-    getUserByEmail: jest.fn(),
+    getUserAuthenticationData: jest.fn(),
 }));
 
 jest.mock('../../../src/services/user/userService', () => ({
-    getUserByEmail: jest.fn(),
+    getUserAuthenticationData: jest.fn(),
 }));
 
 jest.mock('../../../src/services/auth/AuthUtils', () => ({
@@ -37,12 +37,12 @@ jest.mock('redis', () => ({
 
 describe('POST /login', () => {
     beforeEach(() => {
-        getUserByEmail.mockClear();
+        getUserAuthenticationData.mockClear();
         createJWToken.mockClear();
     });
 
     it('should authenticate user and return 200 with a token', async () => {
-        getUserByEmail.mockResolvedValue({
+        getUserAuthenticationData.mockResolvedValue({
             userId: '123',
             email: 'user@example.com',
             passwordHash: 'hashed-password',
@@ -53,7 +53,7 @@ describe('POST /login', () => {
         // console.log(response);
         expect(response.statusCode).toBe(200);
         expect(response.headers['authorization']).toBe('Bearer fake-token');
-        expect(getUserByEmail).toHaveBeenCalledWith('user@example.com');
+        expect(getUserAuthenticationData).toHaveBeenCalledWith('user@example.com');
         expect(createJWToken).toHaveBeenCalledWith('123', expect.anything());
     });
 });

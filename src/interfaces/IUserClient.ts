@@ -1,11 +1,8 @@
 import { IUserStatus } from 'interfaces/IUserStatus';
 
-export interface IUser {
-    userId: number;
+export interface IUserClient {
     email: string;
     status: IUserStatus;
-    createdAt: string;
-    updatedAt: string;
     currency?: {
         currencyCode: string | undefined;
         currencyName: string | undefined;
@@ -13,7 +10,6 @@ export interface IUser {
     };
     profile: {
         locale: string | undefined;
-        mailConfirmed: boolean | undefined;
     };
     additionalInfo: Record<string, undefined> | undefined;
 }

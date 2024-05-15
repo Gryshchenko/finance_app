@@ -13,6 +13,7 @@ export default class ResponseBuilder<T = unknown> {
         data: {},
         errors: [],
     };
+
     public constructor() {
         this.reset();
     }
@@ -29,6 +30,7 @@ export default class ResponseBuilder<T = unknown> {
         this._response.status = status;
         return this;
     }
+
     public setErrors(errors: IResponseError[]): ResponseBuilder {
         this._response.errors = errors;
         return this;

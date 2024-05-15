@@ -4,18 +4,20 @@ import { ISendMailPayload } from 'interfaces/ISendMailPayload';
 import { ISendMailResponse } from 'interfaces/ISendMailResponse';
 import { MailerSend as MailerSendType } from 'mailersend';
 
-const Recipient = require('mailersend').Recipient;
-const Sender = require('mailersend').Sender;
-const EmailParams = require('mailersend').EmailParams;
+const { Recipient } = require('mailersend');
+const { Sender } = require('mailersend');
+const { EmailParams } = require('mailersend');
 const MailerSendSource = require('mailersend').MailerSend;
 
 export default class MailerSend implements IMailEngine {
     private mailerSend: MailerSendType;
+
     constructor(apiKey: string | undefined) {
         this.mailerSend = new MailerSendSource({
             apiKey,
         });
     }
+
     async send(payload: ISendMailPayload): Promise<ISendMailResponse> {
         const { tags = [], subject, sender, text, html, template } = payload;
         const recipients = payload.recipients.map((payload) => new Recipient(payload.mail, payload.name));

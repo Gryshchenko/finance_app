@@ -1,5 +1,12 @@
 import config from 'src/config/dbConfig';
 
+import DatabaseConnection from 'src/repositories/DatabaseConnection';
+import UserRoleService from 'src/services/userRole/UserRoleService';
+import UserRoleDataService from 'src/services/userRole/UserRoleDataAccess';
+import UserRegistrationService from 'src/services/registration/UserRegistrationService';
+import CurrencyService from 'src/services/currency/CurrencyService';
+import CurrencyDataService from 'src/services/currency/CurrencyDataAccess';
+import EmailConfirmationDataAccess from 'src/services/emailConfirmation/EmailConfirmationDataAccess';
 import MailService from '../mail/MailService';
 import AccountService from '../account/AccountService';
 import UserService from '../user/UserService';
@@ -16,14 +23,6 @@ import AccountDataAccess from '../account/AccountDataAccess';
 import CategoryDataAccess from '../category/CategoryDataAccess';
 import GroupDataAccess from '../group/GroupDataAccess';
 import IncomeDataAccess from '../income/IncomeDataAccess';
-
-import DatabaseConnection from 'src/repositories/DatabaseConnection';
-import UserRoleService from 'src/services/userRole/UserRoleService';
-import UserRoleDataService from 'src/services/userRole/UserRoleDataAccess';
-import UserRegistrationService from 'src/services/registration/UserRegistrationService';
-import CurrencyService from 'src/services/currency/CurrencyService';
-import CurrencyDataService from 'src/services/currency/CurrencyDataAccess';
-import EmailConfirmationDataAccess from 'src/services/emailConfirmation/EmailConfirmationDataAccess';
 
 export default class UserRegistrationServiceBuilder {
     public static build() {

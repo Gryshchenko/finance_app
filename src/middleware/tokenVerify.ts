@@ -3,10 +3,11 @@ import { VerifyErrors } from 'jsonwebtoken';
 import { ErrorCode } from 'types/ErrorCode';
 import { TranslationKey } from 'src/types/TranslationKey';
 import Logger from 'src/helper/logger/Logger';
+import SessionService from '../services/session/SessionService';
 
 const jwt = require('jsonwebtoken');
+
 const _logger = Logger.Of('TokenVerify');
-import SessionService from '../services/session/SessionService';
 
 const extractToken = (req: Request) => {
     if (req.headers.authorization && req.headers.authorization.split(' ')[0] === 'Bearer') {

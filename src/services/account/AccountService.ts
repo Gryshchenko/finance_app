@@ -5,6 +5,7 @@ import { ICreateAccount } from 'interfaces/ICreateAccount';
 
 export default class AccountService implements IAccountService {
     private _accountDataAccess: IAccountDataAccess;
+
     public constructor(accountDataAccess: IAccountDataAccess) {
         this._accountDataAccess = accountDataAccess;
     }

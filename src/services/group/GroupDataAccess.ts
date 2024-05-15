@@ -5,10 +5,12 @@ import { IGroup } from 'interfaces/IGroup';
 
 export default class GroupDataService extends LoggerBase implements IGroupDataAccess {
     private readonly _db: IDatabaseConnection;
+
     public constructor(db: IDatabaseConnection) {
         super();
         this._db = db;
     }
+
     public async createGroup(userId: number, groupName: string): Promise<IGroup> {
         try {
             this._logger.info('createGroup request');

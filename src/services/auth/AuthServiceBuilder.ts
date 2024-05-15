@@ -1,8 +1,8 @@
-import AuthService from './AuthService';
 import DatabaseConnection from 'src/repositories/DatabaseConnection';
 import UserService from 'src/services/user/UserService';
 import UserDataAccess from 'src/services/user/UserDataAccess';
 import config from 'src/config/dbConfig';
+import AuthService from './AuthService';
 
 export default class AuthServiceBuilder {
     public static build() {

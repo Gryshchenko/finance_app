@@ -6,10 +6,12 @@ import { ICategory } from 'interfaces/ICategory';
 
 export default class CategoryDataService extends LoggerBase implements ICategoryDataAccess {
     private readonly _db: IDatabaseConnection;
+
     public constructor(db: IDatabaseConnection) {
         super();
         this._db = db;
     }
+
     public async createCategories(userId: number, categories: ICreateCategory[]): Promise<ICategory[]> {
         try {
             this._logger.info('createCategories request');

@@ -7,7 +7,7 @@ import EmailConfirmationDataAccess from 'src/services/emailConfirmation/EmailCon
 import UserService from 'src/services/user/UserService';
 import UserDataService from 'src/services/user/UserDataAccess';
 
-export default class UserRegistrationServiceBuilder {
+export default class EmailConfirmationServiceBuilder {
     public static build() {
         const databaseConnection = new DatabaseConnection(config);
         return new EmailConfirmationService(

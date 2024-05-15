@@ -1,8 +1,10 @@
 import { IUser } from 'interfaces/IUser';
+import { ICreateUser } from 'interfaces/ICreateUser';
+import { IGetUserAuthenticationData } from 'interfaces/IGetUserAuthenticationData';
 
 export interface IUserService {
-    getUserByEmail(email: string): Promise<string | undefined>;
-    getUser(email: string, password: string): Promise<IUser | undefined>;
-    createUser(email: string, password: string): Promise<IUser | undefined>;
-    updateUserEmail(userId: number, email: string): Promise<IUser | undefined>;
+    getUserAuthenticationData(email: string): Promise<IGetUserAuthenticationData | undefined>;
+    getUser(userId: number): Promise<IUser>;
+    createUser(email: string, password: string): Promise<ICreateUser>;
+    updateUserEmail(userId: number, email: string): Promise<IUser>;
 }

@@ -9,10 +9,10 @@ export default class TranslationLoaderImpl implements TranslationLoader {
     }
 
     public load(langCode: LanguageType): Promise<unknown> {
-        return import('../..locales/' + langCode + '.json')
+        return import(`../..locales/${langCode}.json`)
             .then((response) => response)
             .catch(() => {
-                return import('../../locales/' + LanguageType.US + '.json').then((response) => response);
+                return import(`../../locales/${LanguageType.US}.json`).then((response) => response);
             });
     }
 }

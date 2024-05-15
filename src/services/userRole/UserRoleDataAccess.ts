@@ -5,10 +5,12 @@ import { IUserRole } from 'interfaces/IUserRole';
 
 export default class UserRoleDataService extends LoggerBase implements IUserRoleDataAccess {
     private readonly _db: IDatabaseConnection;
+
     public constructor(db: IDatabaseConnection) {
         super();
         this._db = db;
     }
+
     public async getUserRole(userId: number): Promise<IUserRole> {
         try {
             this._logger.info('getUserRole request');
@@ -20,6 +22,7 @@ export default class UserRoleDataService extends LoggerBase implements IUserRole
             throw error;
         }
     }
+
     public async updateUserRole(userId: number, newRoleId: number): Promise<IUserRole> {
         try {
             this._logger.info('updateUserRole request');
@@ -37,6 +40,7 @@ export default class UserRoleDataService extends LoggerBase implements IUserRole
             throw error;
         }
     }
+
     public async createUserRole(userId: number, roleId: number): Promise<IUserRole> {
         try {
             this._logger.info('createUserRole request');

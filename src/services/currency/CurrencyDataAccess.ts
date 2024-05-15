@@ -5,10 +5,12 @@ import { ICurrency } from 'interfaces/ICurrency';
 
 export default class CurrencyDataService extends LoggerBase implements ICurrencyDataAccess {
     private readonly _db: IDatabaseConnection;
+
     public constructor(db: IDatabaseConnection) {
         super();
         this._db = db;
     }
+
     public async getCurrencies(): Promise<ICurrency[]> {
         try {
             this._logger.info('getCurrencies request');
@@ -20,6 +22,7 @@ export default class CurrencyDataService extends LoggerBase implements ICurrency
             throw error;
         }
     }
+
     public async getCurrencyById(currencyId: number): Promise<ICurrency | undefined> {
         try {
             this._logger.info('getCurrencyById request');
@@ -38,6 +41,7 @@ export default class CurrencyDataService extends LoggerBase implements ICurrency
             throw error;
         }
     }
+
     public async getCurrencyByCurrencyCode(currencyCode: string): Promise<ICurrency | undefined> {
         try {
             this._logger.info('getCurrencyByCurrencyCode request');
