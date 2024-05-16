@@ -19,10 +19,7 @@ const profileRouter = express.Router();
 
 profileRouter.use(tokenVerify, sessionVerify);
 
-profileRouter.post('/request-password-reset', routesInputValidation([body('email').isEmail()]), (req: Request, res: Response) => {
-    const { email } = req.body;
-    // res.status(200).send('If an account with that email exists, we have sent an email with a password reset link.');
-});
+profileRouter.post('/request-password-reset', routesInputValidation([body('email').isEmail()]), () => {});
 
 registerRouter.post(
     '/confirm-email',
@@ -100,18 +97,6 @@ profileRouter.post(
         const _logger = Logger.Of('ProfileSendConfirmation');
         const responseBuilder = new ResponseBuilder();
         try {
-            // if (response instanceof  Success) {
-            //         SessionService.deleteSession(req, res, () => {
-            //             res.status(200).json(responseBuilder.setStatus(ResponseStatusType.OK).setData({}).build());
-            //         });
-            // } else {
-            //     _logger.error(response.error);
-            //     return res
-            //         .status(400)
-            //         .json(
-            //             responseBuilder.setStatus(ResponseStatusType.INTERNAL).setError({ errorCode: response.code }).build(),
-            //         );
-            // }
         } catch (error) {
             _logger.error(error);
             res.status(400).json(
@@ -127,27 +112,6 @@ profileRouter.post(
         const _logger = Logger.Of('ProfileSendConfirmation');
         const responseBuilder = new ResponseBuilder();
         try {
-            // const emailService = EmailConfirmationServiceBuilder.build();
-            // // @ts-ignore
-            // const user = req.session.user as IUserSession;
-            // const response = await emailService.confirmationUserMail(
-            //     user.userId,
-            //     req.body.email,
-            //     req.body.code,
-            //     user.email,
-            // );
-            // if (response instanceof  Success) {
-            //     SessionService.deleteSession(req, res, () => {
-            //         res.status(200).json(responseBuilder.setStatus(ResponseStatusType.OK).setData({}).build());
-            //     });
-            // } else {
-            //     _logger.error(response.error);
-            //     return res
-            //         .status(400)
-            //         .json(
-            //             responseBuilder.setStatus(ResponseStatusType.INTERNAL).setError({ errorCode: response.code }).build(),
-            //         );
-            // }
         } catch (error) {
             _logger.error(error);
             res.status(400).json(

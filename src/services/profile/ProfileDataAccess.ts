@@ -46,10 +46,7 @@ export default class ProfileDataService extends LoggerBase implements IProfileDa
     async confirmationUserMail(userId: number): Promise<boolean | undefined> {
         try {
             this._logger.info('confirmationUserMail request');
-            const data = await this._db.engine()<IProfile>('profiles').where({ userId }).update<{
-                mailConfirmed: boolean | undefined;
-                // @ts-ignore
-            }>({ mailConfirmed: true }, ['mailConfirmed']);
+            const data = await this._db.engine()<IProfile>('profiles').where({ userId }).update({ mailConfirmed: true }, ['*']);
             this._logger.info('confirmationUserMail response');
             if (data) {
                 return data[0].mailConfirmed;

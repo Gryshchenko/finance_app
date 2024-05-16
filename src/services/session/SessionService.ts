@@ -4,7 +4,6 @@ import { ErrorCode } from 'types/ErrorCode';
 import { TranslationKey } from 'types/TranslationKey';
 import { IUser } from 'interfaces/IUser';
 import { IUserSession } from 'interfaces/IUserSession';
-import { RoleType } from 'types/RoleType';
 import Logger from 'src/helper/logger/Logger';
 import ResponseBuilder from 'src/helper/responseBuilder/ResponseBuilder';
 

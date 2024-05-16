@@ -29,7 +29,7 @@ export default class Translations {
         const enAnswer: any = await Utils.to(Translations.loadLanguage((Translations.LANG_CODE = languageCode), loader));
         let error: any = enAnswer[0];
         if (error) {
-            return Promise.reject(error);
+            return Promise.reject(new Error(error));
         }
         Translations.DATA = enAnswer[1];
         Translations.LOGGER.info(`EN translations loaded. Requested language: ${languageCode}`);
@@ -58,7 +58,7 @@ export default class Translations {
         const error: any = answer[0] || enAnswer[0];
 
         if (error) {
-            return Promise.reject(error);
+            return Promise.reject(new Error(error));
         }
         const payload = {
             translations: answer[1],

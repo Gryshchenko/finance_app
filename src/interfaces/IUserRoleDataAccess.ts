@@ -1,4 +1,3 @@
-import { RoleType } from 'types/RoleType';
 import { IUserRole } from 'interfaces/IUserRole';
 
 export interface IUserRoleDataAccess {

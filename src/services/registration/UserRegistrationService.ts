@@ -100,7 +100,7 @@ export default class UserRegistrationService extends LoggerBase {
             }
             const user = await this.userService.createUser(email, password);
             if (user) {
-                const currencyCode = CurrencyUtils.getCurrencyCodeFromLocale(localeFromUser) || CurrencyUtils.defaultCurrencyCode;
+                const currencyCode = CurrencyUtils.getCurrencyCodeFromLocale(localeFromUser) ?? CurrencyUtils.defaultCurrencyCode;
                 const currency = await this.currencyService.getCurrencyByCurrencyCode(currencyCode);
                 if (!currency) {
                     return new Failure('cant get currency for new user', ErrorCode.SIGNUP);

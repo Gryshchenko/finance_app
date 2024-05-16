@@ -141,8 +141,8 @@ export default class Utils {
 
     public static has(array: any[], val: any): boolean {
         if (Utils.isArrayNotEmpty(array) && Utils.isNotNull(val)) {
-            for (let i = 0; i < array.length; i++) {
-                if (array[i] === val) {
+            for (let value of array) {
+                if (value === val) {
                     return true;
                 }
             }

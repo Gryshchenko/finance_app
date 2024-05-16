@@ -26,22 +26,22 @@ export default class ResponseBuilder<T = unknown> {
         };
     }
 
-    public setStatus(status: ResponseStatusType): ResponseBuilder {
+    public setStatus(status: ResponseStatusType): this {
         this._response.status = status;
         return this;
     }
 
-    public setErrors(errors: IResponseError[]): ResponseBuilder {
+    public setErrors(errors: IResponseError[]): this {
         this._response.errors = errors;
         return this;
     }
 
-    public setError(errors: IResponseError): ResponseBuilder {
+    public setError(errors: IResponseError): this {
         this._response.errors?.push(errors);
         return this;
     }
 
-    public setData(data: T): ResponseBuilder<T> {
+    public setData(data: unknown): this {
         this._response.data = data;
         return this;
     }
