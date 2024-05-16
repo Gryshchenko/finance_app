@@ -63,4 +63,8 @@ class Translations {
     }
 }
 
-new Translations();
+try {
+    new Translations();
+} catch (e) {
+    console.log(e);
+}
