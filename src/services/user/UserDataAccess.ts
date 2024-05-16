@@ -67,7 +67,7 @@ export default class UserDataService extends LoggerBase implements IUserDataAcce
 
     public async getUser(userId: number): Promise<IUserServer> {
         try {
-            return this.fetchUserDetails(userId);
+            return await this.fetchUserDetails(userId);
         } catch (error) {
             this._logger.error(error);
             throw error;
