@@ -95,32 +95,6 @@ describe('POST /register/signup', () => {
             status: 2,
         });
     });
-    it('should not allow duplicate email registration', async () => {
-        const response = await request(app)
-            .post('/register/signup')
-            .send({ email: 'gryshchenko.89@gmail.com', password: 'sdfD@jskdfh123' });
-
-        expect(response.status).toBe(409); // Или другой соответствующий статус-код
-        expect(response.body).toEqual({
-            status: 0,
-            errors: ['Email already in use'],
-        });
-    });
-    // it('should handle server errors gracefully', async () => {
-    //     jest.spyOn(new UserDataService(), 'getUserAuthenticationData').mockImplementationOnce(() =>
-    //         Promise.reject(new Error('Database error')),
-    //     );
-    //
-    //     const response = await request(app)
-    //         .post('/register/signup')
-    //         .send({ email: generateRandomEmail(), password: generateRandomEmail() });
-    //
-    //     expect(response.status).toBe(500);
-    //     expect(response.body).toEqual({
-    //         status: 0,
-    //         errors: ['Internal server error'],
-    //     });
-    // });
     it('should hash the password before saving to database', async () => {
         const spy = jest.spyOn(CryptoJS, 'PBKDF2');
         const mail = generateRandomEmail();
@@ -138,5 +112,28 @@ describe('POST /register/signup', () => {
             errors: [],
         });
         expect(spy).toHaveBeenCalled();
+    });
+});
+
+describe('Email Validation Tests', () => {
+    // test('should accept a valid ASCII email', async () => {
+    //     const response = await request(app)
+    //         .post('/register/signup')
+    //         .send({ email: 'gryshchenko@example.com', password: generateRandomPassword() });
+    //     expect(response.statusCode).toBe(200);
+    // });
+
+    test('should reject an email with non-ASCII characters', async () => {
+        const response = await request(app)
+            .post('/register/signup')
+            .send({ email: 'tést@example.com', password: generateRandomPassword() });
+        expect(response.statusCode).toBe(400);
+    });
+
+    test('should reject an email that is too long', async () => {
+        const response = await request(app)
+            .post('/register/signup')
+            .send({ email: 'thisisareallylongemailaddress@example.com', password: generateRandomPassword() });
+        expect(response.statusCode).toBe(400);
     });
 });

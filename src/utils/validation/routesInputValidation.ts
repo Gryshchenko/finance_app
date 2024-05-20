@@ -28,6 +28,7 @@ export default function routesInputValidation(validations: any[]) {
 
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
 const getErrorType = (path: string): ErrorCode => {
+    console.log(path);
     switch (path) {
         case 'code':
             return ErrorCode.EMAIL_VERIFICATION_CODE_INVALID;

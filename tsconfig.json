@@ -14,8 +14,10 @@
         "paths": {
             "translationsKeys/*":["src/translationsKeys/*"],
             "interfaces/*": ["src/interfaces/*"],
+            "services/*": ["src/services/*"],
             "types/*": ["src/types/*"],
             "src/*": ["src/*"],
+            "utils/*": ["src/utils"]
         }
     },
     "ts-node": {
