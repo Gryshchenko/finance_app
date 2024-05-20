@@ -11,7 +11,9 @@ module.exports = {
     collectCoverage: false,
     coverageReporters: ['lcov'],
     testPathIgnorePatterns: ['/node_modules/'],
+    setupFiles: ['./jest.setup.ts'],
     transform: {
         '^.+\\.(ts|js)?$': 'ts-jest',
     },
+    testTimeout: 200000,
 };

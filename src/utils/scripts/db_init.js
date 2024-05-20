@@ -1,6 +1,15 @@
 const { Client } = require('pg');
 const { readFileSync } = require('fs');
+const dotenv = require('dotenv');
+
+const args = process.argv.slice(2) || '.env';
+
+const envFile = args[0] === 'test' ? '.env.tests' : '.env';
+
+dotenv.config({ path: envFile });
+
 require('dotenv').config();
+
 const caCert = readFileSync('/etc/ssl/cert.pem').toString();
 
 const _db = new Client({
@@ -14,6 +23,7 @@ const _db = new Client({
         cert: caCert,
     },
 });
+
 _db.connect();
 
 const createUserTableQuery = `

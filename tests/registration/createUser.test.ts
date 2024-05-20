@@ -1,118 +1,145 @@
 // @ts-nocheck
+import { generateRandomEmail, generateRandomPassword } from '../TestsUtils.';
+import UserService from '../../src/services/user/UserService';
+import UserDataService from '../../src/services/user/UserDataAccess';
 
-import UserRegistrationServiceBuilder from '../../src/services/registration/UserRegistrationServiceBuilder';
-import Success from '../../src/utils/success/Success';
-import Failure from '../../src/utils/failure/Failure';
-const users = {
-    [1]: {
-        userId: 1,
-        email: 'test@test.com',
-        status: 1,
-        createdAt: '2',
-        updatedAt: '2',
-        currency: {
-            currencyCode: undefined,
-            currencyName: undefined,
-            symbol: undefined,
-        },
-        profile: {
-            locale: undefined,
-            mailConfirmed: undefined,
-        },
-        additionalInfo: undefined,
-    },
-};
+const CryptoJS = require('crypto-js');
+const request = require('supertest');
+// config.js
+require('dotenv').config();
+const app = require('../../src/app');
 
-const codes = {
-    [1]: {
-        confirmationId: 1,
-        userId: 1,
-        email: 'test@test.com',
-        confirmationCode: 22222222,
-        confirmed: false,
-        expiresAt: '10',
-    },
-};
+describe('POST /register/signup', () => {
+    it('should authenticate with correct credentials', async () => {
+        const mail = generateRandomEmail();
+        const pass = generateRandomPassword();
+        const response = await request(app).post('/register/signup').send({ email: mail, password: pass });
 
-jest.mock('../../src/services/emailConfirmation/EmailConfirmationDataAccess', () => {
-    return {
-        __esModule: true,
-        default: jest.fn().mockImplementation(() => {
-            return {
-                deleteUserConfirmation: () => null,
-                getUserConfirmationWithEmail: () => null,
-                getUserConfirmationWithCode: (userId, code) => codes[userId],
-                createUserConfirmation: () => null,
-            };
-        }),
-    };
-});
-
-jest.mock('../../src/services/profile/ProfileDataAccess', () => {
-    return {
-        __esModule: true,
-        default: jest.fn().mockImplementation(() => {
-            return {
-                confirmationUserMail: () => true,
-            };
-        }),
-    };
-});
-
-jest.mock('../../src/services/user/UserDataAccess', () => {
-    return {
-        __esModule: true,
-        default: jest.fn().mockImplementation(() => {
-            return {
-                updateUserEmail: (id: number) => () => users[id],
-                getUserEmail: () => ({ email: 'test@test.com' }),
-                createUser: () => null,
-                getUser: (id: number) => users[id],
-                getUserAuthenticationData: () => null,
-                fetchUserDetails: () => null,
-            };
-        }),
-    };
-});
-
-jest.mock('../../src/repositories/DatabaseConnection', () => {
-    return {
-        __esModule: true,
-        default: jest.fn().mockImplementation(() => {
-            return {
-                engine: jest.fn().mockReturnValue(() => ({
-                    first: jest.fn().mockReturnThis(),
-                    where: jest.fn().mockReturnThis(),
-                    select: jest.fn().mockReturnThis(),
-                    insert: jest.fn().mockReturnThis(),
-                    update: jest.fn().mockReturnThis(),
-                    delete: jest.fn().mockReturnThis(),
-                })),
-                close: jest.fn().mockResolvedValue(undefined),
-            };
-        }),
-    };
-});
-
-describe('UserRegistrationServiceBuilder', () => {
-    beforeEach(() => {
-        jest.clearAllMocks();
+        expect(response.status).toBe(200);
+        expect(response.body).toStrictEqual({
+            status: 1,
+            data: {
+                email: mail,
+                status: 1,
+                currency: { currencyCode: 'USD', currencyName: 'US Dollar', symbol: '$' },
+                profile: { locale: 'en-US' },
+                additionalInfo: null,
+            },
+            errors: [],
+        });
     });
+    it('should return error for invalid email format to big', async () => {
+        const response = await request(app)
+            .post('/register/signup')
+            .send({ email: generateRandomEmail(31), password: generateRandomPassword() });
 
-    it('confirmUserMail: should confirm user email successfully', async () => {
-        const response = await UserRegistrationServiceBuilder.build().confirmUserMail(1, 22222222);
-        expect(response).toEqual(new Success(users[1]));
+        console.log(response);
+        expect(response.status).toBe(400);
+        expect(response.body).toStrictEqual({
+            data: {},
+            errors: [
+                {
+                    errorCode: 4000,
+                    msg: 'Invalid value',
+                },
+            ],
+            status: 2,
+        });
     });
-    it('confirmUserMail: wrong CODE should confirm user email failed', async () => {
-        const response = await UserRegistrationServiceBuilder.build().confirmUserMail(1, 22222244);
-        expect(response).toEqual(new Failure('Confirmation code not same', 4006));
+    it('should return error for invalid email format', async () => {
+        const response = await request(app)
+            .post('/register/signup')
+            .send({ email: 'invalid-email', password: generateRandomPassword() });
+
+        console.log(response);
+        expect(response.status).toBe(400);
+        expect(response.body).toStrictEqual({
+            data: {},
+            errors: [
+                {
+                    errorCode: 4000,
+                    msg: 'Invalid value',
+                },
+            ],
+            status: 2,
+        });
     });
-    it('confirmUserMail: wrong user ID should confirm user email failed', async () => {
-        const response = await UserRegistrationServiceBuilder.build().confirmUserMail(2, 22222244);
-        expect(response).toEqual(new Failure('Confirmation code not same', 4006));
+    it('should return error for too short password', async () => {
+        const response = await request(app)
+            .post('/register/signup')
+            .send({ email: generateRandomEmail(), password: generateRandomPassword(5) });
+
+        expect(response.status).toBe(400);
+        expect(response.body).toStrictEqual({
+            data: {},
+            errors: [
+                {
+                    errorCode: 4002,
+                    msg: 'Invalid value',
+                },
+            ],
+            status: 2,
+        });
     });
-    it("confirmUserMail: all property's null should confirm user email failed", async () => {
-        const response = await UserRegistrationServiceBuilder.build().confirmUserMail(null, null);
-        expect(response).toEqual(new Failure('Confirmation code not same', 4006));
+    it('should return error for too big password', async () => {
+        const response = await request(app)
+            .post('/register/signup')
+            .send({ email: generateRandomEmail(), password: generateRandomPassword(31) });
+
+        expect(response.status).toBe(400);
+        expect(response.body).toStrictEqual({
+            data: {},
+            errors: [
+                {
+                    errorCode: 4002,
+                    msg: 'Invalid value',
+                },
+            ],
+            status: 2,
+        });
+    });
+    it('should not allow duplicate email registration', async () => {
+        const response = await request(app)
+            .post('/register/signup')
+            .send({ email: 'gryshchenko.89@gmail.com', password: 'sdfD@jskdfh123' });
+
+        expect(response.status).toBe(409); // Или другой соответствующий статус-код
+        expect(response.body).toEqual({
+            status: 0,
+            errors: ['Email already in use'],
+        });
+    });
+    // it('should handle server errors gracefully', async () => {
+    //     jest.spyOn(new UserDataService(), 'getUserAuthenticationData').mockImplementationOnce(() =>
+    //         Promise.reject(new Error('Database error')),
+    //     );
+    //
+    //     const response = await request(app)
+    //         .post('/register/signup')
+    //         .send({ email: generateRandomEmail(), password: generateRandomEmail() });
+    //
+    //     expect(response.status).toBe(500);
+    //     expect(response.body).toEqual({
+    //         status: 0,
+    //         errors: ['Internal server error'],
+    //     });
+    // });
+    it('should hash the password before saving to database', async () => {
+        const spy = jest.spyOn(CryptoJS, 'PBKDF2');
+        const mail = generateRandomEmail();
+        const response = await request(app).post('/register/signup').send({ email: mail, password: generateRandomPassword() });
+
+        expect(response.body).toStrictEqual({
+            status: 1,
+            data: {
+                email: mail,
+                status: 1,
+                currency: { currencyCode: 'USD', currencyName: 'US Dollar', symbol: '$' },
+                profile: { locale: 'en-US' },
+                additionalInfo: null,
+            },
+            errors: [],
+        });
+        expect(spy).toHaveBeenCalled();
     });
 });

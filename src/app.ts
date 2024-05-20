@@ -51,14 +51,13 @@ app.use('/profile', profileRouter);
 app.use('/register', registerRouter);
 
 app.get('/', (req: Request, res: Response) => {
-    console.log('hello!');
     res.send('Hello World!!!');
 });
 
 const httpsServer = https.createServer(credentials, app);
 
 httpsServer.listen(port, () => {
-    console.log(`Example app listening on port ${port}`);
+    console.log(`listening on port ${port}`);
 });
 
 module.exports = app;

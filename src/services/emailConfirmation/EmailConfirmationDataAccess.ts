@@ -46,7 +46,6 @@ export default class EmailConfirmationDataAccess extends LoggerBase implements I
     public async getUserConfirmationWithCode(userId: number, code: number): Promise<IEmailConfirmationData | undefined> {
         try {
             this._logger.info('getUserConfirmation request');
-            console.log(this._db);
             const data = await this._db
                 .engine()<IEmailConfirmationData>('email_confirmations')
                 .where({ userId, confirmationCode: code })

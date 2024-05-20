@@ -19,9 +19,9 @@ registerRouter.post(
     '/signup',
     ensureGuest,
     routesInputValidation([
-        body('password').isStrongPassword().isLength({ max: 50 }),
-        body('email').isEmail().isLength({ max: 50 }),
-        body('locale').optional(true).isString().isLength({ max: 50 }),
+        body('password').isStrongPassword().isLength({ max: 30 }),
+        body('email').isEmail().isLength({ max: 30 }),
+        body('locale').optional(true).isString().isLength({ max: 30 }),
     ]),
     async (req: Request, res: Response) => {
         const _logger = Logger.Of('RegistrationSignup');

@@ -6,6 +6,7 @@ import { IUser } from 'interfaces/IUser';
 import { IUserSession } from 'interfaces/IUserSession';
 import Logger from 'src/helper/logger/Logger';
 import ResponseBuilder from 'src/helper/responseBuilder/ResponseBuilder';
+import * as process from 'process';
 
 require('dotenv').config();
 const session = require('express-session');
@@ -94,7 +95,7 @@ export default class SessionService {
             Logger.Of('Redis').error('Redis error: ', err);
         });
         redisClient.on('connect', function () {
-            Logger.Of('Redis').error('Redis connect');
+            Logger.Of('Redis').info('Redis connect');
         });
         return session({
             store: redisStore,
