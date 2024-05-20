@@ -1,11 +1,8 @@
 // @ts-nocheck
 import { generateRandomEmail, generateRandomPassword } from '../TestsUtils.';
-import UserService from '../../src/services/user/UserService';
-import UserDataService from '../../src/services/user/UserDataAccess';
 
 const CryptoJS = require('crypto-js');
 const request = require('supertest');
-// config.js
 require('dotenv').config();
 const app = require('../../src/app');
 
