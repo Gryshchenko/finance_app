@@ -95,16 +95,21 @@ export default class UserRegistrationService extends LoggerBase {
         try {
             const locale = TranslationsUtils.convertToSupportLocale(localeFromUser);
             const otherUser = await this.userService.getUserAuthenticationData(email);
+            console.log(locale, localeFromUser, typeof localeFromUser);
             if (otherUser) {
-                return new Failure('user already exists', ErrorCode.EMAIL_ALREADY_EXIST);
+                return new Failure('user already exists', ErrorCode.SIGNUP);
             }
             const user = await this.userService.createUser(email, password);
+            console.log(user);
             if (user) {
-                const currencyCode = CurrencyUtils.getCurrencyCodeFromLocale(localeFromUser) ?? CurrencyUtils.defaultCurrencyCode;
+                const currencyCode =
+                    CurrencyUtils.getCurrencyCodeFromLocale(locale, CurrencyUtils.getCurrencyForLocale(locale)) ??
+                    CurrencyUtils.defaultCurrencyCode;
                 const currency = await this.currencyService.getCurrencyByCurrencyCode(currencyCode);
                 if (!currency) {
                     return new Failure('cant get currency for new user', ErrorCode.SIGNUP);
                 }
+                console.log(currency);
                 await Translations.load(locale, TranslationLoaderImpl.instance());
                 const newToken = AuthService.createJWToken(user.userId, RoleType.Default);
 

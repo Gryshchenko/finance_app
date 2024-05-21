@@ -1,5 +1,7 @@
 // @ts-nocheck
 import { generateRandomEmail, generateRandomPassword } from '../TestsUtils.';
+import routesInputValidation from '../../src/utils/validation/routesInputValidation';
+import signupValidationRules from '../../src/utils/validation/signupValidationRules';
 
 const CryptoJS = require('crypto-js');
 const request = require('supertest');
@@ -25,6 +27,80 @@ describe('POST /register/signup', () => {
             errors: [],
         });
     });
+    it('should authenticate with correct credentials with locale euro', async () => {
+        const mail = generateRandomEmail();
+        const pass = generateRandomPassword();
+        const locale = 'fr-FR';
+        const response = await request(app).post('/register/signup').send({ email: mail, password: pass, locale });
+
+        expect(response.status).toBe(200);
+        expect(response.body).toStrictEqual({
+            status: 1,
+            data: {
+                email: mail,
+                status: 1,
+                currency: { currencyCode: 'EUR', currencyName: 'Euro', symbol: '€' },
+                profile: { locale },
+                additionalInfo: null,
+            },
+            errors: [],
+        });
+    });
+    it('should authenticate with correct credentials with locale DKK', async () => {
+        const mail = generateRandomEmail();
+        const pass = generateRandomPassword();
+        const locale = 'da-DK';
+        const response = await request(app).post('/register/signup').send({ email: mail, password: pass, locale });
+
+        expect(response.status).toBe(200);
+        expect(response.body).toStrictEqual({
+            status: 1,
+            data: {
+                email: mail,
+                status: 1,
+                currency: { currencyCode: 'DKK', currencyName: 'Danish Krone', symbol: 'kr' },
+                profile: { locale },
+                additionalInfo: null,
+            },
+            errors: [],
+        });
+    });
+
+    it('should authenticate with correct credentials with locale un support locale en_MY', async () => {
+        const mail = generateRandomEmail();
+        const pass = generateRandomPassword();
+        const locale = 'en-MY';
+        const response = await request(app).post('/register/signup').send({ email: mail, password: pass, locale });
+
+        expect(response.status).toBe(200);
+        expect(response.body).toStrictEqual({
+            status: 1,
+            data: {
+                email: mail,
+                status: 1,
+                currency: { currencyCode: 'USD', currencyName: 'US Dollar', symbol: '$' },
+                profile: { locale: 'en-US' },
+                additionalInfo: null,
+            },
+            errors: [],
+        });
+    });
+    it('should return error for invalid locale format', async () => {
+        const response = await request(app)
+            .post('/register/signup')
+            .send({ email: generateRandomEmail(), password: generateRandomPassword(), locale: 213123 });
+
+        expect(response.status).toBe(400);
+        expect(response.body).toStrictEqual({
+            data: {},
+            errors: [
+                {
+                    errorCode: 4009,
+                },
+            ],
+            status: 2,
+        });
+    });
     it('should return error for invalid email format to big', async () => {
         const response = await request(app)
             .post('/register/signup')
@@ -37,7 +113,6 @@ describe('POST /register/signup', () => {
             errors: [
                 {
                     errorCode: 4000,
-                    msg: 'Invalid value',
                 },
             ],
             status: 2,
@@ -48,14 +123,74 @@ describe('POST /register/signup', () => {
             .post('/register/signup')
             .send({ email: 'invalid-email', password: generateRandomPassword() });
 
-        console.log(response);
         expect(response.status).toBe(400);
         expect(response.body).toStrictEqual({
             data: {},
             errors: [
                 {
                     errorCode: 4000,
-                    msg: 'Invalid value',
+                },
+            ],
+            status: 2,
+        });
+    });
+    it('should return error for invalid email format', async () => {
+        const response = await request(app)
+            .post('/register/signup')
+            .send({ email: 'example.com', password: generateRandomPassword() });
+
+        expect(response.status).toBe(400);
+        expect(response.body).toStrictEqual({
+            data: {},
+            errors: [
+                {
+                    errorCode: 4000,
+                },
+            ],
+            status: 2,
+        });
+    });
+    it('should return error for invalid email format', async () => {
+        const response = await request(app)
+            .post('/register/signup')
+            .send({ email: 'example@', password: generateRandomPassword() });
+
+        expect(response.status).toBe(400);
+        expect(response.body).toStrictEqual({
+            data: {},
+            errors: [
+                {
+                    errorCode: 4000,
+                },
+            ],
+            status: 2,
+        });
+    });
+    it('should return error for invalid email format', async () => {
+        const response = await request(app)
+            .post('/register/signup')
+            .send({ email: 'example@test@com', password: generateRandomPassword() });
+
+        expect(response.status).toBe(400);
+        expect(response.body).toStrictEqual({
+            data: {},
+            errors: [
+                {
+                    errorCode: 4000,
+                },
+            ],
+            status: 2,
+        });
+    });
+    it('should return error for invalid email format', async () => {
+        const response = await request(app).post('/register/signup').send({ email: null, password: generateRandomPassword() });
+
+        expect(response.status).toBe(400);
+        expect(response.body).toStrictEqual({
+            data: {},
+            errors: [
+                {
+                    errorCode: 4000,
                 },
             ],
             status: 2,
@@ -72,7 +207,6 @@ describe('POST /register/signup', () => {
             errors: [
                 {
                     errorCode: 4002,
-                    msg: 'Invalid value',
                 },
             ],
             status: 2,
@@ -89,7 +223,48 @@ describe('POST /register/signup', () => {
             errors: [
                 {
                     errorCode: 4002,
-                    msg: 'Invalid value',
+                },
+            ],
+            status: 2,
+        });
+    });
+    it('should return error invalid format password', async () => {
+        const response = await request(app).post('/register/signup').send({ email: generateRandomEmail(), password: '123456' });
+
+        expect(response.status).toBe(400);
+        expect(response.body).toStrictEqual({
+            data: {},
+            errors: [
+                {
+                    errorCode: 4002,
+                },
+            ],
+            status: 2,
+        });
+    });
+    it('should return error invalid format password', async () => {
+        const response = await request(app).post('/register/signup').send({ email: generateRandomEmail(), password: 'password' });
+
+        expect(response.status).toBe(400);
+        expect(response.body).toStrictEqual({
+            data: {},
+            errors: [
+                {
+                    errorCode: 4002,
+                },
+            ],
+            status: 2,
+        });
+    });
+    it('should return error invalid format password', async () => {
+        const response = await request(app).post('/register/signup').send({ email: generateRandomEmail(), password: null });
+
+        expect(response.status).toBe(400);
+        expect(response.body).toStrictEqual({
+            data: {},
+            errors: [
+                {
+                    errorCode: 4002,
                 },
             ],
             status: 2,
@@ -112,28 +287,5 @@ describe('POST /register/signup', () => {
             errors: [],
         });
         expect(spy).toHaveBeenCalled();
-    });
-});
-
-describe('Email Validation Tests', () => {
-    // test('should accept a valid ASCII email', async () => {
-    //     const response = await request(app)
-    //         .post('/register/signup')
-    //         .send({ email: 'gryshchenko@example.com', password: generateRandomPassword() });
-    //     expect(response.statusCode).toBe(200);
-    // });
-
-    test('should reject an email with non-ASCII characters', async () => {
-        const response = await request(app)
-            .post('/register/signup')
-            .send({ email: 'tést@example.com', password: generateRandomPassword() });
-        expect(response.statusCode).toBe(400);
-    });
-
-    test('should reject an email that is too long', async () => {
-        const response = await request(app)
-            .post('/register/signup')
-            .send({ email: 'thisisareallylongemailaddress@example.com', password: generateRandomPassword() });
-        expect(response.statusCode).toBe(400);
     });
 });

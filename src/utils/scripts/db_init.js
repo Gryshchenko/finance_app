@@ -94,26 +94,23 @@ const createCurrencyTableQuery = `
 
 const insertDefaultCurrencies = `
     INSERT INTO currencies (currencyCode, currencyName, symbol) VALUES
-    ('USD', 'US Dollar', '$'),
+    ('DKK', 'Danish Krone', 'kr'),
     ('EUR', 'Euro', '€'),
+    ('USD', 'US Dollar', '$'),
+    ('NOK', 'Norwegian Krone', 'kr'),
+    ('UAH', 'Ukrainian Hryvnia', '₴'),
+    ('RUB', 'Russian Ruble', '₽'),
+    ('BGN', 'Bulgarian Lev', 'лв'),
+    ('CZK', 'Czech Koruna', 'Kč'),
+    ('HRK', 'Croatian Kuna', 'kn'),
+    ('HUF', 'Hungarian Forint', 'Ft'),
     ('JPY', 'Japanese Yen', '¥'),
-    ('GBP', 'British Pound', '£'),
-    ('AUD', 'Australian Dollar', 'A$'),
-    ('CAD', 'Canadian Dollar', 'C$'),
-    ('CHF', 'Swiss Franc', 'CHF'),
-    ('CNY', 'Chinese Yuan', '¥'),
+    ('GEL', 'Georgian Lari', '₾'),
+    ('PLN', 'Polish Zloty', 'zł'),
+    ('BRL', 'Brazilian Real', 'R$'),
+    ('RON', 'Romanian Leu', 'lei'),
     ('SEK', 'Swedish Krona', 'kr'),
-    ('NZD', 'New Zealand Dollar', 'NZ$'),
-    ('BTC', 'Bitcoin', '₿'),
-    ('ETH', 'Ethereum', 'Ξ'),
-    ('XRP', 'Ripple', 'XRP'),
-    ('LTC', 'Litecoin', 'Ł'),
-    ('ADA', 'Cardano', 'ADA'),
-    ('DOT', 'Polkadot', 'DOT'),
-    ('BCH', 'Bitcoin Cash', 'BCH'),
-    ('LINK', 'Chainlink', 'LINK'),
-    ('BNB', 'Binance Coin', 'BNB'),
-    ('USDT', 'Tether', '₮');
+    ('TRY', 'Turkish Lira', '₺');
 `;
 
 const createProfileTableQuery = `

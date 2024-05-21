@@ -2,14 +2,7 @@ import { LanguageType } from 'types/LanguageType';
 
 export default class TranslationsUtils {
     public static convertToSupportLocale(locale: string): LanguageType {
-        let language: string;
-        if (locale?.includes('-')) {
-            const arr = locale.split('-');
-            language = arr[0]?.toUpperCase() as LanguageType;
-        } else {
-            language = locale?.toUpperCase() as LanguageType;
-        }
-        switch (language) {
+        switch (locale) {
             case LanguageType.DE:
                 return LanguageType.DE;
             case LanguageType.DK:
