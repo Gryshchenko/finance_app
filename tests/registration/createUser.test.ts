@@ -1,7 +1,5 @@
 // @ts-nocheck
 import { generateRandomEmail, generateRandomPassword } from '../TestsUtils.';
-import routesInputValidation from '../../src/utils/validation/routesInputValidation';
-import signupValidationRules from '../../src/utils/validation/signupValidationRules';
 
 const CryptoJS = require('crypto-js');
 const request = require('supertest');
@@ -263,6 +261,9 @@ describe('POST /register/signup', () => {
         expect(response.body).toStrictEqual({
             data: {},
             errors: [
+                {
+                    errorCode: 4002,
+                },
                 {
                     errorCode: 4002,
                 },

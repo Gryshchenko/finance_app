@@ -1,10 +1,12 @@
 const fs = require('fs');
 const path = require('path');
 const { stdin: input, stdout: output } = require('node:process');
+
 const enumPath = './src/types/';
 
 class Translations {
     keys = null;
+
     constructor() {
         this.init();
     }

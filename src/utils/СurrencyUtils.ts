@@ -12,9 +12,11 @@ export default class CurrencyUtils {
 
         return formatter.resolvedOptions().currency;
     }
+
     public static getCurrencyForLocale(locale: LanguageType): string {
         return CurrencyUtils.localeToCurrency[locale] ?? CurrencyUtils.localeToCurrency[LanguageType.US];
     }
+
     private static localeToCurrency: { [key in LanguageType]: string } = {
         [LanguageType.DK]: 'DKK',
         [LanguageType.GR]: 'EUR',

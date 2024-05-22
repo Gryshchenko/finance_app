@@ -14,7 +14,7 @@ interface IOptions {
 }
 
 export function createSignupValidationRules(field: string, type: string, options: Partial<IOptions> = {}) {
-    let validatorChain = body(field).bail();
+    let validatorChain = body(field);
 
     if (options.optional) {
         validatorChain = validatorChain.optional({ checkFalsy: true });
@@ -23,36 +23,34 @@ export function createSignupValidationRules(field: string, type: string, options
     if (options.onlyASCII) {
         validatorChain = validatorChain
             .matches(/^[\x00-\x7F]*$/)
-            .withMessage(`Field ${field} must contain only ASCII characters`)
-            .bail();
+            .withMessage(`Field ${field} must contain only ASCII characters`);
     }
 
     if (options.escapeHTML) {
-        validatorChain = validatorChain.escape().bail();
+        validatorChain = validatorChain.escape();
     }
 
     if (type === 'email') {
-        validatorChain = validatorChain.isEmail().bail();
+        validatorChain = validatorChain.isEmail();
     } else if (type === 'password') {
-        validatorChain = validatorChain.isStrongPassword().bail();
+        validatorChain = validatorChain.isStrongPassword();
     } else if (type === 'number') {
-        validatorChain = validatorChain.isNumeric().isInt({ max: Number.MAX_SAFE_INTEGER, min: Number.MIN_SAFE_INTEGER }).bail();
+        validatorChain = validatorChain.isNumeric().isInt({ max: Number.MAX_SAFE_INTEGER, min: Number.MIN_SAFE_INTEGER });
     } else if (type === 'string') {
-        validatorChain = validatorChain.isString().bail();
+        validatorChain = validatorChain.isString();
         if (field === 'locale') {
             validatorChain = validatorChain
                 .matches(/^[a-zA-Z]{2}-[a-zA-Z]{2}$/, 'i')
-                .withMessage(`Field ${field} must be in locale format (e.g., en-US)`)
-                .bail();
+                .withMessage(`Field ${field} must be in locale format (e.g., en-US)`);
         }
     }
 
     if (options.max && type !== 'number') {
-        validatorChain = validatorChain.isLength({ max: options.max }).bail();
+        validatorChain = validatorChain.isLength({ max: options.max });
     }
 
     if (options.min && type !== 'number') {
-        validatorChain = validatorChain.isLength({ min: options.min }).bail();
+        validatorChain = validatorChain.isLength({ min: options.min });
     }
 
     return [validatorChain];

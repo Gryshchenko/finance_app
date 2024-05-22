@@ -211,7 +211,7 @@ const initTable = (query) => {
     return _db
         .query(query)
         .then((res) => {
-            console.log('OK: ' + name);
+            console.log(`OK: ${name}`);
         })
         .catch((err) => {
             console.error(`ERROR ${name} :`, err.stack);

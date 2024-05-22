@@ -7,10 +7,10 @@ import Logger from 'src/helper/logger/Logger';
 import ResponseBuilder from 'src/helper/responseBuilder/ResponseBuilder';
 import Failure from 'src/utils/failure/Failure';
 import UserServiceUtils from 'src/services/user/UserServiceUtils';
+import signupValidationRules from 'src/utils/validation/signupValidationRules';
 import ensureGuest from '../middleware/ensureGuest';
 import SessionService from '../services/session/SessionService';
 import routesInputValidation from '../utils/validation/routesInputValidation';
-import signupValidationRules from 'src/utils/validation/signupValidationRules';
 
 const { body } = require('express-validator');
 

@@ -3,7 +3,7 @@ module.exports = {
         es2021: true,
         node: true,
     },
-    parser: '@typescript-eslint/parser', // Устанавливает TypeScript парсер
+    parser: '@typescript-eslint/parser',
     extends: [
         'eslint:recommended',
         'plugin:@typescript-eslint/recommended', // Использование рекомендованных правил для TypeScript
@@ -19,8 +19,10 @@ module.exports = {
     rules: {
         'prettier/prettier': 'error',
         'no-console': 'off',
-        'no-unused-vars': 'off', // Отключение правила no-unused-vars ESLint
-        '@typescript-eslint/no-unused-vars': ['error', { argsIgnorePattern: '^_' }], // Использование правила no-unused-vars из @typescript-eslint
+        'no-underscore-dangle': 'off',
+        'no-useless-constructor': 'off',
+        'no-unused-vars': 'off',
+        '@typescript-eslint/no-unused-vars': ['error', { argsIgnorePattern: '^_' }],
         'node/no-unsupported-features/es-syntax': ['error', { ignores: ['modules'] }],
         'consistent-return': 'off',
         'class-methods-use-this': 'off',
@@ -41,7 +43,7 @@ module.exports = {
     settings: {
         'import/resolver': {
             node: {
-                extensions: ['.js', '.jsx', '.ts', '.tsx'], // Добавление поддержки разрешений для TypeScript
+                extensions: ['.js', '.jsx', '.ts', '.tsx'],
             },
         },
     },
