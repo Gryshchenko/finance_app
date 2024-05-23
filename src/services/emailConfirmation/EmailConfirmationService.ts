@@ -14,6 +14,7 @@ import Success from 'src/utils/success/Success';
 import TimeManagerUTC from 'src/utils/TimeManagerUTC';
 import Failure from 'src/utils/failure/Failure';
 import Utils from 'src/utils/Utils';
+import { ITransaction } from 'interfaces/IDatabaseConnection';
 
 require('dotenv').config();
 
@@ -49,7 +50,7 @@ export default class EmailConfirmationService extends LoggerBase implements IEma
         return Number(number.toString().padStart(8, '0').substring(0, 8));
     }
 
-    private async sendConfirmationMailToUser(email: string, confirmationCode: number): Promise<ISuccess<unknown> | IFailure> {
+    private async sendMail(email: string, confirmationCode: number): Promise<ISuccess<unknown> | IFailure> {
         try {
             const response = await this.mailService.sendMail({
                 subject: Translations.text(TranslationKey.CONFIRM_MAIL_ADDRESS),
@@ -78,12 +79,13 @@ export default class EmailConfirmationService extends LoggerBase implements IEma
         return payload && !timeManager.isFirstDateLessThanSecond(payload.expiresAt, timeManager.getCurrentTime());
     }
 
-    private async storeConfirmationMailData(
+    public async createConfirmationMail(
         userId: number,
         email: string,
-        confirmationCode: number,
+        trx?: ITransaction,
     ): Promise<ISuccess<IEmailConfirmationData> | IFailure> {
         try {
+            const confirmationCode: number = this.createConfirmationKey();
             const userConfirmationData = await this.emailConfirmationDataAccess.getUserConfirmationWithCode(
                 userId,
                 confirmationCode,
@@ -95,12 +97,15 @@ export default class EmailConfirmationService extends LoggerBase implements IEma
                 const timeManager = new TimeManagerUTC();
                 timeManager.addTime(...CONFIRMATION_MAIL_EXPIRED_TIME);
                 const expiresAt = timeManager.getCurrentTime();
-                const result = await this.emailConfirmationDataAccess.createUserConfirmation({
-                    userId,
-                    email,
-                    confirmationCode,
-                    expiresAt,
-                });
+                const result = await this.emailConfirmationDataAccess.createUserConfirmation(
+                    {
+                        userId,
+                        email,
+                        confirmationCode,
+                        expiresAt,
+                    },
+                    trx,
+                );
                 return new Success(result);
             }
             return new Failure('Already send', ErrorCode.EMAIL_VERIFICATION_ALREADY_SEND, true);
@@ -109,54 +114,21 @@ export default class EmailConfirmationService extends LoggerBase implements IEma
         }
     }
 
-    public async sendConfirmationMail(userId: number, email: string): Promise<ISuccess<IEmailConfirmationData> | IFailure> {
+    public async sendConfirmationMailToUser(userId: number, email: string): Promise<ISuccess<IEmailConfirmationData> | IFailure> {
         const userConfirmationData = await this.emailConfirmationDataAccess.getUserConfirmationWithEmail(userId, email);
         if (userConfirmationData && userConfirmationData.confirmed) {
             return new Failure('Already confirmed', ErrorCode.EMAIL_VERIFICATION_ALREADY_DONE, true);
         }
-        const confirmationCode = this.createConfirmationKey();
-        this._logger.info('confirmationCode created');
-        const confirmation = await this.storeConfirmationMailData(userId, email, confirmationCode);
-        if (confirmation instanceof Success) {
-            this._logger.info('confirmation data stored');
-            const mailSendResponse = await this.sendConfirmationMailToUser(email, confirmationCode);
-            if (mailSendResponse instanceof Success) {
-                this._logger.info('confirmation mail send');
-                return new Success(mailSendResponse.value);
-            }
-            this._logger.info('confirmation mail send failed');
-            return new Failure('Cant send mail');
+        this._logger.info('confirmation data stored');
+        const mailSendResponse = await this.sendMail(userConfirmationData!.email, userConfirmationData!.confirmationCode);
+        if (mailSendResponse instanceof Success) {
+            this._logger.info('confirmation mail send');
+            return new Success(mailSendResponse.value);
         }
-        this._logger.info(`confirmation data failed to stored: ${(confirmation as IFailure).error}`);
-        return new Failure('Cant store data');
+        this._logger.error('confirmation mail send failed');
+        return new Failure('Cant send mail');
     }
 
-    // public async sendAgainConfirmationMail(userId: number, email: string): Promise<ISuccess<IEmailConfirmationData> | IFailure> {
-    //     const userConfirmationData = await this.emailConfirmationDataAccess.getUserConfirmation(userId, email);
-    //     const confirmationCode: number = this.createConfirmationKey();
-    //     try {
-    //         if (userConfirmationData.confirmed) {
-    //             return new Failure('Already confirmed', ErrorCode.EMAIL_VERIFICATION_ALREADY_DONE, true);
-    //         }
-    //         if (!this.isConfirmationCodeAlreadySend(userConfirmationData)) {
-    //             const timeManager = new TimeManagerUTC();
-    //             timeManager.addTime(...CONFIRMATION_MAIL_EXPIRED_TIME);
-    //             const expiresAt = timeManager.getCurrentTime();
-    //             const result = await this.emailConfirmationDataAccess.updateUserConfirmation({
-    //                 userId,
-    //                 email,
-    //                 confirmationCode,
-    //                 expiresAt,
-    //                 confirmationId: userConfirmationData.confirmationId,
-    //             });
-    //             return new Success(result);
-    //         } else {
-    //             return new Failure('Already send', ErrorCode.EMAIL_VERIFICATION_ALREADY_SEND, true);
-    //         }
-    //     } catch (error) {
-    //         return new Failure(String(error), ErrorCode.EMAIL_CANT_SEND, false);
-    //     }
-    // }
     public async deleteUserConfirmation(userId: number, code: number): Promise<boolean> {
         return await this.emailConfirmationDataAccess.deleteUserConfirmation(userId, code);
     }

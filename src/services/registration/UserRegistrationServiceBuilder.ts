@@ -44,6 +44,7 @@ export default class UserRegistrationServiceBuilder {
                 new MailTemplateService(),
                 new UserService(new UserDataAccess(databaseConnection)),
             ),
+            db: databaseConnection,
         });
     }
 }

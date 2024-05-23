@@ -1,5 +1,5 @@
 import { IEmailConfirmationDataAccess } from 'interfaces/IEmailConfirmationDataAccess';
-import { IDatabaseConnection } from 'interfaces/IDatabaseConnection';
+import { IDatabaseConnection, ITransaction } from 'interfaces/IDatabaseConnection';
 import { LoggerBase } from 'src/helper/logger/LoggerBase';
 import { IEmailConfirmationData } from 'interfaces/IEmailConfirmationData';
 import Utils from 'src/utils/Utils';
@@ -59,16 +59,20 @@ export default class EmailConfirmationDataAccess extends LoggerBase implements I
         }
     }
 
-    public async createUserConfirmation(payload: {
-        userId: number;
-        confirmationCode: number;
-        email: string;
-        expiresAt: Date;
-    }): Promise<IEmailConfirmationData> {
+    public async createUserConfirmation(
+        payload: {
+            userId: number;
+            confirmationCode: number;
+            email: string;
+            expiresAt: Date;
+        },
+        trx?: ITransaction,
+    ): Promise<IEmailConfirmationData> {
         try {
             const { userId, confirmationCode, email, expiresAt } = payload;
+            const query = trx || this._db.engine();
             this._logger.info('createUserConfirmation request');
-            const data = await this._db.engine()<IEmailConfirmationData>('email_confirmations').insert(
+            const data = await query<IEmailConfirmationData>('email_confirmations').insert(
                 {
                     email,
                     userId,

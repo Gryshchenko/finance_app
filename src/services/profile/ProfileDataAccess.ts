@@ -1,5 +1,5 @@
 import { IProfileDataAccess } from 'interfaces/IProfileDataAccess';
-import { IDatabaseConnection } from 'interfaces/IDatabaseConnection';
+import { IDatabaseConnection, ITransaction } from 'interfaces/IDatabaseConnection';
 import { LoggerBase } from 'src/helper/logger/LoggerBase';
 import { IProfile } from 'interfaces/IProfile';
 import { ICreateProfile } from 'interfaces/ICreateProfile';
@@ -12,11 +12,12 @@ export default class ProfileDataService extends LoggerBase implements IProfileDa
         this._db = db;
     }
 
-    async createProfile(data: ICreateProfile): Promise<IProfile | undefined> {
+    async createProfile(data: ICreateProfile, trx?: ITransaction): Promise<IProfile | undefined> {
         try {
             this._logger.info('createProfile request');
             const { userId, locale, currencyId } = data;
-            const response = await this._db.engine()('profiles').insert({ userId, locale, currencyId }, ['*']);
+            const query = trx || this._db.engine();
+            const response = await query('profiles').insert({ userId, locale, currencyId }, ['*']);
             this._logger.info('createProfile response');
             if (response && response[0]) {
                 return response[0];

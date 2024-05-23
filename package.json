@@ -11,7 +11,7 @@
         "redis": "redis-server",
         "type-check": "tsc -v && tsc -p tsconfig.json",
         "precheck": "pnpm run prettier:check && pnpm run eslint:check && pnpm run type-check",
-        "test": "mocha tests/**/*.spec.js",
+        "jest-test": "jest --verbose false ./tests --config ./jest.config.js --runInBand --no-cache",
         "postinstall": "husky install",
         "prettier": "prettier '**/*' --write --ignore-unknown",
         "prettier:check": "prettier '**/*' --check --ignore-unknown",

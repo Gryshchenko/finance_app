@@ -23,6 +23,9 @@ import Success from 'src/utils/success/Success';
 import { IUserRoleService } from 'interfaces/IUserRoleService';
 import CurrencyUtils from 'src/utils/СurrencyUtils';
 import { ICurrencyService } from 'interfaces/ICurrencyService';
+import { IDatabaseConnection } from 'interfaces/IDatabaseConnection';
+import { UnitOfWork } from 'src/repositories/UnitOfWork';
+import Utils from 'src/utils/Utils';
 
 const preMadeData = require('../../config/create_user_initial');
 
@@ -55,6 +58,7 @@ export default class UserRegistrationService extends LoggerBase {
     protected userRoleService: IUserRoleService;
 
     protected currencyService: ICurrencyService;
+    protected db: IDatabaseConnection;
 
     constructor(services: {
         userService: IUserService;
@@ -68,6 +72,7 @@ export default class UserRegistrationService extends LoggerBase {
         profileService: IProfileService;
         userRoleService: IUserRoleService;
         currencyService: ICurrencyService;
+        db: IDatabaseConnection;
     }) {
         super();
         this.userService = services.userService;
@@ -81,6 +86,7 @@ export default class UserRegistrationService extends LoggerBase {
         this.profileService = services.profileService;
         this.userRoleService = services.userRoleService;
         this.currencyService = services.currencyService;
+        this.db = services.db;
     }
 
     private getTranslatedDefaultData(language: LanguageType = LanguageType.US): IDefaultData {
@@ -92,13 +98,20 @@ export default class UserRegistrationService extends LoggerBase {
         password: string,
         localeFromUser: LanguageType = LanguageType.US,
     ): Promise<ISuccess<{ user: IUser; token: string }> | IFailure> {
+        const uow = new UnitOfWork(this.db);
+
         try {
+            await uow.start();
             const locale = TranslationsUtils.convertToSupportLocale(localeFromUser);
             const otherUser = await this.userService.getUserAuthenticationData(email);
             if (otherUser) {
                 return new Failure('user already exists', ErrorCode.SIGNUP);
             }
-            const user = await this.userService.createUser(email, password);
+            const trx = uow.getTransaction();
+            if (Utils.isNull(trx)) {
+                return new Failure('user not created', ErrorCode.SIGNUP);
+            }
+            const user = await this.userService.createUser(email, password, trx!);
             if (user) {
                 const currencyCode =
                     CurrencyUtils.getCurrencyCodeFromLocale(locale, CurrencyUtils.getCurrencyForLocale(locale)) ??
@@ -110,20 +123,26 @@ export default class UserRegistrationService extends LoggerBase {
                 await Translations.load(locale, TranslationLoaderImpl.instance());
                 const newToken = AuthService.createJWToken(user.userId, RoleType.Default);
 
-                await Promise.all([
-                    await this.userRoleService.createUserRole(user.userId, RoleType.Default),
-                    await this.emailConfirmationService.sendConfirmationMail(user.userId, user.email),
-                    await this.profileService.createProfile({
-                        userId: user.userId,
-                        currencyId: currency.currencyId,
-                        locale,
-                    }),
+                const res = await Promise.all([
+                    await this.userRoleService.createUserRole(user.userId, RoleType.Default, trx!),
+                    await this.profileService.createProfile(
+                        {
+                            userId: user.userId,
+                            currencyId: currency.currencyId,
+                            locale,
+                        },
+                        trx!,
+                    ),
+                    await this.emailConfirmationService.createConfirmationMail(user.userId, user.email, trx!),
                 ]);
+                await uow.commit();
+                await this.emailConfirmationService.sendConfirmationMailToUser(user.userId, user.email);
                 const readyUser = await this.userService.getUser(user.userId);
                 return new Success({ user: readyUser, token: newToken });
             }
             return new Failure('user not created', ErrorCode.SIGNUP);
         } catch (e) {
+            await uow.rollback();
             return new Failure(`user not created error: ${JSON.stringify(e)}`, ErrorCode.SIGNUP);
         }
     }

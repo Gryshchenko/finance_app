@@ -63,7 +63,7 @@ profileRouter.get('/request-resend-confirmation', async (req: Request, res: Resp
         // @ts-ignore
         const user = req.session.user as IUserSession;
         const emailService = EmailConfirmationServiceBuilder.build();
-        const response = await emailService.sendConfirmationMail(user.userId, user.email);
+        const response = await emailService.sendConfirmationMailToUser(user.userId, user.email);
         if (response instanceof Success) {
             res.status(200).json(responseBuilder.setStatus(ResponseStatusType.OK).setData({}).build());
         } else {

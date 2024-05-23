@@ -1,5 +1,5 @@
 import { IUserRoleDataAccess } from 'interfaces/IUserRoleDataAccess';
-import { IDatabaseConnection } from 'interfaces/IDatabaseConnection';
+import { IDatabaseConnection, ITransaction } from 'interfaces/IDatabaseConnection';
 import { LoggerBase } from 'src/helper/logger/LoggerBase';
 import { IUserRole } from 'interfaces/IUserRole';
 
@@ -41,10 +41,11 @@ export default class UserRoleDataService extends LoggerBase implements IUserRole
         }
     }
 
-    public async createUserRole(userId: number, roleId: number): Promise<IUserRole> {
+    public async createUserRole(userId: number, roleId: number, trx?: ITransaction): Promise<IUserRole> {
         try {
             this._logger.info('createUserRole request');
-            const data = await this._db.engine()('userroles').insert(
+            const query = trx || this._db.engine();
+            const data = await query('userroles').insert(
                 {
                     userId,
                     roleId,

@@ -1,10 +1,16 @@
 // @ts-nocheck
 import { generateRandomEmail, generateRandomPassword } from '../TestsUtils.';
+import DatabaseConnection from '../../src/repositories/DatabaseConnection';
+import config from '../../src/config/dbConfig';
 
 const CryptoJS = require('crypto-js');
 const request = require('supertest');
 require('dotenv').config();
 const app = require('../../src/app');
+
+afterEach(() => {
+    jest.restoreAllMocks();
+});
 
 describe('POST /register/signup', () => {
     it('should authenticate with correct credentials', async () => {

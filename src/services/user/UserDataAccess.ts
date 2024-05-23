@@ -1,5 +1,5 @@
 import { IUserDataAccess } from 'interfaces/IUserDataAccess';
-import { IDatabaseConnection } from 'interfaces/IDatabaseConnection';
+import { IDatabaseConnection, ITransaction } from 'interfaces/IDatabaseConnection';
 import { IUser } from 'interfaces/IUser';
 import { LoggerBase } from 'src/helper/logger/LoggerBase';
 import { IUserStatus } from 'interfaces/IUserStatus';
@@ -74,10 +74,11 @@ export default class UserDataService extends LoggerBase implements IUserDataAcce
         }
     }
 
-    public async createUser(email: string, passwordHash: string, salt: string): Promise<ICreateUserServer> {
+    public async createUser(email: string, passwordHash: string, salt: string, trx?: ITransaction): Promise<ICreateUserServer> {
         try {
             this._logger.info('createUser request');
-            const data = await this._db.engine()('users').insert(
+            const query = trx || this._db.engine();
+            const data = await query('users').insert(
                 {
                     email,
                     passwordHash,

@@ -1,2 +1,2 @@
 const dotenv = require('dotenv');
-dotenv.config({ path: '.env.tests' });
+dotenv.config({ path: '.env.test.local' });
