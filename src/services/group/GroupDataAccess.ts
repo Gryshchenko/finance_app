@@ -1,5 +1,5 @@
 import { IGroupDataAccess } from 'interfaces/IGroupDataAccess';
-import { IDatabaseConnection } from 'interfaces/IDatabaseConnection';
+import { IDatabaseConnection, ITransaction } from 'interfaces/IDatabaseConnection';
 import { LoggerBase } from 'src/helper/logger/LoggerBase';
 import { IGroup } from 'interfaces/IGroup';
 
@@ -11,12 +11,11 @@ export default class GroupDataService extends LoggerBase implements IGroupDataAc
         this._db = db;
     }
 
-    public async createGroup(userId: number, groupName: string): Promise<IGroup> {
+    public async createGroup(userId: number, groupName: string, trx?: ITransaction): Promise<IGroup> {
         try {
             this._logger.info('createGroup request');
-            const data = await this._db
-                .engine()('userGroups')
-                .insert({ userId, groupName }, ['userGroupId', 'userId', 'groupName']);
+            const query = trx || this._db.engine();
+            const data = await query('usergroups').insert({ userId, groupName }, ['userGroupId', 'userId', 'groupName']);
             this._logger.info('createGroup response');
             return data[0];
         } catch (error) {

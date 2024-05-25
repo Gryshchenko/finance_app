@@ -15,7 +15,7 @@ const ensureGuest = (req: Request, res: Response, next: NextFunction) => {
     const userSession = extractSession(req);
     if (userSession?.userId) {
         _logger.info('access forbidden user already authenticated');
-        res.status(401).json({ errorCode: ErrorCode.AUTH, msg: TranslationKey.ALREADY_AUTHENTICATED });
+        res.status(401).json({ errorCode: ErrorCode.AUTH });
     } else {
         _logger.info('access allow guest not authenticated');
         next();

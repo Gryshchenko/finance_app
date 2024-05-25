@@ -18,7 +18,7 @@ const sessionVerify = (req: Request, res: Response, next: NextFunction) => {
     if (!userSession) {
         _logger.info('session could not verify, userSession = null');
         SessionService.deleteSession(req, res, () => {
-            res.status(401).json({ errorCode: ErrorCode.AUTH, msg: TranslationKey.SESSION_EXPIRED });
+            res.status(401).json({ errorCode: ErrorCode.AUTH });
         });
     } else {
         _logger.info('session verify success');

@@ -26,14 +26,14 @@ const tokenVerify = (req: Request, res: Response, next: NextFunction) => {
     if (!token) {
         _logger.info('token not verify, token = null');
         SessionService.deleteSession(req, res, () => {
-            res.status(401).json({ errorCode: ErrorCode.AUTH, msg: TranslationKey.INVALID_TOKEN });
+            res.status(401).json({ errorCode: ErrorCode.AUTH });
         });
         return;
     }
     if (token !== sessionToken) {
         _logger.info('token not verify, token and session token not same');
         SessionService.deleteSession(req, res, () => {
-            res.status(401).json({ errorCode: ErrorCode.AUTH, msg: TranslationKey.INVALID_TOKEN });
+            res.status(401).json({ errorCode: ErrorCode.AUTH });
         });
         return;
     }
@@ -41,12 +41,12 @@ const tokenVerify = (req: Request, res: Response, next: NextFunction) => {
         if (err) {
             if (err.name === 'TokenExpiredError') {
                 SessionService.deleteSession(req, res, () => {
-                    res.status(401).json({ errorCode: ErrorCode.AUTH, msg: TranslationKey.TOKEN_EXPIRED });
+                    res.status(401).json({ errorCode: ErrorCode.AUTH });
                 });
                 _logger.info('token not verify, token expired');
             } else {
                 SessionService.deleteSession(req, res, () => {
-                    res.status(401).json({ errorCode: ErrorCode.AUTH, msg: TranslationKey.INVALID_TOKEN });
+                    res.status(401).json({ errorCode: ErrorCode.AUTH });
                 });
                 _logger.info('token not verify, token invalid');
             }

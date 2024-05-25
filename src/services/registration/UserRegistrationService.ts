@@ -23,11 +23,12 @@ import Success from 'src/utils/success/Success';
 import { IUserRoleService } from 'interfaces/IUserRoleService';
 import CurrencyUtils from 'src/utils/СurrencyUtils';
 import { ICurrencyService } from 'interfaces/ICurrencyService';
-import { IDatabaseConnection } from 'interfaces/IDatabaseConnection';
+import { IDatabaseConnection, ITransaction } from 'interfaces/IDatabaseConnection';
 import { UnitOfWork } from 'src/repositories/UnitOfWork';
 import Utils from 'src/utils/Utils';
-
-const preMadeData = require('../../config/create_user_initial');
+import { IProfile } from 'interfaces/IProfile';
+import { user_initial } from 'src/config/user_initial';
+import currency_initial from 'src/config/currency_initial';
 
 interface IDefaultData {
     group: string;
@@ -90,7 +91,7 @@ export default class UserRegistrationService extends LoggerBase {
     }
 
     private getTranslatedDefaultData(language: LanguageType = LanguageType.US): IDefaultData {
-        return preMadeData[language];
+        return user_initial[language] ?? user_initial[LanguageType.US];
     }
 
     public async createUser(
@@ -113,17 +114,17 @@ export default class UserRegistrationService extends LoggerBase {
             }
             const user = await this.userService.createUser(email, password, trx!);
             if (user) {
-                const currencyCode =
-                    CurrencyUtils.getCurrencyCodeFromLocale(locale, CurrencyUtils.getCurrencyForLocale(locale)) ??
-                    CurrencyUtils.defaultCurrencyCode;
+                const currencyCode = (currency_initial[locale] ?? currency_initial[LanguageType.US]).currencyCode;
                 const currency = await this.currencyService.getCurrencyByCurrencyCode(currencyCode);
                 if (!currency) {
                     return new Failure('cant get currency for new user', ErrorCode.SIGNUP);
                 }
                 await Translations.load(locale, TranslationLoaderImpl.instance());
+                this._logger.info('start token creation');
                 const newToken = AuthService.createJWToken(user.userId, RoleType.Default);
+                this._logger.info('end token creation');
 
-                const res = await Promise.all([
+                const [_role, profile] = await Promise.all([
                     await this.userRoleService.createUserRole(user.userId, RoleType.Default, trx!),
                     await this.profileService.createProfile(
                         {
@@ -135,6 +136,7 @@ export default class UserRegistrationService extends LoggerBase {
                     ),
                     await this.emailConfirmationService.createConfirmationMail(user.userId, user.email, trx!),
                 ]);
+                await this.createInitialDataForNewUser(user.userId, profile!, trx!);
                 await uow.commit();
                 await this.emailConfirmationService.sendConfirmationMailToUser(user.userId, user.email);
                 const readyUser = await this.userService.getUser(user.userId);
@@ -162,43 +164,45 @@ export default class UserRegistrationService extends LoggerBase {
         }
     }
 
-    async createInitialDataForNewUser(userId: number, currencyId: number): Promise<ISuccess<IUser> | IFailure> {
+    private async createInitialDataForNewUser(
+        userId: number,
+        profile: IProfile,
+        trx: ITransaction,
+    ): Promise<ISuccess<IUser> | IFailure> {
         try {
-            const profile = await this.profileService.getProfile(userId);
-            if (!profile) {
-                this._logger.info('cant find profile');
-                return new Failure('cant find profile', ErrorCode.SIGNUP_INITIAL);
-            }
             const translatedDefaultData = this.getTranslatedDefaultData(profile?.locale);
             await Promise.all([
-                await this.groupService.createGroup(userId, translatedDefaultData.group),
+                await this.groupService.createGroup(userId, translatedDefaultData.group, trx),
                 await this.incomeService.createIncomes(
                     userId,
                     translatedDefaultData.income.map((incomeName) => ({
                         incomeName,
-                        currencyId,
+                        currencyId: profile.currencyId,
                     })),
+                    trx,
                 ),
                 await this.accountService.createAccounts(
                     userId,
                     translatedDefaultData.accounts.map((accountName: string) => ({
                         accountName,
                         amount: 0,
-                        currencyId,
+                        currencyId: profile.currencyId,
                     })),
+                    trx,
                 ),
                 await this.categoryService.createCategories(
                     userId,
                     translatedDefaultData.categories.map((categoryName: string) => ({
                         categoryName,
-                        currencyId,
+                        currencyId: profile.currencyId,
                     })),
+                    trx,
                 ),
             ]);
             // @ts-ignore
             return new Success(undefined);
         } catch (e) {
-            this._logger.info(`failed create initial user data error: ${e}`);
+            this._logger.error(`failed create initial user data error: ${e}`);
             return new Failure(`failed create initial user data error: ${e}`, ErrorCode.SIGNUP_INITIAL);
         }
     }

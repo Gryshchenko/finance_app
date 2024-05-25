@@ -2,9 +2,6 @@ const axios = require('axios');
 const fs = require('fs');
 const https = require('https');
 
-// const httpsAgent = new https.Agent({
-//     ca: fs.readFileSync('/etc/ssl/cert.pem').toString(),
-// });
 const httpsAgent = new (require('https').Agent)({
     rejectUnauthorized: false, // Отключает проверку SSL
 });

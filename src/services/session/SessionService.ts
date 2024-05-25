@@ -26,7 +26,6 @@ export default class SessionService {
                         .setStatus(ResponseStatusType.INTERNAL)
                         .setError({
                             errorCode: ErrorCode.SESSION_DESTROY_ERROR,
-                            msg: TranslationKey.SOMETHING_WRONG,
                         })
                         .build(),
                 );
@@ -127,7 +126,7 @@ export default class SessionService {
                 res.status(400).json(
                     responseBuilder
                         .setStatus(ResponseStatusType.INTERNAL)
-                        .setError({ errorCode: ErrorCode.SESSION_CREATE_ERROR, msg: TranslationKey.SESSION_CREATE_ERROR })
+                        .setError({ errorCode: ErrorCode.SESSION_CREATE_ERROR })
                         .build(),
                 );
                 return;
@@ -143,7 +142,7 @@ export default class SessionService {
                     res.status(400).json(
                         responseBuilder
                             .setStatus(ResponseStatusType.INTERNAL)
-                            .setError({ errorCode: ErrorCode.SESSION_CREATE_ERROR, msg: TranslationKey.SESSION_CREATE_ERROR })
+                            .setError({ errorCode: ErrorCode.SESSION_CREATE_ERROR })
                             .build(),
                     );
                     if (handleError) {

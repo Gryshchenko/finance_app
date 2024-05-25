@@ -22,7 +22,7 @@ export default class ProfileDataService extends LoggerBase implements IProfileDa
             if (response && response[0]) {
                 return response[0];
             }
-            return undefined;
+            throw Error('cant create profile');
         } catch (error) {
             this._logger.error(error);
             throw error;

@@ -41,7 +41,7 @@ export default class UserRoleDataService extends LoggerBase implements IUserRole
         }
     }
 
-    public async createUserRole(userId: number, roleId: number, trx?: ITransaction): Promise<IUserRole> {
+    public async createUserRole(userId: number, roleId: number, trx?: ITransaction): Promise<IUserRole | undefined> {
         try {
             this._logger.info('createUserRole request');
             const query = trx || this._db.engine();
@@ -53,7 +53,10 @@ export default class UserRoleDataService extends LoggerBase implements IUserRole
                 ['userRoleId', 'roleId', 'userId'],
             );
             this._logger.info('createUserRole response');
-            return data[0];
+            if (data[0]) {
+                return data[0];
+            }
+            throw Error('cant create user role');
         } catch (error) {
             this._logger.error(error);
             throw error;

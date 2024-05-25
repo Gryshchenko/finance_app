@@ -1,6 +1,7 @@
 const { Client } = require('pg');
 const { readFileSync } = require('fs');
 const dotenv = require('dotenv');
+const currency_initial = require('../../config/currency_initial');
 
 const args = process.argv.slice(2) || '.env';
 
@@ -11,6 +12,16 @@ dotenv.config({ path: envFile });
 require('dotenv').config();
 
 const caCert = readFileSync('/etc/ssl/cert.pem').toString();
+
+const generateInsertSQL = () => {
+    const values = Object.values(currency_initial)
+        .map(({ currencyCode, currencyName, symbol }) => `('${currencyCode}', '${currencyName.replace("'", "''")}', '${symbol}')`)
+        .join(',\n    ');
+    return `
+        INSERT INTO currencies (currencyCode, currencyName, symbol) VALUES
+        ${values};
+    `;
+};
 
 const _db = new Client({
     database: process.env.DB_NAME,
@@ -92,26 +103,7 @@ const createCurrencyTableQuery = `
     );
 `;
 
-const insertDefaultCurrencies = `
-    INSERT INTO currencies (currencyCode, currencyName, symbol) VALUES
-    ('DKK', 'Danish Krone', 'kr'),
-    ('EUR', 'Euro', '€'),
-    ('USD', 'US Dollar', '$'),
-    ('NOK', 'Norwegian Krone', 'kr'),
-    ('UAH', 'Ukrainian Hryvnia', '₴'),
-    ('RUB', 'Russian Ruble', '₽'),
-    ('BGN', 'Bulgarian Lev', 'лв'),
-    ('CZK', 'Czech Koruna', 'Kč'),
-    ('HRK', 'Croatian Kuna', 'kn'),
-    ('HUF', 'Hungarian Forint', 'Ft'),
-    ('JPY', 'Japanese Yen', '¥'),
-    ('GEL', 'Georgian Lari', '₾'),
-    ('PLN', 'Polish Zloty', 'zł'),
-    ('BRL', 'Brazilian Real', 'R$'),
-    ('RON', 'Romanian Leu', 'lei'),
-    ('SEK', 'Swedish Krona', 'kr'),
-    ('TRY', 'Turkish Lira', '₺');
-`;
+const insertDefaultCurrencies = generateInsertSQL();
 
 const createProfileTableQuery = `
     CREATE TABLE profiles (
@@ -141,16 +133,27 @@ const createIncomeTableQuery = `
     );
 `;
 
+const createAccountTypeTableQuery = `
+    CREATE TABLE "accountTypes" (
+        "accountTypeId" SERIAL PRIMARY KEY,
+        "accountType" INI NOT NULL,
+    );
+`;
+
+const createAccountTypeTableDefaultValues = `INSERT INTO "accountTypes"  ( "accountType"  ) VALUES ( 1 ), ( 2 )`;
+
 const createAccountTableQuery = `
     CREATE TABLE accounts (
         "accountId" SERIAL PRIMARY KEY,
         "userId" INT NOT NULL,
         "accountName" VARCHAR(128) NOT NULL,
+        "accountTypeId" INT NOT NULL,
         "amount" DECIMAL NOT NULL,
         "currencyId" INT NOT NULL,
         "createdAt" TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
         FOREIGN KEY ("userId") REFERENCES users("userId"),
         FOREIGN KEY ("currencyId") REFERENCES currencies("currencyId")
+        FOREIGN KEY ("accountTypeId") REFERENCES accountTypes("accountTypeId")
     );
 `;
 
@@ -160,9 +163,7 @@ const createCategoriesTableQuery = `
         "categoryName" VARCHAR(128) NOT NULL,
         "userId" INT NOT NULL,
         "currencyId" INT NOT NULL,
-        "accountId" INT NOT NULL,
         "createdAt" TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
-        FOREIGN KEY ("accountId") REFERENCES accounts("accountId"),
         FOREIGN KEY ("userId") REFERENCES users("userId"),
         FOREIGN KEY ("currencyId") REFERENCES currencies("currencyId")
     );
@@ -228,6 +229,8 @@ const run = async () => {
     await initTable(insertDefaultCurrencies);
     await initTable(createProfileTableQuery);
     await initTable(createIncomeTableQuery);
+    await initTable(createAccountTypeTableQuery);
+    await initTable(createAccountTypeTableDefaultValues);
     await initTable(createAccountTableQuery);
     await initTable(createCategoriesTableQuery);
     await initTable(createTransactionsTableQuery);
