@@ -22,7 +22,12 @@ export default class Utils {
     }
 
     public static parseBoolean(v: string): boolean | null {
-        return v === 'true' ? true : v === 'false' ? false : null;
+        if (v === 'true') {
+            return true;
+        } else if (v === 'false') {
+            return false;
+        }
+        return null;
     }
 
     public static parse(v: string): unknown {
@@ -90,7 +95,9 @@ export default class Utils {
     public static compareArrayLength<T>(o1: T[], o2: T[]): number {
         const result: number = Utils.compareUndefined(o1, o2);
         if (result === 0 && Utils.isNotNull(o1) && Utils.isNotNull(o2)) {
-            return o1.length < o2.length ? -1 : o1.length > o2.length ? 1 : 0;
+            if (o1.length < o2.length) return -1;
+            if (o1.length > o2.length) return 1;
+            return 0;
         }
         return result;
     }

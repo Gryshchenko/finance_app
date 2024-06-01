@@ -1,10 +1,5 @@
 // @ts-nocheck
 import { generateRandomEmail, generateRandomPassword, generateSecureRandom } from '../TestsUtils.';
-import DatabaseConnection from '../../src/repositories/DatabaseConnection';
-import config from '../../src/config/dbConfig';
-import { LanguageType } from '../../src/types/LanguageType';
-import { user_initial } from '../../src/config/user_initial';
-import currency_initial from '../../src/config/currency_initial';
 
 const request = require('supertest');
 require('dotenv').config();
@@ -32,7 +27,6 @@ describe('POST /register/signup', () => {
             .post('/register/signup')
             .send({ email: generateRandomEmail(), password: generateRandomPassword() });
 
-        console.log(response.status);
         expect(response.status).toBe(400);
         expect(response.body).toStrictEqual({
             data: {},

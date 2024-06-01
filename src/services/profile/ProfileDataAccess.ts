@@ -19,7 +19,7 @@ export default class ProfileDataService extends LoggerBase implements IProfileDa
             const query = trx || this._db.engine();
             const response = await query('profiles').insert({ userId, locale, currencyId }, ['*']);
             this._logger.info('createProfile response');
-            if (response && response[0]) {
+            if (response?.[0]) {
                 return response[0];
             }
             throw Error('cant create profile');

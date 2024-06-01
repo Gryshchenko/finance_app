@@ -29,9 +29,8 @@ export default class Translations {
         Translations.LOGGER.info('Loading EN translations ...');
         Translations.TEXTS = {};
         Translations.ENG_TEXTS = {};
-        const enAnswer: [unknown, unknown] = await Utils.to(
-            Translations.loadLanguage((Translations.LANG_CODE = languageCode), loader),
-        );
+        Translations.LANG_CODE = languageCode;
+        const enAnswer: [unknown, unknown] = await Utils.to(Translations.loadLanguage(Translations.LANG_CODE, loader));
         let error: unknown = enAnswer[0];
         if (error) {
             return Promise.reject(new Error(error as string));

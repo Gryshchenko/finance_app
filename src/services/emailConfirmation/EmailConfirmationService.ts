@@ -116,7 +116,7 @@ export default class EmailConfirmationService extends LoggerBase implements IEma
 
     public async sendConfirmationMailToUser(userId: number, email: string): Promise<ISuccess<IEmailConfirmationData> | IFailure> {
         const userConfirmationData = await this.emailConfirmationDataAccess.getUserConfirmationWithEmail(userId, email);
-        if (userConfirmationData && userConfirmationData.confirmed) {
+        if (userConfirmationData?.confirmed) {
             return new Failure('Already confirmed', ErrorCode.EMAIL_VERIFICATION_ALREADY_DONE, true);
         }
         const userConfirmationDataInWork = userConfirmationData as IEmailConfirmationData;

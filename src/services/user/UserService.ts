@@ -49,7 +49,7 @@ export default class UserService extends LoggerBase implements IUserService {
         if (response?.email && email !== response.email) {
             return UserServiceUtils.formatUserDetails(await this._userDataAccess.updateUserEmail(userId, email));
         }
-        if (!response || !response?.email) {
+        if (Utils.isNull(response?.email)) {
             this._logger.info('updateUserEmail cant find email');
         }
         return this.getUser(userId);
