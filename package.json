@@ -13,6 +13,7 @@
         "type-check": "tsc -v && tsc -p tsconfig.json",
         "precheck": "pnpm run prettier:check && pnpm run eslint:check && pnpm run type-check",
         "jest-test": "jest --verbose false ./tests --config ./jest.config.js --no-cache",
+        "jest-test:coverage": "jest --verbose false ./tests --config ./jest.config.js --no-cache --coverage",
         "postinstall": "husky install",
         "prettier": "prettier '**/*' --write --ignore-unknown",
         "prettier:check": "prettier '**/*' --check --ignore-unknown",
