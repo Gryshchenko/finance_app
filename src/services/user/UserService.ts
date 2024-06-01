@@ -31,7 +31,7 @@ export default class UserService extends LoggerBase implements IUserService {
     public async createUser(email: string, password: string, trx?: ITransaction): Promise<ISuccess<ICreateUser> | IFailure> {
         try {
             const salt = UserServiceUtils.getRandomSalt();
-            const hashStr = (await UserServiceUtils.hashPassword(password, salt)) as string | undefined;
+            const hashStr = await UserServiceUtils.hashPassword(password, salt);
             if (Utils.isEmpty(hashStr)) {
                 throw new Error('cant build hash password');
             }
