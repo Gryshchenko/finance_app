@@ -9,8 +9,16 @@ module.exports = {
         '^interfaces/(.*)$': '<rootDir>/src/interfaces/$1',
         '^translationsKeys/(.*)$': '<rootDir>/src/translationsKeys/$1',
     },
-    collectCoverage: false,
-    coverageReporters: ['lcov'],
+    collectCoverage: true,
+    coverageReporters: ['text', 'lcov', 'html'],
+    coverageProvider: 'v8',
+    coverageDirectory: 'jest-coverage',
+    coverageThreshold: {
+        global: {
+            lines: 70,
+            statements: 70,
+        },
+    },
     testPathIgnorePatterns: ['/node_modules/'],
     setupFiles: ['./jest.setup.ts'],
     transform: {

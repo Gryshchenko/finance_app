@@ -5,7 +5,7 @@ export function generateSecureRandom() {
     return buffer.readUInt32BE(0) / (0xffffffff + 1);
 }
 
-export function generateRandomEmail(len = Math.floor(generateSecureRandom() * 10) + 5) {
+export function generateRandomString(len = Math.floor(generateSecureRandom() * 10) + 5) {
     const chars = 'abcdefghijklmnopqrstuvwxyz0123456789';
     let userNameLength = len;
     let userName = 'test_';
@@ -14,10 +14,14 @@ export function generateRandomEmail(len = Math.floor(generateSecureRandom() * 10
         userName += chars.charAt(Math.floor(generateSecureRandom() * chars.length));
     }
 
+    return userName;
+}
+
+export function generateRandomEmail(len = Math.floor(generateSecureRandom() * 10) + 5) {
     const domains = ['test.com', 'example.com', 'demo.com']; // список возможных доменов
     const domain = domains[Math.floor(generateSecureRandom() * domains.length)];
 
-    return `${userName}@${domain}`;
+    return `${generateRandomString(len)}@${domain}`;
 }
 
 export function generateRandomPassword(len = Math.floor(generateSecureRandom() * 9) + 8) {

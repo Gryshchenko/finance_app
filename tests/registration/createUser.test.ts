@@ -1,5 +1,5 @@
 // @ts-nocheck
-import { generateRandomEmail, generateRandomPassword, generateSecureRandom } from '../TestsUtils.';
+import { generateRandomEmail, generateRandomPassword, generateRandomString, generateSecureRandom } from '../TestsUtils.';
 import DatabaseConnection from '../../src/repositories/DatabaseConnection';
 import config from '../../src/config/dbConfig';
 import { LanguageType } from '../../src/types/LanguageType';
@@ -168,7 +168,9 @@ describe('POST /register/signup', () => {
         });
     });
     it('should return error invalid format password', async () => {
-        const response = await request(app).post('/register/signup').send({ email: generateRandomEmail(), password: '123456' });
+        const response = await request(app)
+            .post('/register/signup')
+            .send({ email: generateRandomEmail(), password: generateSecureRandom() });
 
         expect(response.status).toBe(400);
         expect(response.body).toStrictEqual({
@@ -182,7 +184,9 @@ describe('POST /register/signup', () => {
         });
     });
     it('should return error invalid format password', async () => {
-        const response = await request(app).post('/register/signup').send({ email: generateRandomEmail(), password: 'password' });
+        const response = await request(app)
+            .post('/register/signup')
+            .send({ email: generateRandomEmail(), password: generateRandomString(5) });
 
         expect(response.status).toBe(400);
         expect(response.body).toStrictEqual({
