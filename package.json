@@ -1,21 +1,22 @@
 {
-    "name": "Volodymyr Gryshchenko",
+    "name": "fin app",
+    "author": "Volodymyr Gryshchenko",
     "description": "К",
     "version": "0.0.1",
     "private": true,
     "copyright": "",
     "scripts": {
-        "build-translation": "node ./src/utils/scripts/translations.js",
+        "build-translation": "node scripts/translations.js",
         "start": "npm run build-translation && node dist/app.js",
         "dev": "npm run build-translation && nodemon --exec ts-node --files src/app.ts",
         "redis": "redis-server",
         "type-check": "tsc -v && tsc -p tsconfig.json",
         "precheck": "pnpm run prettier:check && pnpm run eslint:check && pnpm run type-check",
-        "jest-test": "jest --verbose false ./tests --config ./jest.config.js --runInBand --no-cache",
+        "jest-test": "jest --verbose false ./tests --config ./jest.config.js --no-cache",
         "postinstall": "husky install",
         "prettier": "prettier '**/*' --write --ignore-unknown",
         "prettier:check": "prettier '**/*' --check --ignore-unknown",
-        "eslint": "eslint --ext .js,ts --fix src/",
+        "eslint": "npx eslint src/",
         "eslint:check": "eslint --ext .js,.ts src/",
         "lint-staged": "lint-staged"
     },
@@ -28,6 +29,7 @@
     "dependencies": {
         "@types/jsonwebtoken": "9.0.5",
         "@types/pg": "8.11.0",
+        "argon2": "0.40.3",
         "axios": "1.7.2",
         "connect-redis": "7.1.1",
         "crypto-js": "4.2.0",
@@ -49,12 +51,13 @@
         "ts-jest": "29.1.2"
     },
     "devDependencies": {
-        "husky": "9.0.11",
-        "lint-staged": "15.2.4",
+        "@eslint/js": "9.4.0",
+        "@types/eslint__js": "8.42.3",
         "@types/express": "4.17.21",
         "@types/express-session": "1.17.10",
         "@types/jest": "29.5.12",
         "@types/node": "20.11.0",
+        "@types/passport": "1.0.16",
         "@types/supertest": "6.0.2",
         "@typescript-eslint/eslint-plugin": "6.19.0",
         "@typescript-eslint/parser": "6.19.0",
@@ -66,7 +69,10 @@
         "eslint-plugin-import": "2.29.1",
         "eslint-plugin-node": "11.1.0",
         "eslint-plugin-prettier": "5.1.3",
+        "globals": "15.3.0",
+        "husky": "9.0.11",
         "jest": "29.7.0",
+        "lint-staged": "15.2.4",
         "mocha": "10.4.0",
         "mock-knex": "0.4.13",
         "nodemon": "3.0.3",
@@ -76,6 +82,7 @@
         "ts-node": "10.9.2",
         "tsconfig-paths": "4.2.0",
         "tslib": "2.6.2",
-        "typescript": "5.3.3"
+        "typescript": "5.3.3",
+        "typescript-eslint": "7.11.0"
     }
 }

@@ -8,7 +8,10 @@ export default class TranslationLoaderImpl implements TranslationLoader {
         return this._instance || (this._instance = new TranslationLoaderImpl());
     }
 
-    public load(langCode: LanguageType): Promise<unknown> {
+    public load(langCode: LanguageType): Promise<{
+        translations: Record<string, string>;
+        translationsEng: Record<string, string>;
+    }> {
         return import(`../..locales/${langCode}.json`)
             .then((response) => response)
             .catch(() => {

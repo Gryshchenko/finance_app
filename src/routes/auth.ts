@@ -1,7 +1,6 @@
 import express, { Request, Response } from 'express';
 import { ErrorCode } from 'types/ErrorCode';
 import { ResponseStatusType } from 'types/ResponseStatusType';
-import { TranslationKey } from 'types/TranslationKey';
 
 import { body, validationResult } from 'express-validator';
 import ResponseBuilder from 'src/helper/responseBuilder/ResponseBuilder';

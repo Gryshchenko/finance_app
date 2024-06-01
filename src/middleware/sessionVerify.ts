@@ -1,6 +1,5 @@
 import { Request, Response, NextFunction } from 'express';
 import { ErrorCode } from 'types/ErrorCode';
-import { TranslationKey } from 'src/types/TranslationKey';
 import { IUserSession } from 'interfaces/IUserSession';
 import Logger from 'src/helper/logger/Logger';
 
@@ -8,8 +7,7 @@ import SessionService from '../services/session/SessionService';
 
 const _logger = Logger.Of('SessionVerify');
 
-const extractSession = (req: Request): IUserSession => {
-    // @ts-ignore
+const extractSession = (req: Request): IUserSession | unknown => {
     return req.session.user;
 };
 

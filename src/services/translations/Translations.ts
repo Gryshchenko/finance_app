@@ -8,15 +8,18 @@ import { TranslationLoader } from './TranslationLoader';
 export default class Translations {
     private static LOGGER = Logger.Of('Translations');
 
-    private static TEXTS: Record<string, any> = {};
+    private static TEXTS: Record<string, string> = {};
 
-    private static ENG_TEXTS: Record<string, any> = {};
+    private static ENG_TEXTS: Record<string, string> = {};
 
     private static LANG_CODE: string;
 
-    private static DATA: any;
+    private static DATA: Record<string, string>;
 
-    public static async load(languageCode: string, loader: TranslationLoader): Promise<{ langCode: string; data: any }> {
+    public static async load(
+        languageCode: string,
+        loader: TranslationLoader,
+    ): Promise<{ langCode: string; data: Record<string, string> }> {
         if (languageCode && Translations.LANG_CODE === languageCode) {
             return Promise.resolve({
                 langCode: Translations.LANG_CODE,
@@ -26,12 +29,14 @@ export default class Translations {
         Translations.LOGGER.info('Loading EN translations ...');
         Translations.TEXTS = {};
         Translations.ENG_TEXTS = {};
-        const enAnswer: any = await Utils.to(Translations.loadLanguage((Translations.LANG_CODE = languageCode), loader));
-        let error: any = enAnswer[0];
+        const enAnswer: [unknown, unknown] = await Utils.to(
+            Translations.loadLanguage((Translations.LANG_CODE = languageCode), loader),
+        );
+        let error: unknown = enAnswer[0];
         if (error) {
-            return Promise.reject(new Error(error));
+            return Promise.reject(new Error(error as string));
         }
-        Translations.DATA = enAnswer[1];
+        Translations.DATA = enAnswer[1] as Record<string, string>;
         Translations.LOGGER.info(`EN translations loaded. Requested language: ${languageCode}`);
         if (languageCode && languageCode !== Translations.LANG_CODE) {
             Translations.LOGGER.info(`Loading ${languageCode} translations ...`);
@@ -41,7 +46,7 @@ export default class Translations {
                 Translations.LOGGER.warn(`Can't load translation for language #{languageCode} Error: ${JSON.stringify(error)}`);
             } else {
                 Translations.LANG_CODE = languageCode;
-                Translations.DATA = langAnswer[1];
+                Translations.DATA = langAnswer[1] as Record<string, string>;
                 Translations.LOGGER.info(`${languageCode} translations loaded.`);
             }
         }
@@ -52,18 +57,26 @@ export default class Translations {
         });
     }
 
-    private static async loadLanguage(langCode: string, loader: TranslationLoader): Promise<any> {
-        const answer: any = await Utils.to(loader.load(langCode));
-        const enAnswer: any = await Utils.to(loader.load('en_US'));
-        const error: any = answer[0] || enAnswer[0];
+    private static async loadLanguage(
+        langCode: string,
+        loader: TranslationLoader,
+    ): Promise<{
+        translations: Record<string, string>;
+        translationsEng: Record<string, string>;
+    }> {
+        const answer: [unknown, unknown] = await Utils.to(loader.load(langCode));
+        const enAnswer: [unknown, unknown] = await Utils.to(loader.load('en_US'));
+        const error: unknown = answer[0] || enAnswer[0];
 
         if (error) {
-            return Promise.reject(new Error(error));
+            return Promise.reject(new Error(error as string));
         }
+
         const payload = {
-            translations: answer[1],
-            translationsEng: enAnswer[1],
+            translations: answer[1] as Record<string, string>,
+            translationsEng: enAnswer[1] as Record<string, string>,
         };
+
         if (Utils.isNotNull(payload.translations)) {
             Object.keys(payload.translations).forEach((key: string) => {
                 Translations.TEXTS[key] = payload.translations[key];
@@ -78,42 +91,18 @@ export default class Translations {
         return Promise.resolve(payload);
     }
 
-    public static text(key: string, ...parameters: (typeof Parameter)[]): string {
+    public static text(key: string, ...parameters: Parameter[]): string {
         return Translations.Text(key, parameters);
     }
 
-    public static engText(key: string, ...parameters: (typeof Parameter)[]): string {
-        if (Utils.isObjectEmpty(Translations.TEXTS)) {
-            return key;
-        }
-        return Translations.replaceParameters(Translations.ENG_TEXTS[key], parameters) || key;
-    }
-
-    public static textOf(unit: TranslationUnit): string {
-        // @ts-ignore
-        return Translations.Text(unit.trKey, unit.params);
-    }
-
-    public static oneOf(text?: any, unit?: TranslationUnit, key?: string, parameters?: (typeof Parameter)[]): string {
-        if (Utils.isNotNull(text)) {
-            return text;
-        }
-        if (Utils.isNotNull(unit)) {
-            // @ts-ignore
-            return Translations.textOf(unit);
-        }
-        // @ts-ignore
-        return Translations.Text(key, parameters);
-    }
-
-    public static Text(key: string, parameters: (typeof Parameter)[]): string {
+    public static Text(key: string, parameters: Parameter[]): string {
         if (Utils.isObjectEmpty(Translations.TEXTS)) {
             return key;
         }
         return Translations.textOrNull(key, parameters) || key;
     }
 
-    private static textOrNull(key: string, parameters: (typeof Parameter)[]): string {
+    private static textOrNull(key: string, parameters: Parameter[]): string {
         return (
             Translations.replaceParameters(Translations.TEXTS[key], parameters) ||
             Translations.replaceParameters(Translations.ENG_TEXTS[key], parameters)
@@ -124,19 +113,18 @@ export default class Translations {
         return Utils.isNotEmpty(Translations.TEXTS[key]);
     }
 
-    public static translationUnit(key: string, ...parameters: (typeof Parameter)[]): TranslationUnit {
+    public static translationUnit(key: string, ...parameters: Parameter[]): TranslationUnit {
         return {
             trKey: key,
             params: [...parameters],
         };
     }
 
-    public static replaceParameters(text: string, parameters: (typeof Parameter)[]): string {
+    public static replaceParameters(text: string, parameters: Parameter[]): string {
         let result: string = text;
         if (result && Utils.isArrayNotEmpty(parameters)) {
-            // @ts-ignore
             parameters.forEach((parameter: Parameter) => {
-                result = Utils.replaceAll(result, parameter.key, parameter.value);
+                result = Utils.replaceAll(result, parameter.key, parameter.value as string);
             });
         }
         return result;

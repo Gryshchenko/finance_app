@@ -21,7 +21,6 @@ import TranslationLoaderImpl from 'src/services/translations/TranslationLoaderIm
 import AuthService from 'src/services/auth/AuthService';
 import Success from 'src/utils/success/Success';
 import { IUserRoleService } from 'interfaces/IUserRoleService';
-import CurrencyUtils from 'src/utils/СurrencyUtils';
 import { ICurrencyService } from 'interfaces/ICurrencyService';
 import { IDatabaseConnection, ITransaction } from 'interfaces/IDatabaseConnection';
 import { UnitOfWork } from 'src/repositories/UnitOfWork';
@@ -29,6 +28,7 @@ import Utils from 'src/utils/Utils';
 import { IProfile } from 'interfaces/IProfile';
 import { user_initial } from 'src/config/user_initial';
 import currency_initial from 'src/config/currency_initial';
+import { ICreateUser } from 'interfaces/ICreateUser';
 
 interface IDefaultData {
     group: string;
@@ -108,11 +108,16 @@ export default class UserRegistrationService extends LoggerBase {
             if (otherUser) {
                 return new Failure('user already exists', ErrorCode.SIGNUP);
             }
-            const trx = uow.getTransaction();
-            if (Utils.isNull(trx)) {
+            const trxInProcess = uow.getTransaction();
+            if (Utils.isNull(trxInProcess)) {
                 return new Failure('user not created', ErrorCode.SIGNUP);
             }
-            const user = await this.userService.createUser(email, password, trx!);
+            const trx = trxInProcess as unknown as ITransaction;
+            const createUserResult = await this.userService.createUser(email, password, trx);
+            if (createUserResult instanceof Failure) {
+                throw new Error(createUserResult.error);
+            }
+            const user = (createUserResult as ISuccess<ICreateUser>).value;
             if (user) {
                 const currencyCode = (currency_initial[locale] ?? currency_initial[LanguageType.US]).currencyCode;
                 const currency = await this.currencyService.getCurrencyByCurrencyCode(currencyCode);
@@ -124,19 +129,23 @@ export default class UserRegistrationService extends LoggerBase {
                 const newToken = AuthService.createJWToken(user.userId, RoleType.Default);
                 this._logger.info('end token creation');
 
-                const [_role, profile] = await Promise.all([
-                    await this.userRoleService.createUserRole(user.userId, RoleType.Default, trx!),
+                const response = await Promise.all([
+                    await this.userRoleService.createUserRole(user.userId, RoleType.Default, trx),
                     await this.profileService.createProfile(
                         {
                             userId: user.userId,
                             currencyId: currency.currencyId,
                             locale,
                         },
-                        trx!,
+                        trx,
                     ),
-                    await this.emailConfirmationService.createConfirmationMail(user.userId, user.email, trx!),
+                    await this.emailConfirmationService.createConfirmationMail(user.userId, user.email, trx),
                 ]);
-                await this.createInitialDataForNewUser(user.userId, profile!, trx!);
+                if (Utils.isNull(response[1]?.userId)) {
+                    throw new Error('user profile not created');
+                }
+                const profile = response[1] as IProfile;
+                await this.createInitialDataForNewUser(user.userId, profile, trx);
                 await uow.commit();
                 await this.emailConfirmationService.sendConfirmationMailToUser(user.userId, user.email);
                 const readyUser = await this.userService.getUser(user.userId);
@@ -168,7 +177,7 @@ export default class UserRegistrationService extends LoggerBase {
         userId: number,
         profile: IProfile,
         trx: ITransaction,
-    ): Promise<ISuccess<IUser> | IFailure> {
+    ): Promise<ISuccess<boolean> | IFailure> {
         try {
             const translatedDefaultData = this.getTranslatedDefaultData(profile?.locale);
             await Promise.all([
@@ -199,8 +208,7 @@ export default class UserRegistrationService extends LoggerBase {
                     trx,
                 ),
             ]);
-            // @ts-ignore
-            return new Success(undefined);
+            return new Success(true);
         } catch (e) {
             this._logger.error(`failed create initial user data error: ${e}`);
             return new Failure(`failed create initial user data error: ${e}`, ErrorCode.SIGNUP_INITIAL);

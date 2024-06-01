@@ -25,8 +25,8 @@ export default class Utils {
         return v === 'true' ? true : v === 'false' ? false : null;
     }
 
-    public static parse(v: string): any {
-        let result: any = Utils.parseNumber(v);
+    public static parse(v: string): unknown {
+        let result: unknown = Utils.parseNumber(v);
         if (Utils.isNotNull(result)) {
             return result;
         }
@@ -45,24 +45,24 @@ export default class Utils {
         return typeof val !== 'undefined' && val !== null && val.length > 0;
     }
 
-    public static isNotNull(val: any): boolean {
-        return typeof val !== 'undefined' && val !== null;
+    public static isNotNull(value: unknown): boolean {
+        return value !== null && value !== 'undefined';
     }
 
-    public static isNull(val: any): boolean {
+    public static isNull(val: unknown): boolean {
         return typeof val === 'undefined' || val === null;
     }
 
-    public static isArrayNotEmpty(val: any[]): boolean {
+    public static isArrayNotEmpty(val: unknown[]): boolean {
         return typeof val !== 'undefined' && val !== null && Array.isArray(val) && val.length > 0;
     }
 
-    public static isArrayEmpty(val: any[]): boolean {
+    public static isArrayEmpty(val: unknown[]): boolean {
         return typeof val === 'undefined' || val === null || (Array.isArray(val) && val.length === 0);
     }
 
-    public static isObjectEmpty(val: any): boolean {
-        return Utils.isNull(val) || (Object.keys(val).length === 0 && val.constructor === Object);
+    public static isObjectEmpty(val: Record<string | number | symbol, unknown>): boolean {
+        return Utils.isNull(val) || (Object.keys(val).length === 0 && (val as object).constructor === Object);
     }
 
     public static greaterThen0(val: number): boolean {
@@ -77,7 +77,7 @@ export default class Utils {
         return this.isNotNull(val) && val < 0;
     }
 
-    public static compareUndefined(o1: any, o2: any): number {
+    public static compareUndefined(o1: unknown, o2: unknown): number {
         if (this.isNotNull(o1) && this.isNull(o2)) {
             return -1;
         }
@@ -95,7 +95,7 @@ export default class Utils {
         return result;
     }
 
-    public static compareObject(a: { [key: string]: any }, b: { [key: string]: any }) {
+    public static compareObject(a: Record<string, unknown>, b: Record<string, unknown>) {
         for (const key in a) {
             if (!(key in b) || a[key] !== b[key]) {
                 return false;
@@ -123,23 +123,7 @@ export default class Utils {
         return result;
     }
 
-    public static compareNumber(o1: number, o2: number): number {
-        const result: number = this.compareUndefined(o1, o2);
-        if (result === 0 && this.isNotNull(o1) && this.isNotNull(o2)) {
-            return o1 === o2 ? 0 : o1 < o2 ? -1 : 1;
-        }
-        return result;
-    }
-
-    public static compareString(o1: string, o2: string): number {
-        const result: number = Utils.compareUndefined(o1, o2);
-        if (result === 0 && Utils.isNotNull(o1) && Utils.isNotNull(o2)) {
-            return o1 < o2 ? -1 : o1 > o2 ? 1 : 0;
-        }
-        return result;
-    }
-
-    public static has(array: any[], val: any): boolean {
+    public static has(array: unknown[], val: unknown): boolean {
         if (Utils.isArrayNotEmpty(array) && Utils.isNotNull(val)) {
             for (const value of array) {
                 if (value === val) {
@@ -150,7 +134,7 @@ export default class Utils {
         return false;
     }
 
-    public static isEmpty(val: string): boolean {
+    public static isEmpty(val: string | undefined): val is string {
         return typeof val === 'undefined' || val === null || val.length === 0;
     }
 
@@ -161,24 +145,8 @@ export default class Utils {
         return reference;
     }
 
-    public static randomInt(min: number, max: number): number {
-        return Math.floor(Math.random() * (max - min + 1)) + min;
-    }
-
     public static pad(v: number): string {
         return `0${v.toString()}`.slice(-2);
-    }
-
-    public static remove<T>(arr: T[], item: T): boolean {
-        if (Utils.isArrayNotEmpty(arr) && item) {
-            for (let i = 0; i < arr.length; i++) {
-                if (arr[i] === item) {
-                    arr.splice(i, 1);
-                    return true;
-                }
-            }
-        }
-        return false;
     }
 
     public static replaceAll(value: string, regex: string, replacement: string): string {
@@ -188,48 +156,14 @@ export default class Utils {
         return value;
     }
 
-    public static to<T, U = any>(promise: Promise<T>, errorExt?: Record<string, any>): Promise<[U | null, T | undefined]> {
+    public static to<T, U = unknown>(promise: Promise<T>, errorExt?: Record<string, unknown>): Promise<[U | null, T | unknown]> {
         return promise
             .then<[null, T]>((data: T) => [null, data])
-            .catch<[U, undefined]>((err) => {
+            .catch<[U, unknown]>((err) => {
                 if (errorExt) {
                     Object.assign(err, errorExt);
                 }
                 return [err, undefined];
             });
     }
-
-    public static isObject(item: any): boolean {
-        return item && typeof item === 'object' && !Array.isArray(item);
-    }
-
-    public static merge(target: any, ...sources: any[]): any {
-        if (!sources.length) {
-            return target;
-        }
-        const source = sources.shift();
-        if (this.isObject(target) && this.isObject(source)) {
-            for (const key in source) {
-                if (this.isObject(source[key])) {
-                    if (!target[key]) {
-                        Object.assign(target, { [key]: {} });
-                    }
-                    this.merge(target[key], source[key]);
-                } else if (Array.isArray(source[key])) {
-                    Object.assign(target, { [key]: source[key] });
-                } else if (typeof source[key] !== 'undefined') {
-                    Object.assign(target, { [key]: source[key] });
-                }
-            }
-        }
-        return this.merge(target, ...sources);
-    }
-
-    public static deepCopy<T>(source: Record<string, any>): T {
-        return JSON.parse(JSON.stringify(source));
-    }
-
-    public static capitalizeFirstLetter = (string: string): string => {
-        return string?.charAt(0).toUpperCase() + string?.slice(1).toLowerCase();
-    };
 }

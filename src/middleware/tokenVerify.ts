@@ -1,7 +1,6 @@
 import { Request, Response, NextFunction } from 'express';
 import { VerifyErrors } from 'jsonwebtoken';
 import { ErrorCode } from 'types/ErrorCode';
-import { TranslationKey } from 'src/types/TranslationKey';
 import Logger from 'src/helper/logger/Logger';
 import SessionService from '../services/session/SessionService';
 
@@ -17,7 +16,6 @@ const extractToken = (req: Request) => {
 };
 
 const extractSessionToken = (req: Request) => {
-    // @ts-ignore
     return req.session?.user?.token;
 };
 const tokenVerify = (req: Request, res: Response, next: NextFunction) => {

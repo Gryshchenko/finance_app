@@ -3,14 +3,14 @@ import Utils from '../../utils/Utils';
 export default class Parameter {
     private readonly _key: string;
 
-    private readonly _value: any;
+    private readonly _value: unknown;
 
-    private constructor(key: string, value: any, isWrap: boolean) {
+    private constructor(key: string, value: unknown, isWrap: boolean) {
         this._key = isWrap ? Parameter.wrap(key) : key;
         this._value = value;
     }
 
-    public static Of(key: string, value: any, isWrap = true): Parameter {
+    public static Of(key: string, value: unknown, isWrap = true): Parameter {
         return new Parameter(key, value, isWrap);
     }
 
@@ -30,17 +30,17 @@ export default class Parameter {
         return null;
     }
 
-    public static value<V>(key: string, parameters: Parameter[]): V {
-        const parameter: Parameter | null = Parameter.parameter(key, parameters);
-        // @ts-ignore
-        return Utils.isNotNull(parameter) && parameter?.value !== null ? parameter.value : null;
+    public static value<V>(key: string, parameters: Parameter[]): V | null {
+        const parameter = Parameter.parameter(key, parameters);
+        // Use a type assertion here if you are sure that the value will always match type V
+        return parameter ? (parameter.value as V) : null;
     }
 
     public get key(): string {
         return this._key;
     }
 
-    public get value(): any {
+    public get value(): unknown {
         return this._value;
     }
 }

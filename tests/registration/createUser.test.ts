@@ -6,13 +6,21 @@ import { LanguageType } from '../../src/types/LanguageType';
 import { user_initial } from '../../src/config/user_initial';
 import currency_initial from '../../src/config/currency_initial';
 
-const CryptoJS = require('crypto-js');
+const argon2 = require('argon2');
 const request = require('supertest');
 require('dotenv').config();
 const app = require('../../src/app');
 
-afterEach(() => {
-    jest.restoreAllMocks();
+let server;
+
+beforeAll(() => {
+    const port = Math.floor(Math.random() * (65535 - 1024) + 1024);
+
+    server = app.listen(port);
+});
+
+afterAll((done) => {
+    server.close(done);
 });
 
 describe('POST /register/signup', () => {
@@ -26,7 +34,7 @@ describe('POST /register/signup', () => {
             data: {},
             errors: [
                 {
-                    errorCode: 4009,
+                    errorCode: 4010,
                 },
             ],
             status: 2,
@@ -205,7 +213,7 @@ describe('POST /register/signup', () => {
         });
     });
     it('should hash the password before saving to database', async () => {
-        const spy = jest.spyOn(CryptoJS, 'PBKDF2');
+        const spy = jest.spyOn(argon2, 'hash');
         const mail = generateRandomEmail();
         const response = await request(app).post('/register/signup').send({ email: mail, password: generateRandomPassword() });
 
@@ -223,7 +231,7 @@ describe('POST /register/signup', () => {
         expect(spy).toHaveBeenCalled();
     });
 
-    const testCases = [LanguageType.US, LanguageType.FR, LanguageType.DK, LanguageType.DE, 'aa_AA'];
+    const testCases = [LanguageType.US, LanguageType.FR, LanguageType.DK, LanguageType.DE, 'aa-AA'];
     testCases.forEach((locale) => {
         it(`check users accounts, incomes, category for locale: ${locale}`, async () => {
             const mail = generateRandomEmail();
@@ -234,9 +242,15 @@ describe('POST /register/signup', () => {
             const response = await request(app).post('/register/signup').send({ email: mail, password: pass, locale });
             const databaseConnection = new DatabaseConnection(config);
             const user = await databaseConnection.engine()('users').select('*').where({ email: mail }).first();
+            const confirmMail = await databaseConnection
+                .engine()('email_confirmations')
+                .select('*')
+                .where({ email: mail, userId: user.userId });
             const accounts = await databaseConnection.engine()('accounts').select('*').where({ userId: user.userId });
             const categories = await databaseConnection.engine()('categories').select('*').where({ userId: user.userId });
             const incomes = await databaseConnection.engine()('incomes').select('*').where({ userId: user.userId });
+            expect(confirmMail.length).toBe(1);
+            expect(confirmMail[0].email).toEqual(mail);
             expect(
                 accounts.map((data) => ({
                     userId: data.userId,
@@ -280,7 +294,7 @@ describe('POST /register/signup', () => {
                     email: mail,
                     status: 1,
                     currency: initialCurrency,
-                    profile: { locale },
+                    profile: { locale: locale === 'aa-AA' ? LanguageType.US : locale },
                     additionalInfo: null,
                 },
                 errors: [],

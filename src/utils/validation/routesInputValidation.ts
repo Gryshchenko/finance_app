@@ -1,5 +1,5 @@
 import { NextFunction, Request, Response } from 'express';
-import { body, validationResult } from 'express-validator';
+import { body, ValidationChain, validationResult } from 'express-validator';
 import { ResponseStatusType } from 'types/ResponseStatusType';
 import { ErrorCode } from 'types/ErrorCode';
 import ResponseBuilder from 'src/helper/responseBuilder/ResponseBuilder';
@@ -21,9 +21,7 @@ export function createSignupValidationRules(field: string, type: string, options
     }
 
     if (options.onlyASCII) {
-        validatorChain = validatorChain
-            .matches(/^[\x00-\x7F]*$/)
-            .withMessage(`Field ${field} must contain only ASCII characters`);
+        validatorChain = validatorChain.matches(/^[ -~]*$/).withMessage(`Field ${field} must contain only ASCII characters`);
     }
 
     if (options.escapeHTML) {
@@ -56,7 +54,7 @@ export function createSignupValidationRules(field: string, type: string, options
     return [validatorChain];
 }
 
-export default function routesInputValidation(validations: any[]) {
+export default function routesInputValidation(validations: ValidationChain[]) {
     return async (req: Request, res: Response, next: NextFunction) => {
         await Promise.all(validations.map((validation) => validation.run(req)));
 
@@ -66,7 +64,7 @@ export default function routesInputValidation(validations: any[]) {
         }
 
         const responseBuilder = new ResponseBuilder().setStatus(ResponseStatusType.INTERNAL).setErrors(
-            errors.array().map((value, index, array) => {
+            errors.array().map((value) => {
                 const field = (value as unknown as { path: string }).path;
                 Logger.Of('routesInputValidation').error(`field: ${field} msg: ${value.msg}`);
                 return {

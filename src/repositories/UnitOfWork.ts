@@ -18,7 +18,8 @@ export class UnitOfWork extends LoggerBase {
 
     async commit() {
         if (Utils.isNotNull(this.trx)) {
-            await this.trx!.commit();
+            const trx = this.trx as unknown as ITransaction;
+            await trx.commit();
         } else {
             this._logger.info('Transaction module not initialize');
         }
@@ -26,7 +27,8 @@ export class UnitOfWork extends LoggerBase {
 
     async rollback() {
         if (Utils.isNotNull(this.trx)) {
-            await this.trx!.rollback();
+            const trx = this.trx as unknown as ITransaction;
+            await trx.rollback();
         } else {
             this._logger.info('Transaction module not initialize');
         }
@@ -34,7 +36,8 @@ export class UnitOfWork extends LoggerBase {
 
     getTransaction() {
         if (Utils.isNotNull(this.trx)) {
-            return this.trx;
+            const trx = this.trx as unknown as ITransaction;
+            return trx;
         } else {
             this._logger.info('Transaction module not initialize');
             return null;

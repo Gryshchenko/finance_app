@@ -12,8 +12,6 @@ import ensureGuest from '../middleware/ensureGuest';
 import SessionService from '../services/session/SessionService';
 import routesInputValidation from '../utils/validation/routesInputValidation';
 
-const { body } = require('express-validator');
-
 const registerRouter = express.Router();
 
 registerRouter.post('/signup', ensureGuest, routesInputValidation(signupValidationRules), async (req: Request, res: Response) => {

@@ -3,11 +3,11 @@ import { IResponseError } from 'interfaces/IResponseError';
 
 interface IResponse<T = unknown> {
     status: ResponseStatusType | null;
-    data: T | {};
+    data: T;
     errors: IResponseError[] | null;
 }
 
-export default class ResponseBuilder<T = unknown> {
+export default class ResponseBuilder {
     protected _response: IResponse = {
         status: null,
         data: {},

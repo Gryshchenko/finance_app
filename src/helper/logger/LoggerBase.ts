@@ -1,6 +1,10 @@
 import Logger from './Logger';
 
 export abstract class LoggerBase {
-    // @ts-ignore
-    protected readonly _logger: Logger = Logger.Of(this.constructor.toString().match(/\w+/g)[1]);
+    protected readonly _logger: Logger;
+
+    protected constructor() {
+        const className = this.constructor.toString().match(/\w+/g)?.[1] || 'DefaultClassName';
+        this._logger = Logger.Of(className);
+    }
 }

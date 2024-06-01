@@ -48,7 +48,7 @@ export default class Logger {
         }
     }
 
-    public debug(message?: any, ...optionalParams: any[]): void {
+    public debug(message: unknown, ...optionalParams: unknown[]): void {
         if (Logger.LOG_LEVEL >= LogLevel.DEBUG) {
             if (Utils.isArrayNotEmpty(optionalParams)) {
                 console.debug(this.format(' D '), message, JSON.stringify(optionalParams));
@@ -58,7 +58,7 @@ export default class Logger {
         }
     }
 
-    public info(message?: string, optionalParams?: unknown): void {
+    public info(message: unknown, optionalParams?: unknown): void {
         if (Logger.LOG_LEVEL >= LogLevel.INFO) {
             if (Utils.isNotNull(optionalParams)) {
                 console.info(`%c${this.format(' I ')}${message}`, optionalParams);
@@ -68,7 +68,7 @@ export default class Logger {
         }
     }
 
-    public warn(message?: any, ...optionalParams: any[]): void {
+    public warn(message: unknown, ...optionalParams: unknown[]): void {
         if (Logger.LOG_LEVEL >= LogLevel.WARNING) {
             if (Utils.isArrayNotEmpty(optionalParams)) {
                 console.warn(this.format(' W '), message, JSON.stringify(optionalParams));
@@ -78,7 +78,7 @@ export default class Logger {
         }
     }
 
-    public error(message?: any, ...optionalParams: any[]): void {
+    public error(message: unknown, ...optionalParams: unknown[]): void {
         if (Logger.LOG_LEVEL >= LogLevel.ERROR) {
             if (Utils.isArrayNotEmpty(optionalParams)) {
                 console.error(this.format(' E '), message, JSON.stringify(optionalParams));

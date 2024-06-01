@@ -1,7 +1,7 @@
 const { Client } = require('pg');
 const { readFileSync } = require('fs');
 const dotenv = require('dotenv');
-const currency_initial = require('../../config/currency_initial');
+const currency_initial = require('../src/config/currency_initial');
 
 const args = process.argv.slice(2) || '.env';
 

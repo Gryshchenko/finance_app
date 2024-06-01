@@ -1,13 +1,11 @@
 import { Request, Response, NextFunction } from 'express';
 import { ErrorCode } from 'types/ErrorCode';
-import { TranslationKey } from 'src/types/TranslationKey';
 import { IUserSession } from 'interfaces/IUserSession';
 import Logger from 'src/helper/logger/Logger';
 
 const _logger = Logger.Of('EnsureGuest');
 
-const extractSession = (req: Request): IUserSession => {
-    // @ts-ignore
+const extractSession = (req: Request): IUserSession | undefined => {
     return req.session.user;
 };
 

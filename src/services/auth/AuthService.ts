@@ -28,8 +28,11 @@ export default class AuthService extends LoggerBase implements IAuthService {
             return new Failure('response user data: credential error', ErrorCode.CREDENTIALS_ERROR);
         }
         this._logger.info(`response user data userID: ${userForCheck?.userId}`);
-        const hashPassword = UserServiceUtils.hashPassword(password, userForCheck.salt);
-        if (hashPassword !== userForCheck.passwordHash) {
+        const result = await UserServiceUtils.verifyPassword(userForCheck.passwordHash, password);
+        if (result instanceof Failure) {
+            return new Failure(result.error ?? 'password not match', ErrorCode.CREDENTIALS_ERROR);
+        }
+        if (result instanceof Success && result.value === false) {
             return new Failure('password not match', ErrorCode.CREDENTIALS_ERROR);
         }
         this._logger.info('password good');

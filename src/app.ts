@@ -56,8 +56,10 @@ app.get('/', (req: Request, res: Response) => {
 
 const httpsServer = https.createServer(credentials, app);
 
-httpsServer.listen(port, () => {
-    console.log(`listening on port ${port}`);
-});
+if (process.env.NODE_ENV !== 'test') {
+    httpsServer.listen(port, () => {
+        console.log(`listening on port ${port}`);
+    });
+}
 
 module.exports = app;

@@ -7,6 +7,17 @@ const request = require('supertest');
 require('dotenv').config();
 const app = require('../../src/app');
 
+let server;
+
+beforeAll(() => {
+    const port = Math.floor(Math.random() * (65535 - 1024) + 1024);
+
+    server = app.listen(port);
+});
+
+afterAll((done) => {
+    server.close(done);
+});
 jest.mock('../../src/services/userRole/UserRoleService', () => {
     return {
         __esModule: true,

@@ -1,3 +1,5 @@
+import { PassportStatic } from 'passport';
+
 require('dotenv').config();
 const JwtStrategy = require('passport-jwt').Strategy;
 const { ExtractJwt } = require('passport-jwt');
@@ -9,10 +11,9 @@ const options = {
     audience: 'myapp.net',
 };
 
-const passportSetup = (passport: any) => {
+const passportSetup = (passport: PassportStatic) => {
     passport.use(
-        new JwtStrategy(options, (jwt_payload: any, done: any) => {
-            console.log(1, jwt_payload);
+        new JwtStrategy(options, (jwt_payload: string, done: (a: unknown, b: boolean) => void) => {
             // Здесь логика поиска пользователя по данным в jwt_payload
             // Например, можно искать пользователя в базе данных по id
             // User.findById(jwt_payload.sub, (err, user) => {

@@ -1,9 +1,8 @@
-import { ISession } from 'interfaces/ISession';
+import 'express-session';
+import { IUserSession } from 'interfaces/IUserSession';
 
-declare global {
-    namespace Express {
-        interface Request {
-            session: ISession;
-        }
+declare module 'express-session' {
+    export interface SessionData {
+        user: IUserSession;
     }
 }

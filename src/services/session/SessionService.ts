@@ -1,7 +1,6 @@
 import { Request, Response } from 'express';
 import { ResponseStatusType } from 'types/ResponseStatusType';
 import { ErrorCode } from 'types/ErrorCode';
-import { TranslationKey } from 'types/TranslationKey';
 import { IUser } from 'interfaces/IUser';
 import { IUserSession } from 'interfaces/IUserSession';
 import Logger from 'src/helper/logger/Logger';
@@ -38,7 +37,7 @@ export default class SessionService {
         });
     }
 
-    private static buildSessionObject(user: IUser, token: string, ip: string, sessionId: string): IUserSession {
+    private static buildSessionObject(user: IUser, token: string, ip: string | undefined, sessionId: string): IUserSession {
         return {
             userId: user.userId,
             sessionId,
@@ -67,7 +66,6 @@ export default class SessionService {
         if (err) {
             handleError(err);
         }
-        // @ts-ignore
         req.session.user = SessionService.buildSessionObject(user, token, req.ip || req.connection.remoteAddress, req.sessionID);
         req.session.save((err: string) => {
             if (err) {

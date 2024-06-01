@@ -19,12 +19,9 @@ export default class MailerSend implements IMailEngine {
     }
 
     async send(payload: ISendMailPayload): Promise<ISendMailResponse> {
-        const { tags = [], subject, sender, text, html, template } = payload;
+        const { tags = [], subject, sender, html, template } = payload;
         const recipients = payload.recipients.map((payload) => new Recipient(payload.mail, payload.name));
-        const emailParams = new EmailParams()
-            .setFrom(new Sender(sender.mail, sender.name))
-            .setTo(recipients)
-            .setSubject(payload.subject);
+        const emailParams = new EmailParams().setFrom(new Sender(sender.mail, sender.name)).setTo(recipients).setSubject(subject);
         if (html) {
             emailParams.setHtml(html);
         }

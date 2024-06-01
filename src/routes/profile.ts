@@ -19,8 +19,6 @@ const profileRouter = express.Router();
 
 profileRouter.use(tokenVerify, sessionVerify);
 
-profileRouter.post('/request-password-reset', routesInputValidation([body('email').isEmail()]), () => {});
-
 registerRouter.post(
     '/confirm-email',
     tokenVerify,
@@ -30,7 +28,6 @@ registerRouter.post(
         const _logger = Logger.Of('RegistrationSendConfirmation');
         const responseBuilder = new ResponseBuilder();
         try {
-            // @ts-ignore
             const userFromSession = req.session.user as IUserSession;
             const response = await UserRegistrationServiceBuilder.build().confirmUserMail(
                 userFromSession.userId,
@@ -60,7 +57,6 @@ profileRouter.get('/request-resend-confirmation', async (req: Request, res: Resp
     const _logger = Logger.Of('ProfileRequestResendConfirmation');
     const responseBuilder = new ResponseBuilder();
     try {
-        // @ts-ignore
         const user = req.session.user as IUserSession;
         const emailService = EmailConfirmationServiceBuilder.build();
         const response = await emailService.sendConfirmationMailToUser(user.userId, user.email);
@@ -82,42 +78,42 @@ profileRouter.get('/request-resend-confirmation', async (req: Request, res: Resp
         );
     }
 });
-profileRouter.post(
-    '/reset-password',
-    routesInputValidation([body('password').isStrongPassword(), body('newPassword').isStrongPassword()]),
-    (req: Request, res: Response) => {
-        const { token, newPassword } = req.body;
-        res.status(200).send('Password has been successfully reset.');
-    },
-);
-profileRouter.post(
-    '/request-mail-change',
-    routesInputValidation([body('email').isEmail()]),
-    async (req: Request, res: Response) => {
-        const _logger = Logger.Of('ProfileSendConfirmation');
-        const responseBuilder = new ResponseBuilder();
-        try {
-        } catch (error) {
-            _logger.error(error);
-            res.status(400).json(
-                responseBuilder.setStatus(ResponseStatusType.INTERNAL).setError({ errorCode: ErrorCode.CANT_STORE_DATA }).build(),
-            );
-        }
-    },
-);
-profileRouter.post(
-    '/request-mail-confirmation',
-    routesInputValidation([body('email').isEmail(), body('code').isNumeric()]),
-    async (req: Request, res: Response) => {
-        const _logger = Logger.Of('ProfileSendConfirmation');
-        const responseBuilder = new ResponseBuilder();
-        try {
-        } catch (error) {
-            _logger.error(error);
-            res.status(400).json(
-                responseBuilder.setStatus(ResponseStatusType.INTERNAL).setError({ errorCode: ErrorCode.CANT_STORE_DATA }).build(),
-            );
-        }
-    },
-);
+// profileRouter.post(
+//     '/reset-password',
+//     routesInputValidation([body('password').isStrongPassword(), body('newPassword').isStrongPassword()]),
+//     (req: Request, res: Response) => {
+//         const { token, newPassword } = req.body;
+//         res.status(200).send('Password has been successfully reset.');
+//     },
+// );
+// profileRouter.post(
+//     '/request-mail-change',
+//     routesInputValidation([body('email').isEmail()]),
+//     async (req: Request, res: Response) => {
+//         const _logger = Logger.Of('ProfileSendConfirmation');
+//         const responseBuilder = new ResponseBuilder();
+//         try {
+//         } catch (error) {
+//             _logger.error(error);
+//             res.status(400).json(
+//                 responseBuilder.setStatus(ResponseStatusType.INTERNAL).setError({ errorCode: ErrorCode.CANT_STORE_DATA }).build(),
+//             );
+//         }
+//     },
+// );
+// profileRouter.post(
+//     '/request-mail-confirmation',
+//     routesInputValidation([body('email').isEmail(), body('code').isNumeric()]),
+//     async (req: Request, res: Response) => {
+//         const _logger = Logger.Of('ProfileSendConfirmation');
+//         const responseBuilder = new ResponseBuilder();
+//         try {
+//         } catch (error) {
+//             _logger.error(error);
+//             res.status(400).json(
+//                 responseBuilder.setStatus(ResponseStatusType.INTERNAL).setError({ errorCode: ErrorCode.CANT_STORE_DATA }).build(),
+//             );
+//         }
+//     },
+// );
 export default profileRouter;
