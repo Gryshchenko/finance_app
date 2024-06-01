@@ -1,5 +1,5 @@
 // @ts-nocheck
-import { generateRandomEmail, generateRandomPassword } from '../TestsUtils.';
+import { generateRandomEmail, generateRandomPassword, generateSecureRandom } from '../TestsUtils.';
 import DatabaseConnection from '../../src/repositories/DatabaseConnection';
 import config from '../../src/config/dbConfig';
 import { LanguageType } from '../../src/types/LanguageType';
@@ -14,7 +14,7 @@ const app = require('../../src/app');
 let server;
 
 beforeAll(() => {
-    const port = Math.floor(Math.random() * (65535 - 1024) + 1024);
+    const port = Math.floor(generateSecureRandom() * (65535 - 1024) + 1024);
 
     server = app.listen(port);
 });

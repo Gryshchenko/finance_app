@@ -1,3 +1,5 @@
+import { generateSecureRandom } from '../TestsUtils.';
+
 const axios = require('axios');
 const fs = require('fs');
 const https = require('https');
@@ -12,7 +14,7 @@ function generateRandomString(length) {
     const characters = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';
     const charactersLength = characters.length;
     for (let i = 0; i < length; i++) {
-        result += characters.charAt(Math.floor(Math.random() * charactersLength));
+        result += characters.charAt(Math.floor(generateSecureRandom() * charactersLength));
     }
     return result;
 }
@@ -20,8 +22,8 @@ function generateRandomString(length) {
 async function fuzzSignup() {
     const testData = {
         email: generateRandomString(10) + '@test.com',
-        password: generateRandomString(Math.floor(Math.random() * 26) + 5),
-        locale: Math.random() > 0.5 ? generateRandomString(5) : undefined,
+        password: generateRandomString(Math.floor(generateSecureRandom() * 26) + 5),
+        locale: generateSecureRandom() > 0.5 ? generateRandomString(5) : undefined,
     };
 
     try {
