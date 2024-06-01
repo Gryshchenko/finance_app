@@ -1,7 +1,7 @@
 src/**/*.d.ts
 submodule
 dist
-coverage
+jest-coverage
 playwright-report
 pnpm-lock.yaml
 .pnpm-store
