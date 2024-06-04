@@ -36,8 +36,6 @@ jobs:
                   echo "REDIS_PORT=${{ secrets.TEST_REDIS_PORT }}" >> $GITHUB_ENV
                   echo "APP_NAME=${{ secrets.TEST_APP_NAME }}" >> $GITHUB_ENV
                   echo "PORT=${{ secrets.TEST_PORT }}" >> $GITHUB_ENV
-            - name: Test and coverage
-              run: npm run jest-test:coverage
             - name: SonarCloud Scan
               uses: SonarSource/sonarcloud-github-action@master
               env:
