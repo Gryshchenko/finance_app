@@ -1,12 +1,12 @@
 import { PassportStatic } from 'passport';
+import { getConfig } from 'src/config/config';
 
-require('dotenv').config();
 const JwtStrategy = require('passport-jwt').Strategy;
 const { ExtractJwt } = require('passport-jwt');
 
 const options = {
     jwtFromRequest: ExtractJwt.fromAuthHeaderAsBearerToken(),
-    secretOrKey: process.env.JWT_SECRET,
+    secretOrKey: getConfig().jwtSecret,
     issuer: 'myapp',
     audience: 'myapp.net',
 };

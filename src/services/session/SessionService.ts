@@ -5,9 +5,8 @@ import { IUser } from 'interfaces/IUser';
 import { IUserSession } from 'interfaces/IUserSession';
 import Logger from 'src/helper/logger/Logger';
 import ResponseBuilder from 'src/helper/responseBuilder/ResponseBuilder';
-import * as process from 'process';
+import { getConfig } from 'src/config/config';
 
-require('dotenv').config();
 const session = require('express-session');
 const redis = require('redis');
 const RedisStore = require('connect-redis').default;
@@ -29,7 +28,7 @@ export default class SessionService {
                         .build(),
                 );
             }
-            res.clearCookie(process.env.SS_NAME as string, { path: '/' });
+            res.clearCookie(getConfig().ssName as string, { path: '/' });
             _logger.info('delete session success');
             if (cb) {
                 cb();
@@ -78,8 +77,8 @@ export default class SessionService {
 
     public static setup(): typeof session {
         const redisClient = redis.createClient({
-            host: process.env.REDIS_HOST,
-            port: process.env.REDIS_PORT,
+            host: getConfig().redisHost,
+            port: getConfig().redisPort,
         });
         redisClient.connect().catch(Logger.Of('Redis').error);
 
@@ -96,8 +95,8 @@ export default class SessionService {
         });
         return session({
             store: redisStore,
-            secret: process.env.SS_SECRET,
-            name: process.env.SS_NAME,
+            secret: getConfig().ssSecret,
+            name: getConfig().ssName,
             resave: false,
             saveUninitialized: false,
             cookie: {

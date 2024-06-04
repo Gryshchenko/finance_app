@@ -11,13 +11,12 @@ import SessionService from './services/session/SessionService';
 import authRouter from './routes/auth';
 import registerRouter from './routes/register';
 import profileRouter from './routes/profile';
+import { getConfig } from 'src/config/config';
 
 const passport = require('passport');
 
-require('dotenv').config();
-
 const app = express();
-const port = process.env.PORT || 3000;
+const port = getConfig().appPort || 3000;
 
 passportSetup(passport);
 

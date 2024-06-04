@@ -234,6 +234,23 @@ describe('POST /register/signup', () => {
         });
         expect(spy).toHaveBeenCalled();
     });
+    it('should failed email already exist', async () => {
+        const spy = jest.spyOn(argon2, 'hash');
+        const mail = generateRandomEmail();
+        await request(app).post('/register/signup').send({ email: mail, password: generateRandomPassword() });
+        const response = await request(app).post('/register/signup').send({ email: mail, password: generateRandomPassword() });
+
+        expect(response.status).toBe(400);
+        expect(response.body).toStrictEqual({
+            data: {},
+            errors: [
+                {
+                    errorCode: 5001,
+                },
+            ],
+            status: 2,
+        });
+    });
 
     const testCases = [LanguageType.US, LanguageType.FR, LanguageType.DK, LanguageType.DE, 'aa-AA'];
     testCases.forEach((locale) => {

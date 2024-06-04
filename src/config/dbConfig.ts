@@ -1,13 +1,11 @@
-import { readFileSync } from 'fs';
-
-const caCert = readFileSync('/etc/ssl/cert.pem').toString();
+import { getConfig } from 'src/config/config';
 
 const config = {
-    database: process.env.DB_NAME,
-    port: Number(process.env.DB_PORT),
-    password: process.env.DB_PASS,
-    user: process.env.DB_USER,
-    host: process.env.DB_HOST,
-    cert: caCert,
+    database: getConfig().dbName,
+    port: Number(getConfig().dbPort),
+    password: getConfig().dbPass,
+    user: getConfig().dbUser,
+    host: getConfig().dbHost,
+    cert: getConfig().dbCACert,
 };
 export default config;

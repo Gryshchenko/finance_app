@@ -1,4 +1,3 @@
-import * as process from 'process';
 import { RoleType } from 'types/RoleType';
 import { IUserService } from 'interfaces/IUserService';
 import { LoggerBase } from 'src/helper/logger/LoggerBase';
@@ -10,8 +9,9 @@ import { IFailure } from 'interfaces/IFailure';
 import Failure from 'src/utils/failure/Failure';
 import Success from 'src/utils/success/Success';
 import UserServiceUtils from 'src/services/user/UserServiceUtils';
+import { getConfig } from 'src/config/config';
+import Utils from 'src/utils/Utils';
 
-require('dotenv').config();
 const jwt = require('jsonwebtoken');
 
 export default class AuthService extends LoggerBase implements IAuthService {
@@ -42,10 +42,15 @@ export default class AuthService extends LoggerBase implements IAuthService {
     }
 
     public static createJWToken(userId: number, role: RoleType): string {
-        return jwt.sign({ userId, role }, process.env.JWT_SECRET, {
+        const jwtSecretInProcess = getConfig().jwtSecret;
+        if (Utils.isEmpty(jwtSecretInProcess)) {
+            throw new Error('jwt secret not setup');
+        }
+        const jwtSecret = jwtSecretInProcess as unknown as string;
+        return jwt.sign({ userId, role }, jwtSecret, {
             expiresIn: '12h',
-            issuer: process.env.JWT_ISSUER,
-            audience: process.env.JWT_AUDIENCE,
+            issuer: getConfig().jwtIssuer,
+            audience: getConfig().jwtAudience,
         });
     }
 

@@ -20,6 +20,22 @@ jobs:
                   node-version: '20.x'
             - name: Install dependencies
               run: npm i
+            - name: Set up environment variables
+              run: |
+                  echo "DB_NAME=${{ secrets.TEST_DB_NAME }}" >> $GITHUB_ENV
+                  echo "DB_USER=${{ secrets.TEST_DB_USER }}" >> $GITHUB_ENV
+                  echo "DB_PASS=${{ secrets.TEST_DB_PASS }}" >> $GITHUB_ENV
+                  echo "DB_PORT=${{ secrets.TEST_DB_PORT }}" >> $GITHUB_ENV
+                  echo "DB_HOST=${{ secrets.TEST_DB_HOST }}" >> $GITHUB_ENV
+                  echo "SS_SECRET=${{ secrets.TEST_SS_SECRET }}" >> $GITHUB_ENV
+                  echo "SS_NAME=${{ secrets.TEST_SS_NAME }}" >> $GITHUB_ENV
+                  echo "JWT_SECRET=${{ secrets.TEST_JWT_SECRET }}" >> $GITHUB_ENV
+                  echo "JWT_ISSUER=${{ secrets.TEST_JWT_ISSUER }}" >> $GITHUB_ENV
+                  echo "JWT_AUDIENCE=${{ secrets.TEST_JWT_AUDIENCE }}" >> $GITHUB_ENV
+                  echo "REDIS_HOST=${{ secrets.TEST_REDIS_HOST }}" >> $GITHUB_ENV
+                  echo "REDIS_PORT=${{ secrets.TEST_REDIS_PORT }}" >> $GITHUB_ENV
+                  echo "APP_NAME=${{ secrets.TEST_APP_NAME }}" >> $GITHUB_ENV
+                  echo "PORT=${{ secrets.TEST_PORT }}" >> $GITHUB_ENV
             - name: Test and coverage
               run: npm run jest-test:coverage
             - name: SonarCloud Scan

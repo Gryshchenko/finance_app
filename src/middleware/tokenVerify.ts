@@ -3,6 +3,7 @@ import { VerifyErrors } from 'jsonwebtoken';
 import { ErrorCode } from 'types/ErrorCode';
 import Logger from 'src/helper/logger/Logger';
 import SessionService from '../services/session/SessionService';
+import { getConfig } from 'src/config/config';
 
 const jwt = require('jsonwebtoken');
 
@@ -35,7 +36,7 @@ const tokenVerify = (req: Request, res: Response, next: NextFunction) => {
         });
         return;
     }
-    jwt.verify(token, process.env.JWT_SECRET, (err: VerifyErrors & { complete: boolean }) => {
+    jwt.verify(token, getConfig().jwtSecret ?? null, (err: VerifyErrors & { complete: boolean }) => {
         if (err) {
             if (err.name === 'TokenExpiredError') {
                 SessionService.deleteSession(req, res, () => {

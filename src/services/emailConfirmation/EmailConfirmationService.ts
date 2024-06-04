@@ -15,8 +15,7 @@ import TimeManagerUTC from 'src/utils/TimeManagerUTC';
 import Failure from 'src/utils/failure/Failure';
 import Utils from 'src/utils/Utils';
 import { ITransaction } from 'interfaces/IDatabaseConnection';
-
-require('dotenv').config();
+import { getConfig } from 'src/config/config';
 
 const { randomBytes } = require('crypto');
 
@@ -54,11 +53,11 @@ export default class EmailConfirmationService extends LoggerBase implements IEma
         try {
             const response = await this.mailService.sendMail({
                 subject: Translations.text(TranslationKey.CONFIRM_MAIL_ADDRESS),
-                sender: { mail: String(process.env.MAIL_NO_REPLY), name: String(process.env.APP_NAME) },
+                sender: { mail: String(getConfig().mailNotReply), name: String(getConfig().appName) },
                 recipients: [{ mail: email, name: Translations.text(TranslationKey.HELLO_GUEST) }],
                 tags: {
                     code: confirmationCode,
-                    company: String(process.env.APP_NAME),
+                    company: String(getConfig().appName),
                     CONFIRM_MAIL_ADDRESS: Translations.text(TranslationKey.CONFIRM_MAIL_ADDRESS),
                     HELLO_GUEST: Translations.text(TranslationKey.HELLO_GUEST),
                     CONFIRM_MAIL_TEXT: Translations.text(TranslationKey.CONFIRM_MAIL_TEXT),
