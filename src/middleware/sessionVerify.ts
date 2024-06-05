@@ -1,18 +1,13 @@
 import { Request, Response, NextFunction } from 'express';
 import { ErrorCode } from 'types/ErrorCode';
-import { IUserSession } from 'interfaces/IUserSession';
 import Logger from 'src/helper/logger/Logger';
 
 import SessionService from '../services/session/SessionService';
 
 const _logger = Logger.Of('SessionVerify');
 
-const extractSession = (req: Request): IUserSession | unknown => {
-    return req.session.user;
-};
-
 const sessionVerify = (req: Request, res: Response, next: NextFunction) => {
-    const userSession = extractSession(req);
+    const userSession = SessionService.extractSessionFromRequest(req);
     if (!userSession) {
         _logger.info('session could not verify, userSession = null');
         SessionService.deleteSession(req, res, () => {

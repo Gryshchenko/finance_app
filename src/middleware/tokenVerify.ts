@@ -4,6 +4,7 @@ import { ErrorCode } from 'types/ErrorCode';
 import Logger from 'src/helper/logger/Logger';
 import SessionService from '../services/session/SessionService';
 import { getConfig } from 'src/config/config';
+const crypto = require('crypto');
 
 const jwt = require('jsonwebtoken');
 
@@ -16,44 +17,46 @@ const extractToken = (req: Request) => {
     return null;
 };
 
-const extractSessionToken = (req: Request) => {
-    return req.session?.user?.token;
-};
 const tokenVerify = (req: Request, res: Response, next: NextFunction) => {
     const token = extractToken(req);
-    const sessionToken = extractSessionToken(req);
+    const sessionToken = SessionService.extractSessionFromRequest(req)?.token;
+    const sendErrorResponse = () => {
+        SessionService.deleteSession(req, res, () => {
+            res.status(401).json({ errorCode: ErrorCode.AUTH });
+        });
+    };
     if (!token) {
+        sendErrorResponse();
         _logger.info('token not verify, token = null');
-        SessionService.deleteSession(req, res, () => {
-            res.status(401).json({ errorCode: ErrorCode.AUTH });
-        });
         return;
     }
-    if (token !== sessionToken) {
-        _logger.info('token not verify, token and session token not same');
-        SessionService.deleteSession(req, res, () => {
-            res.status(401).json({ errorCode: ErrorCode.AUTH });
-        });
+    if (!sessionToken) {
+        sendErrorResponse();
+        _logger.info('session token not verify, token = null');
         return;
     }
-    jwt.verify(token, getConfig().jwtSecret ?? null, (err: VerifyErrors & { complete: boolean }) => {
-        if (err) {
-            if (err.name === 'TokenExpiredError') {
-                SessionService.deleteSession(req, res, () => {
-                    res.status(401).json({ errorCode: ErrorCode.AUTH });
-                });
-                _logger.info('token not verify, token expired');
+    const tokenBuffer = Buffer.from(token, 'utf-8');
+    const sessionTokenBuffer = Buffer.from(sessionToken, 'utf-8');
+
+    if (tokenBuffer.length === sessionTokenBuffer.length && crypto.timingSafeEqual(tokenBuffer, sessionTokenBuffer)) {
+        jwt.verify(token, getConfig().jwtSecret ?? null, (err: VerifyErrors & { complete: boolean }) => {
+            if (err) {
+                if (err.name === 'TokenExpiredError') {
+                    sendErrorResponse();
+                    _logger.info('token not verify, token expired');
+                } else {
+                    sendErrorResponse();
+                    _logger.info('token not verify, token invalid');
+                }
             } else {
-                SessionService.deleteSession(req, res, () => {
-                    res.status(401).json({ errorCode: ErrorCode.AUTH });
-                });
-                _logger.info('token not verify, token invalid');
+                _logger.info('token verify success');
+                next();
             }
-        } else {
-            _logger.info('token verify success');
-            next();
-        }
-    });
+        });
+    } else {
+        sendErrorResponse();
+        _logger.info('token not verify, token and session token not same');
+    }
 };
 
 export default tokenVerify;

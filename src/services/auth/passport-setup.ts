@@ -1,14 +1,17 @@
 import { PassportStatic } from 'passport';
 import { getConfig } from 'src/config/config';
 
-const JwtStrategy = require('passport-jwt').Strategy;
+import { Strategy as JwtStrategy, StrategyOptionsWithRequest } from 'passport-jwt';
+
 const { ExtractJwt } = require('passport-jwt');
 
-const options = {
+const options: StrategyOptionsWithRequest = {
     jwtFromRequest: ExtractJwt.fromAuthHeaderAsBearerToken(),
     secretOrKey: getConfig().jwtSecret,
     issuer: 'myapp',
     audience: 'myapp.net',
+    algorithms: ['HS384'],
+    passReqToCallback: true,
 };
 
 const passportSetup = (passport: PassportStatic) => {

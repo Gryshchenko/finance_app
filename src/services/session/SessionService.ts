@@ -12,6 +12,10 @@ const redis = require('redis');
 const RedisStore = require('connect-redis').default;
 
 export default class SessionService {
+    public static extractSessionFromRequest(req: Request): IUserSession | undefined {
+        return req.session?.user;
+    }
+
     public static deleteSession(req: Request, res: Response, cb: () => void): void {
         const _logger = Logger.Of('deleteSession');
         _logger.info('start session delete procedure');
@@ -65,7 +69,7 @@ export default class SessionService {
         if (err) {
             handleError(err);
         }
-        req.session.user = SessionService.buildSessionObject(user, token, req.ip || req.connection.remoteAddress, req.sessionID);
+        req.session.user = SessionService.buildSessionObject(user, token, req.ip ?? req.socket.remoteAddress, req.sessionID);
         req.session.save((err: string) => {
             if (err) {
                 handleError(err);

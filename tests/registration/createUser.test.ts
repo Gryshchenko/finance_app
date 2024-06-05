@@ -235,7 +235,6 @@ describe('POST /register/signup', () => {
         expect(spy).toHaveBeenCalled();
     });
     it('should failed email already exist', async () => {
-        const spy = jest.spyOn(argon2, 'hash');
         const mail = generateRandomEmail();
         await request(app).post('/register/signup').send({ email: mail, password: generateRandomPassword() });
         const response = await request(app).post('/register/signup').send({ email: mail, password: generateRandomPassword() });

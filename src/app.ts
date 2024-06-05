@@ -1,4 +1,4 @@
-import express, { Request, Response } from 'express';
+import express, { NextFunction, Request, Response } from 'express';
 import https from 'https';
 import fs from 'fs';
 import path from 'path';
@@ -12,11 +12,14 @@ import authRouter from './routes/auth';
 import registerRouter from './routes/register';
 import profileRouter from './routes/profile';
 import { getConfig } from 'src/config/config';
+import ResponseBuilder from 'src/helper/responseBuilder/ResponseBuilder';
+import { ResponseStatusType } from 'types/ResponseStatusType';
+import { ErrorCode } from 'types/ErrorCode';
 
 const passport = require('passport');
 
 const app = express();
-const port = getConfig().appPort || 3000;
+const port = getConfig().appPort ?? 3000;
 
 passportSetup(passport);
 
@@ -30,15 +33,19 @@ const limiter = rateLimit({
     limit: 100,
 });
 
-// app.use((req: Request, res: Response, next: NextFunction) => {
-//     res.setTimeout(10000, () => { // 10 seconds timeout
-//         console.log('Request has timed out.');
-//         res.status(408).send('Request timed out');
-//     });
-//     next();
-// });
-app.use(express.json({ limit: '5kb' })); // JSON  10kb
-app.use(express.urlencoded({ limit: '5kb', extended: true })); // URL-encoded  10kb
+app.use((req: Request, res: Response, next: NextFunction) => {
+    res.setTimeout(10000, () => {
+        res.status(408).send(
+            new ResponseBuilder()
+                .setStatus(ResponseStatusType.INTERNAL)
+                .setError({ errorCode: ErrorCode.REQUEST_TIMEOUT })
+                .build(),
+        );
+    });
+    next();
+});
+app.use(express.json({ limit: '5kb' }));
+app.use(express.urlencoded({ limit: '5kb', extended: true }));
 app.use(limiter);
 app.use(express.json());
 app.use(helmet());

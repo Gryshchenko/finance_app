@@ -1,16 +1,12 @@
 import { Request, Response, NextFunction } from 'express';
 import { ErrorCode } from 'types/ErrorCode';
-import { IUserSession } from 'interfaces/IUserSession';
 import Logger from 'src/helper/logger/Logger';
+import SessionService from 'services/session/SessionService';
 
 const _logger = Logger.Of('EnsureGuest');
 
-const extractSession = (req: Request): IUserSession | undefined => {
-    return req.session.user;
-};
-
 const ensureGuest = (req: Request, res: Response, next: NextFunction) => {
-    const userSession = extractSession(req);
+    const userSession = SessionService.extractSessionFromRequest(req);
     if (userSession?.userId) {
         _logger.info('access forbidden user already authenticated');
         res.status(401).json({ errorCode: ErrorCode.AUTH });
