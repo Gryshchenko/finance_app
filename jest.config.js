@@ -10,7 +10,7 @@ module.exports = {
         '^translationsKeys/(.*)$': '<rootDir>/src/translationsKeys/$1',
     },
     collectCoverage: true,
-    coverageReporters: ['text', 'lcov', 'html'],
+    coverageReporters: ['lcov'],
     coverageProvider: 'v8',
     coverageDirectory: 'jest-coverage',
     coverageThreshold: {
