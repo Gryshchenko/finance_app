@@ -16,6 +16,7 @@
             "interfaces/*": ["src/interfaces/*"],
             "services/*": ["src/services/*"],
             "types/*": ["src/types/*"],
+            "helper/*": ["src/helper/*"],
             "src/*": ["src/*"],
             "utils/*": ["src/utils"]
         }

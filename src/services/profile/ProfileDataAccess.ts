@@ -32,7 +32,23 @@ export default class ProfileDataService extends LoggerBase implements IProfileDa
     async getProfile(userId: number): Promise<IProfile | undefined> {
         try {
             this._logger.info('getProfile request');
-            const data = await this._db.engine()<IProfile>('profiles').where({ userId }).select<IProfile>(['*']).first();
+            const data = await this._db
+                .engine()<IProfile>('profiles')
+                .select<IProfile>(
+                    'profiles.profileId',
+                    'profiles.userId',
+                    'profiles.userName',
+                    'profiles.currencyId',
+                    'profiles.additionalInfo',
+                    'profiles.locale',
+                    'profiles.mailConfirmed',
+                    'currencies.currencyCode',
+                    'currencies.currencyName',
+                    'currencies.symbol',
+                )
+                .innerJoin('currencies', 'profiles.currencyId', 'currencies.currencyId')
+                .where({ userId })
+                .first();
             this._logger.info('getProfile response');
             if (data) {
                 return data;

@@ -35,6 +35,7 @@ export default class UserServiceUtils {
 
     public static convertServerUserToClientUser(user: IUser): IUserClient {
         return {
+            userId: user.userId,
             email: user.email,
             status: user.status,
             currency: user.currency,

@@ -77,8 +77,10 @@ export default function routesInputValidation(validations: ValidationChain[]) {
     };
 }
 
-const convertErrorNameToErrorCode = (path: string): ErrorCode => {
+export const convertErrorNameToErrorCode = (path: string): ErrorCode => {
     switch (path) {
+        case 'profileId':
+            return ErrorCode.PROFILE_ERROR;
         case 'locale':
             return ErrorCode.LOCALE_INVALID;
         case 'code':

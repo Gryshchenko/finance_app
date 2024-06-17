@@ -1,6 +1,7 @@
 import { IUserStatus } from 'interfaces/IUserStatus';
 
 export interface IUserClient {
+    userId: number;
     email: string;
     status: IUserStatus;
     currency?: {

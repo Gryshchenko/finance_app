@@ -15,16 +15,16 @@ import ensureGuest from '../middleware/ensureGuest';
 import sessionVerify from '../middleware/sessionVerify';
 import Logger from '../helper/logger/Logger';
 
-const authRouter = express.Router();
+const router = express.Router();
 
-authRouter.get('/logout', tokenVerify, sessionVerify, (req: Request, res: Response) => {
+router.get('/logout', tokenVerify, sessionVerify, (req: Request, res: Response) => {
     const responseBuilder = new ResponseBuilder();
     SessionService.deleteSession(req, res, () => {
         res.status(200).json(responseBuilder.setStatus(ResponseStatusType.OK).build());
     });
 });
 
-authRouter.post(
+router.post(
     '/login',
     ensureGuest,
     routesInputValidation([body('password').isString().isLength({ max: 50 }), body('email').isString().isLength({ max: 50 })]),
@@ -59,4 +59,4 @@ authRouter.post(
     },
 );
 
-export default authRouter;
+export default router;

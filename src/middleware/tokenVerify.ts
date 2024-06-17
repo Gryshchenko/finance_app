@@ -4,6 +4,8 @@ import { ErrorCode } from 'types/ErrorCode';
 import Logger from 'src/helper/logger/Logger';
 import SessionService from '../services/session/SessionService';
 import { getConfig } from 'src/config/config';
+import ResponseBuilder from 'src/helper/responseBuilder/ResponseBuilder';
+import { ResponseStatusType } from 'types/ResponseStatusType';
 const crypto = require('crypto');
 
 const jwt = require('jsonwebtoken');
@@ -22,7 +24,9 @@ const tokenVerify = (req: Request, res: Response, next: NextFunction) => {
     const sessionToken = SessionService.extractSessionFromRequest(req)?.token;
     const sendErrorResponse = () => {
         SessionService.deleteSession(req, res, () => {
-            res.status(401).json({ errorCode: ErrorCode.AUTH });
+            res.status(401).json(
+                new ResponseBuilder().setStatus(ResponseStatusType.INTERNAL).setError({ errorCode: ErrorCode.AUTH }).build(),
+            );
         });
     };
     if (!token) {

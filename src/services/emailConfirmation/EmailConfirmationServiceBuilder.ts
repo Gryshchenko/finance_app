@@ -4,8 +4,7 @@ import config from 'src/config/dbConfig';
 import MailService from 'src/services/mail/MailService';
 import MailTemplateService from 'src/services/mailTamplate/MailTemplateService';
 import EmailConfirmationDataAccess from 'src/services/emailConfirmation/EmailConfirmationDataAccess';
-import UserService from 'src/services/user/UserService';
-import UserDataService from 'src/services/user/UserDataAccess';
+import UserServiceBuilder from 'src/services/user/UserServiceBuilder';
 
 export default class EmailConfirmationServiceBuilder {
     public static build() {
@@ -14,7 +13,7 @@ export default class EmailConfirmationServiceBuilder {
             new EmailConfirmationDataAccess(databaseConnection),
             new MailService(),
             new MailTemplateService(),
-            new UserService(new UserDataService(databaseConnection)),
+            UserServiceBuilder.build(),
         );
     }
 }

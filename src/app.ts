@@ -15,6 +15,7 @@ import { getConfig } from 'src/config/config';
 import ResponseBuilder from 'src/helper/responseBuilder/ResponseBuilder';
 import { ResponseStatusType } from 'types/ResponseStatusType';
 import { ErrorCode } from 'types/ErrorCode';
+import Logger from 'src/helper/logger/Logger';
 
 const passport = require('passport');
 
@@ -64,8 +65,8 @@ const httpsServer = https.createServer(credentials, app);
 
 if (process.env.NODE_ENV !== 'test') {
     httpsServer.listen(port, () => {
-        console.log(`listening on port ${port}`);
+        Logger.Of('App').info(`listening on port ${port}`);
     });
 }
 
-module.exports = app;
+module.exports = httpsServer;

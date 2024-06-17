@@ -12,9 +12,9 @@ import ensureGuest from '../middleware/ensureGuest';
 import SessionService from '../services/session/SessionService';
 import routesInputValidation from '../utils/validation/routesInputValidation';
 
-const registerRouter = express.Router();
+const router = express.Router();
 
-registerRouter.post('/signup', ensureGuest, routesInputValidation(signupValidationRules), async (req: Request, res: Response) => {
+router.post('/signup', ensureGuest, routesInputValidation(signupValidationRules), async (req: Request, res: Response) => {
     const _logger = Logger.Of('RegistrationSignup');
     const responseBuilder = new ResponseBuilder();
 
@@ -50,4 +50,4 @@ registerRouter.post('/signup', ensureGuest, routesInputValidation(signupValidati
     }
 });
 
-export default registerRouter;
+export default router;

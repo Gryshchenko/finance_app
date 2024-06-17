@@ -8,4 +8,7 @@ export interface IProfile {
     locale: LanguageType;
     mailConfirmed: boolean;
     additionInfo: Record<string, unknown>;
+    currencyCode: string;
+    currencyName: string;
+    symbol: string;
 }

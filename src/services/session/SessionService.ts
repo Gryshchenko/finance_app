@@ -6,6 +6,8 @@ import { IUserSession } from 'interfaces/IUserSession';
 import Logger from 'src/helper/logger/Logger';
 import ResponseBuilder from 'src/helper/responseBuilder/ResponseBuilder';
 import { getConfig } from 'src/config/config';
+import { IUserAgentInfo } from 'interfaces/IUserAgentInfo';
+import { UserAgentService } from 'src/services/userAgentService/UserAgentService';
 
 const session = require('express-session');
 const redis = require('redis');
@@ -32,7 +34,7 @@ export default class SessionService {
                         .build(),
                 );
             }
-            res.clearCookie(getConfig().ssName as string, { path: '/' });
+            res.clearCookie(getConfig().ssName, { path: '/' });
             _logger.info('delete session success');
             if (cb) {
                 cb();
@@ -40,15 +42,26 @@ export default class SessionService {
         });
     }
 
-    private static buildSessionObject(user: IUser, token: string, ip: string | undefined, sessionId: string): IUserSession {
-        return {
+    private static buildSessionObject(
+        user: IUser,
+        token: string,
+        ip: string | undefined,
+        sessionId: string,
+        userAgent: IUserAgentInfo | undefined,
+    ): IUserSession {
+        return Object.freeze({
             userId: user.userId,
             sessionId,
             status: user.status,
             email: user.email,
             ip,
             token,
-        };
+            userAgent,
+        });
+    }
+
+    public static getUserIP(req: Request): string | undefined {
+        return req.ip ?? req.socket.remoteAddress;
     }
 
     public static regenerateSession({
@@ -69,7 +82,13 @@ export default class SessionService {
         if (err) {
             handleError(err);
         }
-        req.session.user = SessionService.buildSessionObject(user, token, req.ip ?? req.socket.remoteAddress, req.sessionID);
+        req.session.user = SessionService.buildSessionObject(
+            user,
+            token,
+            SessionService.getUserIP(req),
+            req.sessionID,
+            UserAgentService.getUserAgent(req.headers['user-agent']),
+        );
         req.session.save((err: string) => {
             if (err) {
                 handleError(err);

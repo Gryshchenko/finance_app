@@ -1,4 +1,5 @@
 import { IUserStatus } from 'interfaces/IUserStatus';
+import { IUserAgentInfo } from 'interfaces/IUserAgentInfo';
 
 export interface IUserSession {
     userId: number;
@@ -7,4 +8,5 @@ export interface IUserSession {
     ip: string | undefined;
     token: string;
     email: string;
+    userAgent: IUserAgentInfo | undefined;
 }

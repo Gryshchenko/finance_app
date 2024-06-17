@@ -170,7 +170,7 @@ describe('POST /register/signup', () => {
     it('should return error invalid format password', async () => {
         const response = await request(app)
             .post('/register/signup')
-            .send({ email: generateRandomEmail(), password: generateSecureRandom() });
+            .send({ email: generateRandomEmail(), password: generateSecureRandom(2) });
 
         expect(response.status).toBe(400);
         expect(response.body).toStrictEqual({
