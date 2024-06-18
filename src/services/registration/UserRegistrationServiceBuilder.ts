@@ -1,42 +1,33 @@
-import config from 'src/config/dbConfig';
-
-import DatabaseConnection from 'src/repositories/DatabaseConnection';
-import UserRoleService from 'src/services/userRole/UserRoleService';
-import UserRoleDataService from 'src/services/userRole/UserRoleDataAccess';
 import UserRegistrationService from 'src/services/registration/UserRegistrationService';
-import CurrencyService from 'src/services/currency/CurrencyService';
-import CurrencyDataService from 'src/services/currency/CurrencyDataAccess';
 import EmailConfirmationDataAccess from 'src/services/emailConfirmation/EmailConfirmationDataAccess';
-import MailService from '../mail/MailService';
-import AccountService from '../account/AccountService';
-import ProfileService from '../profile/ProfileService';
-import CategoryService from '../category/CategoryService';
-import GroupService from '../group/GroupService';
-import IncomeService from '../income/IncomeService';
-import MailTemplateService from '../mailTamplate/MailTemplateService';
-import EmailConfirmationService from '../emailConfirmation/EmailConfirmationService';
 
-import ProfileDataAccess from '../profile/ProfileDataAccess';
-import AccountDataAccess from '../account/AccountDataAccess';
-import CategoryDataAccess from '../category/CategoryDataAccess';
-import GroupDataAccess from '../group/GroupDataAccess';
-import IncomeDataAccess from '../income/IncomeDataAccess';
 import UserServiceBuilder from 'src/services/user/UserServiceBuilder';
+import AccountServiceBuilder from 'services/account/AccountServiceBuilder';
+import CategoryServiceBuilder from 'services/category/CategoryServiceBuilder';
+import GroupServiceBuilder from 'services/group/GroupServiceBuilder';
+import IncomeServiceBuilder from 'services/income/IncomeServiceBuilder';
+import UserRoleServiceBuilder from 'services/userRole/UserRoleServiceBuilder';
+import ProfileServiceBuilder from 'services/profile/ProfileServiceBuilder';
+import CurrencyServiceBuilder from 'services/currency/CurrencyServiceBuilder';
+import DatabaseConnectionBuilder from 'src/repositories/DatabaseConnectionBuilder';
+import MailService from 'services/mail/MailService';
+import MailTemplateService from 'services/mailTamplate/MailTemplateService';
+import EmailConfirmationService from 'services/emailConfirmation/EmailConfirmationService';
 
 export default class UserRegistrationServiceBuilder {
     public static build() {
-        const databaseConnection = new DatabaseConnection(config);
+        const databaseConnection = DatabaseConnectionBuilder.build();
         return new UserRegistrationService({
             userService: UserServiceBuilder.build(),
-            accountService: new AccountService(new AccountDataAccess(databaseConnection)),
-            categoryService: new CategoryService(new CategoryDataAccess(databaseConnection)),
-            groupService: new GroupService(new GroupDataAccess(databaseConnection)),
-            incomeService: new IncomeService(new IncomeDataAccess(databaseConnection)),
+            accountService: AccountServiceBuilder.build(),
+            categoryService: CategoryServiceBuilder.build(),
+            groupService: GroupServiceBuilder.build(),
+            incomeService: IncomeServiceBuilder.build(),
             mailService: new MailService(),
             mailTemplateService: new MailTemplateService(),
-            userRoleService: new UserRoleService(new UserRoleDataService(databaseConnection)),
-            profileService: new ProfileService(new ProfileDataAccess(databaseConnection)),
-            currencyService: new CurrencyService(new CurrencyDataService(databaseConnection)),
+            userRoleService: UserRoleServiceBuilder.build(),
+            profileService: ProfileServiceBuilder.build(),
+            currencyService: CurrencyServiceBuilder.build(),
             emailConfirmationService: new EmailConfirmationService(
                 new EmailConfirmationDataAccess(databaseConnection),
                 new MailService(),

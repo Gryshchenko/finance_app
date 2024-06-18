@@ -3,7 +3,7 @@ import { IDatabaseConnection, ITransaction } from 'interfaces/IDatabaseConnectio
 import { LoggerBase } from 'src/helper/logger/LoggerBase';
 import { IGroup } from 'interfaces/IGroup';
 
-export default class GroupDataService extends LoggerBase implements IGroupDataAccess {
+export default class GroupDataAccess extends LoggerBase implements IGroupDataAccess {
     private readonly _db: IDatabaseConnection;
 
     public constructor(db: IDatabaseConnection) {

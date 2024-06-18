@@ -1,11 +1,9 @@
-import DatabaseConnection from 'src/repositories/DatabaseConnection';
 import UserDataAccess from 'src/services/user/UserDataAccess';
-import config from 'src/config/dbConfig';
 import UserService from './UserService';
+import DatabaseConnectionBuilder from 'src/repositories/DatabaseConnectionBuilder';
 
 export default class UserServiceBuilder {
     public static build() {
-        const databaseConnection = new DatabaseConnection(config);
-        return new UserService(new UserDataAccess(databaseConnection));
+        return new UserService(new UserDataAccess(DatabaseConnectionBuilder.build()));
     }
 }

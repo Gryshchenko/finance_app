@@ -226,6 +226,7 @@ describe('POST /register/signup', () => {
             data: {
                 email: mail,
                 status: 1,
+                userId: expect.any(Number),
                 currency: { currencyCode: 'USD', currencyName: 'US Dollar', symbol: '$' },
                 profile: { locale: 'en-US' },
                 additionalInfo: null,
@@ -313,6 +314,7 @@ describe('POST /register/signup', () => {
                 data: {
                     email: mail,
                     status: 1,
+                    userId: expect.any(Number),
                     currency: initialCurrency,
                     profile: { locale: locale === 'aa-AA' ? LanguageType.US : locale },
                     additionalInfo: null,

@@ -1,13 +1,13 @@
+const { compilerOptions } = require('./tsconfig.json');
+const { pathsToModuleNameMapper } = require('ts-jest');
+
+const { baseUrl, paths } = compilerOptions;
+
 module.exports = {
     maxWorkers: '50%',
     preset: 'ts-jest',
-    moduleNameMapper: {
-        '\\.(jpg|jpeg|png|gif|eot|otf|webp|svg|ttf|woff|woff2|mp4|webm|wav|mp3|m4a|aac|oga)$': '<rootDir>/__mocks__/fileMock.js',
-        '^src/(.*)$': '<rootDir>/src/$1',
-        '^types/(.*)$': '<rootDir>/src/types//$1',
-        '^interfaces/(.*)$': '<rootDir>/src/interfaces/$1',
-        '^translationsKeys/(.*)$': '<rootDir>/src/translationsKeys/$1',
-    },
+    modulePaths: [baseUrl],
+    moduleNameMapper: pathsToModuleNameMapper(paths),
     collectCoverage: true,
     coverageReporters: ['lcov'],
     coverageProvider: 'v8',
@@ -21,7 +21,12 @@ module.exports = {
     testPathIgnorePatterns: ['/node_modules/'],
     setupFiles: ['./jest.setup.ts'],
     transform: {
-        '^.+\\.(ts|js)?$': 'ts-jest',
+        '^.+\\.ts?$': [
+            'ts-jest',
+            // required due to custom location of tsconfig.json configuration file
+            // https://kulshekhar.github.io/ts-jest/docs/getting-started/options/tsconfig
+            { tsconfig: './tsconfig.json' },
+        ],
     },
     testTimeout: 200000,
 };

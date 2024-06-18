@@ -3,7 +3,7 @@ import { IDatabaseConnection, ITransaction } from 'interfaces/IDatabaseConnectio
 import { LoggerBase } from 'src/helper/logger/LoggerBase';
 import { IUserRole } from 'interfaces/IUserRole';
 
-export default class UserRoleDataService extends LoggerBase implements IUserRoleDataAccess {
+export default class UserRoleDataAccess extends LoggerBase implements IUserRoleDataAccess {
     private readonly _db: IDatabaseConnection;
 
     public constructor(db: IDatabaseConnection) {

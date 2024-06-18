@@ -4,7 +4,7 @@ import { LoggerBase } from 'src/helper/logger/LoggerBase';
 import { IIncome } from 'interfaces/IIncome';
 import { ICreateIncome } from 'interfaces/ICreateIncome';
 
-export default class IncomeDataService extends LoggerBase implements IIncomeDataAccess {
+export default class IncomeDataAccess extends LoggerBase implements IIncomeDataAccess {
     private readonly _db: IDatabaseConnection;
 
     public constructor(db: IDatabaseConnection) {
