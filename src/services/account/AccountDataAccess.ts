@@ -27,4 +27,43 @@ export default class AccountDataAccess extends LoggerBase implements IAccountDat
             throw error;
         }
     }
+    async getAccounts(userId: number): Promise<IAccount[] | undefined> {
+        try {
+            this._logger.info('getAccounts request');
+
+            const data = await this.getAccountBaseQuery()
+                .innerJoin('currencies', 'accounts.currencyId', 'currencies.currencyId')
+                .where({ userId });
+            this._logger.info('getAccounts response');
+            return data;
+        } catch (error) {
+            this._logger.error(error);
+            throw error;
+        }
+    }
+    async getAccount(userId: number, accountId: number): Promise<IAccount | undefined> {
+        try {
+            this._logger.info('getAccount request');
+            const data = await this.getAccountBaseQuery().where({ userId, accountId }).first();
+            this._logger.info('getAccount response');
+            return data;
+        } catch (error) {
+            this._logger.error(error);
+            throw error;
+        }
+    }
+    protected getAccountBaseQuery() {
+        return this._db
+            .engine()('accounts')
+            .select(
+                'accounts.accountId',
+                'accounts.userId',
+                'accounts.amount',
+                'account.accountName',
+                'accounts.currencyId',
+                'currencies.currencyCode',
+                'currencies.currencyName',
+                'currencies.symbol',
+            );
+    }
 }

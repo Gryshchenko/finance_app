@@ -11,6 +11,7 @@ import SessionService from './services/session/SessionService';
 import authRouter from './routes/auth';
 import registerRouter from './routes/register';
 import profileRouter from './routes/profile';
+import overviewRouter from './routes/overview';
 import { getConfig } from 'src/config/config';
 import ResponseBuilder from 'src/helper/responseBuilder/ResponseBuilder';
 import { ResponseStatusType } from 'types/ResponseStatusType';
@@ -56,6 +57,7 @@ app.use(SessionService.setup());
 app.use('/auth', authRouter);
 app.use('/profile', profileRouter);
 app.use('/register', registerRouter);
+app.use('/overview', overviewRouter);
 
 app.get('/', (req: Request, res: Response) => {
     res.send('Hello World!!!');

@@ -27,4 +27,43 @@ export default class IncomeDataAccess extends LoggerBase implements IIncomeDataA
             throw error;
         }
     }
+    async getIncomes(userId: number): Promise<IIncome[] | undefined> {
+        try {
+            this._logger.info('getCategories request');
+
+            const data = await this.getIncomeBaseQuery()
+                .innerJoin('incomes', 'incomes.currencyId', 'currencies.currencyId')
+                .where({ userId });
+            this._logger.info('getCategories response');
+            return data;
+        } catch (error) {
+            this._logger.error(error);
+            throw error;
+        }
+    }
+    async getIncome(userId: number, categoryId: number): Promise<IIncome | undefined> {
+        try {
+            this._logger.info('getIncome request');
+            const data = await this.getIncomeBaseQuery().where({ userId, categoryId }).first();
+            this._logger.info('getIncome response');
+            return data;
+        } catch (error) {
+            this._logger.error(error);
+            throw error;
+        }
+    }
+    protected getIncomeBaseQuery() {
+        return this._db
+            .engine()('incomes')
+            .select(
+                'incomes.accountId',
+                'incomes.userId',
+                'incomes.amount',
+                'incomes.incomeName',
+                'incomes.currencyId',
+                'currencies.currencyCode',
+                'currencies.currencyName',
+                'currencies.symbol',
+            );
+    }
 }

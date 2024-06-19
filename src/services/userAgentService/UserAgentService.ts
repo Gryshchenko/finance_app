@@ -9,20 +9,20 @@ export class UserAgentService {
         const uaResult = uaParser.getResult();
 
         return {
-            ua: userAgent || '',
+            ua: userAgent ?? '',
             browser: {
-                name: uaResult.browser.name || '',
-                major: uaResult.browser.major || '',
+                name: uaResult.browser.name ?? '',
+                major: uaResult.browser.major ?? '',
             },
             cpu: {
-                architecture: uaResult.cpu.architecture || '',
+                architecture: uaResult.cpu.architecture ?? '',
             },
             device: {
-                type: uaResult.device.type || '',
+                type: uaResult.device.type ?? '',
             },
             os: {
-                name: uaResult.os.name || '',
-                version: uaResult.os.version || '',
+                name: uaResult.os.name ?? '',
+                version: uaResult.os.version ?? '',
             },
         };
     }

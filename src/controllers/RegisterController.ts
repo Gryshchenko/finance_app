@@ -9,8 +9,8 @@ import SessionService from 'services/session/SessionService';
 import UserServiceUtils from 'services/user/UserServiceUtils';
 import { ErrorCode } from 'types/ErrorCode';
 export class RegisterController {
+    private static logger = Logger.Of('RegisterController');
     public static async signup(req: Request, res: Response) {
-        const _logger = Logger.Of('RegistrationSignup');
         const responseBuilder = new ResponseBuilder();
 
         try {
@@ -20,7 +20,7 @@ export class RegisterController {
                 req.body.locale,
             );
             if (response instanceof Failure) {
-                _logger.error(response.error);
+                RegisterController.logger.error(response.error);
                 return res
                     .status(400)
                     .json(responseBuilder.setStatus(ResponseStatusType.INTERNAL).setError({ errorCode: response.code }).build());
@@ -28,17 +28,25 @@ export class RegisterController {
 
             if (response instanceof Success) {
                 const { user, token } = response.value;
-                SessionService.handleSessionRegeneration(req, res, user, token, _logger, responseBuilder, () => {
-                    res.status(200).json(
-                        responseBuilder
-                            .setStatus(ResponseStatusType.OK)
-                            .setData(UserServiceUtils.convertServerUserToClientUser(user))
-                            .build(),
-                    );
-                });
+                SessionService.handleSessionRegeneration(
+                    req,
+                    res,
+                    user,
+                    token,
+                    RegisterController.logger,
+                    responseBuilder,
+                    () => {
+                        res.status(200).json(
+                            responseBuilder
+                                .setStatus(ResponseStatusType.OK)
+                                .setData(UserServiceUtils.convertServerUserToClientUser(user))
+                                .build(),
+                        );
+                    },
+                );
             }
         } catch (error) {
-            _logger.error(error);
+            RegisterController.logger.error(error);
             res.status(400).json(
                 responseBuilder.setStatus(ResponseStatusType.INTERNAL).setError({ errorCode: ErrorCode.CANT_STORE_DATA }).build(),
             );

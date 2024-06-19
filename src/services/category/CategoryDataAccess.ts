@@ -27,4 +27,43 @@ export default class CategoryDataAccess extends LoggerBase implements ICategoryD
             throw error;
         }
     }
+    async getCategories(userId: number): Promise<ICategory[] | undefined> {
+        try {
+            this._logger.info('getCategories request');
+
+            const data = await this.getCategoryBaseQuery()
+                .innerJoin('currencies', 'categories.currencyId', 'currencies.currencyId')
+                .where({ userId });
+            this._logger.info('getCategories response');
+            return data;
+        } catch (error) {
+            this._logger.error(error);
+            throw error;
+        }
+    }
+    async getCategory(userId: number, categoryId: number): Promise<ICategory | undefined> {
+        try {
+            this._logger.info('getCategory request');
+            const data = await this.getCategoryBaseQuery().where({ userId, categoryId }).first();
+            this._logger.info('getCategory response');
+            return data;
+        } catch (error) {
+            this._logger.error(error);
+            throw error;
+        }
+    }
+    protected getCategoryBaseQuery() {
+        return this._db
+            .engine()('categories')
+            .select(
+                'categories.accountId',
+                'categories.userId',
+                'categories.amount',
+                'categories.categoryName',
+                'categories.currencyId',
+                'currencies.currencyCode',
+                'currencies.currencyName',
+                'currencies.symbol',
+            );
+    }
 }

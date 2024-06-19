@@ -11,6 +11,7 @@ import Failure from 'src/utils/failure/Failure';
 import { ErrorCode } from 'types/ErrorCode';
 
 export class AuthController {
+    private static logger = Logger.Of('AuthController');
     public static async logout(req: Request, res: Response) {
         const responseBuilder = new ResponseBuilder();
         SessionService.deleteSession(req, res, () => {
@@ -19,7 +20,6 @@ export class AuthController {
     }
     public static async login(req: Request, res: Response) {
         const responseBuilder = new ResponseBuilder();
-        const _logger: Logger = Logger.Of('AuthRouteLogin');
         try {
             const errors = validationResult(req);
             if (!errors.isEmpty()) {
@@ -28,7 +28,7 @@ export class AuthController {
             const response = await AuthServiceBuilder.build().login(req.body.email, req.body.password);
             if (response instanceof Success) {
                 const { user, token } = response.value;
-                SessionService.handleSessionRegeneration(req, res, user, token, _logger, responseBuilder, () => {
+                SessionService.handleSessionRegeneration(req, res, user, token, AuthController.logger, responseBuilder, () => {
                     res.status(200).json(
                         responseBuilder
                             .setStatus(ResponseStatusType.OK)
@@ -40,7 +40,7 @@ export class AuthController {
                 throw new Error(response.error);
             }
         } catch (error) {
-            _logger.error(`request user data error: ${error}`);
+            AuthController.logger.error(`request user data error: ${error}`);
             return res
                 .status(400)
                 .json(responseBuilder.setStatus(ResponseStatusType.INTERNAL).setError({ errorCode: ErrorCode.CANT_STORE_DATA }));

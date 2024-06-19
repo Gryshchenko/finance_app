@@ -39,6 +39,7 @@ const tokenVerify = (req: Request, res: Response, next: NextFunction) => {
         _logger.info('session token not verify, token = null');
         return;
     }
+    console.log(token, sessionToken);
     const tokenBuffer = Buffer.from(token, 'utf-8');
     const sessionTokenBuffer = Buffer.from(sessionToken, 'utf-8');
 

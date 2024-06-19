@@ -18,4 +18,5 @@ export enum ErrorCode {
     REQUEST_TIMEOUT = 5005,
     UNKNOWN_ERROR = 6000,
     PROFILE_ERROR = 6001,
+    OVERVIEW_ERROR = 6002,
 }

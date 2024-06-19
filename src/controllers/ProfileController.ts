@@ -11,8 +11,8 @@ import Success from 'src/utils/success/Success';
 import Failure from 'src/utils/failure/Failure';
 
 export class ProfileController {
+    private static logger = Logger.Of('ProfileController');
     public static async profile(req: Request, res: Response) {
-        const _logger = Logger.Of('GetProfilePath');
         const responseBuilder = new ResponseBuilder();
         try {
             const userFromSession = req.session.user as IUserSession;
@@ -28,7 +28,7 @@ export class ProfileController {
                     .build(),
             );
         } catch (error) {
-            _logger.error(error);
+            ProfileController.logger.error(error);
             res.status(400).json(
                 responseBuilder.setStatus(ResponseStatusType.INTERNAL).setError({ errorCode: ErrorCode.PROFILE_ERROR }).build(),
             );
@@ -36,7 +36,6 @@ export class ProfileController {
     }
 
     public static async confirmEmail(req: Request, res: Response) {
-        const _logger = Logger.Of('PostConfirmationEmailPath');
         const responseBuilder = new ResponseBuilder();
         try {
             const userFromSession = req.session.user as IUserSession;
@@ -47,7 +46,7 @@ export class ProfileController {
             if (response instanceof Success) {
                 res.status(200).json(responseBuilder.setStatus(ResponseStatusType.OK).setData(response.value).build());
             } else {
-                _logger.error((response as Failure).error);
+                ProfileController.logger.error((response as Failure).error);
                 return res.status(400).json(
                     responseBuilder
                         .setStatus(ResponseStatusType.INTERNAL)
@@ -56,7 +55,7 @@ export class ProfileController {
                 );
             }
         } catch (error) {
-            _logger.error(error);
+            ProfileController.logger.error(error);
             res.status(400).json(
                 responseBuilder.setStatus(ResponseStatusType.INTERNAL).setError({ errorCode: ErrorCode.CANT_STORE_DATA }).build(),
             );

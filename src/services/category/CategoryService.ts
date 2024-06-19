@@ -5,13 +5,19 @@ import { ICategory } from 'interfaces/ICategory';
 import { ITransaction } from 'interfaces/IDatabaseConnection';
 
 export default class CategoryService implements ICategoryService {
-    private _accountDataAccess: ICategoryDataAccess;
+    private _categoryDataAccess: ICategoryDataAccess;
 
     public constructor(accountDataAccess: ICategoryDataAccess) {
-        this._accountDataAccess = accountDataAccess;
+        this._categoryDataAccess = accountDataAccess;
     }
 
     public createCategories(userId: number, categories: ICreateCategory[], trx?: ITransaction): Promise<ICategory[]> {
-        return this._accountDataAccess.createCategories(userId, categories, trx);
+        return this._categoryDataAccess.createCategories(userId, categories, trx);
+    }
+    async getCategory(userId: number, accountId: number): Promise<ICategory | undefined> {
+        return await this._categoryDataAccess.getCategory(userId, accountId);
+    }
+    async getCategories(userId: number): Promise<ICategory[] | undefined> {
+        return await this._categoryDataAccess.getCategories(userId);
     }
 }

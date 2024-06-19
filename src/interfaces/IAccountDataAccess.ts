@@ -4,4 +4,6 @@ import { ITransaction } from 'interfaces/IDatabaseConnection';
 
 export interface IAccountDataAccess {
     createAccounts(userId: number, accounts: ICreateAccount[], trx?: ITransaction): Promise<IAccount[]>;
+    getAccounts(userId: number): Promise<IAccount[] | undefined>;
+    getAccount(userId: number, accountId: number): Promise<IAccount | undefined>;
 }

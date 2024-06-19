@@ -1,3 +1,9 @@
 export interface IAccount {
-    value: string;
+    accountId: number;
+    userId: number;
+    accountName: string;
+    amount: number;
+    currencyId: number;
+    currencyCode: string;
+    currencySymbol: string;
 }

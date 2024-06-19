@@ -23,7 +23,7 @@ describe('Session Security Test', () => {
         const agent1 = request.agent(app);
         const agent2 = request.agent(app);
 
-        const res1 = await agent1
+        await agent1
             .post('/register/signup')
             .set(
                 'User-Agent',

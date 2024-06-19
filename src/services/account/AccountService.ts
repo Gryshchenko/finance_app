@@ -14,4 +14,10 @@ export default class AccountService implements IAccountService {
     async createAccounts(userId: number, accounts: ICreateAccount[], trx?: ITransaction): Promise<IAccount[]> {
         return await this._accountDataAccess.createAccounts(userId, accounts, trx);
     }
+    async getAccount(userId: number, accountId: number): Promise<IAccount | undefined> {
+        return await this._accountDataAccess.getAccount(userId, accountId);
+    }
+    async getAccounts(userId: number): Promise<IAccount[] | undefined> {
+        return await this._accountDataAccess.getAccounts(userId);
+    }
 }
