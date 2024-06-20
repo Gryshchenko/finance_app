@@ -1,19 +1,15 @@
 import express from 'express';
-import { body, param } from 'express-validator';
-import sessionVerify from '../middleware/sessionVerify';
-import tokenVerify from '../middleware/tokenVerify';
-import routesInputValidation from '../utils/validation/routesInputValidation';
-import { ProfileController } from 'src/controllers/ProfileController';
+import { body } from 'express-validator';
+import sessionVerify from 'middleware/sessionVerify';
+import tokenVerify from 'middleware/tokenVerify';
+import routesInputValidation from 'src/utils/validation/routesInputValidation';
+import { ProfileController } from 'controllers/ProfileController';
 
-const router = express.Router();
+const router = express.Router({ mergeParams: true });
 
 router.use(tokenVerify, sessionVerify);
 
-router.get(
-    '/:userId',
-    routesInputValidation([param('userId').isNumeric().isInt({ min: 0, max: Number.MAX_SAFE_INTEGER })]),
-    ProfileController.profile,
-);
+router.get('/', ProfileController.profile);
 
 router.post(
     '/confirm-email',

@@ -17,6 +17,9 @@
             "services/*": ["src/services/*"],
             "types/*": ["src/types/*"],
             "helper/*": ["src/helper/*"],
+            "routes/*": ["src/routes/*"],
+            "middleware/*": ["src/middleware/*"],
+            "controllers/*": ["src/controllers/*"],
             "src/*": ["src/*"],
             "utils/*": ["src/utils"]
         }

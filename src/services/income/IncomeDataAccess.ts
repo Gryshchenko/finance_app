@@ -32,7 +32,7 @@ export default class IncomeDataAccess extends LoggerBase implements IIncomeDataA
             this._logger.info('getCategories request');
 
             const data = await this.getIncomeBaseQuery()
-                .innerJoin('incomes', 'incomes.currencyId', 'currencies.currencyId')
+                .innerJoin('currencies', 'incomes.currencyId', 'currencies.currencyId')
                 .where({ userId });
             this._logger.info('getCategories response');
             return data;
@@ -53,17 +53,15 @@ export default class IncomeDataAccess extends LoggerBase implements IIncomeDataA
         }
     }
     protected getIncomeBaseQuery() {
-        return this._db
-            .engine()('incomes')
-            .select(
-                'incomes.accountId',
-                'incomes.userId',
-                'incomes.amount',
-                'incomes.incomeName',
-                'incomes.currencyId',
-                'currencies.currencyCode',
-                'currencies.currencyName',
-                'currencies.symbol',
-            );
+        return this._db.engine()('incomes').select(
+            'incomes.incomeId',
+            'incomes.userId',
+            // 'incomes.amount',
+            'incomes.incomeName',
+            'incomes.currencyId',
+            'currencies.currencyCode',
+            'currencies.currencyName',
+            'currencies.symbol',
+        );
     }
 }

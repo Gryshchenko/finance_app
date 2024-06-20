@@ -59,7 +59,7 @@ export default class AccountDataAccess extends LoggerBase implements IAccountDat
                 'accounts.accountId',
                 'accounts.userId',
                 'accounts.amount',
-                'account.accountName',
+                'accounts.accountName',
                 'accounts.currencyId',
                 'currencies.currencyCode',
                 'currencies.currencyName',

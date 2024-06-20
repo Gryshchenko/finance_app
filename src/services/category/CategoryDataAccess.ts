@@ -53,17 +53,15 @@ export default class CategoryDataAccess extends LoggerBase implements ICategoryD
         }
     }
     protected getCategoryBaseQuery() {
-        return this._db
-            .engine()('categories')
-            .select(
-                'categories.accountId',
-                'categories.userId',
-                'categories.amount',
-                'categories.categoryName',
-                'categories.currencyId',
-                'currencies.currencyCode',
-                'currencies.currencyName',
-                'currencies.symbol',
-            );
+        return this._db.engine()('categories').select(
+            'categories.categoryId',
+            'categories.userId',
+            // 'categories.amount',
+            'categories.categoryName',
+            'categories.currencyId',
+            'currencies.currencyCode',
+            'currencies.currencyName',
+            'currencies.symbol',
+        );
     }
 }

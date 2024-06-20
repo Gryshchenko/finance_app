@@ -12,7 +12,6 @@ export class OverviewController {
     public static async overview(req: Request, res: Response) {
         const responseBuilder = new ResponseBuilder();
         try {
-            console.log(req.session.user);
             const response = await OverviewServiceBuilder.build().overview(req.session.user?.userId);
             if (response instanceof Success) {
                 res.status(200).json(responseBuilder.setStatus(ResponseStatusType.OK).setData(response.value).build());
