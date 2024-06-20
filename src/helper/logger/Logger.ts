@@ -1,28 +1,27 @@
 import Utils from 'src/utils/Utils';
 
-enum LogLevel {
+export enum LogLevel {
     DISABLED,
     ERROR,
     WARNING,
     INFO,
     DEBUG,
 }
-const deserialize = (logLevel: string): LogLevel => {
-    if (Utils.isNotEmpty(logLevel)) {
-        switch (logLevel) {
-            case 'disabled':
-                return LogLevel.DISABLED;
-            case 'error':
-                return LogLevel.ERROR;
-            case 'warn':
-                return LogLevel.WARNING;
-            case 'info':
-                return LogLevel.INFO;
-            case 'debug':
-                return LogLevel.DEBUG;
-        }
+export const deserialize = (logLevel: string): LogLevel => {
+    switch (logLevel) {
+        case 'disabled':
+            return LogLevel.DISABLED;
+        case 'error':
+            return LogLevel.ERROR;
+        case 'warn':
+            return LogLevel.WARNING;
+        case 'info':
+            return LogLevel.INFO;
+        case 'debug':
+            return LogLevel.DEBUG;
+        default:
+            return LogLevel.DISABLED;
     }
-    return LogLevel.DISABLED;
 };
 
 export default class Logger {
@@ -58,10 +57,10 @@ export default class Logger {
         }
     }
 
-    public info(message: unknown, optionalParams?: unknown): void {
+    public info(message: unknown, ...optionalParams: unknown[]): void {
         if (Logger.LOG_LEVEL >= LogLevel.INFO) {
-            if (Utils.isNotNull(optionalParams)) {
-                console.info(`%c${this.format(' I ')}${message}`, optionalParams);
+            if (Utils.isArrayNotEmpty(optionalParams)) {
+                console.warn(this.format(' I '), message, JSON.stringify(optionalParams));
             } else {
                 console.info(this.format(' I '), message);
             }
