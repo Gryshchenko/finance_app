@@ -16,6 +16,7 @@ import ResponseBuilder from 'src/helper/responseBuilder/ResponseBuilder';
 import { ResponseStatusType } from 'types/ResponseStatusType';
 import { ErrorCode } from 'types/ErrorCode';
 import Logger from 'src/helper/logger/Logger';
+import { swaggerInit } from 'src/swagger/swagger';
 
 const passport = require('passport');
 
@@ -23,6 +24,7 @@ const app = express();
 const port = getConfig().appPort ?? 3000;
 
 passportSetup(passport);
+swaggerInit(app);
 
 const privateKey = fs.readFileSync(path.join(__dirname, 'localhost.key'), 'utf8');
 const certificate = fs.readFileSync(path.join(__dirname, 'localhost.cert'), 'utf8');
@@ -45,6 +47,7 @@ app.use((req: Request, res: Response, next: NextFunction) => {
     });
     next();
 });
+
 app.use(express.json({ limit: '5kb' }));
 app.use(express.urlencoded({ limit: '5kb', extended: true }));
 app.use(limiter);

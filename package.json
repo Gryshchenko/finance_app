@@ -7,7 +7,6 @@
     "copyright": "",
     "scripts": {
         "build-translation": "node scripts/translations.js",
-        "start": "npm run build-translation && node dist/app.js",
         "dev": "npm run build-translation && nodemon --exec ts-node --files src/app.ts",
         "redis": "redis-server",
         "type-check": "tsc -v && tsc -p tsconfig.json",
@@ -47,6 +46,8 @@
         "passport": "0.7.0",
         "passport-jwt": "4.0.1",
         "redis": "4.6.12",
+        "swagger-jsdoc": "^6.2.8",
+        "swagger-ui-express": "^5.0.1",
         "ts-jest": "29.1.2",
         "ua-parser-js": "2.0.0-beta.3"
     },

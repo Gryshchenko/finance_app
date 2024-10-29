@@ -45,7 +45,6 @@ describe('POST /register/signup', () => {
             .post('/register/signup')
             .send({ email: generateRandomEmail(31), password: generateRandomPassword() });
 
-        console.log(response);
         expect(response.status).toBe(400);
         expect(response.body).toStrictEqual({
             data: {},

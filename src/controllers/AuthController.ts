@@ -43,7 +43,7 @@ export class AuthController {
             AuthController.logger.error(`request user data error: ${error}`);
             return res
                 .status(400)
-                .json(responseBuilder.setStatus(ResponseStatusType.INTERNAL).setError({ errorCode: ErrorCode.CANT_STORE_DATA }));
+                .json(responseBuilder.setStatus(ResponseStatusType.INTERNAL).setError({ errorCode: ErrorCode.AUTH }));
         }
     }
 }

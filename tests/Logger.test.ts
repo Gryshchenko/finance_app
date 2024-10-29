@@ -1,6 +1,6 @@
 // eslint-disable-next-line @typescript-eslint/ban-ts-comment
 // @ts-nocheck
-import Logger, { LogLevel, deserialize } from './Logger';
+import Logger, { LogLevel, deserialize } from '../src/helper/logger/Logger';
 
 describe('Logger', () => {
     describe('deserialize function', () => {
