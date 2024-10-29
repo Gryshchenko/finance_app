@@ -3,7 +3,7 @@ import * as process from 'process';
 
 require('dotenv').config();
 
-const caCert = readFileSync('/etc/ssl/cert.pem').toString();
+const caCert = readFileSync('./cert.pem').toString();
 
 interface IConfig {
     appName: string;

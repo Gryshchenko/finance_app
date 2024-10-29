@@ -7,6 +7,8 @@ const pack = require('../../package.json');
 const options = {
     definition: {
         openapi: '3.0.0',
+
+
         info: {
             title: pack.name,
             version: pack.version,

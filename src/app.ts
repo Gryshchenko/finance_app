@@ -8,6 +8,7 @@ import rateLimit from 'express-rate-limit';
 import passportSetup from './services/auth/passport-setup';
 import SessionService from './services/session/SessionService';
 
+
 import authRouter from './routes/auth';
 import registerRouter from './routes/register';
 import userRouter from './routes/user';
@@ -67,8 +68,8 @@ app.get('/', (req: Request, res: Response) => {
 const httpsServer = https.createServer(credentials, app);
 
 if (process.env.NODE_ENV !== 'test') {
-    httpsServer.listen(port, () => {
-        Logger.Of('App').info(`listening on port ${port}`);
+    httpsServer.listen(port, '0.0.0.0', async () => {
+        Logger.Of('App').info(`Server running at port: ${port}`);
     });
 }
 
