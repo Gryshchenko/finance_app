@@ -27,7 +27,7 @@ describe('POST /register/signup', () => {
             .post('/register/signup')
             .send({ email: generateRandomEmail(), password: generateRandomPassword() });
 
-        expect(response.status).toBe(400);
+        expect(response.status).toBe(401);
         expect(response.body).toStrictEqual({
             data: {},
             errors: [

@@ -46,7 +46,7 @@ export default class OverviewService extends LoggerBase {
     public async overview(userId: number | undefined): Promise<ISuccess<IOverview> | IFailure> {
         try {
             if (Utils.isNull(userId)) {
-                throw new Error('Invalid user id');
+                throw new Error('Invalid userId');
             }
             const validUserId = userId as number;
             const [accounts, categories, incomes] = await Promise.all([

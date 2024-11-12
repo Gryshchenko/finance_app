@@ -8,6 +8,7 @@ import Success from 'src/utils/success/Success';
 import SessionService from 'services/session/SessionService';
 import UserServiceUtils from 'services/user/UserServiceUtils';
 import { ErrorCode } from 'types/ErrorCode';
+import { HttpCode } from 'types/HttpCode';
 export class RegisterController {
     private static logger = Logger.Of('RegisterController');
     public static async signup(req: Request, res: Response) {
@@ -22,7 +23,7 @@ export class RegisterController {
             if (response instanceof Failure) {
                 RegisterController.logger.error(response.error);
                 return res
-                    .status(400)
+                    .status(401)
                     .json(responseBuilder.setStatus(ResponseStatusType.INTERNAL).setError({ errorCode: response.code }).build());
             }
 
@@ -36,7 +37,7 @@ export class RegisterController {
                     RegisterController.logger,
                     responseBuilder,
                     () => {
-                        res.status(200).json(
+                        res.status(HttpCode.OK).json(
                             responseBuilder
                                 .setStatus(ResponseStatusType.OK)
                                 .setData(UserServiceUtils.convertServerUserToClientUser(user))
@@ -47,7 +48,7 @@ export class RegisterController {
             }
         } catch (error) {
             RegisterController.logger.error(error);
-            res.status(400).json(
+            res.status(HttpCode.INTERNAL_SERVER_ERROR).json(
                 responseBuilder.setStatus(ResponseStatusType.INTERNAL).setError({ errorCode: ErrorCode.CANT_STORE_DATA }).build(),
             );
         }

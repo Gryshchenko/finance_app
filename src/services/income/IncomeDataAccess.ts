@@ -13,45 +13,60 @@ export default class IncomeDataAccess extends LoggerBase implements IIncomeDataA
     }
 
     public async createIncomes(userId: number, incomes: ICreateIncome[], trx?: ITransaction): Promise<IIncome[]> {
+        this._logger.info(`Starting creation of incomes for userId ${userId}`);
+
         try {
-            this._logger.info('createIncome request');
             const query = trx || this._db.engine();
             const data = await query('incomes').insert(
                 incomes.map(({ incomeName, currencyId }) => ({ userId, incomeName, currencyId })),
-                ['incomeId', 'userId', 'incomeName', 'currencyId'],
+                ['incomeId', 'userId', 'incomeName', 'currencyId']
             );
-            this._logger.info('createIncome response');
+
+            this._logger.info(`Successfully created incomes for userId ${userId}`);
             return data;
-        } catch (error) {
-            this._logger.error(error);
-            throw error;
+        } catch (error: any) {
+            this._logger.error(`Error creating incomes for userId ${userId}: ${error.message}`);
+            throw new Error(`Fetching incomes failed due to a database error: ${error.message}`);
+
         }
     }
-    async getIncomes(userId: number): Promise<IIncome[] | undefined> {
-        try {
-            this._logger.info('getCategories request');
 
+    public async getIncomes(userId: number): Promise<IIncome[] | undefined> {
+        this._logger.info(`Fetching incomes for userId ${userId}`);
+
+        try {
             const data = await this.getIncomeBaseQuery()
                 .innerJoin('currencies', 'incomes.currencyId', 'currencies.currencyId')
                 .where({ userId });
-            this._logger.info('getCategories response');
+
+            this._logger.info(`Successfully fetched incomes for userId ${userId}`);
             return data;
-        } catch (error) {
-            this._logger.error(error);
-            throw error;
+        } catch (error: any) {
+            this._logger.error(`Error fetching incomes for userId ${userId}: ${error.message}`);
+            throw new Error(`Fetching incomes failed due to a database error: ${error.message}`);
         }
     }
-    async getIncome(userId: number, categoryId: number): Promise<IIncome | undefined> {
+
+    public async getIncome(userId: number, incomeId: number): Promise<IIncome | undefined> {
+        this._logger.info(`Fetching income with ID ${incomeId} for userId ${userId}`);
+
         try {
-            this._logger.info('getIncome request');
-            const data = await this.getIncomeBaseQuery().where({ userId, categoryId }).first();
-            this._logger.info('getIncome response');
+            const data = await this.getIncomeBaseQuery().where({ userId, incomeId }).first();
+
+            if (data) {
+                this._logger.info(`Successfully fetched income with ID ${incomeId} for userId ${userId}`);
+            } else {
+                this._logger.warn(`No income found with ID ${incomeId} for userId ${userId}`);
+            }
+
             return data;
-        } catch (error) {
-            this._logger.error(error);
-            throw error;
+        } catch (error: any) {
+            this._logger.error(`Error fetching income with ID ${incomeId} for userId ${userId}: ${error.message}`);
+            throw new Error(`Fetching income failed due to a database error: ${error.message}`);
         }
     }
+
+
     protected getIncomeBaseQuery() {
         return this._db.engine()('incomes').select(
             'incomes.incomeId',

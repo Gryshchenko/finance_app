@@ -1,38 +1,52 @@
 import { Request, Response, NextFunction } from 'express';
-import { ErrorCode } from 'types/ErrorCode';
 import Logger from 'src/helper/logger/Logger';
 
 import SessionService from '../services/session/SessionService';
-import ResponseBuilder from 'src/helper/responseBuilder/ResponseBuilder';
-import { ResponseStatusType } from 'types/ResponseStatusType';
 import { UserAgentService } from 'src/services/userAgentService/UserAgentService';
+import { ResponseBuilderPreset } from 'helper/responseBuilder/ResponseBuilderPreset';
 
 const _logger = Logger.Of('SessionVerify');
 
-const sessionVerify = (req: Request, res: Response, next: NextFunction) => {
-    const responseError = (errorMsg: string) => {
-        _logger.info(errorMsg);
-        SessionService.deleteSession(req, res, () => {
-            res.status(401).json(
-                new ResponseBuilder().setStatus(ResponseStatusType.INTERNAL).setError({ errorCode: ErrorCode.AUTH }).build(),
-            );
-        });
-    };
+const errorHandler = (errorMsg: string, code: number, req: Request, res: Response) => {
+    _logger.info(errorMsg);
+    SessionService.deleteSession(req, res, () => {
+        res.status(code).json(ResponseBuilderPreset.getAuthError());
+    });
+};
+const sessionVerifyHandler = (req: Request, res: Response, next: NextFunction, errorHandler: (errorMsg: string) => void) => {
     const userSession = SessionService.extractSessionFromRequest(req);
+
+    if (!userSession) {
+        errorHandler('Session verification failed: user session is null');
+        return;
+    }
+
     const userAgentFromReq = UserAgentService.getUserAgent(req.headers['user-agent']);
     const userIpFromReq = SessionService.getUserIP(req);
-    if (!userSession) {
-        responseError('session could not verify, userSession = null');
+
+    if (userIpFromReq !== userSession.ip) {
+        errorHandler('Session verification failed: IP address does not match');
+        return;
     }
-    if (userIpFromReq !== userSession?.ip) {
-        responseError('session could not verify, ip not same');
+
+    if (!UserAgentService.compareUserAgent(userAgentFromReq, userSession.userAgent)) {
+        errorHandler('Session verification failed: user agent does not match');
+        return;
     }
-    if (!UserAgentService.compareUserAgent(userAgentFromReq, SessionService.extractSessionFromRequest(req)?.userAgent)) {
-        responseError('session could not verify, user agent not same');
-    } else {
-        _logger.info('session verify success');
-        next();
-    }
+
+    _logger.info('Session verified successfully');
+    next();
+};
+
+
+const sessionVerify = (req: Request, res: Response, next: NextFunction) => {
+    sessionVerifyHandler(req, res, next, (errorMsg) => errorHandler(errorMsg, 401, req, res));
+};
+export const sessionVerifyLogout = (req: Request, res: Response, next: NextFunction) => {
+    sessionVerifyHandler(req, res, next, (errorMsg) => () => {
+        _logger.error(errorMsg);
+        res.status(201).json(ResponseBuilderPreset.getSuccess());
+    });
 };
 
 export default sessionVerify;

@@ -2,14 +2,49 @@ import express from 'express';
 
 import { body } from 'express-validator';
 import routesInputValidation from '../utils/validation/routesInputValidation';
-import tokenVerify from '../middleware/tokenVerify';
+import { tokenVerifyLogout } from '../middleware/tokenVerify';
 import ensureGuest from '../middleware/ensureGuest';
-import sessionVerify from '../middleware/sessionVerify';
+import { sessionVerifyLogout } from '../middleware/sessionVerify';
 import { AuthController } from 'src/controllers/AuthController';
 
 const router = express.Router();
 
-router.post('/logout', tokenVerify, sessionVerify, AuthController.logout);
+/**
+ * @swagger
+ * /auth/logout:
+ *   post:
+ *     description: The POST /auth/logout endpoint is used to log out the user.
+ *     Upon successful execution, the API returns a JSON response with a status code of 201 and a content type of application/json. 
+ *     The response body follows the JSON schema below:
+ *     responses:
+ *       201:
+ *         description: Successful logout from system
+ *         headers:
+ *           Set-Cookie:
+ *             description: Secure cookie with JWT token
+ *             schema:
+ *               type: string
+ *               example: JWT=token; Path=/; HttpOnly; Secure; SameSite=None
+ *         content:
+ *           application/json:
+ *             schema:
+ *              allOf:
+ *                   - $ref: '#/components/schemas/StandardResponse'
+ *                   - type: object
+ *                     properties:
+ *                       _response:
+ *                         type: object
+ *                         properties:
+ *                           status:
+ *                             type: integer
+ *                             example: 1
+ *                             description: Status code representing the result of the operation (1 for success)
+ *                           data:
+ *                            - $ref: '#/components/schemas/UserClient'
+ *       400:
+ *         $ref: '#/components/responses/ErrorResponse'
+ */
+router.post('/logout',  tokenVerifyLogout, sessionVerifyLogout, AuthController.logout);
 /**
  * @swagger
  * /auth/login:
@@ -67,7 +102,6 @@ router.post('/logout', tokenVerify, sessionVerify, AuthController.logout);
  */
 router.post(
     '/login',
-    ensureGuest,
     routesInputValidation([body('password').isString().isLength({ max: 50 }), body('email').isString().isLength({ max: 50 })]),
     AuthController.login,
 );

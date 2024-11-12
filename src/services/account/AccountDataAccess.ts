@@ -11,47 +11,72 @@ export default class AccountDataAccess extends LoggerBase implements IAccountDat
         super();
         this._db = db;
     }
-
     async createAccounts(userId: number, accounts: ICreateAccount[], trx?: ITransaction): Promise<IAccount[]> {
         try {
-            this._logger.info('createAccounts request');
+            this._logger.info(`Starting account creation for userId: ${userId}`);
+
             const query = trx || this._db.engine();
             const data = await query('accounts').insert(
-                accounts.map(({ accountName, currencyId, amount }) => ({ userId, accountName, currencyId, amount })),
+                accounts.map(({ accountName, currencyId, amount }) => ({
+                    userId,
+                    accountName,
+                    currencyId,
+                    amount,
+                })),
                 ['accountId', 'userId', 'accountName', 'currencyId', 'amount'],
             );
-            this._logger.info('createAccounts response');
+
+            this._logger.info(`Successfully created ${data.length} accounts for userId: ${userId}`);
             return data;
-        } catch (error) {
-            this._logger.error(error);
-            throw error;
+
+        } catch (error: any) {
+            this._logger.error(`Failed to create accounts for userId: ${userId}. Error: ${error.message}`);
+            throw new Error(`Account creation failed due to a database error: ${error.message}`);
         }
     }
+
     async getAccounts(userId: number): Promise<IAccount[] | undefined> {
         try {
-            this._logger.info('getAccounts request');
+            this._logger.info(`Fetching all accounts for userId: ${userId}`);
 
             const data = await this.getAccountBaseQuery()
                 .innerJoin('currencies', 'accounts.currencyId', 'currencies.currencyId')
                 .where({ userId });
-            this._logger.info('getAccounts response');
+
+            if (!data.length) {
+                this._logger.warn(`No accounts found for userId: ${userId}`);
+            } else {
+                this._logger.info(`Fetched ${data.length} accounts for userId: ${userId}`);
+            }
+
             return data;
-        } catch (error) {
-            this._logger.error(error);
-            throw error;
+
+        } catch (error: any) {
+            this._logger.error(`Failed to fetch accounts for userId: ${userId}. Error: ${error?.message}`);
+            throw new Error(`Fetching accounts failed due to a database error: ${error.message}`);
         }
     }
+
     async getAccount(userId: number, accountId: number): Promise<IAccount | undefined> {
         try {
-            this._logger.info('getAccount request');
+            this._logger.info(`Fetching account with accountId: ${accountId} for userId: ${userId}`);
+
             const data = await this.getAccountBaseQuery().where({ userId, accountId }).first();
-            this._logger.info('getAccount response');
+
+            if (!data) {
+                this._logger.warn(`Account with accountId: ${accountId} not found for userId: ${userId}`);
+            } else {
+                this._logger.info(`Fetched account with accountId: ${accountId} for userId: ${userId}`);
+            }
+
             return data;
-        } catch (error) {
-            this._logger.error(error);
-            throw error;
+
+        } catch (error: any) {
+            this._logger.error(`Failed to fetch account with accountId: ${accountId} for userId: ${userId}. Error: ${error.message}`);
+            throw new Error(`Fetching account failed due to a database error: ${error.message}`);
         }
     }
+
     protected getAccountBaseQuery() {
         return this._db
             .engine()('accounts')

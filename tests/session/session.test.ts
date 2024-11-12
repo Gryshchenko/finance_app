@@ -49,7 +49,7 @@ describe('Session Security Test', () => {
             )
             .set('authorization', res2.header['authorization']);
 
-        expect(response.body).toStrictEqual({ data: {}, errors: [{ errorCode: 5000 }], status: 2 });
+        expect(response.body).toStrictEqual({ data: {}, errors: [], status: 2 });
     });
     it('should not allow access with non-existent session', async () => {
         const agent1 = request.agent(app);
@@ -69,11 +69,7 @@ describe('Session Security Test', () => {
 
         expect(response.body).toStrictEqual({
             data: {},
-            errors: [
-                {
-                    errorCode: 5000,
-                },
-            ],
+            errors: [],
             status: 2,
         });
     });

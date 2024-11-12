@@ -32,15 +32,13 @@ export default class UserService extends LoggerBase implements IUserService {
         try {
             const salt = UserServiceUtils.getRandomSalt();
             const hashStr = await UserServiceUtils.hashPassword(password, salt);
-            if (Utils.isEmpty(hashStr)) {
-                throw new Error('cant build hash password');
-            }
             const hash = hashStr as unknown as string;
 
             const user = await this._userDataAccess.createUser(email, hash, salt.toString('hex'), trx);
             return new Success(user);
-        } catch (e) {
-            return new Failure(String(e));
+        } catch (error: any) {
+            this._logger.info('Failed create user due reason: ' + error?.message)
+            return new Failure(String(error.message));
         }
     }
 
@@ -48,9 +46,6 @@ export default class UserService extends LoggerBase implements IUserService {
         const response = await this._userDataAccess.getUserEmail(userId);
         if (response?.email && email !== response.email) {
             return UserServiceUtils.formatUserDetails(await this._userDataAccess.updateUserEmail(userId, email));
-        }
-        if (Utils.isNull(response?.email)) {
-            this._logger.info('updateUserEmail cant find email');
         }
         return this.getUser(userId);
     }

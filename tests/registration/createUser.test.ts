@@ -137,7 +137,7 @@ describe('POST /register/signup', () => {
     it('should return error for too short password', async () => {
         const response = await request(app)
             .post('/register/signup')
-            .send({ email: generateRandomEmail(), password: generateRandomPassword(5) });
+            .send({ email: 'test_test@gmail.com', password: generateRandomPassword(5) });
 
         expect(response.status).toBe(400);
         expect(response.body).toStrictEqual({
@@ -169,7 +169,7 @@ describe('POST /register/signup', () => {
     it('should return error invalid format password', async () => {
         const response = await request(app)
             .post('/register/signup')
-            .send({ email: generateRandomEmail(), password: generateSecureRandom(2) });
+            .send({ email: 'google_test1@test.com', password: generateSecureRandom(2) });
 
         expect(response.status).toBe(400);
         expect(response.body).toStrictEqual({
@@ -185,7 +185,7 @@ describe('POST /register/signup', () => {
     it('should return error invalid format password', async () => {
         const response = await request(app)
             .post('/register/signup')
-            .send({ email: generateRandomEmail(), password: generateRandomString(5) });
+            .send({ email: 'google_test2@test.com', password: generateRandomString(5) });
 
         expect(response.status).toBe(400);
         expect(response.body).toStrictEqual({
@@ -199,7 +199,7 @@ describe('POST /register/signup', () => {
         });
     });
     it('should return error invalid format password', async () => {
-        const response = await request(app).post('/register/signup').send({ email: generateRandomEmail(), password: null });
+        const response = await request(app).post('/register/signup').send({ email: 'google_test3@test.com', password: null });
 
         expect(response.status).toBe(400);
         expect(response.body).toStrictEqual({
@@ -239,12 +239,12 @@ describe('POST /register/signup', () => {
         await request(app).post('/register/signup').send({ email: mail, password: generateRandomPassword() });
         const response = await request(app).post('/register/signup').send({ email: mail, password: generateRandomPassword() });
 
-        expect(response.status).toBe(400);
+        expect(response.status).toBe(401);
         expect(response.body).toStrictEqual({
             data: {},
             errors: [
                 {
-                    errorCode: 5001,
+                    errorCode: 5003,
                 },
             ],
             status: 2,

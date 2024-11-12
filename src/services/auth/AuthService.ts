@@ -25,34 +25,44 @@ export default class AuthService extends LoggerBase implements IAuthService {
     async login(email: string, password: string): Promise<ISuccess<{ user: IUser; token: string }> | IFailure> {
         const userForCheck = await this.userService.getUserAuthenticationData(email);
         if (!userForCheck) {
-            return new Failure('response user data: credential error', ErrorCode.CREDENTIALS_ERROR);
+            return new Failure('User not found or invalid credentials provided', ErrorCode.CREDENTIALS_ERROR);
         }
-        this._logger.info(`response user data userID: ${userForCheck?.userId}`);
-        const result = await UserServiceUtils.verifyPassword(userForCheck.passwordHash, password);
-        if (result instanceof Failure) {
-            return new Failure(result.error ?? 'password not match', ErrorCode.CREDENTIALS_ERROR);
+
+        this._logger.info(`User found: userID ${userForCheck.userId}`);
+
+        const passwordCheckResult = await UserServiceUtils.verifyPassword(userForCheck.passwordHash, password);
+        if (passwordCheckResult instanceof Failure) {
+            return new Failure(passwordCheckResult.error || 'Password verification failed', ErrorCode.CREDENTIALS_ERROR);
         }
-        if (result instanceof Success && result.value === false) {
-            return new Failure('password not match', ErrorCode.CREDENTIALS_ERROR);
+
+        if (passwordCheckResult instanceof Success && !passwordCheckResult.value) {
+            return new Failure('Incorrect password', ErrorCode.CREDENTIALS_ERROR);
         }
-        this._logger.info('password good');
+
+        this._logger.info('Password verification successful');
+
         const user = await this.userService.getUser(userForCheck.userId);
-        const newToken = AuthService.createJWToken(user.userId, RoleType.Default);
-        return new Success({ user, token: newToken });
+        const token = AuthService.createJWToken(user.userId, RoleType.Default);
+        return new Success({ user, token });
     }
 
     public static createJWToken(userId: number, role: RoleType): string {
-        const jwtSecretInProcess = getConfig().jwtSecret;
-        if (Utils.isEmpty(jwtSecretInProcess)) {
-            throw new Error('jwt secret not setup');
+        const jwtSecret = getConfig().jwtSecret;
+        if (!jwtSecret) {
+            throw new Error('JWT secret is not configured');
         }
-        const jwtSecret = jwtSecretInProcess as unknown as string;
-        return jwt.sign({ userId, role }, jwtSecret, {
-            expiresIn: '12h',
-            issuer: getConfig().jwtIssuer,
-            audience: getConfig().jwtAudience,
-        });
+
+        return jwt.sign(
+            { userId, role },
+            jwtSecret as string,
+            {
+                expiresIn: '12h',
+                issuer: getConfig().jwtIssuer,
+                audience: getConfig().jwtAudience,
+            }
+        );
     }
+
 
     public static tokenNeedsRefresh(expirationTime: number) {
         const currentTime = Math.floor(Date.now() / 1000);

@@ -106,11 +106,11 @@ export default class UserRegistrationService extends LoggerBase {
             const locale = TranslationsUtils.convertToSupportLocale(localeFromUser);
             const otherUser = await this.userService.getUserAuthenticationData(email);
             if (otherUser) {
-                return new Failure('user already exists', ErrorCode.SIGNUP);
+                return new Failure('A user with this email already exists', ErrorCode.SIGNUP_USER_ALREADY_EXIST);
             }
             const trxInProcess = uow.getTransaction();
             if (Utils.isNull(trxInProcess)) {
-                return new Failure('user not created', ErrorCode.SIGNUP);
+                return new Failure('Transaction not initiated. User could not be created', ErrorCode.SIGNUP_TRANSACTION);
             }
             const trx = trxInProcess as unknown as ITransaction;
             const createUserResult = await this.userService.createUser(email, password, trx);
@@ -122,12 +122,12 @@ export default class UserRegistrationService extends LoggerBase {
                 const currencyCode = (currency_initial[locale] ?? currency_initial[LanguageType.US]).currencyCode;
                 const currency = await this.currencyService.getCurrencyByCurrencyCode(currencyCode);
                 if (!currency) {
-                    return new Failure('cant get currency for new user', ErrorCode.SIGNUP);
+                    return new Failure('Unable to retrieve the user’s currency based on their locale.', ErrorCode.SIGNUP_CAN_GET_CURRENCY);
                 }
                 await Translations.load(locale, TranslationLoaderImpl.instance());
-                this._logger.info('start token creation');
+                this._logger.info('Starting token creation.');
                 const newToken = AuthService.createJWToken(user.userId, RoleType.Default);
-                this._logger.info('end token creation');
+                this._logger.info('Token created successfully.');
 
                 const response = await Promise.all([
                     await this.userRoleService.createUserRole(user.userId, RoleType.Default, trx),
@@ -142,7 +142,7 @@ export default class UserRegistrationService extends LoggerBase {
                     await this.emailConfirmationService.createConfirmationMail(user.userId, user.email, trx),
                 ]);
                 if (Utils.isNull(response[1]?.userId)) {
-                    throw new Error('user profile not created');
+                    return new Failure('User profile creation failed during the registration process.', ErrorCode.SIGNUP_PROFILE_NOT_CREATED);
                 }
                 const profile = response[1] as IProfile;
                 await this.createInitialDataForNewUser(user.userId, profile, trx);
@@ -151,10 +151,10 @@ export default class UserRegistrationService extends LoggerBase {
                 const readyUser = await this.userService.getUser(user.userId);
                 return new Success({ user: readyUser, token: newToken });
             }
-            return new Failure('user not created', ErrorCode.SIGNUP);
+            return new Failure('User could not be created due to an unknown error.', ErrorCode.SIGNUP_USER_NOT_CREATED);
         } catch (e) {
             await uow.rollback();
-            return new Failure(`user not created error: ${JSON.stringify(e)}`, ErrorCode.SIGNUP);
+            return new Failure(`User creation failed due to a server error: ${JSON.stringify(e)}`, ErrorCode.SIGNUP_CATCH_ERROR);
         }
     }
 
@@ -162,7 +162,7 @@ export default class UserRegistrationService extends LoggerBase {
         try {
             const userConfirmationData = await this.emailConfirmationService.getUserConfirmation(userId, code);
             if (!userConfirmationData || userConfirmationData.confirmationCode !== code) {
-                return new Failure('Confirmation code not same', ErrorCode.EMAIL_VERIFICATION_CODE_INVALID);
+                return new Failure('Confirmation mail failed due code not same', ErrorCode.EMAIL_VERIFICATION_CODE_INVALID);
             }
             await this.profileService.confirmationUserMail(userId);
             const user = await this.userService.updateUserEmail(userId, userConfirmationData.email);
@@ -210,8 +210,7 @@ export default class UserRegistrationService extends LoggerBase {
             ]);
             return new Success(true);
         } catch (e) {
-            this._logger.error(`failed create initial user data error: ${e}`);
-            return new Failure(`failed create initial user data error: ${e}`, ErrorCode.SIGNUP_INITIAL);
+            return new Failure(`Failed create initial user data error: ${e}`, ErrorCode.SIGNUP_CREATE_INITIAL_DATA);
         }
     }
 }

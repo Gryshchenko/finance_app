@@ -12,46 +12,71 @@ export default class CategoryDataAccess extends LoggerBase implements ICategoryD
         this._db = db;
     }
 
-    public async createCategories(userId: number, categories: ICreateCategory[], trx?: ITransaction): Promise<ICategory[]> {
+    async createCategories(userId: number, categories: ICreateCategory[], trx?: ITransaction): Promise<ICategory[]> {
+        this._logger.info(`Creating categories for user: ${userId}`);
+        const query = trx || this._db.engine();
+
         try {
-            this._logger.info('createCategories request');
-            const query = trx || this._db.engine();
+            const formattedCategories = categories.map(({ categoryName, currencyId }) => ({
+                userId,
+                categoryName,
+                currencyId,
+            }));
+
             const data = await query('categories').insert(
-                categories.map(({ categoryName, currencyId }) => ({ userId, categoryName, currencyId })),
-                ['categoryId', 'userId', 'categoryName', 'currencyId'],
+                formattedCategories,
+                ['categoryId', 'userId', 'categoryName', 'currencyId']
             );
-            this._logger.info('createCategories response');
+
+            this._logger.info(`Categories created successfully for user: ${userId}`);
             return data;
-        } catch (error) {
-            this._logger.error(error);
+        } catch (error: any) {
+            this._logger.error(`Failed to create categories for user: ${userId}. Error: ${error.message}`);
             throw error;
         }
     }
-    async getCategories(userId: number): Promise<ICategory[] | undefined> {
-        try {
-            this._logger.info('getCategories request');
 
+    async getCategories(userId: number): Promise<ICategory[] | undefined> {
+        this._logger.info(`Retrieving categories for user: ${userId}`);
+
+        try {
             const data = await this.getCategoryBaseQuery()
                 .innerJoin('currencies', 'categories.currencyId', 'currencies.currencyId')
                 .where({ userId });
-            this._logger.info('getCategories response');
+
+            if (data) {
+                this._logger.info(`Fetched ${data.length} categories retrieved successfully for user: ${userId}`);
+            } else {
+                this._logger.warn(`Categories not found for user: ${userId}`);
+            }
             return data;
-        } catch (error) {
-            this._logger.error(error);
+        } catch (error: any) {
+            this._logger.error(`Failed to retrieve categories for user: ${userId}. Error: ${error.message}`);
             throw error;
         }
     }
+
     async getCategory(userId: number, categoryId: number): Promise<ICategory | undefined> {
+        this._logger.info(`Retrieving category ID ${categoryId} for user: ${userId}`);
+
         try {
-            this._logger.info('getCategory request');
-            const data = await this.getCategoryBaseQuery().where({ userId, categoryId }).first();
-            this._logger.info('getCategory response');
+            const data = await this.getCategoryBaseQuery()
+                .where({ userId, categoryId })
+                .first();
+
+            if (data) {
+                this._logger.info(`Category ID ${categoryId} retrieved successfully for user: ${userId}`);
+            } else {
+                this._logger.warn(`Category ID ${categoryId} not found for user: ${userId}`);
+            }
+
             return data;
-        } catch (error) {
-            this._logger.error(error);
+        } catch (error: any) {
+            this._logger.error(`Failed to retrieve category ID ${categoryId} for user: ${userId}. Error: ${error.message}`);
             throw error;
         }
     }
+
     protected getCategoryBaseQuery() {
         return this._db.engine()('categories').select(
             'categories.categoryId',

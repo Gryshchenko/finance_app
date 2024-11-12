@@ -15,7 +15,7 @@ export class AuthController {
     public static async logout(req: Request, res: Response) {
         const responseBuilder = new ResponseBuilder();
         SessionService.deleteSession(req, res, () => {
-            res.status(200).json(responseBuilder.setStatus(ResponseStatusType.OK).build());
+            res.status(201).json(responseBuilder.setStatus(ResponseStatusType.OK).build());
         });
     }
     public static async login(req: Request, res: Response) {

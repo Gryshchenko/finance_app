@@ -107,7 +107,7 @@ export default class EmailConfirmationService extends LoggerBase implements IEma
                 );
                 return new Success(result);
             }
-            return new Failure('Already send', ErrorCode.EMAIL_VERIFICATION_ALREADY_SEND, true);
+            return new Failure('Sending confirmation mail failed, mail already send', ErrorCode.EMAIL_VERIFICATION_ALREADY_SEND, true);
         } catch (error) {
             return new Failure(String(error), ErrorCode.EMAIL_CANT_SEND, false);
         }
@@ -116,20 +116,17 @@ export default class EmailConfirmationService extends LoggerBase implements IEma
     public async sendConfirmationMailToUser(userId: number, email: string): Promise<ISuccess<IEmailConfirmationData> | IFailure> {
         const userConfirmationData = await this.emailConfirmationDataAccess.getUserConfirmationWithEmail(userId, email);
         if (userConfirmationData?.confirmed) {
-            return new Failure('Already confirmed', ErrorCode.EMAIL_VERIFICATION_ALREADY_DONE, true);
+            return new Failure('Send confirmation failed due mail already confirmed', ErrorCode.EMAIL_VERIFICATION_ALREADY_DONE, true);
         }
         const userConfirmationDataInWork = userConfirmationData as IEmailConfirmationData;
-        this._logger.info('confirmation data stored');
         const mailSendResponse = await this.sendMail(
             userConfirmationDataInWork.email,
             userConfirmationDataInWork.confirmationCode,
         );
         if (mailSendResponse instanceof Success) {
-            this._logger.info('confirmation mail send');
             return new Success(mailSendResponse.value);
         }
-        this._logger.error('confirmation mail send failed');
-        return new Failure('Cant send mail');
+        return new Failure('Cant send confirmation mail');
     }
 
     public async deleteUserConfirmation(userId: number, code: number): Promise<boolean> {

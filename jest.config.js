@@ -29,4 +29,12 @@ module.exports = {
         ],
     },
     testTimeout: 200000,
+    reporters: [
+        "default",
+        ["jest-html-reporters", {
+            "publicPath": "./jest-html-report",
+            "filename": "report.html",
+            "openReport": true
+        }]
+    ],
 };

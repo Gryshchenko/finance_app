@@ -20,24 +20,34 @@ export default class SessionService {
 
     public static deleteSession(req: Request, res: Response, cb: () => void): void {
         const _logger = Logger.Of('deleteSession');
-        _logger.info('start session delete procedure');
+        _logger.info('Starting session deletion procedure');
+
         req.session.destroy((err) => {
             if (err) {
-                _logger.error(`delete session error: ${err}`);
+                _logger.error(`Error deleting session: ${err.message}`);
                 const responseBuilder = new ResponseBuilder();
+
                 res.status(400).json(
                     responseBuilder
                         .setStatus(ResponseStatusType.INTERNAL)
                         .setError({
                             errorCode: ErrorCode.SESSION_DESTROY_ERROR,
                         })
-                        .build(),
+                        .build()
                 );
+
+                return; // Прерываем выполнение, если возникла ошибка
             }
+
             res.clearCookie(getConfig().ssName, { path: '/' });
-            _logger.info('delete session success');
+            _logger.info('Session successfully deleted');
+
             if (cb) {
-                cb();
+                try {
+                    cb();
+                } catch (callbackError: any) {
+                    _logger.error(`Callback execution error: ${callbackError?.message}`);
+                }
             }
         });
     }

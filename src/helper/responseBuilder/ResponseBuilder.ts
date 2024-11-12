@@ -1,7 +1,7 @@
 import { ResponseStatusType } from 'types/ResponseStatusType';
 import { IResponseError } from 'interfaces/IResponseError';
 
-interface IResponse<T = unknown> {
+export interface IResponse<T = unknown> {
     status: ResponseStatusType | null;
     data: T;
     errors: IResponseError[] | null;

@@ -44,7 +44,7 @@ describe('transaction POST /register/signup', () => {
         const databaseConnection = new DatabaseConnection(config);
         const data = await databaseConnection.engine()('users').select('*').where({ email: mail });
         expect(data).toStrictEqual([]);
-        expect(response.status).toBe(400);
+        expect(response.status).toBe(401);
         expect(response.body).toStrictEqual({
             data: {},
             errors: [

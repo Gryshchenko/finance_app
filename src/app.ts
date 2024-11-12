@@ -68,7 +68,7 @@ app.get('/', (req: Request, res: Response) => {
 const httpsServer = https.createServer(credentials, app);
 
 if (process.env.NODE_ENV !== 'test') {
-    httpsServer.listen(port, '0.0.0.0', async () => {
+    httpsServer.listen(port, async () => {
         Logger.Of('App').info(`Server running at port: ${port}`);
     });
 }

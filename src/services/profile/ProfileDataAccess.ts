@@ -11,27 +11,29 @@ export default class ProfileDataService extends LoggerBase implements IProfileDa
         super();
         this._db = db;
     }
-
-    async createProfile(data: ICreateProfile, trx?: ITransaction): Promise<IProfile | undefined> {
+    async createProfile(data: ICreateProfile, trx?: ITransaction): Promise<IProfile> {
         try {
-            this._logger.info('createProfile request');
+            this._logger.info('Request to create profile');
             const { userId, locale, currencyId } = data;
             const query = trx || this._db.engine();
             const response = await query('profiles').insert({ userId, locale, currencyId }, ['*']);
-            this._logger.info('createProfile response');
-            if (response?.[0]) {
-                return response[0];
+
+            if (!response?.[0]) {
+                throw new Error('Failed to create profile');
             }
-            throw Error('cant create profile');
-        } catch (error) {
-            this._logger.error(error);
+
+            this._logger.info('Profile created successfully');
+            return response[0];
+        } catch (error: any) {
+            this._logger.error(`Profile creation error: ${error?.message}`);
             throw error;
         }
     }
 
     async getProfile(userId: number): Promise<IProfile | undefined> {
         try {
-            this._logger.info('getProfile request');
+            this._logger.info('Request to retrieve profile');
+
             const data = await this._db
                 .engine()<IProfile>('profiles')
                 .select<IProfile>(
@@ -49,29 +51,35 @@ export default class ProfileDataService extends LoggerBase implements IProfileDa
                 .innerJoin('currencies', 'profiles.currencyId', 'currencies.currencyId')
                 .where({ userId })
                 .first();
-            this._logger.info('getProfile response');
-            if (data) {
-                return data;
-            }
-            return undefined;
-        } catch (error) {
-            this._logger.error(error);
+
+            this._logger.info('Profile retrieval successful');
+            return data || undefined;
+        } catch (error: any) {
+            this._logger.error(`Profile retrieval error: ${error?.message}`);
             throw error;
         }
     }
 
-    async confirmationUserMail(userId: number): Promise<boolean | undefined> {
+    async confirmationUserMail(userId: number): Promise<boolean> {
         try {
-            this._logger.info('confirmationUserMail request');
-            const data = await this._db.engine()<IProfile>('profiles').where({ userId }).update({ mailConfirmed: true }, ['*']);
-            this._logger.info('confirmationUserMail response');
-            if (data) {
-                return data[0].mailConfirmed;
+            this._logger.info('Request to confirm user email');
+
+            const data = await this._db
+                .engine()<IProfile>('profiles')
+                .where({ userId })
+                .update({ mailConfirmed: true }, ['mailConfirmed']);
+
+            if (!data?.[0]?.mailConfirmed) {
+                this._logger.warn('Email confirmation update failed');
+                return false;
             }
-            return undefined;
-        } catch (error) {
-            this._logger.error(error);
+
+            this._logger.info('Email confirmed successfully');
+            return data[0].mailConfirmed;
+        } catch (error: any) {
+            this._logger.error(`Email confirmation error: ${error?.message}`);
             throw error;
         }
     }
+
 }
