@@ -3,6 +3,7 @@ import { IDatabaseConnection, ITransaction } from 'interfaces/IDatabaseConnectio
 import { LoggerBase } from 'src/helper/logger/LoggerBase';
 import { IProfile } from 'interfaces/IProfile';
 import { ICreateProfile } from 'interfaces/ICreateProfile';
+import { DBError } from 'src/utils/errors/DBError';
 
 export default class ProfileDataService extends LoggerBase implements IProfileDataAccess {
     private readonly _db: IDatabaseConnection;
@@ -24,9 +25,9 @@ export default class ProfileDataService extends LoggerBase implements IProfileDa
 
             this._logger.info('Profile created successfully');
             return response[0];
-        } catch (error: any) {
-            this._logger.error(`Profile creation error: ${error?.message}`);
-            throw error;
+        } catch (e) {
+            this._logger.error(`Profile creation error: ${(e as { message: string }).message}`);
+            throw new DBError({ message: `Profile creation error: ${(e as { message: string }).message}` });
         }
     }
 
@@ -54,9 +55,9 @@ export default class ProfileDataService extends LoggerBase implements IProfileDa
 
             this._logger.info('Profile retrieval successful');
             return data || undefined;
-        } catch (error: any) {
-            this._logger.error(`Profile retrieval error: ${error?.message}`);
-            throw error;
+        } catch (e) {
+            this._logger.error(`Profile retrieval error: ${(e as { message: string }).message}`);
+            throw new DBError({ message: `Profile retrieval error: ${(e as { message: string }).message}` });
         }
     }
 
@@ -76,10 +77,9 @@ export default class ProfileDataService extends LoggerBase implements IProfileDa
 
             this._logger.info('Email confirmed successfully');
             return data[0].mailConfirmed;
-        } catch (error: any) {
-            this._logger.error(`Email confirmation error: ${error?.message}`);
-            throw error;
+        } catch (e) {
+            this._logger.error(`Email confirmation error: ${(e as { message: string }).message}`);
+            throw new DBError({ message: `Email confirmation error: ${(e as { message: string }).message}` });
         }
     }
-
 }

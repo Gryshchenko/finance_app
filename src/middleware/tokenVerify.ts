@@ -15,7 +15,7 @@ const errorHandler = (errorMsg: string, code: number, req: Request, res: Respons
     SessionService.deleteSession(req, res, () => {
         res.status(code).json(ResponseBuilderPreset.getAuthError());
     });
-}
+};
 
 const tokenVerifyHandler = (req: Request, res: Response, next: NextFunction, errorHandler: (errorMsg: string) => void) => {
     const token = extractToken(req);
@@ -51,7 +51,6 @@ const tokenVerifyHandler = (req: Request, res: Response, next: NextFunction, err
     });
 };
 
-
 const extractToken = (req: Request) => {
     if (req.headers.authorization && req.headers.authorization.split(' ')[0] === 'Bearer') {
         return req.headers.authorization.split(' ')[1];
@@ -64,8 +63,7 @@ export const tokenVerifyLogout = (req: Request, res: Response, next: NextFunctio
         _logger.error(errotMsg);
         res.status(201).json(ResponseBuilderPreset.getSuccess());
     });
-}
-
+};
 
 const tokenVerify = (req: Request, res: Response, next: NextFunction) => {
     tokenVerifyHandler(req, res, next, (errorMsg) => errorHandler(errorMsg, 401, req, res));

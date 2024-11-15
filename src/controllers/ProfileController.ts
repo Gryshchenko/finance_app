@@ -7,8 +7,9 @@ import { ResponseStatusType } from 'types/ResponseStatusType';
 import ProfileServiceUtils from 'services/profile/ProfileServiceUtils';
 import { ErrorCode } from 'types/ErrorCode';
 import UserRegistrationServiceBuilder from 'services/registration/UserRegistrationServiceBuilder';
-import Success from 'src/utils/success/Success';
-import Failure from 'src/utils/failure/Failure';
+import { HttpCode } from 'types/HttpCode';
+import { generateErrorResponse } from 'src/utils/generateErrorResponse';
+import { ValidationError } from 'src/utils/errors/ValidationError';
 
 export class ProfileController {
     private static logger = Logger.Of('ProfileController');
@@ -17,21 +18,19 @@ export class ProfileController {
         try {
             const userFromSession = req.session.user as IUserSession;
             if (parseInt(req.params.userId) !== userFromSession.userId) {
-                throw new Error('Profile id not match');
+                throw new ValidationError({ message: 'Fetch profile failed due reason id not match', errorCode: ErrorCode.AUTH });
             }
             const profileService = ProfileServiceBuilder.build();
             const response = await profileService.getProfile(userFromSession.userId);
-            res.status(200).json(
+            res.status(HttpCode.OK).json(
                 responseBuilder
                     .setStatus(ResponseStatusType.OK)
                     .setData(ProfileServiceUtils.convertServerUserToClientUser(response))
                     .build(),
             );
-        } catch (error) {
-            ProfileController.logger.error(error);
-            res.status(400).json(
-                responseBuilder.setStatus(ResponseStatusType.INTERNAL).setError({ errorCode: ErrorCode.PROFILE_ERROR }).build(),
-            );
+        } catch (e) {
+            ProfileController.logger.error(`Fetch profile failed due reason: ${(e as { message: string }).message}`);
+            generateErrorResponse(res, responseBuilder, e, ErrorCode.PROFILE_ERROR);
         }
     }
 
@@ -43,22 +42,10 @@ export class ProfileController {
                 userFromSession.userId,
                 Number(req.body.code),
             );
-            if (response instanceof Success) {
-                res.status(200).json(responseBuilder.setStatus(ResponseStatusType.OK).setData(response.value).build());
-            } else {
-                ProfileController.logger.error((response as Failure).error);
-                return res.status(400).json(
-                    responseBuilder
-                        .setStatus(ResponseStatusType.INTERNAL)
-                        .setError({ errorCode: (response as Failure).code })
-                        .build(),
-                );
-            }
-        } catch (error) {
-            ProfileController.logger.error(error);
-            res.status(400).json(
-                responseBuilder.setStatus(ResponseStatusType.INTERNAL).setError({ errorCode: ErrorCode.CANT_STORE_DATA }).build(),
-            );
+            res.status(200).json(responseBuilder.setStatus(ResponseStatusType.OK).setData(response).build());
+        } catch (e) {
+            ProfileController.logger.error(`Comfirm mail failed due reason: ${(e as { message: string }).message}`);
+            generateErrorResponse(res, responseBuilder, e, ErrorCode.PROFILE_ERROR);
         }
     }
 }

@@ -239,7 +239,7 @@ describe('POST /register/signup', () => {
         await request(app).post('/register/signup').send({ email: mail, password: generateRandomPassword() });
         const response = await request(app).post('/register/signup').send({ email: mail, password: generateRandomPassword() });
 
-        expect(response.status).toBe(401);
+        expect(response.status).toBe(400);
         expect(response.body).toStrictEqual({
             data: {},
             errors: [

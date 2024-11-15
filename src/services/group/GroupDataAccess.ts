@@ -2,6 +2,7 @@ import { IGroupDataAccess } from 'interfaces/IGroupDataAccess';
 import { IDatabaseConnection, ITransaction } from 'interfaces/IDatabaseConnection';
 import { LoggerBase } from 'src/helper/logger/LoggerBase';
 import { IGroup } from 'interfaces/IGroup';
+import { DBError } from 'src/utils/errors/DBError';
 
 export default class GroupDataAccess extends LoggerBase implements IGroupDataAccess {
     private readonly _db: IDatabaseConnection;
@@ -18,9 +19,9 @@ export default class GroupDataAccess extends LoggerBase implements IGroupDataAcc
             const data = await query('usergroups').insert({ userId, groupName }, ['userGroupId', 'userId', 'groupName']);
             this._logger.info(`Successfully created ${data[0].userGroupId} group for userId: ${userId}`);
             return data[0];
-        } catch (error: any) {
-            this._logger.error(`Failed to create group for userId: ${userId}. Error: ${error?.message}`);
-            throw new Error(`Fetching group failed due to a database error: ${error.message}`);
+        } catch (e) {
+            this._logger.error(`Failed to create group for userId: ${userId}. Error: ${(e as { message: string }).message}`);
+            throw new DBError({ message: `Fetching group failed due to a database error: ${error.message}` });
         }
     }
 }

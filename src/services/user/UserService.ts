@@ -6,11 +6,6 @@ import { ICreateUser } from 'interfaces/ICreateUser';
 import { IGetUserAuthenticationData } from 'interfaces/IGetUserAuthenticationData';
 import { LoggerBase } from 'src/helper/logger/LoggerBase';
 import { ITransaction } from 'interfaces/IDatabaseConnection';
-import Utils from 'src/utils/Utils';
-import { ISuccess } from 'interfaces/ISuccess';
-import { IFailure } from 'interfaces/IFailure';
-import Failure from 'src/utils/failure/Failure';
-import Success from 'src/utils/success/Success';
 
 export default class UserService extends LoggerBase implements IUserService {
     private _userDataAccess: IUserDataAccess;
@@ -28,18 +23,13 @@ export default class UserService extends LoggerBase implements IUserService {
         return UserServiceUtils.formatUserDetails(await this._userDataAccess.getUser(userId));
     }
 
-    public async createUser(email: string, password: string, trx?: ITransaction): Promise<ISuccess<ICreateUser> | IFailure> {
-        try {
-            const salt = UserServiceUtils.getRandomSalt();
-            const hashStr = await UserServiceUtils.hashPassword(password, salt);
-            const hash = hashStr as unknown as string;
+    public async createUser(email: string, password: string, trx?: ITransaction): Promise<ICreateUser> {
+        const salt = UserServiceUtils.getRandomSalt();
+        const hashStr = await UserServiceUtils.hashPassword(password, salt);
+        const hash = hashStr as unknown as string;
 
-            const user = await this._userDataAccess.createUser(email, hash, salt.toString('hex'), trx);
-            return new Success(user);
-        } catch (error: any) {
-            this._logger.info('Failed create user due reason: ' + error?.message)
-            return new Failure(String(error.message));
-        }
+        const user = await this._userDataAccess.createUser(email, hash, salt.toString('hex'), trx);
+        return user;
     }
 
     public async updateUserEmail(userId: number, email: string): Promise<IUser> {

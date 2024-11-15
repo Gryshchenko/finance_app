@@ -33,10 +33,10 @@ export default class SessionService {
                         .setError({
                             errorCode: ErrorCode.SESSION_DESTROY_ERROR,
                         })
-                        .build()
+                        .build(),
                 );
 
-                return; // Прерываем выполнение, если возникла ошибка
+                return;
             }
 
             res.clearCookie(getConfig().ssName, { path: '/' });
@@ -45,8 +45,8 @@ export default class SessionService {
             if (cb) {
                 try {
                     cb();
-                } catch (callbackError: any) {
-                    _logger.error(`Callback execution error: ${callbackError?.message}`);
+                } catch (callbackError) {
+                    _logger.error(`Callback execution error: ${(callbackError as { message: string })?.message}`);
                 }
             }
         });

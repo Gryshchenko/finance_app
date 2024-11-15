@@ -8,7 +8,6 @@ import rateLimit from 'express-rate-limit';
 import passportSetup from './services/auth/passport-setup';
 import SessionService from './services/session/SessionService';
 
-
 import authRouter from './routes/auth';
 import registerRouter from './routes/register';
 import userRouter from './routes/user';

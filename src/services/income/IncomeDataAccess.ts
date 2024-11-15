@@ -3,6 +3,7 @@ import { IDatabaseConnection, ITransaction } from 'interfaces/IDatabaseConnectio
 import { LoggerBase } from 'src/helper/logger/LoggerBase';
 import { IIncome } from 'interfaces/IIncome';
 import { ICreateIncome } from 'interfaces/ICreateIncome';
+import { DBError } from 'src/utils/errors/DBError';
 
 export default class IncomeDataAccess extends LoggerBase implements IIncomeDataAccess {
     private readonly _db: IDatabaseConnection;
@@ -19,15 +20,14 @@ export default class IncomeDataAccess extends LoggerBase implements IIncomeDataA
             const query = trx || this._db.engine();
             const data = await query('incomes').insert(
                 incomes.map(({ incomeName, currencyId }) => ({ userId, incomeName, currencyId })),
-                ['incomeId', 'userId', 'incomeName', 'currencyId']
+                ['incomeId', 'userId', 'incomeName', 'currencyId'],
             );
 
             this._logger.info(`Successfully created incomes for userId ${userId}`);
             return data;
-        } catch (error: any) {
+        } catch (e) {
             this._logger.error(`Error creating incomes for userId ${userId}: ${error.message}`);
-            throw new Error(`Fetching incomes failed due to a database error: ${error.message}`);
-
+            throw new DBError({ message: `Fetching incomes failed due to a database error: ${error.message}` });
         }
     }
 
@@ -41,9 +41,9 @@ export default class IncomeDataAccess extends LoggerBase implements IIncomeDataA
 
             this._logger.info(`Successfully fetched incomes for userId ${userId}`);
             return data;
-        } catch (error: any) {
+        } catch (e) {
             this._logger.error(`Error fetching incomes for userId ${userId}: ${error.message}`);
-            throw new Error(`Fetching incomes failed due to a database error: ${error.message}`);
+            throw new DBError({ message: `Fetching incomes failed due to a database error: ${error.message}` });
         }
     }
 
@@ -60,12 +60,11 @@ export default class IncomeDataAccess extends LoggerBase implements IIncomeDataA
             }
 
             return data;
-        } catch (error: any) {
+        } catch (e) {
             this._logger.error(`Error fetching income with ID ${incomeId} for userId ${userId}: ${error.message}`);
-            throw new Error(`Fetching income failed due to a database error: ${error.message}`);
+            throw new DBError({ message: `Fetching income failed due to a database error: ${error.message}` });
         }
     }
-
 
     protected getIncomeBaseQuery() {
         return this._db.engine()('incomes').select(

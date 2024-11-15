@@ -3,48 +3,47 @@ import express from 'express';
 import { body } from 'express-validator';
 import routesInputValidation from '../utils/validation/routesInputValidation';
 import { tokenVerifyLogout } from '../middleware/tokenVerify';
-import ensureGuest from '../middleware/ensureGuest';
 import { sessionVerifyLogout } from '../middleware/sessionVerify';
 import { AuthController } from 'src/controllers/AuthController';
 
 const router = express.Router();
-
 /**
  * @swagger
  * /auth/logout:
  *   post:
- *     description: The POST /auth/logout endpoint is used to log out the user.
- *     Upon successful execution, the API returns a JSON response with a status code of 201 and a content type of application/json. 
- *     The response body follows the JSON schema below:
+ *     summary: Log out the user
+ *     description: |
+ *       The POST `/auth/logout` endpoint is used to log out the user.
+ *       Upon successful execution, the API returns a JSON response with:
+ *       - **Status Code**: 201
+ *       - **Content Type**: application/json
  *     responses:
  *       201:
- *         description: Successful logout from system
+ *         description: Successfully logged out of the system.
  *         headers:
  *           Set-Cookie:
- *             description: Secure cookie with JWT token
+ *             description: Secure cookie with JWT token.
  *             schema:
  *               type: string
  *               example: JWT=token; Path=/; HttpOnly; Secure; SameSite=None
  *         content:
  *           application/json:
  *             schema:
- *              allOf:
- *                   - $ref: '#/components/schemas/StandardResponse'
- *                   - type: object
- *                     properties:
- *                       _response:
- *                         type: object
- *                         properties:
- *                           status:
- *                             type: integer
- *                             example: 1
- *                             description: Status code representing the result of the operation (1 for success)
- *                           data:
- *                            - $ref: '#/components/schemas/UserClient'
+ *               allOf:
+ *                 - $ref: '#/components/schemas/StandardResponse'
+ *                 - type: object
+ *                   properties:
+ *                     _response:
+ *                       type: object
+ *                       properties:
+ *                         status:
+ *                           type: integer
+ *                           example: 1
+ *                           description: Status code representing the result of the operation (1 for success).
  *       400:
  *         $ref: '#/components/responses/ErrorResponse'
  */
-router.post('/logout',  tokenVerifyLogout, sessionVerifyLogout, AuthController.logout);
+router.post('/logout', tokenVerifyLogout, sessionVerifyLogout, AuthController.logout);
 /**
  * @swagger
  * /auth/login:

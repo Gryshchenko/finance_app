@@ -2,16 +2,14 @@ import { IAccountService } from 'interfaces/IAccountService';
 import { ICategoryService } from 'interfaces/ICategoryService';
 import { LoggerBase } from 'src/helper/logger/LoggerBase';
 import { IIncomeService } from 'interfaces/IIncomeService';
-import { ISuccess } from 'interfaces/ISuccess';
-import { IFailure } from 'interfaces/IFailure';
 import { IOverview } from 'interfaces/IOverview';
 import { IAccount } from 'interfaces/IAccount';
 import { ICategory } from 'interfaces/ICategory';
 import { IIncome } from 'interfaces/IIncome';
-import Success from 'src/utils/success/Success';
-import Failure from 'src/utils/failure/Failure';
 import { ErrorCode } from 'types/ErrorCode';
 import Utils from 'src/utils/Utils';
+import { CustomError } from 'src/utils/errors/CustomError';
+import { HttpCode } from 'types/HttpCode';
 
 export default class OverviewService extends LoggerBase {
     protected accountService: IAccountService;
@@ -43,10 +41,14 @@ export default class OverviewService extends LoggerBase {
         };
     }
 
-    public async overview(userId: number | undefined): Promise<ISuccess<IOverview> | IFailure> {
+    public async overview(userId: number | undefined): Promise<IOverview> {
         try {
             if (Utils.isNull(userId)) {
-                throw new Error('Invalid userId');
+                throw new CustomError({
+                    message: 'Invalid userId, userId cant be null',
+                    statusCode: HttpCode.INTERNAL_SERVER_ERROR,
+                    errorCode: ErrorCode.OVERVIEW_ERROR,
+                });
             }
             const validUserId = userId as number;
             const [accounts, categories, incomes] = await Promise.all([
@@ -55,10 +57,10 @@ export default class OverviewService extends LoggerBase {
                 this.incomeService.getIncomes(validUserId),
             ]);
 
-            return new Success(OverviewService.buildOverviewResponse({ accounts, categories, incomes }));
+            return OverviewService.buildOverviewResponse({ accounts, categories, incomes });
         } catch (e) {
-            this._logger.error(e);
-            return new Failure(String(e), ErrorCode.OVERVIEW_ERROR);
+            this._logger.info(`Fetch overview failed due reason: ${(e as { message: string }).message}`);
+            throw e;
         }
     }
 }

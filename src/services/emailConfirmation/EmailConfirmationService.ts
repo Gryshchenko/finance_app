@@ -6,16 +6,14 @@ import { IMailService } from 'interfaces/IMailService';
 import { IMailTemplateService } from 'interfaces/IMailTemplateService';
 import { TranslationKey } from 'types/TranslationKey';
 import { IUserService } from 'interfaces/IUserService';
-import { IFailure } from 'interfaces/IFailure';
-import { ISuccess } from 'interfaces/ISuccess';
 import { IEmailConfirmationData } from 'interfaces/IEmailConfirmationData';
 import Translations from 'src/services/translations/Translations';
-import Success from 'src/utils/success/Success';
 import TimeManagerUTC from 'src/utils/TimeManagerUTC';
-import Failure from 'src/utils/failure/Failure';
 import Utils from 'src/utils/Utils';
 import { ITransaction } from 'interfaces/IDatabaseConnection';
 import { getConfig } from 'src/config/config';
+import { CustomError } from 'src/utils/errors/CustomError';
+import { ValidationError } from 'src/utils/errors/ValidationError';
 
 const { randomBytes } = require('crypto');
 
@@ -49,7 +47,7 @@ export default class EmailConfirmationService extends LoggerBase implements IEma
         return Number(number.toString().padStart(8, '0').substring(0, 8));
     }
 
-    private async sendMail(email: string, confirmationCode: number): Promise<ISuccess<unknown> | IFailure> {
+    private async sendMail(email: string, confirmationCode: number): Promise<unknown> {
         try {
             const response = await this.mailService.sendMail({
                 subject: Translations.text(TranslationKey.CONFIRM_MAIL_ADDRESS),
@@ -67,9 +65,12 @@ export default class EmailConfirmationService extends LoggerBase implements IEma
                 text: Translations.text(TranslationKey.CONFIRM_MAIL_TEXT),
                 template: this.mailTemplateService.getConfirmMailTemplate(),
             });
-            return new Success(response);
+            return response;
         } catch (e) {
-            return new Failure('Cant send mail by provider reason', ErrorCode.EMAIL_CANT_SEND);
+            throw new CustomError({
+                message: `Cant send mail by provider reason : ${JSON.stringify(e)}`,
+                errorCode: ErrorCode.EMAIL_CANT_SEND,
+            });
         }
     }
 
@@ -78,11 +79,7 @@ export default class EmailConfirmationService extends LoggerBase implements IEma
         return payload && !timeManager.isFirstDateLessThanSecond(payload.expiresAt, timeManager.getCurrentTime());
     }
 
-    public async createConfirmationMail(
-        userId: number,
-        email: string,
-        trx?: ITransaction,
-    ): Promise<ISuccess<IEmailConfirmationData> | IFailure> {
+    public async createConfirmationMail(userId: number, email: string, trx?: ITransaction): Promise<IEmailConfirmationData> {
         try {
             const confirmationCode: number = this.createConfirmationKey();
             const userConfirmationData = await this.emailConfirmationDataAccess.getUserConfirmationWithCode(
@@ -105,28 +102,29 @@ export default class EmailConfirmationService extends LoggerBase implements IEma
                     },
                     trx,
                 );
-                return new Success(result);
+                return result;
             }
-            return new Failure('Sending confirmation mail failed, mail already send', ErrorCode.EMAIL_VERIFICATION_ALREADY_SEND, true);
-        } catch (error) {
-            return new Failure(String(error), ErrorCode.EMAIL_CANT_SEND, false);
+            throw new ValidationError({
+                message: 'Sending confirmation mail failed, mail already send',
+                errorCode: ErrorCode.EMAIL_VERIFICATION_ALREADY_SEND,
+            });
+        } catch (e) {
+            this._logger.info(`Send confirmation mail to user failed due reason: ${(e as { message: string }).message}`);
+            throw e;
         }
     }
 
-    public async sendConfirmationMailToUser(userId: number, email: string): Promise<ISuccess<IEmailConfirmationData> | IFailure> {
+    public async sendConfirmationMailToUser(userId: number, email: string): Promise<IEmailConfirmationData> {
         const userConfirmationData = await this.emailConfirmationDataAccess.getUserConfirmationWithEmail(userId, email);
         if (userConfirmationData?.confirmed) {
-            return new Failure('Send confirmation failed due mail already confirmed', ErrorCode.EMAIL_VERIFICATION_ALREADY_DONE, true);
+            throw new ValidationError({
+                message: 'Send confirmation failed due mail already confirmed',
+                errorCode: ErrorCode.EMAIL_VERIFICATION_ALREADY_DONE,
+            });
         }
         const userConfirmationDataInWork = userConfirmationData as IEmailConfirmationData;
-        const mailSendResponse = await this.sendMail(
-            userConfirmationDataInWork.email,
-            userConfirmationDataInWork.confirmationCode,
-        );
-        if (mailSendResponse instanceof Success) {
-            return new Success(mailSendResponse.value);
-        }
-        return new Failure('Cant send confirmation mail');
+        await this.sendMail(userConfirmationDataInWork.email, userConfirmationDataInWork.confirmationCode);
+        return userConfirmationDataInWork;
     }
 
     public async deleteUserConfirmation(userId: number, code: number): Promise<boolean> {

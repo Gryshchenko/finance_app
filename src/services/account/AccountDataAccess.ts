@@ -3,6 +3,7 @@ import { IDatabaseConnection, ITransaction } from 'interfaces/IDatabaseConnectio
 import { LoggerBase } from 'src/helper/logger/LoggerBase';
 import { IAccount } from 'interfaces/IAccount';
 import { ICreateAccount } from 'interfaces/ICreateAccount';
+import { DBError } from 'src/utils/errors/DBError';
 
 export default class AccountDataAccess extends LoggerBase implements IAccountDataAccess {
     private readonly _db: IDatabaseConnection;
@@ -28,10 +29,9 @@ export default class AccountDataAccess extends LoggerBase implements IAccountDat
 
             this._logger.info(`Successfully created ${data.length} accounts for userId: ${userId}`);
             return data;
-
-        } catch (error: any) {
+        } catch (e) {
             this._logger.error(`Failed to create accounts for userId: ${userId}. Error: ${error.message}`);
-            throw new Error(`Account creation failed due to a database error: ${error.message}`);
+            throw new DBError({ message: `Account creation failed due to a database error: ${error.message}` });
         }
     }
 
@@ -50,10 +50,9 @@ export default class AccountDataAccess extends LoggerBase implements IAccountDat
             }
 
             return data;
-
-        } catch (error: any) {
-            this._logger.error(`Failed to fetch accounts for userId: ${userId}. Error: ${error?.message}`);
-            throw new Error(`Fetching accounts failed due to a database error: ${error.message}`);
+        } catch (e) {
+            this._logger.error(`Failed to fetch accounts for userId: ${userId}. Error: ${(e as { message: string }).message}`);
+            throw new DBError({ message: `Fetching accounts failed due to a database error: ${error.message}` });
         }
     }
 
@@ -70,10 +69,11 @@ export default class AccountDataAccess extends LoggerBase implements IAccountDat
             }
 
             return data;
-
-        } catch (error: any) {
-            this._logger.error(`Failed to fetch account with accountId: ${accountId} for userId: ${userId}. Error: ${error.message}`);
-            throw new Error(`Fetching account failed due to a database error: ${error.message}`);
+        } catch (e) {
+            this._logger.error(
+                `Failed to fetch account with accountId: ${accountId} for userId: ${userId}. Error: ${error.message}`,
+            );
+            throw new DBError({ message: `Fetching account failed due to a database error: ${error.message}` });
         }
     }
 

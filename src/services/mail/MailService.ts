@@ -15,7 +15,7 @@ export default class MailService extends LoggerBase implements IMailService {
     }
 
     async sendMail(config: ISendMailPayload): Promise<ISendMailResponse> {
-        this._logger.info('Send mail'); 
+        this._logger.info('Send mail');
         const response = await this.engine.send(config);
         this._logger.info('Receive mail response');
         return response;

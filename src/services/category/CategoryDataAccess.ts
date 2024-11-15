@@ -3,6 +3,7 @@ import { IDatabaseConnection, ITransaction } from 'interfaces/IDatabaseConnectio
 import { LoggerBase } from 'src/helper/logger/LoggerBase';
 import { ICreateCategory } from 'interfaces/ICreateCategory';
 import { ICategory } from 'interfaces/ICategory';
+import { DBError } from 'src/utils/errors/DBError';
 
 export default class CategoryDataAccess extends LoggerBase implements ICategoryDataAccess {
     private readonly _db: IDatabaseConnection;
@@ -23,16 +24,18 @@ export default class CategoryDataAccess extends LoggerBase implements ICategoryD
                 currencyId,
             }));
 
-            const data = await query('categories').insert(
-                formattedCategories,
-                ['categoryId', 'userId', 'categoryName', 'currencyId']
-            );
+            const data = await query('categories').insert(formattedCategories, [
+                'categoryId',
+                'userId',
+                'categoryName',
+                'currencyId',
+            ]);
 
             this._logger.info(`Categories created successfully for user: ${userId}`);
             return data;
-        } catch (error: any) {
+        } catch (e) {
             this._logger.error(`Failed to create categories for user: ${userId}. Error: ${error.message}`);
-            throw error;
+            throw new DBError({ message: `Failed to create categories for user: ${userId}. Error: ${error.message}` });
         }
     }
 
@@ -50,9 +53,9 @@ export default class CategoryDataAccess extends LoggerBase implements ICategoryD
                 this._logger.warn(`Categories not found for user: ${userId}`);
             }
             return data;
-        } catch (error: any) {
+        } catch (e) {
             this._logger.error(`Failed to retrieve categories for user: ${userId}. Error: ${error.message}`);
-            throw error;
+            throw new DBError({ message: `Failed to retrieve categories for user: ${userId}. Error: ${error.message}` });
         }
     }
 
@@ -60,9 +63,7 @@ export default class CategoryDataAccess extends LoggerBase implements ICategoryD
         this._logger.info(`Retrieving category ID ${categoryId} for user: ${userId}`);
 
         try {
-            const data = await this.getCategoryBaseQuery()
-                .where({ userId, categoryId })
-                .first();
+            const data = await this.getCategoryBaseQuery().where({ userId, categoryId }).first();
 
             if (data) {
                 this._logger.info(`Category ID ${categoryId} retrieved successfully for user: ${userId}`);
@@ -71,9 +72,11 @@ export default class CategoryDataAccess extends LoggerBase implements ICategoryD
             }
 
             return data;
-        } catch (error: any) {
+        } catch (e) {
             this._logger.error(`Failed to retrieve category ID ${categoryId} for user: ${userId}. Error: ${error.message}`);
-            throw error;
+            throw new DBError({
+                message: `Failed to retrieve category ID ${categoryId} for user: ${userId}. Error: ${error.message}`,
+            });
         }
     }
 

@@ -6,6 +6,7 @@ import { IUserStatus } from 'interfaces/IUserStatus';
 import { IUserServer } from 'interfaces/IUserServer';
 import { ICreateUserServer } from 'interfaces/ICreateUserServer';
 import { IGetUserAuthenticationData } from 'interfaces/IGetUserAuthenticationData';
+import { DBError } from 'src/utils/errors/DBError';
 
 export default class UserDataService extends LoggerBase implements IUserDataAccess {
     private readonly _db: IDatabaseConnection;
@@ -39,9 +40,11 @@ export default class UserDataService extends LoggerBase implements IUserDataAcce
                 .first();
             this._logger.info(`User details fetched for userId: ${userId}`);
             return user;
-        } catch (error: any) {
-            this._logger.error(`Error fetching details for userId: ${userId} - ${error?.message}`);
-            throw error;
+        } catch (e) {
+            this._logger.error(`Error fetching details for userId: ${userId} - ${(e as { message: string }).message}`);
+            throw new DBError({
+                message: `Error fetching details for userId: ${userId} - ${(e as { message: string }).message}`,
+            });
         }
     }
 
@@ -55,18 +58,22 @@ export default class UserDataService extends LoggerBase implements IUserDataAcce
                 .first();
             this._logger.info(`Authentication data retrieved for email: ${email}`);
             return response || undefined;
-        } catch (error: any) {
-            this._logger.error(`Error retrieving authentication data for email: ${email} - ${error?.message}`);
-            throw error;
+        } catch (e) {
+            this._logger.error(
+                `Error retrieving authentication data for email: ${email} - ${(e as { message: string }).message}`,
+            );
+            throw new DBError({
+                message: `Error retrieving authentication data for email: ${email} - ${(e as { message: string }).message}`,
+            });
         }
     }
 
     public async getUser(userId: number): Promise<IUserServer> {
         try {
             return await this.fetchUserDetails(userId);
-        } catch (error: any) {
-            this._logger.error(`Error fetching user by ID: ${userId} - ${error?.message}`);
-            throw error;
+        } catch (e) {
+            this._logger.error(`Error fetching user by ID: ${userId} - ${(e as { message: string }).message}`);
+            throw new DBError({ message: `Error fetching user by ID: ${userId} - ${(e as { message: string }).message}` });
         }
     }
 
@@ -85,9 +92,9 @@ export default class UserDataService extends LoggerBase implements IUserDataAcce
             );
             this._logger.info(`User created successfully with email: ${email}`);
             return data[0];
-        } catch (error: any) {
-            this._logger.error(`Error creating user with email: ${email} - ${error?.message}`);
-            throw error;
+        } catch (e) {
+            this._logger.error(`Error creating user with email: ${email} - ${(e as { message: string }).message}`);
+            throw new DBError({ message: `Error creating user with email: ${email} - ${(e as { message: string }).message}` });
         }
     }
 
@@ -97,28 +104,26 @@ export default class UserDataService extends LoggerBase implements IUserDataAcce
             const response = await this._db.engine()<IUser>('users').select('email').where({ userId }).first();
             this._logger.info(`Email retrieved for userId: ${userId}`);
             return response || undefined;
-        } catch (error: any) {
-            this._logger.error(`Error retrieving email for userId: ${userId} - ${error?.message}`);
-            throw error;
+        } catch (e) {
+            this._logger.error(`Error retrieving email for userId: ${userId} - ${(e as { message: string }).message}`);
+            throw new DBError({
+                message: `Error retrieving email for userId: ${userId} - ${(e as { message: string }).message}`,
+            });
         }
     }
 
     public async updateUserEmail(userId: number, email: string): Promise<IUserServer> {
         try {
             this._logger.info(`Updating email for userId: ${userId}`);
-            await this._db
-                .engine()('users')
-                .where({ userId })
-                .update({
-                    email,
-                    updatedAt: new Date(),
-                });
+            await this._db.engine()('users').where({ userId }).update({
+                email,
+                updatedAt: new Date(),
+            });
             this._logger.info(`Email updated for userId: ${userId}`);
             return await this.fetchUserDetails(userId);
-        } catch (error: any) {
-            this._logger.error(`Error updating email for userId: ${userId} - ${error?.message}`);
-            throw error;
+        } catch (e) {
+            this._logger.error(`Error updating email for userId: ${userId} - ${(e as { message: string }).message}`);
+            throw new DBError({ message: `Error updating email for userId: ${userId} - ${(e as { message: string }).message}` });
         }
     }
-
 }

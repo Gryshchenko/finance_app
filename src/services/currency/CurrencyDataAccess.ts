@@ -2,6 +2,7 @@ import { ICurrencyDataAccess } from 'interfaces/ICurrencyDataAccess';
 import { IDatabaseConnection } from 'interfaces/IDatabaseConnection';
 import { LoggerBase } from 'src/helper/logger/LoggerBase';
 import { ICurrency } from 'interfaces/ICurrency';
+import { DBError } from 'src/utils/errors/DBError';
 
 export default class CurrencyDataAccess extends LoggerBase implements ICurrencyDataAccess {
     private readonly _db: IDatabaseConnection;
@@ -18,9 +19,9 @@ export default class CurrencyDataAccess extends LoggerBase implements ICurrencyD
             const data = await this._db.engine()<ICurrency>('currencies').select<ICurrency[]>(['*']);
             this._logger.info(`Successfully fetched list ${data.length} of currencies`);
             return data;
-        } catch (error: any) {
+        } catch (e) {
             this._logger.error(`Error fetching currencies: ${error.message}`);
-            throw error;
+            throw new DBError({ message: `Error fetching currencies: ${error.message}` });
         }
     }
 
@@ -41,9 +42,9 @@ export default class CurrencyDataAccess extends LoggerBase implements ICurrencyD
                 this._logger.warn(`Currency with ID ${currencyId} not found`);
                 return undefined;
             }
-        } catch (error: any) {
+        } catch (e) {
             this._logger.error(`Error fetching currency with ID ${currencyId}: ${error.message}`);
-            throw error;
+            throw new DBError({ message: `Error fetching currency with ID ${currencyId}: ${error.message}` });
         }
     }
 
@@ -64,11 +65,9 @@ export default class CurrencyDataAccess extends LoggerBase implements ICurrencyD
                 this._logger.warn(`Currency with code ${currencyCode} not found`);
                 return undefined;
             }
-        } catch (error: any) {
+        } catch (e) {
             this._logger.error(`Error fetching currency with code ${currencyCode}: ${error.message}`);
-            throw error;
+            throw new DBError({ message: `Error fetching currency with code ${currencyCode}: ${error.message}` });
         }
     }
-
-
 }

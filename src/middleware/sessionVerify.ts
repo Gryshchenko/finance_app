@@ -38,7 +38,6 @@ const sessionVerifyHandler = (req: Request, res: Response, next: NextFunction, e
     next();
 };
 
-
 const sessionVerify = (req: Request, res: Response, next: NextFunction) => {
     sessionVerifyHandler(req, res, next, (errorMsg) => errorHandler(errorMsg, 401, req, res));
 };

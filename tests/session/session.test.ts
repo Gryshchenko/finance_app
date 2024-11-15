@@ -30,7 +30,7 @@ describe('Session Security Test', () => {
                 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/58.0.3029.110 Safari/537.36',
             )
             .send({ email: generateRandomEmail(), password: generateRandomPassword() })
-            .expect(200);
+            .expect(401);
 
         const res2 = await agent2
             .post('/register/signup')
@@ -39,7 +39,7 @@ describe('Session Security Test', () => {
                 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_4) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/81.0.4044.138 Safari/537.36',
             )
             .send({ email: generateRandomEmail(), password: generateRandomPassword() })
-            .expect(200);
+            .expect(401);
 
         const response = await agent2
             .get(`/profile/${res2.body.data.profile.userId}`)
