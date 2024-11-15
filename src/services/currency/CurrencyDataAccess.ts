@@ -20,8 +20,8 @@ export default class CurrencyDataAccess extends LoggerBase implements ICurrencyD
             this._logger.info(`Successfully fetched list ${data.length} of currencies`);
             return data;
         } catch (e) {
-            this._logger.error(`Error fetching currencies: ${error.message}`);
-            throw new DBError({ message: `Error fetching currencies: ${error.message}` });
+            this._logger.error(`Error fetching currencies: ${(e as { message: string }).message}`);
+            throw new DBError({ message: `Error fetching currencies: ${(e as { message: string }).message}` });
         }
     }
 
@@ -43,8 +43,10 @@ export default class CurrencyDataAccess extends LoggerBase implements ICurrencyD
                 return undefined;
             }
         } catch (e) {
-            this._logger.error(`Error fetching currency with ID ${currencyId}: ${error.message}`);
-            throw new DBError({ message: `Error fetching currency with ID ${currencyId}: ${error.message}` });
+            this._logger.error(`Error fetching currency with ID ${currencyId}: ${(e as { message: string }).message}`);
+            throw new DBError({
+                message: `Error fetching currency with ID ${currencyId}: ${(e as { message: string }).message}`,
+            });
         }
     }
 
@@ -66,8 +68,10 @@ export default class CurrencyDataAccess extends LoggerBase implements ICurrencyD
                 return undefined;
             }
         } catch (e) {
-            this._logger.error(`Error fetching currency with code ${currencyCode}: ${error.message}`);
-            throw new DBError({ message: `Error fetching currency with code ${currencyCode}: ${error.message}` });
+            this._logger.error(`Error fetching currency with code ${currencyCode}: ${(e as { message: string }).message}`);
+            throw new DBError({
+                message: `Error fetching currency with code ${currencyCode}: ${(e as { message: string }).message}`,
+            });
         }
     }
 }

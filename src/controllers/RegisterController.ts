@@ -30,7 +30,7 @@ export class RegisterController {
             });
         } catch (e) {
             RegisterController.logger.error(`Signup failed due reason: ${(e as { message: string }).message}`);
-            generateErrorResponse(res, responseBuilder, e, ErrorCode.SIGNUP_CATCH_ERROR);
+            generateErrorResponse(res, responseBuilder, e as { statusCode: HttpCode }, ErrorCode.SIGNUP_CATCH_ERROR);
         }
     }
 }

@@ -126,7 +126,7 @@ export default class UserRegistrationService extends LoggerBase {
                     throw new CustomError({
                         message: 'Unable to retrieve the user’s currency based on their locale.',
                         statusCode: HttpCode.INTERNAL_SERVER_ERROR,
-                        errorCode: ErrorCode.SIGNUP_CAN_GET_CURRENCY,
+                        errorCode: ErrorCode.SESSION_CREATE_ERROR,
                     });
                 }
                 await Translations.load(locale, TranslationLoaderImpl.instance());
@@ -167,7 +167,7 @@ export default class UserRegistrationService extends LoggerBase {
             throw new CustomError({
                 message: 'User could not be created due to an unknown error.',
                 statusCode: HttpCode.INTERNAL_SERVER_ERROR,
-                errorCode: ErrorCode.SIGNUP_USER_NOT_CREATED,
+                errorCode: ErrorCode.SIGNUP_CATCH_ERROR,
             });
         } catch (e) {
             await uow.rollback();

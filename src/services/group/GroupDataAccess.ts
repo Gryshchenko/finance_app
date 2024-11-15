@@ -21,7 +21,9 @@ export default class GroupDataAccess extends LoggerBase implements IGroupDataAcc
             return data[0];
         } catch (e) {
             this._logger.error(`Failed to create group for userId: ${userId}. Error: ${(e as { message: string }).message}`);
-            throw new DBError({ message: `Fetching group failed due to a database error: ${error.message}` });
+            throw new DBError({
+                message: `Fetching group failed due to a database error: ${(e as { message: string }).message}`,
+            });
         }
     }
 }

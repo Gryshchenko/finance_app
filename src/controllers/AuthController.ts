@@ -37,7 +37,7 @@ export class AuthController {
             });
         } catch (e) {
             AuthController.logger.error(`Use login failed due reason: ${(e as { message: string }).message}`);
-            generateErrorResponse(res, responseBuilder, e, ErrorCode.AUTH);
+            generateErrorResponse(res, responseBuilder, e as { statusCode: HttpCode }, ErrorCode.AUTH);
         }
     }
 }

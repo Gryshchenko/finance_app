@@ -34,8 +34,10 @@ export default class CategoryDataAccess extends LoggerBase implements ICategoryD
             this._logger.info(`Categories created successfully for user: ${userId}`);
             return data;
         } catch (e) {
-            this._logger.error(`Failed to create categories for user: ${userId}. Error: ${error.message}`);
-            throw new DBError({ message: `Failed to create categories for user: ${userId}. Error: ${error.message}` });
+            this._logger.error(`Failed to create categories for user: ${userId}. Error: ${(e as { message: string }).message}`);
+            throw new DBError({
+                message: `Failed to create categories for user: ${userId}. Error: ${(e as { message: string }).message}`,
+            });
         }
     }
 
@@ -54,8 +56,10 @@ export default class CategoryDataAccess extends LoggerBase implements ICategoryD
             }
             return data;
         } catch (e) {
-            this._logger.error(`Failed to retrieve categories for user: ${userId}. Error: ${error.message}`);
-            throw new DBError({ message: `Failed to retrieve categories for user: ${userId}. Error: ${error.message}` });
+            this._logger.error(`Failed to retrieve categories for user: ${userId}. Error: ${(e as { message: string }).message}`);
+            throw new DBError({
+                message: `Failed to retrieve categories for user: ${userId}. Error: ${(e as { message: string }).message}`,
+            });
         }
     }
 
@@ -73,9 +77,11 @@ export default class CategoryDataAccess extends LoggerBase implements ICategoryD
 
             return data;
         } catch (e) {
-            this._logger.error(`Failed to retrieve category ID ${categoryId} for user: ${userId}. Error: ${error.message}`);
+            this._logger.error(
+                `Failed to retrieve category ID ${categoryId} for user: ${userId}. Error: ${(e as { message: string }).message}`,
+            );
             throw new DBError({
-                message: `Failed to retrieve category ID ${categoryId} for user: ${userId}. Error: ${error.message}`,
+                message: `Failed to retrieve category ID ${categoryId} for user: ${userId}. Error: ${(e as { message: string }).message}`,
             });
         }
     }

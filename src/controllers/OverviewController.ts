@@ -16,7 +16,7 @@ export class OverviewController {
             res.status(HttpCode.OK).json(responseBuilder.setStatus(ResponseStatusType.OK).setData(response).build());
         } catch (e) {
             OverviewController.logger.error(`Fetch overview failed due reason: ${(e as { message: string }).message}`);
-            generateErrorResponse(res, responseBuilder, e, ErrorCode.OVERVIEW_ERROR);
+            generateErrorResponse(res, responseBuilder, e as { statusCode: HttpCode }, ErrorCode.OVERVIEW_ERROR);
         }
     }
 }

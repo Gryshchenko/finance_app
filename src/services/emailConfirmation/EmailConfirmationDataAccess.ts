@@ -31,8 +31,10 @@ export default class EmailConfirmationDataAccess extends LoggerBase implements I
 
             return isDeleted;
         } catch (e) {
-            this._logger.error(`Error deleting confirmation for userId ${userId}: ${error.message}`);
-            throw new DBError({ message: `Error deleting confirmation for userId ${userId}: ${error.message}` });
+            this._logger.error(`Error deleting confirmation for userId ${userId}: ${(e as { message: string }).message}`);
+            throw new DBError({
+                message: `Error deleting confirmation for userId ${userId}: ${(e as { message: string }).message}`,
+            });
         }
     }
 
@@ -54,9 +56,11 @@ export default class EmailConfirmationDataAccess extends LoggerBase implements I
 
             return data as IEmailConfirmationData;
         } catch (e) {
-            this._logger.error(`Error fetching confirmation for userId ${userId} with email ${email}: ${error.message}`);
+            this._logger.error(
+                `Error fetching confirmation for userId ${userId} with email ${email}: ${(e as { message: string }).message}`,
+            );
             throw new DBError({
-                message: `Error fetching confirmation for userId ${userId} with email ${email}: ${error.message}`,
+                message: `Error fetching confirmation for userId ${userId} with email ${email}: ${(e as { message: string }).message}`,
             });
         }
     }
@@ -79,9 +83,11 @@ export default class EmailConfirmationDataAccess extends LoggerBase implements I
 
             return data as IEmailConfirmationData;
         } catch (e) {
-            this._logger.error(`Error fetching confirmation for userId ${userId} with code ${code}: ${error.message}`);
+            this._logger.error(
+                `Error fetching confirmation for userId ${userId} with code ${code}: ${(e as { message: string }).message}`,
+            );
             throw new DBError({
-                message: `Error fetching confirmation for userId ${userId} with code ${code}: ${error.message}`,
+                message: `Error fetching confirmation for userId ${userId} with code ${code}: ${(e as { message: string }).message}`,
             });
         }
     }
@@ -108,9 +114,11 @@ export default class EmailConfirmationDataAccess extends LoggerBase implements I
             this._logger.info(`Successfully created confirmation for userId ${userId} with email ${email}`);
             return data[0];
         } catch (e) {
-            this._logger.error(`Error creating confirmation for userId ${userId} with email ${email}: ${error.message}`);
+            this._logger.error(
+                `Error creating confirmation for userId ${userId} with email ${email}: ${(e as { message: string }).message}`,
+            );
             throw new DBError({
-                message: `Error creating confirmation for userId ${userId} with email ${email}: ${error.message}`,
+                message: `Error creating confirmation for userId ${userId} with email ${email}: ${(e as { message: string }).message}`,
             });
         }
     }

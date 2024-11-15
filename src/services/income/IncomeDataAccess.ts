@@ -26,8 +26,10 @@ export default class IncomeDataAccess extends LoggerBase implements IIncomeDataA
             this._logger.info(`Successfully created incomes for userId ${userId}`);
             return data;
         } catch (e) {
-            this._logger.error(`Error creating incomes for userId ${userId}: ${error.message}`);
-            throw new DBError({ message: `Fetching incomes failed due to a database error: ${error.message}` });
+            this._logger.error(`Error creating incomes for userId ${userId}: ${(e as { message: string }).message}`);
+            throw new DBError({
+                message: `Fetching incomes failed due to a database error: ${(e as { message: string }).message}`,
+            });
         }
     }
 
@@ -42,8 +44,10 @@ export default class IncomeDataAccess extends LoggerBase implements IIncomeDataA
             this._logger.info(`Successfully fetched incomes for userId ${userId}`);
             return data;
         } catch (e) {
-            this._logger.error(`Error fetching incomes for userId ${userId}: ${error.message}`);
-            throw new DBError({ message: `Fetching incomes failed due to a database error: ${error.message}` });
+            this._logger.error(`Error fetching incomes for userId ${userId}: ${(e as { message: string }).message}`);
+            throw new DBError({
+                message: `Fetching incomes failed due to a database error: ${(e as { message: string }).message}`,
+            });
         }
     }
 
@@ -61,8 +65,12 @@ export default class IncomeDataAccess extends LoggerBase implements IIncomeDataA
 
             return data;
         } catch (e) {
-            this._logger.error(`Error fetching income with ID ${incomeId} for userId ${userId}: ${error.message}`);
-            throw new DBError({ message: `Fetching income failed due to a database error: ${error.message}` });
+            this._logger.error(
+                `Error fetching income with ID ${incomeId} for userId ${userId}: ${(e as { message: string }).message}`,
+            );
+            throw new DBError({
+                message: `Fetching income failed due to a database error: ${(e as { message: string }).message}`,
+            });
         }
     }
 

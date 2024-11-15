@@ -30,7 +30,7 @@ export class ProfileController {
             );
         } catch (e) {
             ProfileController.logger.error(`Fetch profile failed due reason: ${(e as { message: string }).message}`);
-            generateErrorResponse(res, responseBuilder, e, ErrorCode.PROFILE_ERROR);
+            generateErrorResponse(res, responseBuilder, e as { statusCode: HttpCode }, ErrorCode.PROFILE_ERROR);
         }
     }
 
@@ -45,7 +45,7 @@ export class ProfileController {
             res.status(200).json(responseBuilder.setStatus(ResponseStatusType.OK).setData(response).build());
         } catch (e) {
             ProfileController.logger.error(`Comfirm mail failed due reason: ${(e as { message: string }).message}`);
-            generateErrorResponse(res, responseBuilder, e, ErrorCode.PROFILE_ERROR);
+            generateErrorResponse(res, responseBuilder, e as { statusCode: HttpCode }, ErrorCode.PROFILE_ERROR);
         }
     }
 }

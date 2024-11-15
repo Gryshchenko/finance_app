@@ -30,8 +30,10 @@ export default class AccountDataAccess extends LoggerBase implements IAccountDat
             this._logger.info(`Successfully created ${data.length} accounts for userId: ${userId}`);
             return data;
         } catch (e) {
-            this._logger.error(`Failed to create accounts for userId: ${userId}. Error: ${error.message}`);
-            throw new DBError({ message: `Account creation failed due to a database error: ${error.message}` });
+            this._logger.error(`Failed to create accounts for userId: ${userId}. Error: ${(e as { message: string }).message}`);
+            throw new DBError({
+                message: `Account creation failed due to a database error: ${(e as { message: string }).message}`,
+            });
         }
     }
 
@@ -52,7 +54,9 @@ export default class AccountDataAccess extends LoggerBase implements IAccountDat
             return data;
         } catch (e) {
             this._logger.error(`Failed to fetch accounts for userId: ${userId}. Error: ${(e as { message: string }).message}`);
-            throw new DBError({ message: `Fetching accounts failed due to a database error: ${error.message}` });
+            throw new DBError({
+                message: `Fetching accounts failed due to a database error: ${(e as { message: string }).message}`,
+            });
         }
     }
 
@@ -71,9 +75,11 @@ export default class AccountDataAccess extends LoggerBase implements IAccountDat
             return data;
         } catch (e) {
             this._logger.error(
-                `Failed to fetch account with accountId: ${accountId} for userId: ${userId}. Error: ${error.message}`,
+                `Failed to fetch account with accountId: ${accountId} for userId: ${userId}. Error: ${(e as { message: string }).message}`,
             );
-            throw new DBError({ message: `Fetching account failed due to a database error: ${error.message}` });
+            throw new DBError({
+                message: `Fetching account failed due to a database error: ${(e as { message: string }).message}`,
+            });
         }
     }
 
