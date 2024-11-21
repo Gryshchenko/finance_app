@@ -10,6 +10,7 @@ import { ErrorCode } from 'types/ErrorCode';
 import { ValidationError } from 'src/utils/errors/ValidationError';
 import { HttpCode } from 'types/HttpCode';
 import { generateErrorResponse } from 'src/utils/generateErrorResponse';
+import { BaseError } from 'src/utils/errors/BaseError';
 
 export class AuthController {
     private static logger = Logger.Of('AuthController');
@@ -35,9 +36,9 @@ export class AuthController {
                         .build(),
                 );
             });
-        } catch (e) {
+        } catch (e: unknown) {
             AuthController.logger.error(`Use login failed due reason: ${(e as { message: string }).message}`);
-            generateErrorResponse(res, responseBuilder, e as { statusCode: HttpCode }, ErrorCode.AUTH);
+            generateErrorResponse(res, responseBuilder, e as BaseError, ErrorCode.AUTH);
         }
     }
 }

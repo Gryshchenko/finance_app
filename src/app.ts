@@ -17,6 +17,8 @@ import { ResponseStatusType } from 'types/ResponseStatusType';
 import { ErrorCode } from 'types/ErrorCode';
 import Logger from 'src/helper/logger/Logger';
 import { swaggerInit } from 'src/swagger/swagger';
+// import { checkOriginReferer } from 'middleware/checkOriginReferer';
+// import { checkCors } from 'middleware/checkCors';
 
 const passport = require('passport');
 
@@ -48,6 +50,8 @@ app.use((req: Request, res: Response, next: NextFunction) => {
     next();
 });
 
+// app.use(checkOriginReferer);
+// app.use(checkCors());
 app.use(express.json({ limit: '5kb' }));
 app.use(express.urlencoded({ limit: '5kb', extended: true }));
 app.use(limiter);

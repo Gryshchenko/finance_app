@@ -22,10 +22,12 @@ interface IConfig {
     redisHost: string;
     redisPort: string;
     mailNotReply: string;
+    trustedOrigin: string;
 }
 
 export function getConfig(): IConfig {
     return {
+        trustedOrigin: process.env.ORIGIN as string,
         appName: (process.env.TEST_APP_NAME ?? process.env.APP_NAME) as string,
         appPort: Number(process.env.TEST_PORT ?? process.env.PORT),
         dbName: (process.env.TEST_DB_NAME ?? process.env.DB_NAME) as string,

@@ -1,8 +1,8 @@
 import express from 'express';
 
-import { body } from 'express-validator';
 import routesInputValidation from '../utils/validation/routesInputValidation';
 import { tokenVerifyLogout } from '../middleware/tokenVerify';
+import loginValidationRules from 'src/utils/validation/loginValidationRules';
 import { sessionVerifyLogout } from '../middleware/sessionVerify';
 import { AuthController } from 'src/controllers/AuthController';
 
@@ -99,10 +99,6 @@ router.post('/logout', tokenVerifyLogout, sessionVerifyLogout, AuthController.lo
  *       400:
  *         $ref: '#/components/responses/ErrorResponse'
  */
-router.post(
-    '/login',
-    routesInputValidation([body('password').isString().isLength({ max: 50 }), body('email').isString().isLength({ max: 50 })]),
-    AuthController.login,
-);
+router.post('/login', routesInputValidation(loginValidationRules), AuthController.login);
 
 export default router;

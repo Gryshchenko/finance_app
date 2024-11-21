@@ -1,6 +1,7 @@
 // @ts-nocheck
 import { generateRandomEmail, generateRandomPassword, generateSecureRandom } from '../TestsUtils.';
 import DatabaseConnection from '../../src/repositories/DatabaseConnection';
+import { DBError } from '../../src/utils/errors/DBError';
 import config from '../../src/config/dbConfig';
 
 const request = require('supertest');
@@ -23,7 +24,9 @@ jest.mock('../../src/services/profile/ProfileService', () => {
         __esModule: true,
         default: jest.fn().mockImplementation(() => {
             return {
-                createProfile: jest.fn().mockImplementation(() => Promise.reject(new Error('cant create profile'))),
+                createProfile: jest
+                    .fn()
+                    .mockImplementation(() => Promise.reject(new DBError({ message: 'cant create profile', errorCode: 5001 }))),
             };
         }),
     };

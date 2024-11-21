@@ -10,6 +10,7 @@ import UserRegistrationServiceBuilder from 'services/registration/UserRegistrati
 import { HttpCode } from 'types/HttpCode';
 import { generateErrorResponse } from 'src/utils/generateErrorResponse';
 import { ValidationError } from 'src/utils/errors/ValidationError';
+import { BaseError } from 'src/utils/errors/BaseError';
 
 export class ProfileController {
     private static logger = Logger.Of('ProfileController');
@@ -28,9 +29,9 @@ export class ProfileController {
                     .setData(ProfileServiceUtils.convertServerUserToClientUser(response))
                     .build(),
             );
-        } catch (e) {
+        } catch (e: unknown) {
             ProfileController.logger.error(`Fetch profile failed due reason: ${(e as { message: string }).message}`);
-            generateErrorResponse(res, responseBuilder, e as { statusCode: HttpCode }, ErrorCode.PROFILE_ERROR);
+            generateErrorResponse(res, responseBuilder, e as BaseError, ErrorCode.PROFILE_ERROR);
         }
     }
 
@@ -43,9 +44,9 @@ export class ProfileController {
                 Number(req.body.code),
             );
             res.status(200).json(responseBuilder.setStatus(ResponseStatusType.OK).setData(response).build());
-        } catch (e) {
+        } catch (e: unknown) {
             ProfileController.logger.error(`Comfirm mail failed due reason: ${(e as { message: string }).message}`);
-            generateErrorResponse(res, responseBuilder, e as { statusCode: HttpCode }, ErrorCode.PROFILE_ERROR);
+            generateErrorResponse(res, responseBuilder, e as BaseError, ErrorCode.PROFILE_ERROR);
         }
     }
 }

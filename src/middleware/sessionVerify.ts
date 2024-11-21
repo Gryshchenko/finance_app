@@ -13,11 +13,21 @@ const errorHandler = (errorMsg: string, code: number, req: Request, res: Respons
         res.status(code).json(ResponseBuilderPreset.getAuthError());
     });
 };
-const sessionVerifyHandler = (req: Request, res: Response, next: NextFunction, errorHandler: (errorMsg: string) => void) => {
+export const sessionVerifyHandler = (
+    req: Request,
+    res: Response,
+    next: NextFunction,
+    errorHandler: (errorMsg: string) => void,
+) => {
     const userSession = SessionService.extractSessionFromRequest(req);
 
     if (!userSession) {
         errorHandler('Session verification failed: user session is null');
+        return;
+    }
+
+    if (userSession.sessionId !== req.session?.id) {
+        errorHandler('Session verification failed: user session ID and server session ID not same');
         return;
     }
 

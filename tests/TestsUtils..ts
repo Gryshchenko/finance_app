@@ -18,7 +18,7 @@ export function generateRandomString(len = Math.floor(generateSecureRandom() * 1
 }
 
 export function generateRandomEmail(len = Math.floor(generateSecureRandom() * 10) + 5) {
-    const domains = ['test.com', 'example.com', 'demo.com']; // список возможных доменов
+    const domains = ['test.com', 'example.com', 'demo.com'];
     const domain = domains[Math.floor(generateSecureRandom() * domains.length)];
 
     return `${generateRandomString(len)}@${domain}`;

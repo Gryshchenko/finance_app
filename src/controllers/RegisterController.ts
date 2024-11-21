@@ -8,6 +8,7 @@ import UserServiceUtils from 'services/user/UserServiceUtils';
 import { ErrorCode } from 'types/ErrorCode';
 import { HttpCode } from 'types/HttpCode';
 import { generateErrorResponse } from 'src/utils/generateErrorResponse';
+import { BaseError } from 'src/utils/errors/BaseError';
 export class RegisterController {
     private static logger = Logger.Of('RegisterController');
     public static async signup(req: Request, res: Response) {
@@ -28,9 +29,9 @@ export class RegisterController {
                         .build(),
                 );
             });
-        } catch (e) {
+        } catch (e: unknown) {
             RegisterController.logger.error(`Signup failed due reason: ${(e as { message: string }).message}`);
-            generateErrorResponse(res, responseBuilder, e as { statusCode: HttpCode }, ErrorCode.SIGNUP_CATCH_ERROR);
+            generateErrorResponse(res, responseBuilder, e as BaseError, ErrorCode.SIGNUP_CATCH_ERROR);
         }
     }
 }

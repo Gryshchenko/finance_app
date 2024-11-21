@@ -6,6 +6,7 @@ import Logger from 'helper/logger/Logger';
 import OverviewServiceBuilder from 'services/overview/OverviewServiceBuilder';
 import { HttpCode } from 'types/HttpCode';
 import { generateErrorResponse } from 'src/utils/generateErrorResponse';
+import { BaseError } from 'src/utils/errors/BaseError';
 
 export class OverviewController {
     private static logger = Logger.Of('OverviewController');
@@ -14,9 +15,9 @@ export class OverviewController {
         try {
             const response = await OverviewServiceBuilder.build().overview(req.session.user?.userId);
             res.status(HttpCode.OK).json(responseBuilder.setStatus(ResponseStatusType.OK).setData(response).build());
-        } catch (e) {
+        } catch (e: unknown) {
             OverviewController.logger.error(`Fetch overview failed due reason: ${(e as { message: string }).message}`);
-            generateErrorResponse(res, responseBuilder, e as { statusCode: HttpCode }, ErrorCode.OVERVIEW_ERROR);
+            generateErrorResponse(res, responseBuilder, e as BaseError, ErrorCode.OVERVIEW_ERROR);
         }
     }
 }
