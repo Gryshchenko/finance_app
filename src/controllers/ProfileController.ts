@@ -9,7 +9,6 @@ import { ErrorCode } from 'types/ErrorCode';
 import UserRegistrationServiceBuilder from 'services/registration/UserRegistrationServiceBuilder';
 import { HttpCode } from 'types/HttpCode';
 import { generateErrorResponse } from 'src/utils/generateErrorResponse';
-import { ValidationError } from 'src/utils/errors/ValidationError';
 import { BaseError } from 'src/utils/errors/BaseError';
 
 export class ProfileController {
@@ -18,9 +17,6 @@ export class ProfileController {
         const responseBuilder = new ResponseBuilder();
         try {
             const userFromSession = req.session.user as IUserSession;
-            if (parseInt(req.params.userId) !== userFromSession.userId) {
-                throw new ValidationError({ message: 'Fetch profile failed due reason id not match', errorCode: ErrorCode.AUTH });
-            }
             const profileService = ProfileServiceBuilder.build();
             const response = await profileService.getProfile(userFromSession.userId);
             res.status(HttpCode.OK).json(

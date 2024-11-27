@@ -1,5 +1,5 @@
 import { IEmailConfirmationData } from './IEmailConfirmationData';
-import { ITransaction } from 'interfaces/IDatabaseConnection';
+import { IDBTransaction } from 'interfaces/IDatabaseConnection';
 
 export interface IEmailConfirmationDataAccess {
     getUserConfirmationWithCode(userId: number, code: number): Promise<IEmailConfirmationData | undefined>;
@@ -11,7 +11,7 @@ export interface IEmailConfirmationDataAccess {
             email: string;
             expiresAt: Date;
         },
-        trx?: ITransaction,
+        trx?: IDBTransaction,
     ): Promise<IEmailConfirmationData>;
     deleteUserConfirmation(userId: number, code: number): Promise<boolean>;
 }

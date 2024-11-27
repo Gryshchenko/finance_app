@@ -1,5 +1,5 @@
 import { IAccountDataAccess } from 'interfaces/IAccountDataAccess';
-import { IDatabaseConnection, ITransaction } from 'interfaces/IDatabaseConnection';
+import { IDatabaseConnection, IDBTransaction } from 'interfaces/IDatabaseConnection';
 import { LoggerBase } from 'src/helper/logger/LoggerBase';
 import { IAccount } from 'interfaces/IAccount';
 import { ICreateAccount } from 'interfaces/ICreateAccount';
@@ -12,7 +12,7 @@ export default class AccountDataAccess extends LoggerBase implements IAccountDat
         super();
         this._db = db;
     }
-    async createAccounts(userId: number, accounts: ICreateAccount[], trx?: ITransaction): Promise<IAccount[]> {
+    async createAccounts(userId: number, accounts: ICreateAccount[], trx?: IDBTransaction): Promise<IAccount[]> {
         try {
             this._logger.info(`Starting account creation for userId: ${userId}`);
 

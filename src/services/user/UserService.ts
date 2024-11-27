@@ -5,7 +5,7 @@ import UserServiceUtils from 'src/services/user/UserServiceUtils';
 import { ICreateUser } from 'interfaces/ICreateUser';
 import { IGetUserAuthenticationData } from 'interfaces/IGetUserAuthenticationData';
 import { LoggerBase } from 'src/helper/logger/LoggerBase';
-import { ITransaction } from 'interfaces/IDatabaseConnection';
+import { IDBTransaction } from 'interfaces/IDatabaseConnection';
 
 export default class UserService extends LoggerBase implements IUserService {
     private _userDataAccess: IUserDataAccess;
@@ -23,7 +23,7 @@ export default class UserService extends LoggerBase implements IUserService {
         return UserServiceUtils.formatUserDetails(await this._userDataAccess.getUser(userId));
     }
 
-    public async createUser(email: string, password: string, trx?: ITransaction): Promise<ICreateUser> {
+    public async createUser(email: string, password: string, trx?: IDBTransaction): Promise<ICreateUser> {
         const salt = UserServiceUtils.getRandomSalt();
         const hashStr = await UserServiceUtils.hashPassword(password, salt);
         const hash = hashStr as unknown as string;

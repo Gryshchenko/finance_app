@@ -1,5 +1,5 @@
 import { IEmailConfirmationDataAccess } from 'interfaces/IEmailConfirmationDataAccess';
-import { IDatabaseConnection, ITransaction } from 'interfaces/IDatabaseConnection';
+import { IDatabaseConnection, IDBTransaction } from 'interfaces/IDatabaseConnection';
 import { LoggerBase } from 'src/helper/logger/LoggerBase';
 import { IEmailConfirmationData } from 'interfaces/IEmailConfirmationData';
 import Utils from 'src/utils/Utils';
@@ -99,7 +99,7 @@ export default class EmailConfirmationDataAccess extends LoggerBase implements I
             email: string;
             expiresAt: Date;
         },
-        trx?: ITransaction,
+        trx?: IDBTransaction,
     ): Promise<IEmailConfirmationData> {
         const { userId, confirmationCode, email, expiresAt } = payload;
         this._logger.info(`Creating confirmation for userId ${userId} with email ${email} and code ${confirmationCode}`);

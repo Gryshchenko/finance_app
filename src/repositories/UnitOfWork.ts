@@ -1,9 +1,9 @@
-import { IDatabaseConnection, ITransaction } from 'interfaces/IDatabaseConnection';
+import { IDatabaseConnection, IDBTransaction } from 'interfaces/IDatabaseConnection';
 import Utils from 'src/utils/Utils';
 import { LoggerBase } from 'src/helper/logger/LoggerBase';
 
 export class UnitOfWork extends LoggerBase {
-    private trx: ITransaction | null = null;
+    private trx: IDBTransaction | null = null;
     private db: IDatabaseConnection;
 
     constructor(db: IDatabaseConnection) {
@@ -18,7 +18,7 @@ export class UnitOfWork extends LoggerBase {
 
     async commit() {
         if (Utils.isNotNull(this.trx)) {
-            const trx = this.trx as unknown as ITransaction;
+            const trx = this.trx as unknown as IDBTransaction;
             await trx.commit();
         } else {
             this._logger.info('Transaction module not initialize');
@@ -27,7 +27,7 @@ export class UnitOfWork extends LoggerBase {
 
     async rollback() {
         if (Utils.isNotNull(this.trx)) {
-            const trx = this.trx as unknown as ITransaction;
+            const trx = this.trx as unknown as IDBTransaction;
             await trx.rollback();
         } else {
             this._logger.info('Transaction module not initialize');
@@ -36,7 +36,7 @@ export class UnitOfWork extends LoggerBase {
 
     getTransaction() {
         if (Utils.isNotNull(this.trx)) {
-            const trx = this.trx as unknown as ITransaction;
+            const trx = this.trx as unknown as IDBTransaction;
             return trx;
         } else {
             this._logger.info('Transaction module not initialize');

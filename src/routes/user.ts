@@ -1,25 +1,29 @@
 import express from 'express';
 import sessionVerify from '../middleware/sessionVerify';
 import tokenVerify from '../middleware/tokenVerify';
-import { body } from 'express-validator';
-import { ProfileController } from 'controllers/ProfileController';
-import overview from 'src/routes/overview';
 import routesInputValidation from 'src/utils/validation/routesInputValidation';
 import { param } from 'express-validator';
+import overview from 'src/routes/overview';
+import profile from 'src/routes/profile';
+import transaction from 'src/routes/transaction';
+import userIdVerify from 'middleware/userIdVerify';
 
-const router = express.Router({ mergeParams: true });
+const userRouter = express.Router({ mergeParams: true });
 
-router.use(tokenVerify, sessionVerify);
+const userIdValidator = param('userId')
+    .isNumeric()
+    .withMessage(`Field userId must be a numeric value`)
+    .bail()
+    .isInt({ min: 0, max: Number.MAX_SAFE_INTEGER })
+    .withMessage(`Field userId must be a numeric value`);
 
-const userIdValidator = param('userId').isNumeric().isInt({ min: 0, max: Number.MAX_SAFE_INTEGER });
+userRouter.use(tokenVerify, sessionVerify);
 
-router.get('/:userId/profile', routesInputValidation([userIdValidator]), ProfileController.profile);
+userRouter.use('/:userId/profile', userIdVerify, routesInputValidation([userIdValidator]), profile);
 
-router.get(
-    '/:userId/profile/confirm-email',
-    routesInputValidation([body('code').isNumeric().isInt({ min: 0, max: 99999999 })]),
-    ProfileController.confirmEmail,
-);
+userRouter.use('/:userId/overview', userIdVerify, routesInputValidation([userIdValidator]), overview);
+
+userRouter.use('/:userId/transaction', userIdVerify, routesInputValidation([userIdValidator]), transaction);
 
 // router.post('/request-resend-confirmation', async (req: Request, res: Response) => {});
 // router.post(
@@ -34,6 +38,5 @@ router.get(
 //     '/request-mail-confirmation',
 //     routesInputValidation([body('email').isEmail(), body('code').isNumeric()]),
 // );
-router.get('/:userId/overview', routesInputValidation([userIdValidator]), overview);
 
-export default router;
+export default userRouter;

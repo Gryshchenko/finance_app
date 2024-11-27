@@ -1,13 +1,13 @@
 import express from 'express';
-import { OverviewController } from 'src/controllers/OverviewController';
+import { ProfileController } from 'controllers/ProfileController';
 
 const router = express.Router({ mergeParams: true });
 
 /**
  * @swagger
- * /{userId}/overview:
+ * /{userId}/profile:
  *   get:
- *     description: Retrieves the overview of a specific user by their ID. The response is a JSON object containing user data and additional information.
+ *     description: Retrieves the profile of a specific user by their ID. The response is a JSON object containing user data and additional information.
  *     parameters:
  *       - name: userId
  *         in: path
@@ -39,10 +39,16 @@ const router = express.Router({ mergeParams: true });
  *                           example: 1
  *                           description: Status code representing the result of the operation (1 for success)
  *                         data:
- *                           $ref: '#/components/schemas/IOverview'
+ *                           $ref: '#/components/schemas/IProfile'
  *       400:
  *         $ref: '#/components/responses/ErrorResponse'
  */
-router.get('/', OverviewController.overview);
+router.get('/', ProfileController.profile);
+
+// router.get(
+//     '/:userId/profile/confirm-email',
+//     routesInputValidation([body('code').isNumeric().isInt({ min: 0, max: 99999999 })]),
+//     ProfileController.confirmEmail,
+// );
 
 export default router;

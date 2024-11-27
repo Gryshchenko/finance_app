@@ -2,7 +2,7 @@ import { IAccountDataAccess } from 'interfaces/IAccountDataAccess';
 import { IAccountService } from 'interfaces/IAccountService';
 import { IAccount } from 'interfaces/IAccount';
 import { ICreateAccount } from 'interfaces/ICreateAccount';
-import { ITransaction } from 'interfaces/IDatabaseConnection';
+import { IDBTransaction } from 'interfaces/IDatabaseConnection';
 
 export default class AccountService implements IAccountService {
     private _accountDataAccess: IAccountDataAccess;
@@ -11,7 +11,7 @@ export default class AccountService implements IAccountService {
         this._accountDataAccess = accountDataAccess;
     }
 
-    async createAccounts(userId: number, accounts: ICreateAccount[], trx?: ITransaction): Promise<IAccount[]> {
+    async createAccounts(userId: number, accounts: ICreateAccount[], trx?: IDBTransaction): Promise<IAccount[]> {
         return await this._accountDataAccess.createAccounts(userId, accounts, trx);
     }
     async getAccount(userId: number, accountId: number): Promise<IAccount | undefined> {

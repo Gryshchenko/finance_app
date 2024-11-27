@@ -18,7 +18,7 @@ import TranslationLoaderImpl from 'src/services/translations/TranslationLoaderIm
 import AuthService from 'src/services/auth/AuthService';
 import { IUserRoleService } from 'interfaces/IUserRoleService';
 import { ICurrencyService } from 'interfaces/ICurrencyService';
-import { IDatabaseConnection, ITransaction } from 'interfaces/IDatabaseConnection';
+import { IDatabaseConnection, IDBTransaction } from 'interfaces/IDatabaseConnection';
 import { UnitOfWork } from 'src/repositories/UnitOfWork';
 import Utils from 'src/utils/Utils';
 import { IProfile } from 'interfaces/IProfile';
@@ -117,7 +117,7 @@ export default class UserRegistrationService extends LoggerBase {
                     statusCode: HttpCode.INTERNAL_SERVER_ERROR,
                 });
             }
-            const trx = trxInProcess as unknown as ITransaction;
+            const trx = trxInProcess as unknown as IDBTransaction;
             const user = await this.userService.createUser(email, password, trx);
             if (user) {
                 const currencyCode = (currency_initial[locale] ?? currency_initial[LanguageType.US]).currencyCode;
@@ -195,7 +195,7 @@ export default class UserRegistrationService extends LoggerBase {
         }
     }
 
-    private async createInitialDataForNewUser(userId: number, profile: IProfile, trx: ITransaction): Promise<boolean> {
+    private async createInitialDataForNewUser(userId: number, profile: IProfile, trx: IDBTransaction): Promise<boolean> {
         try {
             const translatedDefaultData = this.getTranslatedDefaultData(profile?.locale);
             await Promise.all([

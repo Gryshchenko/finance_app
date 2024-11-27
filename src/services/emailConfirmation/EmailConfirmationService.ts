@@ -10,7 +10,7 @@ import { IEmailConfirmationData } from 'interfaces/IEmailConfirmationData';
 import Translations from 'src/services/translations/Translations';
 import TimeManagerUTC from 'src/utils/TimeManagerUTC';
 import Utils from 'src/utils/Utils';
-import { ITransaction } from 'interfaces/IDatabaseConnection';
+import { IDBTransaction } from 'interfaces/IDatabaseConnection';
 import { getConfig } from 'src/config/config';
 import { CustomError } from 'src/utils/errors/CustomError';
 import { ValidationError } from 'src/utils/errors/ValidationError';
@@ -79,7 +79,7 @@ export default class EmailConfirmationService extends LoggerBase implements IEma
         return payload && !timeManager.isFirstDateLessThanSecond(payload.expiresAt, timeManager.getCurrentTime());
     }
 
-    public async createConfirmationMail(userId: number, email: string, trx?: ITransaction): Promise<IEmailConfirmationData> {
+    public async createConfirmationMail(userId: number, email: string, trx?: IDBTransaction): Promise<IEmailConfirmationData> {
         try {
             const confirmationCode: number = this.createConfirmationKey();
             const userConfirmationData = await this.emailConfirmationDataAccess.getUserConfirmationWithCode(

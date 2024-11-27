@@ -1,5 +1,5 @@
 import { IIncomeDataAccess } from 'interfaces/IIncomeDataAccess';
-import { IDatabaseConnection, ITransaction } from 'interfaces/IDatabaseConnection';
+import { IDatabaseConnection, IDBTransaction } from 'interfaces/IDatabaseConnection';
 import { LoggerBase } from 'src/helper/logger/LoggerBase';
 import { IIncome } from 'interfaces/IIncome';
 import { ICreateIncome } from 'interfaces/ICreateIncome';
@@ -13,7 +13,7 @@ export default class IncomeDataAccess extends LoggerBase implements IIncomeDataA
         this._db = db;
     }
 
-    public async createIncomes(userId: number, incomes: ICreateIncome[], trx?: ITransaction): Promise<IIncome[]> {
+    public async createIncomes(userId: number, incomes: ICreateIncome[], trx?: IDBTransaction): Promise<IIncome[]> {
         this._logger.info(`Starting creation of incomes for userId ${userId}`);
 
         try {

@@ -3,7 +3,7 @@ import { IProfileService } from 'interfaces/IProfileService';
 import { IProfile } from 'interfaces/IProfile';
 import { LoggerBase } from 'src/helper/logger/LoggerBase';
 import { ICreateProfile } from 'interfaces/ICreateProfile';
-import { ITransaction } from 'interfaces/IDatabaseConnection';
+import { IDBTransaction } from 'interfaces/IDatabaseConnection';
 
 export default class ProfileService extends LoggerBase implements IProfileService {
     private _profileDataAccess: IProfileDataAccess;
@@ -13,7 +13,7 @@ export default class ProfileService extends LoggerBase implements IProfileServic
         this._profileDataAccess = profileDataAccess;
     }
 
-    public async createProfile(data: ICreateProfile, trx?: ITransaction): Promise<IProfile | undefined> {
+    public async createProfile(data: ICreateProfile, trx?: IDBTransaction): Promise<IProfile | undefined> {
         return await this._profileDataAccess.createProfile(data, trx);
     }
 

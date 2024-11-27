@@ -12,9 +12,7 @@ const _logger = Logger.Of('TokenVerify');
 
 const errorHandler = (errorMsg: string, code: number, req: Request, res: Response) => {
     _logger.info(errorMsg);
-    SessionService.deleteSession(req, res, () => {
-        res.status(code).json(ResponseBuilderPreset.getAuthError());
-    });
+    res.status(code).json(ResponseBuilderPreset.getAuthError());
 };
 
 const tokenVerifyHandler = (req: Request, res: Response, next: NextFunction, errorHandler: (errorMsg: string) => void) => {

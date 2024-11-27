@@ -1,9 +1,9 @@
 import { Knex } from 'knex';
 
-export type ITransaction = Knex.Transaction;
+export type IDBTransaction = Knex.Transaction;
 
 export interface IDatabaseConnection {
     engine(): Knex;
     close(): Promise<void>;
-    transaction(): Promise<ITransaction>;
+    transaction(): Promise<IDBTransaction>;
 }

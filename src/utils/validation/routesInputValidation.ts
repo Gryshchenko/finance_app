@@ -29,13 +29,17 @@ export function createSignupValidationRules(field: string, type: string, options
     }
 
     if (type === 'email') {
-        validatorChain = validatorChain.isEmail();
+        validatorChain = validatorChain.isEmail().withMessage(`Field ${field} must be a valid email address`);
     } else if (type === 'password') {
-        validatorChain = validatorChain.isStrongPassword();
+        validatorChain = validatorChain.isStrongPassword().withMessage(`Field ${field} must be a strong password`);
     } else if (type === 'number') {
-        validatorChain = validatorChain.isNumeric().isInt({ max: Number.MAX_SAFE_INTEGER, min: Number.MIN_SAFE_INTEGER });
+        validatorChain = validatorChain
+            .isNumeric()
+            .withMessage(`Field ${field} must be a numeric value`)
+            .isInt({ max: Number.MAX_SAFE_INTEGER, min: Number.MIN_SAFE_INTEGER })
+            .withMessage(`Field ${field} must be an integer between ${Number.MIN_SAFE_INTEGER} and ${Number.MAX_SAFE_INTEGER}`);
     } else if (type === 'string') {
-        validatorChain = validatorChain.isString();
+        validatorChain = validatorChain.isString().withMessage(`Field ${field} must be a string`);
         if (field === 'locale') {
             validatorChain = validatorChain
                 .matches(/^[a-zA-Z]{2}-[a-zA-Z]{2}$/, 'i')
@@ -44,17 +48,24 @@ export function createSignupValidationRules(field: string, type: string, options
     }
 
     if (options.max && type !== 'number') {
-        validatorChain = validatorChain.isLength({ max: options.max });
+        validatorChain = validatorChain
+            .isLength({ max: options.max })
+            .withMessage(`Field ${field} must not exceed ${options.max} characters`);
     }
 
     if (options.min && type !== 'number') {
-        validatorChain = validatorChain.isLength({ min: options.min });
+        validatorChain = validatorChain
+            .isLength({ min: options.min })
+            .withMessage(`Field ${field} must be at least ${options.min} characters long`);
     }
 
     return [validatorChain];
 }
 
-export default function routesInputValidation(validations: ValidationChain[]) {
+export default function routesInputValidation(
+    validations: ValidationChain[],
+    converter: (path: string) => ErrorCode = convertErrorNameToErrorCode,
+) {
     return async (req: Request, res: Response, next: NextFunction) => {
         await Promise.all(validations.map((validation) => validation.run(req)));
 
@@ -68,7 +79,7 @@ export default function routesInputValidation(validations: ValidationChain[]) {
                 const field = (value as unknown as { path: string }).path;
                 Logger.Of('routesInputValidation').error(`field: ${field} msg: ${value.msg}`);
                 return {
-                    errorCode: convertErrorNameToErrorCode(field),
+                    errorCode: converter(field),
                 };
             }),
         );

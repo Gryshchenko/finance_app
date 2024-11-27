@@ -44,7 +44,7 @@ const createUserTableQuery = `
         "passwordHash" VARCHAR(256) NOT NULL,
         "salt" VARCHAR(256) NOT NULL, 
         status INT,
-        "createdAt" TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+        "createdAt" TIMESTAMP NOT NULL DEFAULTNOW(),
         "updatedAt" TIMESTAMP
     );
 `;
@@ -76,7 +76,7 @@ const createUserGroupsTableQuery = `
         "groupName" varchar(128) NOT NULL,
         UNIQUE ("userId", "userGroupId"),
         FOREIGN KEY ("userId") REFERENCES users("userId"),
-        "createdAt" TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+        "createdAt" TIMESTAMP NOT NULL DEFAULTNOW(),
         "updatedAt" TIMESTAMP
     );
 `;
@@ -88,7 +88,7 @@ const createGroupInvitationsTableQuery = `
         "invitedEmail" varchar(128),
         "status" INT,
         FOREIGN KEY ("userGroupId") REFERENCES userGroups("userGroupId"),
-        "createdAt" TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+        "createdAt" TIMESTAMP NOT NULL DEFAULTNOW(),
         "updatedAt" TIMESTAMP,
         UNIQUE ("userGroupId", "invitedEmail")
     );
@@ -114,7 +114,7 @@ const createProfileTableQuery = `
         "mailConfirmed" BOOLEAN DEFAULT FALSE,
         "locale" VARCHAR(10),
         "additionalInfo" JSONB,
-        "createdAt" TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+        "createdAt" TIMESTAMP NOT NULL DEFAULT NOW(),
         "updatedAt" TIMESTAMP,
         FOREIGN KEY ("userId") REFERENCES users("userId") ON DELETE CASCADE,
         FOREIGN KEY ("currencyId") REFERENCES currencies("currencyId")
@@ -127,7 +127,7 @@ const createIncomeTableQuery = `
         "userId" INT NOT NULL,
         "incomeName" VARCHAR(128) NOT NULL,
         "currencyId" INT NOT NULL,
-        "createdAt" TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+        "createdAt" TIMESTAMP NOT NULL DEFAULT NOW(),
         FOREIGN KEY ("userId") REFERENCES users("userId"),
         FOREIGN KEY ("currencyId") REFERENCES currencies("currencyId")
     );
@@ -150,7 +150,7 @@ const createAccountTableQuery = `
         "accountTypeId" INT NOT NULL,
         "amount" DECIMAL NOT NULL,
         "currencyId" INT NOT NULL,
-        "createdAt" TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+        "createdAt" TIMESTAMP NOT NULL DEFAULT NOW(),
         FOREIGN KEY ("userId") REFERENCES users("userId"),
         FOREIGN KEY ("currencyId") REFERENCES currencies("currencyId")
         FOREIGN KEY ("accountTypeId") REFERENCES accountTypes("accountTypeId")
@@ -163,7 +163,7 @@ const createCategoriesTableQuery = `
         "categoryName" VARCHAR(128) NOT NULL,
         "userId" INT NOT NULL,
         "currencyId" INT NOT NULL,
-        "createdAt" TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+        "createdAt" TIMESTAMP NOT NULL DEFAULT NOW(),
         FOREIGN KEY ("userId") REFERENCES users("userId"),
         FOREIGN KEY ("currencyId") REFERENCES currencies("currencyId")
     );
@@ -178,15 +178,26 @@ const createTransactionsTableQuery = `
         "incomeId" INT,
         "amount" DECIMAL NOT NULL,
         "description" VARCHAR(256),
+        "transactionTypeId" INT NOT NULL,
         "currencyId" INT NOT NULL,
-        "createdAt" TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+        "createdAt" TIMESTAMP NOT NULL DEFAULT NOW(),
+        "updateAt" TIMESTAMP ,
+        FOREIGN KEY ("transactionTypeId") REFERENCES "transactionTypes"("transactionTypeId"),
         FOREIGN KEY ("accountId") REFERENCES accounts("accountId"),
         FOREIGN KEY ("userId") REFERENCES users("userId"),
         FOREIGN KEY ("currencyId") REFERENCES currencies("currencyId"),
         FOREIGN KEY ("categoryId") REFERENCES categories("categoryId"),
-        FOREIGN KEY ("incomeId") REFERENCES incomes("incomeId")
+        FOREIGN KEY ("incomeId") REFERENCS incomes("incomeId")
     );
 `;
+
+const createTransactionTypesTableQuery = `
+    CREATE TABLE "transactionTypes" (
+        "transactionTypeId" SERIAL PRIMARY KEY,
+        "transactionType" VARCHAR(50) UNIQUE NOT NULL
+    );
+`;
+const createTransactionTypesDefaultValues = `INSERT INTO "transactionTypes" ( "transactionType"  ) VALUES ( 'income' ), ( 'expense' ), ('transfer')`;
 
 const createEmailConfirmationTableQuery = `
     CREATE TABLE email_confirmations (
@@ -195,7 +206,7 @@ const createEmailConfirmationTableQuery = `
         "email" VARCHAR(100) NOT NULL,
         "confirmationCode" INT NOT NULL,
         "confirmed" BOOLEAN DEFAULT FALSE,
-        "createdAt" TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+        "createdAt" TIMESTAMP NOT NULL DEFAULT NOW(),
         "expiresAt" TIMESTAMP NOT NULL,
         FOREIGN KEY ("userId") REFERENCES users("userId") ON DELETE CASCADE,
         UNIQUE ("userId", "email")
@@ -233,6 +244,8 @@ const run = async () => {
     await initTable(createAccountTypeTableDefaultValues);
     await initTable(createAccountTableQuery);
     await initTable(createCategoriesTableQuery);
+    await initTable(createTransactionTypesTableQuery);
+    await initTable(createTransactionTypesDefaultValues);
     await initTable(createTransactionsTableQuery);
     await initTable(createEmailConfirmationTableQuery);
     _db.end();

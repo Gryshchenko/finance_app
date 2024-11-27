@@ -1,5 +1,5 @@
 import { ICategoryDataAccess } from 'interfaces/ICategoryDataAccess';
-import { IDatabaseConnection, ITransaction } from 'interfaces/IDatabaseConnection';
+import { IDatabaseConnection, IDBTransaction } from 'interfaces/IDatabaseConnection';
 import { LoggerBase } from 'src/helper/logger/LoggerBase';
 import { ICreateCategory } from 'interfaces/ICreateCategory';
 import { ICategory } from 'interfaces/ICategory';
@@ -13,7 +13,7 @@ export default class CategoryDataAccess extends LoggerBase implements ICategoryD
         this._db = db;
     }
 
-    async createCategories(userId: number, categories: ICreateCategory[], trx?: ITransaction): Promise<ICategory[]> {
+    async createCategories(userId: number, categories: ICreateCategory[], trx?: IDBTransaction): Promise<ICategory[]> {
         this._logger.info(`Creating categories for user: ${userId}`);
         const query = trx || this._db.engine();
 

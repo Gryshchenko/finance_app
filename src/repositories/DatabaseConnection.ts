@@ -1,4 +1,4 @@
-import { IDatabaseConnection, ITransaction } from 'interfaces/IDatabaseConnection';
+import { IDatabaseConnection, IDBTransaction } from 'interfaces/IDatabaseConnection';
 import { Knex } from 'knex';
 
 const knex = require('knex');
@@ -47,7 +47,7 @@ export default class DatabaseConnection implements IDatabaseConnection {
     public async close(): Promise<void> {
         await this._db.destroy();
     }
-    public async transaction(): Promise<ITransaction> {
+    public async transaction(): Promise<IDBTransaction> {
         return await this._db.transaction();
     }
 }

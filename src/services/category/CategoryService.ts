@@ -2,7 +2,7 @@ import { ICategoryDataAccess } from 'interfaces/ICategoryDataAccess';
 import { ICategoryService } from 'interfaces/ICategoryService';
 import { ICreateCategory } from 'interfaces/ICreateCategory';
 import { ICategory } from 'interfaces/ICategory';
-import { ITransaction } from 'interfaces/IDatabaseConnection';
+import { IDBTransaction } from 'interfaces/IDatabaseConnection';
 
 export default class CategoryService implements ICategoryService {
     private _categoryDataAccess: ICategoryDataAccess;
@@ -11,7 +11,7 @@ export default class CategoryService implements ICategoryService {
         this._categoryDataAccess = accountDataAccess;
     }
 
-    public createCategories(userId: number, categories: ICreateCategory[], trx?: ITransaction): Promise<ICategory[]> {
+    public createCategories(userId: number, categories: ICreateCategory[], trx?: IDBTransaction): Promise<ICategory[]> {
         return this._categoryDataAccess.createCategories(userId, categories, trx);
     }
     async getCategory(userId: number, accountId: number): Promise<ICategory | undefined> {

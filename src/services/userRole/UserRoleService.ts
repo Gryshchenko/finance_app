@@ -1,7 +1,7 @@
 import { IUserRoleService } from 'interfaces/IUserRoleService';
 import { IUserRoleDataAccess } from 'interfaces/IUserRoleDataAccess';
 import { IUserRole } from 'interfaces/IUserRole';
-import { ITransaction } from 'interfaces/IDatabaseConnection';
+import { IDBTransaction } from 'interfaces/IDatabaseConnection';
 
 export default class UserRoleService implements IUserRoleService {
     private _userRoleDataAccess: IUserRoleDataAccess;
@@ -18,7 +18,7 @@ export default class UserRoleService implements IUserRoleService {
         return await this._userRoleDataAccess.updateUserRole(userId, newRoleId);
     }
 
-    public async createUserRole(userId: number, roleId: number, trx?: ITransaction): Promise<IUserRole | undefined> {
+    public async createUserRole(userId: number, roleId: number, trx?: IDBTransaction): Promise<IUserRole | undefined> {
         return await this._userRoleDataAccess.createUserRole(userId, roleId, trx);
     }
 }
