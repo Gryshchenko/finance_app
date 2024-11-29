@@ -1,5 +1,7 @@
 export enum ErrorCode {
     CANT_STORE_DATA = 0,
+    UNEXPECTED_PROPERTY = 1,
+
     EMAIL_INVALID = 4000,
     NAME_INVALID = 4001,
     PASSWORD_INVALID = 4002,

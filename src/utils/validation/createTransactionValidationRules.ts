@@ -5,30 +5,55 @@ import { ValidationError } from '../errors/ValidationError';
 import { TransactionType } from 'types/TransactionType';
 import Utils from '../Utils';
 
-const atLeastOneFieldRequired: CustomValidator = (value, { req }) => {
+const atLeastOneFieldRequired: CustomValidator = (value, { req, path }) => {
     const { accountId, incomeId, categoryId, transactionTypeId } = req.body;
 
-    const validationMap: Record<TransactionType, { fields: unknown[]; errorCode: ErrorCode }> = {
+    const validationMap: Record<
+        TransactionType,
+        { expectFields: unknown[]; notExpectFields: unknown[]; errorCode: ErrorCode; message: string }
+    > = {
         [TransactionType.Income]: {
-            fields: [incomeId, accountId],
+            expectFields: [incomeId, accountId],
+            notExpectFields: [categoryId],
             errorCode: ErrorCode.INCOME_ID_ERROR,
+            message: 'accountId and incomeId are required; categoryId should not be present.',
         },
         [TransactionType.Expense]: {
-            fields: [categoryId, accountId],
+            expectFields: [categoryId, accountId],
+            notExpectFields: [incomeId],
             errorCode: ErrorCode.CATEGORY_ID_ERROR,
+            message: 'accountId and categoryId are required; incomeId should not be present.',
         },
         [TransactionType.Transafer]: {
-            fields: [accountId],
+            expectFields: [accountId],
+            notExpectFields: [incomeId, categoryId],
             errorCode: ErrorCode.ACCOUNT_ID_ERROR,
+            message: 'accountId is required; incomeId and categoryId should not be present.',
         },
     };
 
     const validation = validationMap[transactionTypeId as TransactionType];
 
-    if (validation && validation.fields.every(Utils.isNull)) {
+    if (!validation) {
         throw new ValidationError({
-            message: 'At least one of accountId, incomeId, or categoryId is required.',
+            message: `Invalid transaction type at '${path}'`,
+            errorCode: ErrorCode.TRANSACTION_TYPE_ID_ERROR,
+        });
+    }
+
+    const missingField = validation.expectFields.some(Utils.isNull);
+    if (missingField) {
+        throw new ValidationError({
+            message: `Validation failed at '${path}': Missing required field '${missingField}'.`,
             errorCode: validation.errorCode,
+        });
+    }
+
+    const forbiddenField = validation.notExpectFields.find(Utils.isNotNull);
+    if (forbiddenField) {
+        throw new ValidationError({
+            message: `Validation failed at '${path}': Field '${forbiddenField}' should not be present.`,
+            errorCode: ErrorCode.UNEXPECTED_PROPERTY,
         });
     }
 
@@ -36,6 +61,11 @@ const atLeastOneFieldRequired: CustomValidator = (value, { req }) => {
 };
 
 const createTransactionValidationRules = [
+    body('transactionTypeId').custom(atLeastOneFieldRequired).bail(),
+    ...createSignupValidationRules('currencyId', 'number', {}),
+    ...createSignupValidationRules('transactionTypeId', 'number', {}),
+    ...createSignupValidationRules('amount', 'number', {}),
+    ...createSignupValidationRules('description', 'string', { max: 200 }),
     ...createSignupValidationRules('accountId', 'number', {
         optional: true,
     }),
@@ -45,14 +75,10 @@ const createTransactionValidationRules = [
     ...createSignupValidationRules('categoryId', 'number', {
         optional: true,
     }),
-    body().custom(atLeastOneFieldRequired),
-    ...createSignupValidationRules('currencyId', 'number', {}),
-    ...createSignupValidationRules('y', 'number', {}),
-    ...createSignupValidationRules('amount', 'number', {}),
-    ...createSignupValidationRules('description', 'string', { max: 200 }),
 ];
 
 export const transactionConvertValidationMessageToErrorCode = (path: string): ErrorCode => {
+    console.log(path);
     switch (path) {
         case 'accountId': {
             return ErrorCode.ACCOUNT_ID_ERROR;

@@ -17,7 +17,7 @@
         "prettier:write": "prettier \"**/*\" --write --ignore-unknown",
         "prettier:check": "prettier \"**/*\" --check --ignore-unknown",
         "eslint": "npx eslint src/",
-        "eslint:check": "eslint --ext .js,.ts src/",
+        "eslint:check": "eslint --c .js,.ts src/",
         "lint-staged": "lint-staged"
     },
     "husky": {

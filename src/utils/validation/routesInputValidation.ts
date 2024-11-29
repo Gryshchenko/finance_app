@@ -36,10 +36,11 @@ export function createSignupValidationRules(field: string, type: string, options
         validatorChain = validatorChain
             .isNumeric()
             .withMessage(`Field ${field} must be a numeric value`)
+            .bail()
             .isInt({ max: Number.MAX_SAFE_INTEGER, min: Number.MIN_SAFE_INTEGER })
             .withMessage(`Field ${field} must be an integer between ${Number.MIN_SAFE_INTEGER} and ${Number.MAX_SAFE_INTEGER}`);
     } else if (type === 'string') {
-        validatorChain = validatorChain.isString().withMessage(`Field ${field} must be a string`);
+        validatorChain = validatorChain.isString().withMessage(`Field ${field} must be a string`).bail();
         if (field === 'locale') {
             validatorChain = validatorChain
                 .matches(/^[a-zA-Z]{2}-[a-zA-Z]{2}$/, 'i')
@@ -77,7 +78,9 @@ export default function routesInputValidation(
         const responseBuilder = new ResponseBuilder().setStatus(ResponseStatusType.INTERNAL).setErrors(
             errors.array().map((value) => {
                 const field = (value as unknown as { path: string }).path;
+                console.log(value);
                 Logger.Of('routesInputValidation').error(`field: ${field} msg: ${value.msg}`);
+                console.log(value);
                 return {
                     errorCode: converter(field),
                 };

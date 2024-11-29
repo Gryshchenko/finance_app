@@ -24,7 +24,9 @@ export class TransactionController {
                 description,
                 userId: req.session.user?.userId as number,
             });
-            res.status(HttpCode.OK).json(responseBuilder.setStatus(ResponseStatusType.OK).setData({ transactionId }).build());
+            res.status(HttpCode.CREATED).json(
+                responseBuilder.setStatus(ResponseStatusType.OK).setData({ transactionId }).build(),
+            );
         } catch (e: unknown) {
             TransactionController.logger.error(`Create transaction failed due reason: ${(e as { message: string }).message}`);
             generateErrorResponse(res, responseBuilder, e as BaseError, ErrorCode.TRANSACTION_ERROR);

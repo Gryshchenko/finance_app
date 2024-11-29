@@ -5,6 +5,7 @@ import { tokenVerifyLogout } from '../middleware/tokenVerify';
 import loginValidationRules from 'src/utils/validation/loginValidationRules';
 import { sessionVerifyLogout } from '../middleware/sessionVerify';
 import { AuthController } from 'src/controllers/AuthController';
+import { sanitizeRequestBody } from 'src/utils/validation/sanitizeRequestBody';
 
 const router = express.Router();
 /**
@@ -99,6 +100,11 @@ router.post('/logout', tokenVerifyLogout, sessionVerifyLogout, AuthController.lo
  *       400:
  *         $ref: '#/components/responses/ErrorResponse'
  */
-router.post('/login', routesInputValidation(loginValidationRules), AuthController.login);
+router.post(
+    '/login',
+    sanitizeRequestBody(['email', 'password']),
+    routesInputValidation(loginValidationRules),
+    AuthController.login,
+);
 
 export default router;

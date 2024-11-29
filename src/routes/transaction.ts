@@ -4,6 +4,7 @@ import createTransactionValidationRules, {
     transactionConvertValidationMessageToErrorCode,
 } from 'src/utils/validation/createTransactionValidationRules';
 import routesInputValidation from 'src/utils/validation/routesInputValidation';
+import { sanitizeRequestBody } from 'src/utils/validation/sanitizeRequestBody';
 
 const transactionRouter = express.Router({ mergeParams: true });
 
@@ -77,6 +78,7 @@ const transactionRouter = express.Router({ mergeParams: true });
  */
 transactionRouter.post(
     '/',
+    sanitizeRequestBody(['accountId', 'incomeId', 'categoryId', 'currencyId', 'transactionTypeId', 'amount', 'description']),
     routesInputValidation(createTransactionValidationRules, transactionConvertValidationMessageToErrorCode),
     TransactionController.create,
 );
