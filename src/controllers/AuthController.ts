@@ -13,7 +13,7 @@ import { generateErrorResponse } from 'src/utils/generateErrorResponse';
 import { BaseError } from 'src/utils/errors/BaseError';
 
 export class AuthController {
-    private static logger = Logger.Of('AuthController');
+    private static readonly logger = Logger.Of('AuthController');
     public static async logout(req: Request, res: Response) {
         const responseBuilder = new ResponseBuilder();
         SessionService.deleteSession(req, res, () => {

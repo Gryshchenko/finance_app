@@ -3,7 +3,7 @@ import { ICurrencyService } from 'interfaces/ICurrencyService';
 import { ICurrency } from 'interfaces/ICurrency';
 
 export default class CurrencyService implements ICurrencyService {
-    private _currencyDataAccess: ICurrencyDataAccess;
+    private readonly _currencyDataAccess: ICurrencyDataAccess;
 
     public constructor(currencyDataAccess: ICurrencyDataAccess) {
         this._currencyDataAccess = currencyDataAccess;

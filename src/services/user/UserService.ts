@@ -8,7 +8,7 @@ import { LoggerBase } from 'src/helper/logger/LoggerBase';
 import { IDBTransaction } from 'interfaces/IDatabaseConnection';
 
 export default class UserService extends LoggerBase implements IUserService {
-    private _userDataAccess: IUserDataAccess;
+    private readonly _userDataAccess: IUserDataAccess;
 
     public constructor(userDataAccess: IUserDataAccess) {
         super();

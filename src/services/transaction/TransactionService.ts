@@ -4,19 +4,19 @@ import { ITransactionDataAccess } from 'interfaces/ITransactionDataAccess';
 import { ITransaction } from 'interfaces/ITransaction';
 
 export default class TransactionService implements ITransactionService {
-    private _TransactionDataAccess: ITransactionDataAccess;
+    private readonly _transactionDataAccess: ITransactionDataAccess;
 
     public constructor(TransactionDataAccess: ITransactionDataAccess) {
-        this._TransactionDataAccess = TransactionDataAccess;
+        this._transactionDataAccess = TransactionDataAccess;
     }
 
     async createTransaction(transaction: ICreateTransaction): Promise<number> {
-        return await this._TransactionDataAccess.createTransaction(transaction);
+        return await this._transactionDataAccess.createTransaction(transaction);
     }
     async getTransaction(userId: number, transactionId: number): Promise<ITransaction | undefined> {
-        return await this._TransactionDataAccess.getTransaction(userId, transactionId);
+        return await this._transactionDataAccess.getTransaction(userId, transactionId);
     }
     async getTransactions(userId: number): Promise<ITransaction[] | undefined> {
-        return await this._TransactionDataAccess.getTransactions(userId);
+        return await this._transactionDataAccess.getTransactions(userId);
     }
 }

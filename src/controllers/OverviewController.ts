@@ -9,7 +9,7 @@ import { generateErrorResponse } from 'src/utils/generateErrorResponse';
 import { BaseError } from 'src/utils/errors/BaseError';
 
 export class OverviewController {
-    private static logger = Logger.Of('OverviewController');
+    private static readonly logger = Logger.Of('OverviewController');
     public static async overview(req: Request, res: Response) {
         const responseBuilder = new ResponseBuilder();
         try {

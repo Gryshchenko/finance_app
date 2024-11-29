@@ -5,7 +5,7 @@ import { ICreateAccount } from 'interfaces/ICreateAccount';
 import { IDBTransaction } from 'interfaces/IDatabaseConnection';
 
 export default class AccountService implements IAccountService {
-    private _accountDataAccess: IAccountDataAccess;
+    private readonly _accountDataAccess: IAccountDataAccess;
 
     public constructor(accountDataAccess: IAccountDataAccess) {
         this._accountDataAccess = accountDataAccess;

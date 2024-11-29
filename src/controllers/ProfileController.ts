@@ -12,7 +12,7 @@ import { generateErrorResponse } from 'src/utils/generateErrorResponse';
 import { BaseError } from 'src/utils/errors/BaseError';
 
 export class ProfileController {
-    private static logger = Logger.Of('ProfileController');
+    private static readonly logger = Logger.Of('ProfileController');
     public static async profile(req: Request, res: Response) {
         const responseBuilder = new ResponseBuilder();
         try {

@@ -9,7 +9,7 @@ import { BaseError } from 'src/utils/errors/BaseError';
 import TransactionServiceBuilder from 'services/transaction/TransactionServiceBuilder';
 
 export class TransactionController {
-    private static logger = Logger.Of('TransactionController');
+    private static readonly logger = Logger.Of('TransactionController');
     public static async create(req: Request, res: Response) {
         const responseBuilder = new ResponseBuilder();
         try {

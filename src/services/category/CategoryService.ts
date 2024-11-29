@@ -5,7 +5,7 @@ import { ICategory } from 'interfaces/ICategory';
 import { IDBTransaction } from 'interfaces/IDatabaseConnection';
 
 export default class CategoryService implements ICategoryService {
-    private _categoryDataAccess: ICategoryDataAccess;
+    private readonly _categoryDataAccess: ICategoryDataAccess;
 
     public constructor(accountDataAccess: ICategoryDataAccess) {
         this._categoryDataAccess = accountDataAccess;

@@ -4,7 +4,7 @@ import { LoggerBase } from 'src/helper/logger/LoggerBase';
 
 export class UnitOfWork extends LoggerBase {
     private trx: IDBTransaction | null = null;
-    private db: IDatabaseConnection;
+    private readonly db: IDatabaseConnection;
 
     constructor(db: IDatabaseConnection) {
         super();

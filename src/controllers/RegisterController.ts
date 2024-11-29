@@ -10,7 +10,7 @@ import { HttpCode } from 'types/HttpCode';
 import { generateErrorResponse } from 'src/utils/generateErrorResponse';
 import { BaseError } from 'src/utils/errors/BaseError';
 export class RegisterController {
-    private static logger = Logger.Of('RegisterController');
+    private static readonly logger = Logger.Of('RegisterController');
     public static async signup(req: Request, res: Response) {
         const responseBuilder = new ResponseBuilder();
 

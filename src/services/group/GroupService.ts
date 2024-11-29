@@ -4,7 +4,7 @@ import { IGroup } from 'interfaces/IGroup';
 import { IDBTransaction } from 'interfaces/IDatabaseConnection';
 
 export default class GroupService implements IGroupService {
-    private _accountDataAccess: IGroupDataAccess;
+    private readonly _accountDataAccess: IGroupDataAccess;
 
     public constructor(accountDataAccess: IGroupDataAccess) {
         this._accountDataAccess = accountDataAccess;

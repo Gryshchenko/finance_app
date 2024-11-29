@@ -4,7 +4,7 @@ import { Knex } from 'knex';
 const knex = require('knex');
 
 export default class DatabaseConnection implements IDatabaseConnection {
-    private _db: Knex;
+    private readonly _db: Knex;
 
     public constructor({
         host,

@@ -4,7 +4,7 @@ import { IUserRole } from 'interfaces/IUserRole';
 import { IDBTransaction } from 'interfaces/IDatabaseConnection';
 
 export default class UserRoleService implements IUserRoleService {
-    private _userRoleDataAccess: IUserRoleDataAccess;
+    private readonly _userRoleDataAccess: IUserRoleDataAccess;
 
     public constructor(userDataAccess: IUserRoleDataAccess) {
         this._userRoleDataAccess = userDataAccess;

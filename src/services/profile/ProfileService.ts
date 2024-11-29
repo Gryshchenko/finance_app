@@ -6,7 +6,7 @@ import { ICreateProfile } from 'interfaces/ICreateProfile';
 import { IDBTransaction } from 'interfaces/IDatabaseConnection';
 
 export default class ProfileService extends LoggerBase implements IProfileService {
-    private _profileDataAccess: IProfileDataAccess;
+    private readonly _profileDataAccess: IProfileDataAccess;
 
     public constructor(profileDataAccess: IProfileDataAccess) {
         super();
