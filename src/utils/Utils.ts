@@ -1,4 +1,7 @@
 export default class Utils {
+    public static roundNumber(value: number): number {
+        return Number.parseFloat(Number(value).toFixed(2));
+    }
     public static isNumber(value: string): boolean {
         return /^\d+$/.test(value);
     }

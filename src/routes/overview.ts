@@ -1,5 +1,7 @@
 import express from 'express';
 import { OverviewController } from 'src/controllers/OverviewController';
+import { sanitizeRequestBody } from 'src/utils/validation/sanitizeRequestBody';
+import { sanitizeRequestQuery } from 'src/utils/validation/sanitizeRequestQuery';
 
 const router = express.Router({ mergeParams: true });
 
@@ -43,6 +45,6 @@ const router = express.Router({ mergeParams: true });
  *       400:
  *         $ref: '#/components/responses/ErrorResponse'
  */
-router.get('/', OverviewController.overview);
+router.get('/', sanitizeRequestQuery([]), sanitizeRequestBody([]), OverviewController.overview);
 
 export default router;

@@ -4,6 +4,7 @@ import { LoggerBase } from 'src/helper/logger/LoggerBase';
 import { IAccount } from 'interfaces/IAccount';
 import { ICreateAccount } from 'interfaces/ICreateAccount';
 import { DBError } from 'src/utils/errors/DBError';
+import Utils from 'src/utils/Utils';
 
 export default class AccountDataAccess extends LoggerBase implements IAccountDataAccess {
     private readonly _db: IDatabaseConnection;
@@ -22,7 +23,7 @@ export default class AccountDataAccess extends LoggerBase implements IAccountDat
                     userId,
                     accountName,
                     currencyId,
-                    amount,
+                    amount: Number(amount.toFixed(2)),
                 })),
                 ['accountId', 'userId', 'accountName', 'currencyId', 'amount'],
             );
@@ -64,7 +65,10 @@ export default class AccountDataAccess extends LoggerBase implements IAccountDat
         try {
             this._logger.info(`Fetching account with accountId: ${accountId} for userId: ${userId}`);
 
-            const data = await this.getAccountBaseQuery().where({ userId, accountId }).first();
+            const data = await this.getAccountBaseQuery()
+                .innerJoin('currencies', 'accounts.currencyId', 'currencies.currencyId')
+                .where({ userId, accountId })
+                .first();
 
             if (!data) {
                 this._logger.warn(`Account with accountId: ${accountId} not found for userId: ${userId}`);
@@ -81,6 +85,55 @@ export default class AccountDataAccess extends LoggerBase implements IAccountDat
                 message: `Fetching account failed due to a database error: ${(e as { message: string }).message}`,
             });
         }
+    }
+
+    async patchAccount(userId: number, accountId: number, properties: Partial<IAccount>, trx?: IDBTransaction): Promise<number> {
+        try {
+            this._logger.info(`Patch accountId: ${accountId} for userId: ${userId}`);
+
+            const query = trx || this._db.engine();
+            const data = await query('accounts')
+                .update(this.sanitizePatchAccountPropeties(properties))
+                .where({ userId, accountId });
+
+            if (!data) {
+                this._logger.warn(`Account with accountId: ${accountId} not found for userId: ${userId}`);
+            } else {
+                this._logger.info(`Account accountId: ${accountId} for userId: ${userId} patched successful`);
+            }
+
+            return data;
+        } catch (e) {
+            this._logger.error(
+                `Failed to fetch account with accountId: ${accountId} for userId: ${userId}. Error: ${(e as { message: string }).message}`,
+            );
+            throw new DBError({
+                message: `Patch account failed due to a database error: ${(e as { message: string }).message}`,
+            });
+        }
+    }
+
+    protected sanitizePatchAccountPropeties(properties: Partial<IAccount>): Partial<IAccount> {
+        const allowedProperties = Object.entries({
+            accountName: properties.accountName,
+            amount: Utils.isNotNull(properties.amount) ? Utils.roundNumber(properties.amount as number) : null,
+            currencyId: properties.currencyId,
+            currencyCode: properties.currencyCode,
+            currencySymbol: properties.currencySymbol,
+        }).reduce(
+            (acc, [key, value]) => {
+                if (!Utils.isNull(value)) {
+                    acc[key] = value;
+                }
+                return acc;
+            },
+            {} as Record<string, unknown>,
+        );
+        if (Object.keys(allowedProperties).length === 0) {
+            throw new Error('No valid properties provided for update.');
+        }
+
+        return allowedProperties;
     }
 
     protected getAccountBaseQuery() {

@@ -1,3 +1,4 @@
+import { IDatabaseConnection } from '../src/interfaces/IDatabaseConnection';
 const crypto = require('crypto');
 
 export function generateSecureRandom() {
@@ -48,4 +49,16 @@ export function generateRandomPassword(len = Math.floor(generateSecureRandom() *
         .join('');
 
     return password;
+}
+
+export async function deleteUserAfterTest(id: string, db: IDatabaseConnection) {
+    await db.engine()('transactions').delete().where({ userId: id });
+    await db.engine()('accounts').delete().where({ userId: id });
+    await db.engine()('incomes').delete().where({ userId: id });
+    await db.engine()('categories').delete().where({ userId: id });
+    await db.engine()('profiles').delete().where({ userId: id });
+    await db.engine()('email_confirmations').delete().where({ userId: id });
+    await db.engine()('usergroups').delete().where({ userId: id });
+    await db.engine()('userroles').delete().where({ userId: id });
+    await db.engine()('users').delete().where({ userId: id });
 }

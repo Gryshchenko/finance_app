@@ -13,6 +13,8 @@ const app = require('../../src/app');
 
 let server;
 
+let userIds = [];
+
 beforeAll(() => {
     const port = Math.floor(generateSecureRandom() * (65535 - 1024) + 1024);
 
@@ -20,6 +22,9 @@ beforeAll(() => {
 });
 
 afterAll((done) => {
+    userIds.forEach((id) => {
+        deleteUserAfterTest(id, DatabaseConnection.instance(config));
+    });
     server.close(done);
 });
 
@@ -220,6 +225,7 @@ describe('POST /register/signup', () => {
         const mail = generateRandomEmail();
         const response = await request(app).post('/register/signup').send({ email: mail, password: generateRandomPassword() });
 
+        userIds.push(response.body.data.userId);
         expect(response.body).toStrictEqual({
             status: 1,
             data: {
@@ -236,9 +242,13 @@ describe('POST /register/signup', () => {
     });
     it('should failed email already exist', async () => {
         const mail = generateRandomEmail();
-        await request(app).post('/register/signup').send({ email: mail, password: generateRandomPassword() });
+        const {
+            body: {
+                data: { userId },
+            },
+        } = await request(app).post('/register/signup').send({ email: mail, password: generateRandomPassword() });
         const response = await request(app).post('/register/signup').send({ email: mail, password: generateRandomPassword() });
-
+        userIds.push(userId);
         expect(response.status).toBe(400);
         expect(response.body).toStrictEqual({
             data: {},
@@ -269,6 +279,8 @@ describe('POST /register/signup', () => {
             const accounts = await databaseConnection.engine()('accounts').select('*').where({ userId: user.userId });
             const categories = await databaseConnection.engine()('categories').select('*').where({ userId: user.userId });
             const incomes = await databaseConnection.engine()('incomes').select('*').where({ userId: user.userId });
+
+            userIds.push(user.userId);
             expect(confirmMail.length).toBe(1);
             expect(confirmMail[0].email).toEqual(mail);
             expect(

@@ -1,5 +1,5 @@
 import { ITransactionDataAccess } from 'interfaces/ITransactionDataAccess';
-import { IDatabaseConnection } from 'interfaces/IDatabaseConnection';
+import { IDatabaseConnection, IDBTransaction } from 'interfaces/IDatabaseConnection';
 import { LoggerBase } from 'src/helper/logger/LoggerBase';
 import { ITransaction } from 'interfaces/ITransaction';
 import { ICreateTransaction } from 'interfaces/ICreateTransaction';
@@ -12,11 +12,11 @@ export default class TransactionDataAccess extends LoggerBase implements ITransa
         super();
         this._db = db;
     }
-    async createTransaction(transaction: ICreateTransaction): Promise<number> {
+    async createTransaction(transaction: ICreateTransaction, trx?: IDBTransaction): Promise<number> {
         try {
             this._logger.info(`Starting transaction creation for userId: ${transaction.userId}`);
 
-            const query = this._db.engine();
+            const query = trx || this._db.engine();
             const data = await query('transactions').insert(
                 {
                     accountId: transaction.accountId,
@@ -27,6 +27,8 @@ export default class TransactionDataAccess extends LoggerBase implements ITransa
                     amount: transaction.amount,
                     description: transaction.description,
                     userId: transaction.userId,
+                    createAt: transaction.createAt,
+                    targetAccountId: transaction.targetAccountId,
                 },
                 ['transactionId'],
             );
@@ -100,6 +102,7 @@ export default class TransactionDataAccess extends LoggerBase implements ITransa
                 'transactions.amount',
                 'transactions.transactionName',
                 'transactions.currencyId',
+                'transactions.targetAccountId',
                 'currencies.currencyCode',
                 'currencies.currencyName',
                 'currencies.symbol',

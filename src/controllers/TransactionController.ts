@@ -13,7 +13,17 @@ export class TransactionController {
     public static async create(req: Request, res: Response) {
         const responseBuilder = new ResponseBuilder();
         try {
-            const { accountId, incomeId, categoryId, currencyId, transactionTypeId, amount, description } = req.body;
+            const {
+                accountId,
+                incomeId,
+                categoryId,
+                currencyId,
+                transactionTypeId,
+                amount,
+                description,
+                createAt = new Date().toISOString(),
+                targetAccountId,
+            } = req.body;
             const transactionId = await TransactionServiceBuilder.build().createTransaction({
                 accountId,
                 incomeId,
@@ -23,6 +33,8 @@ export class TransactionController {
                 amount,
                 description,
                 userId: req.session.user?.userId as number,
+                createAt,
+                targetAccountId,
             });
             res.status(HttpCode.CREATED).json(
                 responseBuilder.setStatus(ResponseStatusType.OK).setData({ transactionId }).build(),

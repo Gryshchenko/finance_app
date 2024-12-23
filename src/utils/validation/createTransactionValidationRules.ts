@@ -6,7 +6,7 @@ import { TransactionType } from 'types/TransactionType';
 import Utils from '../Utils';
 
 const atLeastOneFieldRequired: CustomValidator = (value, { req, path }) => {
-    const { accountId, incomeId, categoryId, transactionTypeId } = req.body;
+    const { accountId, incomeId, categoryId, transactionTypeId, targetAccountId } = req.body;
 
     const validationMap: Record<
         TransactionType,
@@ -25,7 +25,7 @@ const atLeastOneFieldRequired: CustomValidator = (value, { req, path }) => {
             message: 'accountId and categoryId are required; incomeId should not be present.',
         },
         [TransactionType.Transafer]: {
-            expectFields: [accountId],
+            expectFields: [accountId, targetAccountId],
             notExpectFields: [incomeId, categoryId],
             errorCode: ErrorCode.ACCOUNT_ID_ERROR,
             message: 'accountId is required; incomeId and categoryId should not be present.',
@@ -41,7 +41,7 @@ const atLeastOneFieldRequired: CustomValidator = (value, { req, path }) => {
         });
     }
 
-    const missingField = validation.expectFields.some(Utils.isNull);
+    const missingField = validation.expectFields.find(Utils.isNull);
     if (missingField) {
         throw new ValidationError({
             message: `Validation failed at '${path}': Missing required field '${missingField}'.`,
@@ -65,21 +65,29 @@ const createTransactionValidationRules = [
     ...createSignupValidationRules('currencyId', 'number', {}),
     ...createSignupValidationRules('transactionTypeId', 'number', {}),
     ...createSignupValidationRules('amount', 'number', {}),
-    ...createSignupValidationRules('description', 'string', { max: 200 }),
+    ...createSignupValidationRules('description', 'string', { max: 200, optional: true }),
     ...createSignupValidationRules('accountId', 'number', {
         optional: true,
     }),
     ...createSignupValidationRules('incomeId', 'number', {
         optional: true,
     }),
+    ...createSignupValidationRules('targetAccountId', 'number', {
+        optional: true,
+    }),
     ...createSignupValidationRules('categoryId', 'number', {
+        optional: true,
+    }),
+    ...createSignupValidationRules('createAt', 'date', {
         optional: true,
     }),
 ];
 
 export const transactionConvertValidationMessageToErrorCode = (path: string): ErrorCode => {
-    console.log(path);
     switch (path) {
+        case 'targetAccountId': {
+            return ErrorCode.TARGET_ACCOUNT_ID_ERROR;
+        }
         case 'accountId': {
             return ErrorCode.ACCOUNT_ID_ERROR;
         }
@@ -100,6 +108,9 @@ export const transactionConvertValidationMessageToErrorCode = (path: string): Er
         }
         case 'description': {
             return ErrorCode.DESCRIPTION_ERROR;
+        }
+        case 'createAt': {
+            return ErrorCode.CREATE_DATE_ERROR;
         }
         default: {
             return ErrorCode.TRANSACTION_ERROR;

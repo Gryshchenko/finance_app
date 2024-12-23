@@ -6,6 +6,7 @@ import loginValidationRules from 'src/utils/validation/loginValidationRules';
 import { sessionVerifyLogout } from '../middleware/sessionVerify';
 import { AuthController } from 'src/controllers/AuthController';
 import { sanitizeRequestBody } from 'src/utils/validation/sanitizeRequestBody';
+import { sanitizeRequestQuery } from 'src/utils/validation/sanitizeRequestQuery';
 
 const router = express.Router();
 /**
@@ -44,7 +45,7 @@ const router = express.Router();
  *       400:
  *         $ref: '#/components/responses/ErrorResponse'
  */
-router.post('/logout', tokenVerifyLogout, sessionVerifyLogout, AuthController.logout);
+router.post('/logout', sanitizeRequestQuery([]), tokenVerifyLogout, sessionVerifyLogout, AuthController.logout);
 /**
  * @swagger
  * /auth/login:
@@ -102,6 +103,7 @@ router.post('/logout', tokenVerifyLogout, sessionVerifyLogout, AuthController.lo
  */
 router.post(
     '/login',
+    sanitizeRequestQuery([]),
     sanitizeRequestBody(['email', 'password']),
     routesInputValidation(loginValidationRules),
     AuthController.login,

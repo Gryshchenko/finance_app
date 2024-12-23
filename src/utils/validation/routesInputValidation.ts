@@ -28,6 +28,15 @@ export function createSignupValidationRules(field: string, type: string, options
         validatorChain = validatorChain.escape();
     }
 
+    if (type === 'date') {
+        validatorChain = validatorChain.isISO8601().custom((value) => {
+            const date = new Date(value);
+            if (isNaN(date.getTime())) {
+                throw new Error(`Field ${field} must be a valid date`);
+            }
+            return true;
+        });
+    }
     if (type === 'email') {
         validatorChain = validatorChain.isEmail().withMessage(`Field ${field} must be a valid email address`);
     } else if (type === 'password') {
@@ -37,7 +46,7 @@ export function createSignupValidationRules(field: string, type: string, options
             .isNumeric()
             .withMessage(`Field ${field} must be a numeric value`)
             .bail()
-            .isInt({ max: Number.MAX_SAFE_INTEGER, min: Number.MIN_SAFE_INTEGER })
+            .isFloat({ max: Number.MAX_SAFE_INTEGER, min: Number.MIN_SAFE_INTEGER })
             .withMessage(`Field ${field} must be an integer between ${Number.MIN_SAFE_INTEGER} and ${Number.MAX_SAFE_INTEGER}`);
     } else if (type === 'string') {
         validatorChain = validatorChain.isString().withMessage(`Field ${field} must be a string`).bail();

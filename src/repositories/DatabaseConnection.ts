@@ -3,24 +3,25 @@ import { Knex } from 'knex';
 
 const knex = require('knex');
 
+interface IDatabaseConnectionConstructor {
+    host: string | undefined;
+    port: number | undefined;
+    database: string | undefined;
+    user: string | undefined;
+    password: string | undefined;
+    cert: string | undefined;
+}
+
 export default class DatabaseConnection implements IDatabaseConnection {
     private readonly _db: Knex;
 
-    public constructor({
-        host,
-        port,
-        database,
-        user,
-        password,
-        cert,
-    }: {
-        host: string | undefined;
-        port: number | undefined;
-        database: string | undefined;
-        user: string | undefined;
-        password: string | undefined;
-        cert: string | undefined;
-    }) {
+    private static _inspect: IDatabaseConnection;
+
+    public static instance(config: IDatabaseConnectionConstructor): IDatabaseConnection {
+        return DatabaseConnection._inspect || (DatabaseConnection._inspect = new DatabaseConnection(config));
+    }
+
+    public constructor({ host, port, database, user, password, cert }: IDatabaseConnectionConstructor) {
         this._db = knex({
             client: 'pg',
             connection: {
@@ -32,6 +33,14 @@ export default class DatabaseConnection implements IDatabaseConnection {
                 ssl: {
                     ca: cert,
                 },
+                pool: {
+                    min: 1,
+                    max: 100,
+                },
+            },
+            pool: {
+                min: 0,
+                max: 100,
             },
         });
     }

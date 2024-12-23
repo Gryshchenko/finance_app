@@ -1,5 +1,6 @@
 export interface ICreateTransaction {
-    accountId?: number;
+    accountId: number;
+    targetAccountId?: number;
     incomeId?: number;
     categoryId?: number;
     currencyId: number;
@@ -7,4 +8,5 @@ export interface ICreateTransaction {
     amount: number;
     description: string;
     userId: number;
+    createAt: string;
 }

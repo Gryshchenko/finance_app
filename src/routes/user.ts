@@ -6,6 +6,7 @@ import { param } from 'express-validator';
 import overview from 'src/routes/overview';
 import profile from 'src/routes/profile';
 import transaction from 'src/routes/transaction';
+import account from 'src/routes/account';
 import userIdVerify from 'middleware/userIdVerify';
 
 const userRouter = express.Router({ mergeParams: true });
@@ -24,6 +25,8 @@ userRouter.use('/:userId/profile', userIdVerify, routesInputValidation([userIdVa
 userRouter.use('/:userId/overview', userIdVerify, routesInputValidation([userIdValidator]), overview);
 
 userRouter.use('/:userId/transaction', userIdVerify, routesInputValidation([userIdValidator]), transaction);
+
+userRouter.use('/:userId/account', userIdVerify, routesInputValidation([userIdValidator]), account);
 
 // router.post('/request-resend-confirmation', async (req: Request, res: Response) => {});
 // router.post(

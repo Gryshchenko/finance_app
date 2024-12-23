@@ -5,6 +5,7 @@ import createTransactionValidationRules, {
 } from 'src/utils/validation/createTransactionValidationRules';
 import routesInputValidation from 'src/utils/validation/routesInputValidation';
 import { sanitizeRequestBody } from 'src/utils/validation/sanitizeRequestBody';
+import { sanitizeRequestQuery } from 'src/utils/validation/sanitizeRequestQuery';
 
 const transactionRouter = express.Router({ mergeParams: true });
 
@@ -26,6 +27,9 @@ const transactionRouter = express.Router({ mergeParams: true });
  *               accountId:
  *                 type: number
  *                 description: The ID of the account for the transaction.
+ *               targetAccountId:
+ *                 type: number
+ *                 description: The ID of the account for transfare the transaction.
  *               currencyId:
  *                 type: number
  *                 description: The ID of the currency for the transaction.
@@ -38,6 +42,9 @@ const transactionRouter = express.Router({ mergeParams: true });
  *               description:
  *                 type: string
  *                 description: A description for the transaction.
+ *               createAt:
+ *                 type: string
+ *                 description: Create date of transaction.
  *             required:
  *               - currencyId
  *               - transactionTypeId
@@ -78,17 +85,28 @@ const transactionRouter = express.Router({ mergeParams: true });
  */
 transactionRouter.post(
     '/',
-    sanitizeRequestBody(['accountId', 'incomeId', 'categoryId', 'currencyId', 'transactionTypeId', 'amount', 'description']),
+    sanitizeRequestQuery([]),
+    sanitizeRequestBody([
+        'accountId',
+        'incomeId',
+        'categoryId',
+        'currencyId',
+        'transactionTypeId',
+        'amount',
+        'description',
+        'createAt',
+        'targetAccountId',
+    ]),
     routesInputValidation(createTransactionValidationRules, transactionConvertValidationMessageToErrorCode),
     TransactionController.create,
 );
 
-transactionRouter.get('/:transactionId');
+transactionRouter.get('/:transactionId', sanitizeRequestQuery([]));
 
-transactionRouter.get('/:transactionId');
+transactionRouter.get('/:transactionId', sanitizeRequestQuery([]));
 
-transactionRouter.delete('/:transactionId');
+transactionRouter.delete('/:transactionId', sanitizeRequestQuery([]));
 
-transactionRouter.patch('/:transactionId');
+transactionRouter.patch('/:transactionId', sanitizeRequestQuery([]));
 
 export default transactionRouter;
