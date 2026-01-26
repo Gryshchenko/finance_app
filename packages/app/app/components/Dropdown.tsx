@@ -89,15 +89,26 @@ export function Dropdown<T>({
       data: filteredData ?? [],
     },
   ]
+
+  const $triggers = [
+    themed($trigger),
+    themed($inputWrapperStyles),
+    isOpen ? themed($triggerBorderFocusStyle) : themed($triggerBorderNoFocusStyle),
+  ]
+  const $triggersText = [
+    themed($triggerText),
+    selected && !isError ? themed($triggerTextSelected) : themed($triggerTextNonSelected),
+    isError && themed($errorText),
+  ]
   return (
-    <View style={style}>
-      {labelTx && <Text size={"xs"} preset="formLabel" tx={labelTx} />}
+    <View style={[themed($containerStyle), style]}>
+      {labelTx && <Text size={"xs"} style={themed($labelStyle)} preset="formLabel" tx={labelTx} />}
       <Pressable
         disabled={disabled || isPending || isError}
-        style={[themed($trigger), themed($inputWrapperStyles)]}
+        style={$triggers}
         onPress={() => setIsOpen(true)}
       >
-        <Text style={themed($triggerText)}>
+        <Text style={$triggersText}>
           {isPending
             ? `${translate("common:loading")}...`
             : isError
@@ -139,32 +150,62 @@ export function Dropdown<T>({
   )
 }
 
-const $trigger: ThemedStyle<ViewStyle> = ({ colors, spacing }) => ({
+const $containerStyle: ThemedStyle<TextStyle> = () => ({
+  height: 110,
+})
+
+const $trigger: ThemedStyle<ViewStyle> = ({ colors }) => ({
+  alignItems: "flex-start",
   borderWidth: 1,
+  borderRadius: 0,
+  backgroundColor: colors.palette.neutral100,
+  overflow: "hidden",
+  shadowColor: "#000",
+  shadowOffset: { width: 0, height: 1 },
+  shadowOpacity: 0.05,
+  shadowRadius: 2,
+  elevation: 1,
+})
+const $triggerBorderFocusStyle: ThemedStyle<ViewStyle> = ({ colors }) => ({
   borderColor: colors.border,
-  borderRadius: spacing.xxs,
-  backgroundColor: colors.background,
+})
+const $triggerBorderNoFocusStyle: ThemedStyle<ViewStyle> = ({ colors }) => ({
+  borderColor: colors.border,
 })
 
-const $triggerText: ThemedStyle<TextStyle> = ({ colors }) => ({
-  fontSize: 16,
-  color: colors.text,
-  marginVertical: 8,
-  marginHorizontal: 12,
-})
-
-const $overlay: ThemedStyle<ViewStyle> = ({ colors }) => ({
+const $triggerText: ThemedStyle<TextStyle> = ({ typography }) => ({
   flex: 1,
-  backgroundColor: `${colors.background}AA`,
+  alignSelf: "stretch",
+  fontFamily: typography.primary.normal,
+  fontSize: 14,
+  height: 54,
+  // https://github.com/facebook/react-native/issues/21720#issuecomment-532642093
+  paddingHorizontal: 16,
+  paddingVertical: 14,
+})
+
+const $triggerTextNonSelected: ThemedStyle<TextStyle> = ({ colors }) => ({
+  color: colors.textDim,
+})
+
+const $triggerTextSelected: ThemedStyle<TextStyle> = ({ colors }) => ({
+  color: colors.text,
+})
+
+const $overlay: ThemedStyle<ViewStyle> = ({ colors, typography }) => ({
+  flex: 1,
+  backgroundColor: colors.palette.neutral100,
+  fontFamily: typography.primary.normal,
   justifyContent: "center",
   alignItems: "center",
 })
 
-const $dropdown: ThemedStyle<ViewStyle> = ({ colors, spacing }) => ({
+const $dropdown: ThemedStyle<ViewStyle> = ({ colors, spacing, typography }) => ({
   width: "100%",
   height: "90%",
   marginTop: "auto",
-  backgroundColor: colors.background,
+  backgroundColor: colors.palette.neutral100,
+  fontFamily: typography.primary.normal,
   borderRadius: spacing.xxs,
   overflow: "hidden",
   shadowColor: "#000",
@@ -177,11 +218,27 @@ const $option: ThemedStyle<ViewStyle> = ({ spacing }) => ({
   paddingVertical: spacing.md,
   paddingHorizontal: spacing.lg,
 })
+const $errorText: ThemedStyle<TextStyle> = ({ colors }) => ({
+  color: colors.error,
+})
 
 const $optionText: ThemedStyle<TextStyle> = ({ colors }) => ({
   color: colors.text,
   fontSize: 14,
 })
-const $helperStyle: ThemedStyle<TextStyle> = ({ spacing }) => ({
-  marginTop: spacing.xs,
+const $helperStyle: ThemedStyle<TextStyle> = ({ typography, spacing, colors }) => ({
+  fontFamily: typography.primary.normal,
+  color: colors.textDim,
+  marginTop: spacing.xxxs,
+  fontSize: 10,
+})
+const $labelStyle: ThemedStyle<TextStyle> = ({ spacing, typography }) => ({
+  fontSize: 10,
+  letterSpacing: 1.5,
+  fontWeight: "700",
+  marginBottom: spacing.xxxs,
+  marginLeft: 4,
+  textTransform: "uppercase",
+  color: colors.textDim,
+  fontFamily: typography.fonts.funnelSans.semiBold,
 })

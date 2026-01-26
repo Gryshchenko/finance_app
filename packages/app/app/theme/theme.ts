@@ -15,8 +15,8 @@ export const lightTheme: Theme = {
   isDark: false,
 }
 export const darkTheme: Theme = {
-  colors: colorsDark,
-  spacing: spacingDark,
+  colors: colorsLight,
+  spacing: spacingLight,
   typography,
   timing,
   isDark: true,

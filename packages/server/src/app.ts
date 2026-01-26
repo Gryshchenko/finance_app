@@ -22,6 +22,7 @@ import { ErrorCode } from 'tenpercent/shared';
 import { createServer } from 'src/createServer';
 import DatabaseConnectionBuilder from 'src/repositories/DatabaseConnectionBuilder';
 import { KeyValueStoreBuilder } from 'src/repositories/keyValueStore/KeyValueStoreBuilder';
+import path from 'path';
 
 process.env.NODE_TLS_REJECT_UNAUTHORIZED = '0';
 const app = express();
@@ -56,6 +57,18 @@ app.use(express.urlencoded({ limit: '5kb', extended: true }));
 app.use(express.json());
 app.use(helmet());
 app.use(passport.initialize());
+
+app.use("/public", express.static(path.join(process.cwd(), "public"), {
+    etag: true,
+    lastModified: true,
+    setHeaders: (res, filePath) => {
+        if (filePath.endsWith("config.json")) {
+            res.setHeader("Cache-Control", "no-cache");
+        } else {
+            res.setHeader("Cache-Control", "public, max-age=86400, immutable");
+        }
+    }
+}));
 
 app.use('/auth', authRouter);
 app.use('/user', userRouter);

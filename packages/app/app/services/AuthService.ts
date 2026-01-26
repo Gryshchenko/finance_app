@@ -1,6 +1,7 @@
 import { IUserClient } from "tenpercent/shared"
 import { ErrorCode } from "tenpercent/shared"
 import { Utils } from "tenpercent/shared"
+import { UserStatus } from "tenpercent/shared"
 
 import {
   buildGeneralApiBadData,
@@ -13,8 +14,6 @@ import { ErrorUtils } from "@/utils/errors/ErrorUtils"
 import { ValidationError } from "@/utils/errors/ValidationError"
 import { Logger } from "@/utils/logger/Logger"
 import createStorage, { BiometryType } from "@/utils/storage/SecureStorage"
-
-import { UserStatus } from "../../../shared/src/types/UserStatus"
 
 interface IExtra {
   token: string

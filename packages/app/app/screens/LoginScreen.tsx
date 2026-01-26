@@ -1,13 +1,15 @@
 import { ComponentType, FC, useMemo, useRef, useState } from "react"
 // eslint-disable-next-line no-restricted-imports
-import { TextInput, TextStyle, ViewStyle } from "react-native"
+import { Pressable, TextInput, TextStyle, ViewStyle } from "react-native"
 
 import { Button } from "@/components/buttons/Button"
+import { HeaderTitle } from "@/components/HeaderTitle"
 import { PressableIcon } from "@/components/Icon"
+import { QuickAccessButton } from "@/components/QuickAccessButton"
 import { Screen } from "@/components/Screen"
+import { SignUpPrompt } from "@/components/SignUpPrompt"
 import { Text } from "@/components/Text"
 import { TextField, type TextFieldAccessoryProps } from "@/components/TextField"
-import { Checkbox } from "@/components/Toggle/Checkbox"
 import { useAuth } from "@/context/AuthContext"
 import { TxKeyPath } from "@/i18n"
 import { translate } from "@/i18n/translate"
@@ -29,7 +31,7 @@ export const LoginScreen: FC<LoginScreenProps> = (_props) => {
   const [emailError, setEmailError] = useState<TxKeyPath | undefined>()
   const [passwordError, setPasswordError] = useState<TxKeyPath | undefined>()
   const [responseError, setResponseError] = useState<TxKeyPath | undefined>()
-  const { isPasswordSaveCheckbox, setIsPasswordSaveCheckbox, doLogin } = useAuth()
+  const { doLogin } = useAuth()
 
   const {
     themed,
@@ -37,7 +39,7 @@ export const LoginScreen: FC<LoginScreenProps> = (_props) => {
   } = useAppTheme()
 
   function signUp() {
-    navigation.navigate({ name: "SignUp", params: undefined })
+    navigation.navigate({ name: "signUp", params: undefined })
   }
 
   async function login() {
@@ -80,14 +82,14 @@ export const LoginScreen: FC<LoginScreenProps> = (_props) => {
         return (
           <PressableIcon
             icon={isAuthPasswordHidden ? "view" : "hidden"}
-            color={colors.palette.neutral800}
+            color={colors.text}
             containerStyle={props.style}
             size={20}
             onPress={() => setIsAuthPasswordHidden(!isAuthPasswordHidden)}
           />
         )
       },
-    [isAuthPasswordHidden, colors.palette.neutral800],
+    [isAuthPasswordHidden, colors.text],
   )
 
   return (
@@ -96,11 +98,7 @@ export const LoginScreen: FC<LoginScreenProps> = (_props) => {
       contentContainerStyle={themed($screenContentContainer)}
       safeAreaEdges={["top", "bottom"]}
     >
-      <Text testID="login-heading" tx="loginScreen:logIn" preset="heading" style={themed($logIn)} />
-      <Text tx="loginScreen:enterDetails" preset="subheading" style={themed($enterDetails)} />
-      {attemptsCount > 2 && (
-        <Text tx="loginScreen:hint" size="sm" weight="light" style={themed($hint)} />
-      )}
+      <HeaderTitle subLogoText={"loginScreen:authorization"} />
 
       <TextField
         value={authEmail}
@@ -110,7 +108,7 @@ export const LoginScreen: FC<LoginScreenProps> = (_props) => {
           }
           setAuthEmail(email)
         }}
-        containerStyle={themed($textField)}
+        containerStyle={[themed($textField), themed($emailTextField)]}
         autoCapitalize="none"
         autoComplete="email"
         autoCorrect={false}
@@ -144,12 +142,9 @@ export const LoginScreen: FC<LoginScreenProps> = (_props) => {
         RightAccessory={PasswordRightAccessory}
       />
 
-      <Checkbox
-        labelTx="loginScreen:rememberMe"
-        helperTx="loginScreen:rememberMeHelper"
-        value={isPasswordSaveCheckbox}
-        onPress={() => setIsPasswordSaveCheckbox(!isPasswordSaveCheckbox)}
-      />
+      <Pressable>
+        <Text style={themed($forgotPassword)}>Forgot password?</Text>
+      </Pressable>
 
       {responseError && (
         <Text tx={responseError} preset="subheading" style={themed($responseError)} />
@@ -157,18 +152,14 @@ export const LoginScreen: FC<LoginScreenProps> = (_props) => {
 
       <Button
         testID="login-button"
-        tx="loginScreen:tapToLogIn"
-        style={themed($tapButton)}
+        tx="loginScreen:login"
+        style={[themed($tapButton), themed($loginButton)]}
         preset="reversed"
         onPress={login}
       />
-      <Button
-        testID="signUp-button"
-        tx="common:signUp"
-        style={themed($tapButton)}
-        preset="reversed"
-        onPress={signUp}
-      />
+
+      <SignUpPrompt onSignUp={signUp} />
+      <QuickAccessButton onPress={() => null} />
     </Screen>
   )
 }
@@ -177,27 +168,32 @@ const $screenContentContainer: ThemedStyle<ViewStyle> = ({ spacing }) => ({
   paddingVertical: spacing.xxl,
   paddingHorizontal: spacing.lg,
 })
-
-const $logIn: ThemedStyle<TextStyle> = ({ spacing }) => ({
-  marginBottom: spacing.sm,
+const $forgotPassword: ThemedStyle<TextStyle> = ({ typography, colors }) => ({
+  fontSize: 12,
+  lineHeight: 16,
+  fontWeight: "500",
+  color: colors.textDim,
+  fontFamily: typography.fonts.funnelSans.normal,
+  textAlign: "right",
+  marginTop: -20,
 })
 
 const $responseError: ThemedStyle<TextStyle> = ({ colors }) => ({
   color: colors.error,
 })
-const $enterDetails: ThemedStyle<TextStyle> = ({ spacing }) => ({
-  marginBottom: spacing.lg,
+
+const $textField: ThemedStyle<ViewStyle> = () => ({
+  marginBottom: 0,
 })
 
-const $hint: ThemedStyle<TextStyle> = ({ colors, spacing }) => ({
-  color: colors.tint,
-  marginBottom: spacing.md,
-})
-
-const $textField: ThemedStyle<ViewStyle> = ({ spacing }) => ({
-  marginBottom: spacing.lg,
+const $emailTextField: ThemedStyle<ViewStyle> = () => ({
+  marginTop: 40,
 })
 
 const $tapButton: ThemedStyle<ViewStyle> = ({ spacing }) => ({
   marginTop: spacing.xs,
+})
+
+const $loginButton: ThemedStyle<ViewStyle> = ({ spacing }) => ({
+  marginTop: spacing.xxl,
 })

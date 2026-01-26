@@ -10,9 +10,8 @@ import {
 import { IUserClient } from "tenpercent/shared"
 import { ResponseStatusType } from "tenpercent/shared"
 import { Utils } from "tenpercent/shared"
+import { UserStatus } from "tenpercent/shared"
 
-import { translate } from "@/i18n/translate"
-import AlertService from "@/services/AlertService"
 import {
   buildGeneralApiBaseHandler,
   GeneralApiProblem,
@@ -25,8 +24,6 @@ import { StorageKey } from "@/types/StorageKey"
 import { ValidationError } from "@/utils/errors/ValidationError"
 import { Logger } from "@/utils/logger/Logger"
 import { loadString, saveString } from "@/utils/storage"
-
-import { UserStatus } from "../../../shared/src/types/UserStatus"
 
 export interface AuthContextType {
   isAuthenticated: boolean
@@ -114,7 +111,6 @@ export const AuthProvider: FC<PropsWithChildren<AuthProviderProps>> = ({ childre
         setIsUserConfirmed(false)
         setIsAuthenticated(false)
         saveString(StorageKey.isSavePassword, String(false))
-        AlertService.error(translate("loginScreen:reLoginRequired"))
         _logger.error("Auto authentication failed due reason: ", (e as { message: string }).message)
       }
     })()

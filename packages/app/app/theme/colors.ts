@@ -1,11 +1,15 @@
 const palette = {
+  grey200: "#F2F2F2",
+  grey300: "#e5e5e5",
+  grey400: "#888888",
+
   neutral100: "#FFFFFF",
   neutral200: "#F4F2F1",
   neutral300: "#D7CEC9",
   neutral400: "#B6ACA6",
   neutral500: "#978F8A",
   neutral600: "#564E4A",
-  neutral700: "#3C3836",
+  neutral700: "#404040",
   neutral800: "#191015",
   neutral900: "#000000",
 
@@ -30,6 +34,7 @@ const palette = {
 
   angry100: "#F2D6CD",
   angry500: "#C03403",
+  angry600: "#d63031",
 
   overlay20: "rgba(25, 16, 21, 0.2)",
   overlay50: "rgba(25, 16, 21, 0.5)",
@@ -49,19 +54,19 @@ export const colors = {
   /**
    * The default text color in many components.
    */
-  text: palette.neutral800,
+  text: palette.neutral700,
   /**
    * Secondary text information.
    */
-  textDim: palette.neutral600,
+  textDim: "rgba(136, 136, 136, 1)",
   /**
    * The default color of the screen background.
    */
-  background: palette.neutral200,
+  background: palette.grey200,
   /**
    * The default border color.
    */
-  border: palette.neutral400,
+  border: "rgba(182, 172, 166, 0.4)",
   /**
    * The main tinting color.
    */
@@ -77,7 +82,7 @@ export const colors = {
   /**
    * Error messages.
    */
-  error: palette.angry500,
+  error: palette.angry600,
   /**
    * Error Background.
    */

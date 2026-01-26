@@ -1,10 +1,14 @@
 import { ComponentType, FC, useMemo, useRef, useState } from "react"
 // eslint-disable-next-line no-restricted-imports
 import { TextInput, TextStyle, ViewStyle } from "react-native"
-import { ErrorCode } from "tenpercent/shared"
+import { ErrorCode, Utils } from "tenpercent/shared"
 
 import { Button } from "@/components/buttons/Button"
+import { TextButton } from "@/components/buttons/TextButton"
+import { CurrencyDropdown } from "@/components/CurrencyDropdown"
+import { HeaderTitle } from "@/components/HeaderTitle"
 import { PressableIcon } from "@/components/Icon"
+import { LanguageDropdown } from "@/components/LanguagesDropdown"
 import { Screen } from "@/components/Screen"
 import { Text } from "@/components/Text"
 import { TextField, type TextFieldAccessoryProps } from "@/components/TextField"
@@ -25,15 +29,18 @@ interface SignUpScreenProps extends AppStackScreenProps<"SignUp"> {}
 
 export const SignUpScreen: FC<SignUpScreenProps> = (_props) => {
   const authPasswordInput = useRef<TextInput>(null)
-
+  const { navigation } = _props
   const [authPassword, setAuthPassword] = useState<string>("")
   const [publicName, setPublicName] = useState<string>("")
+  const [language, setLanguage] = useState<string>("")
+  const [currency, setCurrency] = useState<string>("")
   const [isAuthPasswordHidden, setIsAuthPasswordHidden] = useState(true)
-  const [attemptsCount, setAttemptsCount] = useState(0)
   const [authEmail, setAuthEmail] = useState<string>("")
   const [publicNameError, setPublicNameError] = useState<TxKeyPath | undefined>()
   const [emailError, setEmailError] = useState<TxKeyPath | undefined>()
   const [passwordError, setPasswordError] = useState<TxKeyPath | undefined>()
+  const [languageError, setLanguageError] = useState<TxKeyPath | undefined>()
+  const [currencyError, setCurrencyError] = useState<TxKeyPath | undefined>()
   const { doSignUp } = useAuth()
 
   const {
@@ -41,6 +48,9 @@ export const SignUpScreen: FC<SignUpScreenProps> = (_props) => {
     theme: { colors },
   } = useAppTheme()
 
+  function goBack() {
+    navigation.navigate({ name: "login", params: undefined })
+  }
   async function signUp() {
     const emailErr = validateEmail(authEmail)
     const passwordErr = validatePassword(authPassword)
@@ -54,7 +64,6 @@ export const SignUpScreen: FC<SignUpScreenProps> = (_props) => {
       return
     }
 
-    setAttemptsCount(attemptsCount + 1)
     const response = await doSignUp({
       password: authPassword as string,
       email: authEmail as string,
@@ -117,8 +126,10 @@ export const SignUpScreen: FC<SignUpScreenProps> = (_props) => {
       contentContainerStyle={themed($screenContentContainer)}
       safeAreaEdges={["top", "bottom"]}
     >
-      <Text testID="signUp-heading" tx="common:signUp" preset="heading" style={themed($logIn)} />
-      <Text tx="signUpScreen:enterDetails" preset="subheading" style={themed($enterDetails)} />
+      <HeaderTitle subLogoText={"signUpScreen:signup"} />
+
+      <Text tx={"signUpScreen:title"} preset="heading" style={themed($title)} />
+      <Text tx={"signUpScreen:subTitle"} preset="heading" style={themed($subTitle)} />
 
       <TextField
         value={publicName}
@@ -163,13 +174,32 @@ export const SignUpScreen: FC<SignUpScreenProps> = (_props) => {
         placeholderTx="common:passwordFieldPlaceholder"
         RightAccessory={PasswordRightAccessory}
       />
-
+      <LanguageDropdown
+        value={language}
+        disabled={false}
+        helperTx={languageError}
+        status={Utils.isNotNull(languageError) ? "error" : undefined}
+        onChange={(v) => setLanguage(v.locale)}
+      />
+      <CurrencyDropdown
+        value={currency}
+        disabled={false}
+        helperTx={currencyError}
+        status={Utils.isNotNull(currencyError) ? "error" : undefined}
+        onChange={(v) => setCurrency(v.currencyCode)}
+      />
       <Button
         testID="signUp-button"
-        tx="signUpScreen:tapToLogIn"
+        tx="common:continue"
         style={themed($tapButton)}
         preset="reversed"
         onPress={signUp}
+      />
+      <TextButton
+        testID="back-button"
+        tx="common:back"
+        style={themed($tapButton)}
+        onPress={goBack}
       />
     </Screen>
   )
@@ -180,18 +210,30 @@ const $screenContentContainer: ThemedStyle<ViewStyle> = ({ spacing }) => ({
   paddingHorizontal: spacing.lg,
 })
 
-const $logIn: ThemedStyle<TextStyle> = ({ spacing }) => ({
-  marginBottom: spacing.sm,
-})
-
-const $enterDetails: ThemedStyle<TextStyle> = ({ spacing }) => ({
-  marginBottom: spacing.lg,
-})
-
-const $textField: ThemedStyle<ViewStyle> = ({ spacing }) => ({
-  marginBottom: spacing.lg,
+const $textField: ThemedStyle<ViewStyle> = () => ({
+  marginBottom: 0,
 })
 
 const $tapButton: ThemedStyle<ViewStyle> = ({ spacing }) => ({
   marginTop: spacing.xs,
+})
+
+const $title: ThemedStyle<TextStyle> = ({ colors, typography, spacing }) => ({
+  fontSize: 27,
+  lineHeight: 32, // leading-tight
+  fontWeight: "500", // font-medium
+  color: colors.text, // text-brand-black
+  fontFamily: typography.fonts.funnelSans.medium,
+  marginTop: spacing.xl,
+})
+
+const $subTitle: ThemedStyle<TextStyle> = ({ colors, typography, spacing }) => ({
+  color: colors.textDim,
+  fontFamily: typography.fonts.funnelSans.medium,
+  fontSize: 27,
+  lineHeight: 20,
+  fontWeight: "700",
+  letterSpacing: 2,
+  marginTop: spacing.xs,
+  marginBottom: spacing.xxl,
 })

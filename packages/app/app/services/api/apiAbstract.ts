@@ -5,6 +5,7 @@ import { ErrorCode } from "tenpercent/shared"
 import { ResponseStatusType } from "tenpercent/shared"
 
 import Config from "@/config"
+import { IClientConfig } from "@/interfaces/IClientConfig"
 import { IRefreshResponse } from "@/interfaces/IRefreshResponse"
 import {
   GeneralApiProblem,
@@ -158,6 +159,32 @@ export abstract class ApiAbstract {
           },
         }),
     )
+  }
+  protected async getConfig(): Promise<GeneralApiProblem<IClientConfig | undefined>> {
+    try {
+      const response: ApiResponse<IClientConfig> = await this.apisauce.get(
+        "/public/config.json",
+        {},
+        {},
+      )
+      if (response.ok) {
+        return {
+          kind: GeneralApiProblemKind.Ok,
+          data: response.data,
+          errors: [],
+          status: undefined,
+        }
+      }
+      throw new Error(`problem: ${response.problem}, status: ${response.status}`)
+    } catch (e) {
+      this._logger.error(`Get client config error: ${JSON.stringify(e)}`)
+      return {
+        kind: GeneralApiProblemKind.BadData,
+        data: undefined,
+        errors: [{ errorCode: ErrorCode.CLIENT_UNKNOWN_ERROR }],
+        status: ResponseStatusType.APP,
+      }
+    }
   }
 
   protected async authGet<T>(

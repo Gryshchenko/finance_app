@@ -1,0 +1,177 @@
+{
+    "version": "1.0.0",
+    "locales": [
+        {
+            "locale": "da-DK",
+            "label": "Dansk",
+            "currencyCode": "DKK",
+            "symbol": "kr"
+        },
+        {
+            "locale": "el-GR",
+            "label": "Ελληνικά",
+            "currencyCode": "EUR",
+            "symbol": "€"
+        },
+        {
+            "locale": "de-DE",
+            "label": "Deutsch",
+            "currencyCode": "EUR",
+            "symbol": "€"
+        },
+        {
+            "locale": "en-US",
+            "label": "English",
+            "currencyCode": "USD",
+            "symbol": "$"
+        },
+        {
+            "locale": "es-ES",
+            "label": "Español",
+            "currencyCode": "EUR",
+            "symbol": "€"
+        },
+        {
+            "locale": "et-ET",
+            "label": "Eesti",
+            "currencyCode": "ETB",
+            "symbol": "Br"
+        },
+        {
+            "locale": "fi-FI",
+            "label": "Suomi",
+            "currencyCode": "EUR",
+            "symbol": "€"
+        },
+        {
+            "locale": "fr-FR",
+            "label": "Français",
+            "currencyCode": "EUR",
+            "symbol": "€"
+        },
+        {
+            "locale": "it-IT",
+            "label": "Italiano",
+            "currencyCode": "EUR",
+            "symbol": "€"
+        },
+        {
+            "locale": "nl-NL",
+            "label": "Nederlands",
+            "currencyCode": "EUR",
+            "symbol": "€"
+        },
+        {
+            "locale": "no-NO",
+            "label": "Norsk",
+            "currencyCode": "NOK",
+            "symbol": "kr"
+        },
+        {
+            "locale": "pt-PT",
+            "label": "Português",
+            "currencyCode": "EUR",
+            "symbol": "€"
+        },
+        {
+            "locale": "sv-SE",
+            "label": "Svenska",
+            "currencyCode": "SEK",
+            "symbol": "kr"
+        },
+        {
+            "locale": "uk-UA",
+            "label": "Українська",
+            "currencyCode": "UAH",
+            "symbol": "₴"
+        },
+        {
+            "locale": "ru-RU",
+            "label": "Русский",
+            "currencyCode": "RUB",
+            "symbol": "₽"
+        },
+        {
+            "locale": "bg-BG",
+            "label": "Български",
+            "currencyCode": "BGN",
+            "symbol": "лв"
+        },
+        {
+            "locale": "cs-CZ",
+            "label": "Čeština",
+            "currencyCode": "CZK",
+            "symbol": "Kč"
+        },
+        {
+            "locale": "hr-HR",
+            "label": "Hrvatski",
+            "currencyCode": "HRK",
+            "symbol": "kn"
+        },
+        {
+            "locale": "hu-HU",
+            "label": "Magyar",
+            "currencyCode": "HUF",
+            "symbol": "Ft"
+        },
+        {
+            "locale": "ja-JP",
+            "label": "日本語",
+            "currencyCode": "JPY",
+            "symbol": "¥"
+        },
+        {
+            "locale": "ka-GE",
+            "label": "ქართული",
+            "currencyCode": "GEL",
+            "symbol": "₾"
+        },
+        {
+            "locale": "pl-PL",
+            "label": "Polski",
+            "currencyCode": "PLN",
+            "symbol": "zł"
+        },
+        {
+            "locale": "pt-BR",
+            "label": "Português (Brasil)",
+            "currencyCode": "BRL",
+            "symbol": "R$"
+        },
+        {
+            "locale": "ro-RO",
+            "label": "Română",
+            "currencyCode": "RON",
+            "symbol": "lei"
+        },
+        {
+            "locale": "sk-SK",
+            "label": "Slovenčina",
+            "currencyCode": "EUR",
+            "symbol": "€"
+        },
+        {
+            "locale": "sl-SI",
+            "label": "Slovenščina",
+            "currencyCode": "EUR",
+            "symbol": "€"
+        },
+        {
+            "locale": "tr-TR",
+            "label": "Türkçe",
+            "currencyCode": "TRY",
+            "symbol": "₺"
+        },
+        {
+            "locale": "lv-LV",
+            "label": "Latviešu",
+            "currencyCode": "EUR",
+            "symbol": "€"
+        }
+    ],
+    "defaults": {
+        "language": "en-US",
+        "currencyCode": "USD"
+    }
+}

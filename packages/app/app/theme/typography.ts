@@ -3,6 +3,13 @@
 
 import { Platform } from "react-native"
 import {
+  FunnelSans_300Light as funnelSansLight,
+  FunnelSans_400Regular as funnelSansRegular,
+  FunnelSans_500Medium as funnelSansMedium,
+  FunnelSans_600SemiBold as funnelSansSemiBold,
+  FunnelSans_700Bold as funnelSansBold,
+} from "@expo-google-fonts/funnel-sans"
+import {
   SpaceGrotesk_300Light as spaceGroteskLight,
   SpaceGrotesk_400Regular as spaceGroteskRegular,
   SpaceGrotesk_500Medium as spaceGroteskMedium,
@@ -16,9 +23,21 @@ export const customFontsToLoad = {
   spaceGroteskMedium,
   spaceGroteskSemiBold,
   spaceGroteskBold,
+  funnelSansBold,
+  funnelSansLight,
+  funnelSansSemiBold,
+  funnelSansMedium,
+  funnelSansRegular,
 }
 
 const fonts = {
+  funnelSans: {
+    light: "funnelSansLight",
+    normal: "funnelSansRegular",
+    medium: "funnelSansMedium",
+    semiBold: "funnelSansSemiBold",
+    bold: "funnelSansBold",
+  },
   spaceGrotesk: {
     // Cross-platform Google font.
     light: "spaceGroteskLight",

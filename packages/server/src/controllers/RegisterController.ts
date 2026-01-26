@@ -2,7 +2,7 @@ import { Request, Response } from 'express';
 import Logger from 'helper/logger/Logger';
 import ResponseBuilder from 'helper/responseBuilder/ResponseBuilder';
 import UserRegistrationServiceBuilder from 'services/registration/UserRegistrationServiceBuilder';
-import { ResponseStatusType } from 'tenpercent/shared';
+import { LanguageType, ResponseStatusType } from 'tenpercent/shared';
 import { ErrorCode } from 'tenpercent/shared';
 import { HttpCode } from 'tenpercent/shared';
 import { generateErrorResponse } from 'src/utils/generateErrorResponse';
@@ -17,10 +17,11 @@ export class RegisterController {
 
         try {
             const response = await UserRegistrationServiceBuilder.build().createUser(
-                req.body.email.toLocaleLowerCase(),
-                req.body.password,
-                req.body.locale,
-                req.body.publicName,
+                String(req.body.email.toLocaleLowerCase()),
+                String(req.body.password),
+                String(req.body.locale) as LanguageType,
+                String(req.body.publicName),
+                String(req.body.currencyCode)
             );
             const { user, token, longToken } = response;
             res.setHeader('Authorization', `Bearer ${token}`);

@@ -1,14 +1,12 @@
 import { IUserService } from 'interfaces/IUserService';
 import { LoggerBase } from 'src/helper/logger/LoggerBase';
 import { IGroupService } from 'interfaces/IGroupService';
-import { LanguageType } from 'tenpercent/shared';
+import { ErrorCode, HttpCode, ICurrency, LanguageType, RoleType, UserStatus, Utils } from 'tenpercent/shared';
 import { IMailService } from 'interfaces/IMailService';
 import { IMailTemplateService } from 'interfaces/IMailTemplateService';
 import { IEmailConfirmationService } from 'interfaces/IEmailConfirmationService';
 import { IUser } from 'interfaces/IUser';
-import { ErrorCode } from 'tenpercent/shared';
 import { IProfileService } from 'interfaces/IProfileService';
-import { RoleType } from 'tenpercent/shared';
 import TranslationsUtils from 'src/services/translations/TranslationsUtils';
 import Translations from 'src/services/translations/Translations';
 import TranslationLoaderImpl from 'src/services/translations/TranslationLoaderImpl';
@@ -22,15 +20,12 @@ import { user_initial } from 'src/config/user_initial';
 import currency_initial from 'src/config/currency_initial';
 import { ValidationError } from 'src/utils/errors/ValidationError';
 import { CustomError } from 'src/utils/errors/CustomError';
-import { HttpCode } from 'tenpercent/shared';
 import { IBalanceService } from 'interfaces/IBalanceService';
-import { UserStatus } from 'tenpercent/shared';
 import { IKeyValueStore } from 'src/repositories/keyValueStore/KeyValueStore';
 import { getConfig } from 'src/config/config';
 import { IAccountService } from 'services/account/AccountService';
 import { ICategoryService } from 'services/category/CategoryService';
 import { IIncomeService } from 'services/income/IncomeService';
-import { Utils } from 'tenpercent/shared';
 
 interface IDefaultData {
     group: string;
@@ -110,11 +105,24 @@ export default class UserRegistrationService extends LoggerBase {
         password: string,
         localeFromUser: LanguageType = LanguageType.US,
         publicName: string,
+        currencyCode: string,
     ): Promise<{ user: IUser; token: string; longToken: string }> {
         const uow = new UnitOfWork(this.db);
 
         try {
             await uow.start();
+            const getCurrency = async (): Promise<ICurrency | undefined> => {
+                try {
+                    if (Utils.isNotNull(currencyCode)) {
+                        const currency = await this.currencyService.getByCurrencyCode(currencyCode);
+                        if (Utils.isNull(currency)) throw new Error('Currency not found.');
+                        return currency;
+                    }
+                } catch {
+                    const currencyCode = (currency_initial[locale] ?? currency_initial[LanguageType.US]).currencyCode;
+                    return await this.currencyService.getByCurrencyCode(currencyCode);
+                }
+            };
             const locale = TranslationsUtils.convertToSupportLocale(localeFromUser);
             const otherUser = await this.userService.getUserAuthenticationData(email);
             if (otherUser) {
@@ -133,9 +141,8 @@ export default class UserRegistrationService extends LoggerBase {
             }
             const trx = trxInProcess as unknown as IDBTransaction;
             const user = await this.userService.create(email, password, trx);
+            const currency = await getCurrency();
             if (user) {
-                const currencyCode = (currency_initial[locale] ?? currency_initial[LanguageType.US]).currencyCode;
-                const currency = await this.currencyService.getByCurrencyCode(currencyCode);
                 if (!currency) {
                     throw new CustomError({
                         message: 'Unable to retrieve the user’s currency based on their locale.',
@@ -165,7 +172,7 @@ export default class UserRegistrationService extends LoggerBase {
                         errorCode: ErrorCode.SIGNUP_PROFILE_NOT_CREATED_ERROR,
                     });
                 }
-                await this.balanceService.post(user.userId, { amount: 0, currencyCode: currencyCode }, trx);
+                await this.balanceService.post(user.userId, { amount: 0, currencyCode: currency.currencyCode }, trx);
                 const profile = response[1] as IProfile;
                 await this.createInitialDataForNewUser(user.userId, profile, trx);
                 await uow.commit();

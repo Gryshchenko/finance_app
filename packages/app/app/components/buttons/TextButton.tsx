@@ -16,13 +16,13 @@ import { Text, TextProps } from "../Text"
 
 type Presets = "default" | "filled" | "reversed"
 
-export interface ButtonAccessoryProps {
+export interface TextButtonAccessoryProps {
   style: StyleProp<any>
   pressableState: PressableStateCallbackType
   disabled?: boolean
 }
 
-export interface ButtonProps extends PressableProps {
+export interface TextButtonProps extends PressableProps {
   /**
    * Text which is looked up via i18n.
    */
@@ -64,12 +64,12 @@ export interface ButtonProps extends PressableProps {
    * An optional component to render on the right side of the text.
    * Example: `RightAccessory={(props) => <View {...props} />}`
    */
-  RightAccessory?: ComponentType<ButtonAccessoryProps>
+  RightAccessory?: ComponentType<TextButtonAccessoryProps>
   /**
    * An optional component to render on the left side of the text.
    * Example: `LeftAccessory={(props) => <View {...props} />}`
    */
-  LeftAccessory?: ComponentType<ButtonAccessoryProps>
+  LeftAccessory?: ComponentType<TextButtonAccessoryProps>
   /**
    * Children components.
    */
@@ -99,7 +99,7 @@ export interface ButtonProps extends PressableProps {
  *   onPress={handleButtonPress}
  * />
  */
-export function Button(props: ButtonProps) {
+export function TextButton(props: TextButtonProps) {
   const {
     tx,
     text,
@@ -110,8 +110,6 @@ export function Button(props: ButtonProps) {
     pressedTextStyle: $pressedTextStyleOverride,
     disabledTextStyle: $disabledTextStyleOverride,
     children,
-    RightAccessory,
-    LeftAccessory,
     disabled,
     disabledStyle: $disabledViewStyleOverride,
     ...rest
@@ -157,21 +155,9 @@ export function Button(props: ButtonProps) {
     >
       {(state) => (
         <>
-          {!!LeftAccessory && (
-            <LeftAccessory style={$leftAccessoryStyle} pressableState={state} disabled={disabled} />
-          )}
-
           <Text tx={tx} text={text} txOptions={txOptions} style={$textStyle(state)}>
             {children}
           </Text>
-
-          {!!RightAccessory && (
-            <RightAccessory
-              style={$rightAccessoryStyle}
-              pressableState={state}
-              disabled={disabled}
-            />
-          )}
         </>
       )}
     </Pressable>
@@ -189,37 +175,22 @@ const $baseViewStyle: ThemedStyle<ViewStyle> = ({ spacing }) => ({
   textTransform: "uppercase",
 })
 
-const $baseTextStyle: ThemedStyle<TextStyle> = ({ typography }) => ({
-  fontFamily: typography.primary.medium,
-  textAlign: "center",
-  flexShrink: 1,
-  flexGrow: 0,
-  zIndex: 2,
+const $baseTextStyle: ThemedStyle<TextStyle> = ({ typography, colors, spacing }) => ({
   fontSize: 12,
-  lineHeight: 16,
-  letterSpacing: 1.2,
-  fontWeight: "500",
-})
-
-const $rightAccessoryStyle: ThemedStyle<ViewStyle> = ({ spacing }) => ({
-  marginStart: spacing.xs,
-  zIndex: 1,
-})
-const $leftAccessoryStyle: ThemedStyle<ViewStyle> = ({ spacing }) => ({
-  marginEnd: spacing.xs,
-  zIndex: 1,
+  fontWeight: "700",
+  letterSpacing: 2,
+  textTransform: "uppercase",
+  color: colors.text,
+  textAlign: "center",
+  paddingBottom: 2,
+  borderBottomWidth: 1,
+  borderBottomColor: "transparent",
+  fontFamily: typography.fonts.funnelSans.bold,
+  marginTop: spacing.xxs,
 })
 
 const $viewPresets: Record<Presets, ThemedStyleArray<ViewStyle>> = {
-  default: [
-    $styles.row,
-    $baseViewStyle,
-    ({ colors }) => ({
-      borderWidth: 1,
-      borderColor: colors.palette.neutral400,
-      backgroundColor: colors.palette.neutral100,
-    }),
-  ],
+  default: [$styles.row, $baseViewStyle],
   filled: [
     $styles.row,
     $baseViewStyle,
@@ -245,7 +216,7 @@ const $pressedViewPresets: Record<Presets, ThemedStyle<ViewStyle>> = {
 }
 
 const $pressedTextPresets: Record<Presets, ThemedStyle<TextStyle>> = {
-  default: () => ({ opacity: 0.9 }),
-  filled: () => ({ opacity: 0.9 }),
-  reversed: () => ({ opacity: 0.9 }),
+  default: () => ({ opacity: 0.5 }),
+  filled: () => ({ opacity: 0.5 }),
+  reversed: () => ({ opacity: 0.95 }),
 }
