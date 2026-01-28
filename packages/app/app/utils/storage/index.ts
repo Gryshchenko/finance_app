@@ -3,32 +3,31 @@ import AsyncStorage from "@react-native-async-storage/async-storage"
 import { Platform } from "react-native"
 
 const jsStore = {
-    async set(key: string, value: string) {
-        return AsyncStorage.setItem(key, value)
-    },
-    async getString(key: string) {
-        return AsyncStorage.getItem(key)
-    },
-    async remove(key: string) {
-        return AsyncStorage.removeItem(key)
-    },
-    async clearAll() {
-        return AsyncStorage.clear()
-    },
+  async set(key: string, value: string) {
+    return AsyncStorage.setItem(key, value)
+  },
+  async getString(key: string) {
+    return AsyncStorage.getItem(key)
+  },
+  async remove(key: string) {
+    return AsyncStorage.removeItem(key)
+  },
+  async clearAll() {
+    return AsyncStorage.clear()
+  },
 }
 
 let storage = jsStore
 
 if (Platform.OS !== "web") {
-    try {
-        // @ts-ignore
-        storage = createMMKV({ id: "ten.percent.app" });
-    } catch (e) {
-        console.warn("MMKV not available, falling back to AsyncStorage:", e)
-        storage = jsStore
-    }
+  try {
+    // @ts-ignore
+    storage = createMMKV({ id: "ten.percent.app" })
+  } catch (e) {
+    console.warn("MMKV not available, falling back to AsyncStorage:", e)
+    storage = jsStore
+  }
 }
-
 
 export async function saveString(key: string, value: string) {
   try {
@@ -77,6 +76,4 @@ export async function clear() {
   } catch {}
 }
 
-export {
-    storage
-}
+export { storage }

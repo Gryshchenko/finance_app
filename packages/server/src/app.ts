@@ -58,17 +58,20 @@ app.use(express.json());
 app.use(helmet());
 app.use(passport.initialize());
 
-app.use("/public", express.static(path.join(process.cwd(), "public"), {
-    etag: true,
-    lastModified: true,
-    setHeaders: (res, filePath) => {
-        if (filePath.endsWith("config.json")) {
-            res.setHeader("Cache-Control", "no-cache");
-        } else {
-            res.setHeader("Cache-Control", "public, max-age=86400, immutable");
-        }
-    }
-}));
+app.use(
+    '/public',
+    express.static(path.join(process.cwd(), 'public'), {
+        etag: true,
+        lastModified: true,
+        setHeaders: (res, filePath) => {
+            if (filePath.endsWith('config.json')) {
+                res.setHeader('Cache-Control', 'no-cache');
+            } else {
+                res.setHeader('Cache-Control', 'public, max-age=86400, immutable');
+            }
+        },
+    }),
+);
 
 app.use('/auth', authRouter);
 app.use('/user', userRouter);

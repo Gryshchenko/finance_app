@@ -21,7 +21,7 @@ export class RegisterController {
                 String(req.body.password),
                 String(req.body.locale) as LanguageType,
                 String(req.body.publicName),
-                String(req.body.currencyCode)
+                String(req.body.currencyCode),
             );
             const { user, token, longToken } = response;
             res.setHeader('Authorization', `Bearer ${token}`);

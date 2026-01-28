@@ -42,7 +42,9 @@
         "prepare": "husky install"
     },
     "pnpm": {
-        "neverBuiltDependencies": ["react-native"],
+        "neverBuiltDependencies": [
+            "react-native"
+        ],
         "publicHoistPattern": []
     }
 }

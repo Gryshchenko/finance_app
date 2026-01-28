@@ -1,7 +1,10 @@
 packages/**/*.d.ts
+packages/app/ios/**
+packages/app/android/**
 node_modules
 dist
 jest-coverage
 playwright-report
 pnpm-lock.yaml
 .pnpm-store
+

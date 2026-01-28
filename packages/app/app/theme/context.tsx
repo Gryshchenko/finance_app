@@ -5,8 +5,9 @@ import {
   useCallback,
   useContext,
   useEffect,
-  useMemo, useState
-} from 'react';
+  useMemo,
+  useState,
+} from "react"
 import { StyleProp, useColorScheme } from "react-native"
 import {
   DarkTheme as NavDarkTheme,

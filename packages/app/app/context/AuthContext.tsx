@@ -23,7 +23,7 @@ import { SignupService } from "@/services/SignUpService"
 import { StorageKey } from "@/types/StorageKey"
 import { ValidationError } from "@/utils/errors/ValidationError"
 import { Logger } from "@/utils/logger/Logger"
-import {  saveString } from "@/utils/storage"
+import { saveString } from "@/utils/storage"
 
 export interface AuthContextType {
   isAuthenticated: boolean
