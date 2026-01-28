@@ -23,7 +23,7 @@ import { SignupService } from "@/services/SignUpService"
 import { StorageKey } from "@/types/StorageKey"
 import { ValidationError } from "@/utils/errors/ValidationError"
 import { Logger } from "@/utils/logger/Logger"
-import { loadString, saveString } from "@/utils/storage"
+import {  saveString } from "@/utils/storage"
 
 export interface AuthContextType {
   isAuthenticated: boolean
@@ -61,7 +61,7 @@ export const AuthProvider: FC<PropsWithChildren<AuthProviderProps>> = ({ childre
     ;(async () => {
       try {
         const authService = new AuthService()
-        const saved = loadString(StorageKey.isSavePassword)
+        const saved = "loadString(StorageKey.isSavePassword)"
         const isPassword: boolean = saved ? (Utils.parseBoolean(saved) as boolean) : false
 
         if (!isPassword) {

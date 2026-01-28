@@ -14,7 +14,7 @@ import { TxKeyPath } from "@/i18n"
 import { translate } from "@/i18n/translate"
 import SectionListWithKeyboardAwareScrollView, {
   SectionType,
-} from "@/screens/DemoShowroomScreen/SectionListWithKeyboardAwareScrollView"
+} from "@/components/SectionListWithKeyboardAwareScrollView"
 import { useAppTheme } from "@/theme/context"
 import { ThemedStyle } from "@/theme/types"
 import { CurrencyUtils } from "@/utils/CurrencyUtils"

@@ -1,4 +1,4 @@
-import { ComponentType, FC, useMemo, useRef, useState } from "react"
+import { ComponentType, FC, useEffect, useMemo, useRef, useState } from "react"
 // eslint-disable-next-line no-restricted-imports
 import { TextInput, TextStyle, ViewStyle } from "react-native"
 import { ErrorCode, Utils } from "tenpercent/shared"
@@ -8,16 +8,19 @@ import { TextButton } from "@/components/buttons/TextButton"
 import { CurrencyDropdown } from "@/components/CurrencyDropdown"
 import { HeaderTitle } from "@/components/HeaderTitle"
 import { PressableIcon } from "@/components/Icon"
-import { LanguageDropdown } from "@/components/LanguagesDropdown"
+import { fetchConfig, LanguageDropdown } from "@/components/LanguagesDropdown"
 import { Screen } from "@/components/Screen"
 import { Text } from "@/components/Text"
 import { TextField, type TextFieldAccessoryProps } from "@/components/TextField"
 import { useAuth } from "@/context/AuthContext"
 import { TxKeyPath } from "@/i18n"
+import { IClientConfigLanguage } from "@/interfaces/IClientConfigLanguages"
 import type { AppStackScreenProps } from "@/navigators/AppNavigator"
 import { GeneralApiProblemKind } from "@/services/api/apiProblem"
+import { ClientConfigService } from "@/services/ClientConfigService"
 import { useAppTheme } from "@/theme/context"
 import type { ThemedStyle } from "@/theme/types"
+import detectLanguage from "@/utils/detectLanguage"
 import {
   validateEmail,
   validatePassword,
@@ -42,6 +45,28 @@ export const SignUpScreen: FC<SignUpScreenProps> = (_props) => {
   const [languageError, setLanguageError] = useState<TxKeyPath | undefined>()
   const [currencyError, setCurrencyError] = useState<TxKeyPath | undefined>()
   const { doSignUp } = useAuth()
+
+  useEffect(() => {
+    const fetcher = async () => {
+      const currentUserLocale: string = detectLanguage()
+      const data = await fetchConfig()
+      if (Utils.isArrayNotEmpty(data!)) {
+        const config = data?.find((data) => {
+          const locale = data.locale.split("-")[0]
+          return locale === currentUserLocale
+        })
+        if (Utils.isNotNull(config!)) {
+          const inWork = config as IClientConfigLanguage
+          setCurrency(inWork.currencyCode)
+          setLanguage(inWork.locale)
+          return
+        }
+      }
+      setCurrency("USD")
+      setLanguage("en-US")
+    }
+    void fetcher()
+  }, [])
 
   const {
     themed,

@@ -45,6 +45,9 @@ packages/server/node_modules/
 packages/app/node_modules/
 node_modules/
 jspm_packages/
+packages/app/.expo
+packages/app/.maestro
+.expo
 
 # Snowpack dependency directory (https://snowpack.dev/)
 web_modules/

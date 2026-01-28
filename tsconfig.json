@@ -1,13 +1,16 @@
 {
-    "compilerOptions": {
-        "target": "ESNext",
-        "module": "ESNext",
-        "moduleResolution": "Node",
-        "strict": true,
-        "composite": true,
-        "paths": {
-            "tenpercent/shared": ["packages/shared/src"]
-        },
-        "allowSyntheticDefaultImports": true
-    }
+  "compilerOptions": {
+    "target": "ESNext",
+    "module": "ESNext",
+    "moduleResolution": "Node",
+    "strict": true,
+    "composite": true,
+    "paths": {
+      "tenpercent/shared": [
+        "packages/shared/src"
+      ]
+    },
+    "allowSyntheticDefaultImports": true
+  },
+  "extends": "expo/tsconfig.base"
 }

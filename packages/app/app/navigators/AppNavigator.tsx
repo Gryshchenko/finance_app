@@ -18,7 +18,6 @@ import { SignUpScreen } from "@/screens/SignUpScreen"
 import { WelcomeScreen } from "@/screens/WelcomeScreen"
 import { useAppTheme } from "@/theme/context"
 
-import { DemoNavigator, DemoTabParamList } from "./DemoNavigator"
 import { navigationRef, useBackButtonHandler } from "./navigationUtilities"
 
 /**
@@ -33,7 +32,6 @@ import { navigationRef, useBackButtonHandler } from "./navigationUtilities"
 export interface AppStackParamList extends ParamListBase {
   welcome: undefined
   login: undefined
-  demo: NavigatorScreenParams<DemoTabParamList>
   signUp: undefined
   signUpConfirmation: undefined
   overview: NavigatorScreenParams<OverviewTabParamList>
@@ -86,7 +84,6 @@ const AppStack = () => {
     return [
       { name: "welcome", component: WelcomeScreen },
       { name: "overview", component: OverviewNavigator },
-      { name: "demo", component: DemoNavigator },
     ]
   }
 

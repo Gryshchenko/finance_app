@@ -26,7 +26,6 @@ import {
   IncomesStackNavigator,
   IncomesStackParamList,
 } from "@/navigators/IncomesStackNavigator"
-import { DemoShowroomScreen } from "@/screens/DemoShowroomScreen/DemoShowroomScreen"
 import { SettingsScreen } from "@/screens/SettingsScreen"
 import { useAppTheme } from "@/theme/context"
 import type { ThemedStyle } from "@/theme/types"
@@ -165,17 +164,6 @@ export function OverviewNavigator() {
         <Tab.Screen
           name="settings"
           component={SettingsScreen}
-          options={{
-            tabBarLabel: translate("common:settings"),
-            tabBarIcon: ({ focused }) => (
-              <Icon icon="debug" color={focused ? colors.tint : colors.tintInactive} size={30} />
-            ),
-          }}
-        />
-        <Tab.Screen
-          name="DemoShowroom"
-          // @ts-ignore
-          component={DemoShowroomScreen}
           options={{
             tabBarLabel: translate("common:settings"),
             tabBarIcon: ({ focused }) => (

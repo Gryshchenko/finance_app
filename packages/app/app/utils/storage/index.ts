@@ -1,82 +1,82 @@
-import { MMKV } from "react-native-mmkv"
+import { createMMKV } from "react-native-mmkv"
+import AsyncStorage from "@react-native-async-storage/async-storage"
+import { Platform } from "react-native"
 
-export const storage = new MMKV({ id: "ten.percent.app" })
+const jsStore = {
+    async set(key: string, value: string) {
+        return AsyncStorage.setItem(key, value)
+    },
+    async getString(key: string) {
+        return AsyncStorage.getItem(key)
+    },
+    async remove(key: string) {
+        return AsyncStorage.removeItem(key)
+    },
+    async clearAll() {
+        return AsyncStorage.clear()
+    },
+}
 
-/**
- * Loads a string from storage.
- *
- * @param key The key to fetch.
- */
-export function loadString(key: string): string | null {
+let storage = jsStore
+
+if (Platform.OS !== "web") {
+    try {
+        // @ts-ignore
+        storage = createMMKV({ id: "ten.percent.app" });
+    } catch (e) {
+        console.warn("MMKV not available, falling back to AsyncStorage:", e)
+        storage = jsStore
+    }
+}
+
+
+export async function saveString(key: string, value: string) {
   try {
-    return storage.getString(key) ?? null
+    await storage.set(key, value)
+    return true
   } catch {
-    // not sure why this would fail... even reading the RN docs I'm unclear
+    return false
+  }
+}
+
+export async function loadString(key: string) {
+  try {
+    const result = await storage.getString(key)
+    return result ?? null
+  } catch {
     return null
   }
 }
 
-/**
- * Saves a string to storage.
- *
- * @param key The key to fetch.
- * @param value The value to store.
- */
-export function saveString(key: string, value: string): boolean {
+export async function save<T>(key: string, value: T) {
   try {
-    storage.set(key, value)
-    return true
+    return await saveString(key, JSON.stringify(value))
   } catch {
     return false
   }
 }
 
-/**
- * Loads something from storage and runs it thru JSON.parse.
- *
- * @param key The key to fetch.
- */
-export function load<T>(key: string): T | null {
-  let almostThere: string | null = null
+export async function load<T>(key: string): Promise<T | null> {
   try {
-    almostThere = loadString(key)
-    return JSON.parse(almostThere ?? "") as T
+    const result = await loadString(key)
+    return result != null ? (JSON.parse(result) as T) : null
   } catch {
-    return (almostThere as T) ?? null
+    return null
   }
 }
 
-/**
- * Saves an object to storage.
- *
- * @param key The key to fetch.
- * @param value The value to store.
- */
-export function save(key: string, value: unknown): boolean {
+export async function remove(key: string) {
   try {
-    saveString(key, JSON.stringify(value))
-    return true
-  } catch {
-    return false
-  }
-}
-
-/**
- * Removes something from storage.
- *
- * @param key The key to kill.
- */
-export function remove(key: string): void {
-  try {
-    storage.delete(key)
+    await storage.remove(key)
   } catch {}
 }
 
-/**
- * Burn it all to the ground.
- */
-export function clear(): void {
+export async function clear() {
   try {
-    storage.clearAll()
+    await storage.clearAll()
   } catch {}
+}
+
+export {
+    storage
 }
