@@ -1,91 +1,91 @@
 {
-  "name": "tenpercent",
-  "slug": "tenpercent",
-  "scheme": "tenpercent",
-  "version": "1.0.0",
-  "orientation": "portrait",
-  "userInterfaceStyle": "automatic",
-  "icon": "./assets/images/app-icon-all.png",
-  "updates": {
-    "fallbackToCacheTimeout": 0
-  },
-  "newArchEnabled": true,
-  "jsEngine": "hermes",
-  "assetBundlePatterns": ["**/*"],
-  "android": {
-    "icon": "./assets/images/app-icon-android-legacy.png",
-    "package": "com.tenpercent",
-    "adaptiveIcon": {
-      "foregroundImage": "./assets/images/app-icon-android-adaptive-foreground.png",
-      "backgroundImage": "./assets/images/app-icon-android-adaptive-background.png"
+    "name": "tenpercent",
+    "slug": "tenpercent",
+    "scheme": "tenpercent",
+    "version": "1.0.0",
+    "orientation": "portrait",
+    "userInterfaceStyle": "automatic",
+    "icon": "./assets/images/app-icon-all.png",
+    "updates": {
+        "fallbackToCacheTimeout": 0
     },
-    "allowBackup": false,
-    "edgeToEdgeEnabled": true
-  },
-  "ios": {
-    "icon": "./assets/images/app-icon-ios.png",
-    "supportsTablet": true,
-    "bundleIdentifier": "com.tenpercent",
-    "privacyManifests": {
-      "NSPrivacyAccessedAPITypes": [
-        {
-          "NSPrivacyAccessedAPIType": "NSPrivacyAccessedAPICategoryUserDefaults",
-          "NSPrivacyAccessedAPITypeReasons": ["CA92.1"]
+    "newArchEnabled": true,
+    "jsEngine": "hermes",
+    "assetBundlePatterns": ["**/*"],
+    "android": {
+        "icon": "./assets/images/app-icon-android-legacy.png",
+        "package": "com.tenpercent",
+        "adaptiveIcon": {
+            "foregroundImage": "./assets/images/app-icon-android-adaptive-foreground.png",
+            "backgroundImage": "./assets/images/app-icon-android-adaptive-background.png"
+        },
+        "allowBackup": false,
+        "edgeToEdgeEnabled": true
+    },
+    "ios": {
+        "icon": "./assets/images/app-icon-ios.png",
+        "supportsTablet": true,
+        "bundleIdentifier": "com.tenpercent",
+        "privacyManifests": {
+            "NSPrivacyAccessedAPITypes": [
+                {
+                    "NSPrivacyAccessedAPIType": "NSPrivacyAccessedAPICategoryUserDefaults",
+                    "NSPrivacyAccessedAPITypeReasons": ["CA92.1"]
+                }
+            ]
+        },
+        "infoPlist": {
+            "ITSAppUsesNonExemptEncryption": false
         }
-      ]
     },
-    "infoPlist": {
-      "ITSAppUsesNonExemptEncryption": false
-    }
-  },
-  "web": {
-    "favicon": "./assets/images/app-icon-web-favicon.png",
-    "bundler": "metro"
-  },
-  "plugins": [
-    "expo-localization",
-    "expo-font",
-    [
-      "expo-secure-store",
-      {
-        "configureAndroidBackup": true,
-        "faceIDPermission": "Allow $(PRODUCT_NAME) to access your Face ID biometric data."
-      }
+    "web": {
+        "favicon": "./assets/images/app-icon-web-favicon.png",
+        "bundler": "metro"
+    },
+    "plugins": [
+        "expo-localization",
+        "expo-font",
+        [
+            "expo-secure-store",
+            {
+                "configureAndroidBackup": true,
+                "faceIDPermission": "Allow $(PRODUCT_NAME) to access your Face ID biometric data."
+            }
+        ],
+        [
+            "expo-local-authentication",
+            {
+                "faceIDPermission": "Allow $(PRODUCT_NAME) to use Face ID."
+            }
+        ],
+        [
+            "expo-splash-screen",
+            {
+                "image": "./assets/images/app-icon-android-adaptive-foreground.png",
+                "imageWidth": 300,
+                "resizeMode": "contain",
+                "backgroundColor": "#191015"
+            }
+        ],
+        [
+            "react-native-edge-to-edge",
+            {
+                "android": {
+                    "parentTheme": "Light",
+                    "enforceNavigationBarContrast": false
+                }
+            }
+        ]
     ],
-    [
-      "expo-local-authentication",
-      {
-        "faceIDPermission": "Allow $(PRODUCT_NAME) to use Face ID."
-      }
-    ],
-    [
-      "expo-splash-screen",
-      {
-        "image": "./assets/images/app-icon-android-adaptive-foreground.png",
-        "imageWidth": 300,
-        "resizeMode": "contain",
-        "backgroundColor": "#191015"
-      }
-    ],
-    [
-      "react-native-edge-to-edge",
-      {
-        "android": {
-          "parentTheme": "Light",
-          "enforceNavigationBarContrast": false
+    "experiments": {
+        "tsconfigPaths": true
+    },
+    "extra": {
+        "ignite": {
+            "version": "11.0.1"
+        },
+        "eas": {
+            "projectId": "f1555105-f9fb-4f2e-8fb9-595df0dd969e"
         }
-      }
-    ]
-  ],
-  "experiments": {
-    "tsconfigPaths": true
-  },
-  "extra": {
-    "ignite": {
-      "version": "11.0.1"
-    },
-    "eas": {
-      "projectId": "f1555105-f9fb-4f2e-8fb9-595df0dd969e"
     }
-  }
 }

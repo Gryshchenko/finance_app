@@ -2,13 +2,13 @@
  * The options used to configure apisauce.
  */
 export interface ApiConfig {
-  /**
-   * The URL of the api.
-   */
-  url: string
+    /**
+     * The URL of the api.
+     */
+    url: string;
 
-  /**
-   * Milliseconds before we timeout the request.
-   */
-  timeout: number
+    /**
+     * Milliseconds before we timeout the request.
+     */
+    timeout: number;
 }

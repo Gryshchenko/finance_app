@@ -1,8 +1,8 @@
-import { useState, useEffect, useRef } from "react"
-import { BackHandler, Linking, Platform } from "react-native"
-import { createNavigationContainerRef } from "@react-navigation/native"
-import Config from "@/config"
-import { useIsMounted } from "@/utils/useIsMounted"
+import { useState, useEffect, useRef } from 'react';
+import { BackHandler, Linking, Platform } from 'react-native';
+import { createNavigationContainerRef } from '@react-navigation/native';
+import Config from '@/config';
+import { useIsMounted } from '@/utils/useIsMounted';
 /**
  * Reference to the root App Navigator.
  *
@@ -13,20 +13,20 @@ import { useIsMounted } from "@/utils/useIsMounted"
  * The types on this reference will only let you reference top level navigators. If you have
  * nested navigators, you'll need to use the `useNavigation` with the stack navigator's ParamList type.
  */
-export const navigationRef = createNavigationContainerRef()
+export const navigationRef = createNavigationContainerRef();
 /**
  * Gets the current screen from any navigation state.
  * @param {NavigationState | PartialState<NavigationState>} state - The navigation state to traverse.
  * @returns {string} - The name of the current screen.
  */
 export function getActiveRouteName(state) {
-  const route = state.routes[state.index ?? 0]
-  // Found the active route -- return the name
-  if (!route.state) return route.name
-  // Recursive call to deal with nested routers
-  return getActiveRouteName(route.state)
+    const route = state.routes[state.index ?? 0];
+    // Found the active route -- return the name
+    if (!route.state) return route.name;
+    // Recursive call to deal with nested routers
+    return getActiveRouteName(route.state);
 }
-const iosExit = () => false
+const iosExit = () => false;
 /**
  * Hook that handles Android back button presses and forwards those on to
  * the navigation or allows exiting the app.
@@ -35,38 +35,38 @@ const iosExit = () => false
  * @returns {void}
  */
 export function useBackButtonHandler(canExit) {
-  // The reason we're using a ref here is because we need to be able
-  // to update the canExit function without re-setting up all the listeners
-  const canExitRef = useRef(Platform.OS !== "android" ? iosExit : canExit)
-  useEffect(() => {
-    canExitRef.current = canExit
-  }, [canExit])
-  useEffect(() => {
-    // We'll fire this when the back button is pressed on Android.
-    const onBackPress = () => {
-      if (!navigationRef.isReady()) {
-        return false
-      }
-      // grab the current route
-      const routeName = getActiveRouteName(navigationRef.getRootState())
-      // are we allowed to exit?
-      if (canExitRef.current(routeName)) {
-        // exit and let the system know we've handled the event
-        BackHandler.exitApp()
-        return true
-      }
-      // we can't exit, so let's turn this into a back action
-      if (navigationRef.canGoBack()) {
-        navigationRef.goBack()
-        return true
-      }
-      return false
-    }
-    // Subscribe when we come to life
-    const subscription = BackHandler.addEventListener("hardwareBackPress", onBackPress)
-    // Unsubscribe when we're done
-    return () => subscription.remove()
-  }, [])
+    // The reason we're using a ref here is because we need to be able
+    // to update the canExit function without re-setting up all the listeners
+    const canExitRef = useRef(Platform.OS !== 'android' ? iosExit : canExit);
+    useEffect(() => {
+        canExitRef.current = canExit;
+    }, [canExit]);
+    useEffect(() => {
+        // We'll fire this when the back button is pressed on Android.
+        const onBackPress = () => {
+            if (!navigationRef.isReady()) {
+                return false;
+            }
+            // grab the current route
+            const routeName = getActiveRouteName(navigationRef.getRootState());
+            // are we allowed to exit?
+            if (canExitRef.current(routeName)) {
+                // exit and let the system know we've handled the event
+                BackHandler.exitApp();
+                return true;
+            }
+            // we can't exit, so let's turn this into a back action
+            if (navigationRef.canGoBack()) {
+                navigationRef.goBack();
+                return true;
+            }
+            return false;
+        };
+        // Subscribe when we come to life
+        const subscription = BackHandler.addEventListener('hardwareBackPress', onBackPress);
+        // Unsubscribe when we're done
+        return () => subscription.remove();
+    }, []);
 }
 /**
  * This helper function will determine whether we should enable navigation persistence
@@ -75,11 +75,11 @@ export function useBackButtonHandler(canExit) {
  * @returns {boolean} - Whether to restore navigation state by default.
  */
 function navigationRestoredDefaultState(persistNavigation) {
-  if (persistNavigation === "always") return false
-  if (persistNavigation === "dev" && __DEV__) return false
-  if (persistNavigation === "prod" && !__DEV__) return false
-  // all other cases, disable restoration by returning true
-  return true
+    if (persistNavigation === 'always') return false;
+    if (persistNavigation === 'dev' && __DEV__) return false;
+    if (persistNavigation === 'prod' && !__DEV__) return false;
+    // all other cases, disable restoration by returning true
+    return true;
 }
 /**
  * Custom hook for persisting navigation state.
@@ -88,45 +88,45 @@ function navigationRestoredDefaultState(persistNavigation) {
  * @returns {object} - The navigation state and persistence functions.
  */
 export function useNavigationPersistence(storage, persistenceKey) {
-  const [initialNavigationState, setInitialNavigationState] = useState()
-  const isMounted = useIsMounted()
-  const initNavState = navigationRestoredDefaultState(Config.persistNavigation)
-  const [isRestored, setIsRestored] = useState(initNavState)
-  const routeNameRef = useRef(undefined)
-  const onNavigationStateChange = (state) => {
-    const previousRouteName = routeNameRef.current
-    if (state !== undefined) {
-      const currentRouteName = getActiveRouteName(state)
-      if (previousRouteName !== currentRouteName) {
-        // track screens.
-        if (__DEV__) {
-          console.log(currentRouteName)
+    const [initialNavigationState, setInitialNavigationState] = useState();
+    const isMounted = useIsMounted();
+    const initNavState = navigationRestoredDefaultState(Config.persistNavigation);
+    const [isRestored, setIsRestored] = useState(initNavState);
+    const routeNameRef = useRef(undefined);
+    const onNavigationStateChange = (state) => {
+        const previousRouteName = routeNameRef.current;
+        if (state !== undefined) {
+            const currentRouteName = getActiveRouteName(state);
+            if (previousRouteName !== currentRouteName) {
+                // track screens.
+                if (__DEV__) {
+                    console.log(currentRouteName);
+                }
+            }
+            // Save the current route name for later comparison
+            routeNameRef.current = currentRouteName;
+            // Persist state to storage
+            storage.save(persistenceKey, state);
         }
-      }
-      // Save the current route name for later comparison
-      routeNameRef.current = currentRouteName
-      // Persist state to storage
-      storage.save(persistenceKey, state)
-    }
-  }
-  const restoreState = async () => {
-    try {
-      const initialUrl = await Linking.getInitialURL()
-      // Only restore the state if app has not started from a deep link
-      if (!initialUrl) {
-        const state = await storage.load(persistenceKey)
-        if (state) setInitialNavigationState(state)
-      }
-    } finally {
-      if (isMounted()) setIsRestored(true)
-    }
-  }
-  useEffect(() => {
-    if (!isRestored) restoreState()
-    // runs once on mount
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [])
-  return { onNavigationStateChange, restoreState, isRestored, initialNavigationState }
+    };
+    const restoreState = async () => {
+        try {
+            const initialUrl = await Linking.getInitialURL();
+            // Only restore the state if app has not started from a deep link
+            if (!initialUrl) {
+                const state = await storage.load(persistenceKey);
+                if (state) setInitialNavigationState(state);
+            }
+        } finally {
+            if (isMounted()) setIsRestored(true);
+        }
+    };
+    useEffect(() => {
+        if (!isRestored) restoreState();
+        // runs once on mount
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, []);
+    return { onNavigationStateChange, restoreState, isRestored, initialNavigationState };
 }
 /**
  * use this to navigate without the navigation
@@ -136,10 +136,10 @@ export function useNavigationPersistence(storage, persistenceKey) {
  * @param {unknown} params - The params to pass to the route.
  */
 export function navigate(name, params) {
-  if (navigationRef.isReady()) {
-    // @ts-expect-error
-    navigationRef.navigate(name, params)
-  }
+    if (navigationRef.isReady()) {
+        // @ts-expect-error
+        navigationRef.navigate(name, params);
+    }
 }
 /**
  * This function is used to go back in a navigation stack, if it's possible to go back.
@@ -148,9 +148,9 @@ export function navigate(name, params) {
  * The navigationRef variable is set in the App component.
  */
 export function goBack() {
-  if (navigationRef.isReady() && navigationRef.canGoBack()) {
-    navigationRef.goBack()
-  }
+    if (navigationRef.isReady() && navigationRef.canGoBack()) {
+        navigationRef.goBack();
+    }
 }
 /**
  * resetRoot will reset the root navigation state to the given params.
@@ -158,7 +158,7 @@ export function goBack() {
  * @returns {void}
  */
 export function resetRoot(state = { index: 0, routes: [] }) {
-  if (navigationRef.isReady()) {
-    navigationRef.resetRoot(state)
-  }
+    if (navigationRef.isReady()) {
+        navigationRef.resetRoot(state);
+    }
 }

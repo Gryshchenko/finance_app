@@ -1,12 +1,12 @@
-import { ForwardedRef, forwardRef, PropsWithoutRef, ReactElement, RefObject } from "react"
-import { FlatList } from "react-native"
-import { FlashList, FlashListProps } from "@shopify/flash-list"
+import { ForwardedRef, forwardRef, PropsWithoutRef, ReactElement, RefObject } from 'react';
+import { FlatList } from 'react-native';
+import { FlashList, FlashListProps } from '@shopify/flash-list';
 
-import { isRTL } from "@/i18n"
+import { isRTL } from '@/i18n';
 
-export type ListViewRef<T> = FlashList<T> | FlatList<T>
+export type ListViewRef<T> = FlashList<T> | FlatList<T>;
 
-export type ListViewProps<T> = PropsWithoutRef<FlashListProps<T>>
+export type ListViewProps<T> = PropsWithoutRef<FlashListProps<T>>;
 
 /**
  * This is a Higher Order Component meant to ease the pain of using @shopify/flash-list
@@ -25,18 +25,16 @@ export type ListViewProps<T> = PropsWithoutRef<FlashListProps<T>>
  * @param {RefObject<ListViewRef>} forwardRef - An optional forwarded ref.
  * @returns {JSX.Element} The rendered `ListView` component.
  */
-const ListViewComponent = forwardRef(
-  <T,>(props: ListViewProps<T>, ref: ForwardedRef<ListViewRef<T>>) => {
-    const ListComponentWrapper = isRTL ? FlatList : FlashList
+const ListViewComponent = forwardRef(<T,>(props: ListViewProps<T>, ref: ForwardedRef<ListViewRef<T>>) => {
+    const ListComponentWrapper = isRTL ? FlatList : FlashList;
 
-    return <ListComponentWrapper {...props} ref={ref} />
-  },
-)
+    return <ListComponentWrapper {...props} ref={ref} />;
+});
 
-ListViewComponent.displayName = "ListView"
+ListViewComponent.displayName = 'ListView';
 
 export const ListView = ListViewComponent as <T>(
-  props: ListViewProps<T> & {
-    ref?: RefObject<ListViewRef<T> | null>
-  },
-) => ReactElement
+    props: ListViewProps<T> & {
+        ref?: RefObject<ListViewRef<T> | null>;
+    },
+) => ReactElement;

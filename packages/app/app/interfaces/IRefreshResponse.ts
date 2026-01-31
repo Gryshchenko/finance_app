@@ -1,3 +1,3 @@
 export interface IRefreshResponse {
-  token: string
+    token: string;
 }

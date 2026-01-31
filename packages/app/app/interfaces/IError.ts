@@ -1,6 +1,6 @@
-import { ErrorCode } from "tenpercent/shared"
+import { ErrorCode } from 'tenpercent/shared';
 
 export interface IError {
-  message: string
-  errorCode?: ErrorCode
+    message: string;
+    errorCode?: ErrorCode;
 }

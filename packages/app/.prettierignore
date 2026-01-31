@@ -7,3 +7,10 @@ ignite/ignite.json
 package.json
 .eslintignore
 *.ejs
+src/**/*.d.ts
+submodule
+dist
+jest-coverage
+playwright-report
+pnpm-lock.yaml
+.pnpm-store

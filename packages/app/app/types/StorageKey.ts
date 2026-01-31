@@ -1,3 +1,3 @@
 export enum StorageKey {
-  isSavePassword = "isSavePassword",
+    isSavePassword = 'isSavePassword',
 }

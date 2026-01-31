@@ -1,7 +1,7 @@
-import { forwardRef } from "react"
-import { FlatList } from "react-native"
-import { FlashList } from "@shopify/flash-list"
-import { isRTL } from "@/i18n"
+import { forwardRef } from 'react';
+import { FlatList } from 'react-native';
+import { FlashList } from '@shopify/flash-list';
+import { isRTL } from '@/i18n';
 /**
  * This is a Higher Order Component meant to ease the pain of using @shopify/flash-list
  * when there is a chance that a user would have their device language set to an
@@ -20,8 +20,8 @@ import { isRTL } from "@/i18n"
  * @returns {JSX.Element} The rendered `ListView` component.
  */
 const ListViewComponent = forwardRef((props, ref) => {
-  const ListComponentWrapper = isRTL ? FlatList : FlashList
-  return <ListComponentWrapper {...props} ref={ref} />
-})
-ListViewComponent.displayName = "ListView"
-export const ListView = ListViewComponent
+    const ListComponentWrapper = isRTL ? FlatList : FlashList;
+    return <ListComponentWrapper {...props} ref={ref} />;
+});
+ListViewComponent.displayName = 'ListView';
+export const ListView = ListViewComponent;

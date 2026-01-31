@@ -1,5 +1,5 @@
 export enum ComponentType {
-  Create = "Create",
-  View = "View",
-  Edit = "Edit",
+    Create = 'Create',
+    View = 'View',
+    Edit = 'Edit',
 }
