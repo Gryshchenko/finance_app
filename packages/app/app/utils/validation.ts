@@ -1,4 +1,6 @@
 import { TxKeyPath } from "@/i18n"
+import { Utils } from 'tenpercent/shared';
+import { IClientConfigLanguage } from '@/interfaces/IClientConfigLanguages';
 
 export enum ValidationTypes {
   REQUIRED = "validation:required",
@@ -11,6 +13,9 @@ export enum ValidationTypes {
   PASSWORD_LOWERCASE = "validation:passwordLowercase",
   PASSWORD_NUMBER = "validation:passwordNumber",
   PASSWORD_SPECIAL = "validation:passwordSpecial",
+
+  LANGUAGE = "validation:unsupportedLanguage",
+  CURRENCY = "validation:unsupportedCurrency",
 
   NAME = "validation:name",
   MIN_LENGTH = "validation:minLength",
@@ -41,6 +46,21 @@ export function validatePassword(password: string | undefined): TxKeyPath | unde
 export function validatePublicName(name: string | undefined): TxKeyPath | undefined {
   if (!name || name.length === 0) return ValidationTypes.REQUIRED
   if (!/^[a-zA-Z0-9]{3,50}$/.test(name)) return ValidationTypes.NAME
+  return undefined
+}
+
+
+export function validateLanguage(language: string | undefined, config: IClientConfigLanguage[] | undefined): TxKeyPath | undefined {
+  if (!language || language.length === 0) return ValidationTypes.REQUIRED
+  const result = config?.find(({locale}) => locale === language);
+  if (Utils.isNull(result)) return ValidationTypes.LANGUAGE
+  return undefined
+}
+
+export function validateCurrency(code: string | undefined, config: IClientConfigLanguage[] | undefined): TxKeyPath | undefined {
+  if (!code || code.length === 0) return ValidationTypes.REQUIRED
+  const result = config?.find(({currencyCode}) => currencyCode === code);
+  if (Utils.isNull(result)) return ValidationTypes.CURRENCY
   return undefined
 }
 

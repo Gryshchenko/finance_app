@@ -4,9 +4,8 @@ import { HttpCode } from "tenpercent/shared"
 import { ResponseStatusType } from "tenpercent/shared"
 
 import { TxKeyPath } from "@/i18n"
-import { translate } from "@/i18n/translate"
-import AlertService from "@/services/AlertService"
 import { BaseError } from "@/utils/errors/BaseError"
+import ToastService from "@/services/ToastService"
 
 /**
  * Enum representing the possible types of general API problems.
@@ -113,7 +112,7 @@ export function buildGeneralApiBadData(error: BaseError): GeneralApiProblem {
 
 export function buildGeneralApiBaseHandler(
   problem: GeneralApiProblem,
-  handler: (text: TxKeyPath) => void = (text: TxKeyPath) => AlertService.error(translate(text)),
+  handler: (text: TxKeyPath) => void = (text: TxKeyPath) => ToastService.error({ message: text }),
 ): void {
   switch (problem.kind) {
     case GeneralApiProblemKind.Forbidden:

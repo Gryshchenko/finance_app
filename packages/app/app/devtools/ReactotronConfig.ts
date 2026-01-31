@@ -4,14 +4,15 @@
  * @see https://github.com/infinitered/reactotron
  */
 import { Platform, NativeModules } from "react-native"
+import { createMMKV } from "react-native-mmkv"
 import { ArgType } from "reactotron-core-client"
 import { ReactotronReactNative } from "reactotron-react-native"
 import mmkvPlugin from "reactotron-react-native-mmkv"
 
 import { goBack, resetRoot, navigate } from "@/navigators/navigationUtilities"
-import { storage } from "@/utils/storage"
 
 import { Reactotron } from "./ReactotronClient"
+import { SecureBiometricStorage } from '@/services/SecureBiometricStorage';
 
 const reactotron = Reactotron.configure({
   name: require("../../package.json").name,
@@ -21,8 +22,7 @@ const reactotron = Reactotron.configure({
   },
 })
 
-// @ts-ignore
-reactotron.use(mmkvPlugin<ReactotronReactNative>({ storage }))
+reactotron.use(mmkvPlugin<ReactotronReactNative>({ storage: createMMKV() }))
 
 if (Platform.OS !== "web") {
   reactotron.useReactNative({

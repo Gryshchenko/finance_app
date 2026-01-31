@@ -93,7 +93,8 @@ export function Dropdown<T>({
   const $triggers = [
     themed($trigger),
     themed($inputWrapperStyles),
-    isOpen ? themed($triggerBorderFocusStyle) : themed($triggerBorderNoFocusStyle),
+    (status === "error") && themed({ borderColor: colors.error }),
+    status !== "error" && (isOpen ? themed($triggerBorderFocusStyle) : themed($triggerBorderNoFocusStyle)),
   ]
   const $triggersText = [
     themed($triggerText),
@@ -165,9 +166,10 @@ const $trigger: ThemedStyle<ViewStyle> = ({ colors }) => ({
   shadowOpacity: 0.05,
   shadowRadius: 2,
   elevation: 1,
+  height: 54
 })
 const $triggerBorderFocusStyle: ThemedStyle<ViewStyle> = ({ colors }) => ({
-  borderColor: colors.border,
+  borderColor: colors.palette.neutral900,
 })
 const $triggerBorderNoFocusStyle: ThemedStyle<ViewStyle> = ({ colors }) => ({
   borderColor: colors.border,

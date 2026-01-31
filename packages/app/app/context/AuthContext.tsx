@@ -23,13 +23,11 @@ import { SignupService } from "@/services/SignUpService"
 import { StorageKey } from "@/types/StorageKey"
 import { ValidationError } from "@/utils/errors/ValidationError"
 import { Logger } from "@/utils/logger/Logger"
-import { saveString } from "@/utils/storage"
+import { SecureBiometricStorage } from '@/services/SecureBiometricStorage';
 
 export interface AuthContextType {
   isAuthenticated: boolean
   isUserConfirmed: boolean
-  setIsPasswordSaveCheckbox: (save: boolean) => void
-  isPasswordSaveCheckbox: boolean
   doSetUserConfirmed: () => void
   doLogout: () => Promise<boolean>
   doLogin: ({ email, password }: { email: string; password: string }) => Promise<boolean>
@@ -110,15 +108,9 @@ export const AuthProvider: FC<PropsWithChildren<AuthProviderProps>> = ({ childre
         await AuthService.instance().unauthorized()
         setIsUserConfirmed(false)
         setIsAuthenticated(false)
-        saveString(StorageKey.isSavePassword, String(false))
         _logger.error("Auto authentication failed due reason: ", (e as { message: string }).message)
       }
     })()
-  }, [])
-
-  const setIsPasswordSaveCheckbox = useCallback((save: boolean) => {
-    setIsPasswordSave(save)
-    saveString(StorageKey.isSavePassword, String(save))
   }, [])
 
   async function doAuthorize({
@@ -238,13 +230,15 @@ export const AuthProvider: FC<PropsWithChildren<AuthProviderProps>> = ({ childre
   const doLogout = useCallback(async (): Promise<boolean> => {
     try {
       const response = await LoginService.instance().doLogout()
+      const storage = new SecureBiometricStorage()
+
       switch (response.kind) {
         case GeneralApiProblemKind.Ok: {
           await AuthService.instance().unauthorized()
           setIsAuthenticated(false)
           setIsUserConfirmed(false)
           setIsPasswordSave(false)
-          saveString(StorageKey.isSavePassword, String(false))
+          await storage.save(StorageKey.isSavePassword, String(false))
           return true
         }
         default: {
@@ -261,9 +255,7 @@ export const AuthProvider: FC<PropsWithChildren<AuthProviderProps>> = ({ childre
 
   const value: AuthContextType = {
     isAuthenticated,
-    isPasswordSaveCheckbox,
     isUserConfirmed,
-    setIsPasswordSaveCheckbox,
     doLogin,
     doSignUp,
     doLogout,

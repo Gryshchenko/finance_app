@@ -46,6 +46,8 @@ const en = {
     EMAIL_CONFIRMATION_ERROR: "We couldn’t confirm your email.",
   },
   validation: {
+    unsupportedLanguage: "Invalid language",
+    unsupportedCurrency: "Invalid currency",
     valueRequired: "This field is required",
     valueTooShort: "Value is too short",
     valueTooLong: "Value is too long",
@@ -99,6 +101,7 @@ const en = {
     error: "Error",
     info: "Info",
     warning: "Warning",
+    success: "Success",
     ok: "OK",
     cancel: "Cancel",
     back: "Back",

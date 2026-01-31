@@ -22,17 +22,19 @@ import { useAppTheme } from "@/theme/context"
 import type { ThemedStyle } from "@/theme/types"
 import detectLanguage from "@/utils/detectLanguage"
 import {
-  validateEmail,
+  validateCurrency,
+  validateEmail, validateLanguage,
   validatePassword,
   validatePublicName,
-  ValidationTypes,
-} from "@/utils/validation"
+  ValidationTypes
+} from '@/utils/validation';
 
 interface SignUpScreenProps extends AppStackScreenProps<"SignUp"> {}
 
 export const SignUpScreen: FC<SignUpScreenProps> = (_props) => {
   const authPasswordInput = useRef<TextInput>(null)
   const { navigation } = _props
+  const [config, setConfig] = useState<IClientConfigLanguage[]>()
   const [authPassword, setAuthPassword] = useState<string>("")
   const [publicName, setPublicName] = useState<string>("")
   const [language, setLanguage] = useState<string>("")
@@ -55,6 +57,7 @@ export const SignUpScreen: FC<SignUpScreenProps> = (_props) => {
           const locale = data.locale.split("-")[0]
           return locale === currentUserLocale
         })
+        setConfig(data);
         if (Utils.isNotNull(config!)) {
           const inWork = config as IClientConfigLanguage
           setCurrency(inWork.currencyCode)
@@ -77,15 +80,21 @@ export const SignUpScreen: FC<SignUpScreenProps> = (_props) => {
     navigation.navigate({ name: "login", params: undefined })
   }
   async function signUp() {
+
     const emailErr = validateEmail(authEmail)
     const passwordErr = validatePassword(authPassword)
     const publicNameError = validatePublicName(publicName)
+    const languageError = validateLanguage(language, config)
+    const currencyError = validateCurrency(currency, config)
+
 
     setPublicNameError(publicNameError)
     setEmailError(emailErr)
     setPasswordError(passwordErr)
+    setLanguageError(languageError)
+    setCurrencyError(currencyError)
 
-    if (emailErr || passwordErr || publicNameError) {
+    if (emailErr || passwordErr || publicNameError || currencyError || languageError) {
       return
     }
 
@@ -256,7 +265,7 @@ const $subTitle: ThemedStyle<TextStyle> = ({ colors, typography, spacing }) => (
   color: colors.textDim,
   fontFamily: typography.fonts.funnelSans.medium,
   fontSize: 27,
-  lineHeight: 20,
+  lineHeight: 25,
   fontWeight: "700",
   letterSpacing: 2,
   marginTop: spacing.xs,

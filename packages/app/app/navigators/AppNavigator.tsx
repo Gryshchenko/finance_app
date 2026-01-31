@@ -19,6 +19,7 @@ import { WelcomeScreen } from "@/screens/WelcomeScreen"
 import { useAppTheme } from "@/theme/context"
 
 import { navigationRef, useBackButtonHandler } from "./navigationUtilities"
+import ToastService from '@/services/ToastService';
 
 /**
  * This type allows TypeScript to know what routes are defined in this navigator
@@ -115,6 +116,7 @@ export const AppNavigator = (props: NavigationProps) => {
     <NavigationContainer ref={navigationRef} theme={navigationTheme} {...props}>
       <ErrorBoundary catchErrors={Config.catchErrors}>
         <AppStack />
+        {ToastService.setup()}
       </ErrorBoundary>
     </NavigationContainer>
   )

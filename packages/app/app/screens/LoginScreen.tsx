@@ -12,9 +12,7 @@ import { Text } from "@/components/Text"
 import { TextField, type TextFieldAccessoryProps } from "@/components/TextField"
 import { useAuth } from "@/context/AuthContext"
 import { TxKeyPath } from "@/i18n"
-import { translate } from "@/i18n/translate"
 import type { AppStackScreenProps } from "@/navigators/AppNavigator"
-import AlertService from "@/services/AlertService"
 import { useAppTheme } from "@/theme/context"
 import type { ThemedStyle } from "@/theme/types"
 import { validateEmail, validatePassword } from "@/utils/validation"
@@ -27,10 +25,8 @@ export const LoginScreen: FC<LoginScreenProps> = (_props) => {
   const [authPassword, setAuthPassword] = useState<string>("t7tDgenv6ed^b^^aaa")
   const [authEmail, setAuthEmail] = useState<string>("test_ifepj2nb@test.com")
   const [isAuthPasswordHidden, setIsAuthPasswordHidden] = useState<boolean>(true)
-  const [attemptsCount, setAttemptsCount] = useState<number>(0)
   const [emailError, setEmailError] = useState<TxKeyPath | undefined>()
   const [passwordError, setPasswordError] = useState<TxKeyPath | undefined>()
-  const [responseError, setResponseError] = useState<TxKeyPath | undefined>()
   const { doLogin } = useAuth()
 
   const {
@@ -45,35 +41,20 @@ export const LoginScreen: FC<LoginScreenProps> = (_props) => {
   async function login() {
     const emailErr = validateEmail(authEmail)
     const passwordErr = validatePassword(authPassword)
-    setResponseError(undefined)
     setEmailError(emailErr)
     setPasswordError(passwordErr)
 
     if (emailErr || passwordErr) {
       return
     }
-    setAttemptsCount(attemptsCount + 1)
-    if (!authEmail) {
-      AlertService.error(translate("validation:email"), translate("common:error"))
-      return
-    }
-    if (!authPassword) {
-      AlertService.error(translate("validation:passwordRequirements"), translate("common:error"))
-      return
-    }
-    if (emailError) return
-    if (passwordError) return
-
     const result = await doLogin({
       password: authPassword as string,
       email: authEmail as string,
     })
-    if (!result) {
-      setResponseError("errorCode:CREDENTIALS_ERROR")
-      return
+    if (result) {
+      setAuthEmail("")
+      setAuthPassword("")
     }
-    setAuthEmail("")
-    setAuthPassword("")
   }
 
   const PasswordRightAccessory: ComponentType<TextFieldAccessoryProps> = useMemo(
@@ -143,12 +124,8 @@ export const LoginScreen: FC<LoginScreenProps> = (_props) => {
       />
 
       <Pressable>
-        <Text style={themed($forgotPassword)}>Forgot password?</Text>
+        <Text tx={"loginScreen:forgotPassword"} style={themed($forgotPassword)} />
       </Pressable>
-
-      {responseError && (
-        <Text tx={responseError} preset="subheading" style={themed($responseError)} />
-      )}
 
       <Button
         testID="login-button"

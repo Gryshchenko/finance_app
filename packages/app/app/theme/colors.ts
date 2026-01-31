@@ -87,4 +87,35 @@ export const colors = {
    * Error Background.
    */
   errorBackground: palette.angry100,
+  toast: {
+    info: {
+      background: "#E5E7EB",
+      border: "#D1D5DB",
+      text: "#111827",
+      textDim: "#4B5563",
+      icon: "#1F2937",
+    },
+    success: {
+      background: "#ECFDF5",
+      border: "#A7F3D0",
+      text: "#065F46",
+      textDim: "#047857",
+      icon: "#059669",
+    },
+    warning: {
+      background: "#FFFBEB",
+      border: "#FDE68A",
+      text: "#92400E",
+      textDim: "#B45309",
+      icon: "#D97706",
+    },
+    error: {
+      background: "#FEF2F2",
+      border: "#FECACA",
+      text: "#7F1D1D",
+      textDim: "#991B1B",
+      icon: "#DC2626",
+    },
+    close: "#9CA3AF",
+  },
 } as const

@@ -13,7 +13,7 @@ import { SecureStorageKey } from "@/types/SecureStorageKey"
 import { ErrorUtils } from "@/utils/errors/ErrorUtils"
 import { ValidationError } from "@/utils/errors/ValidationError"
 import { Logger } from "@/utils/logger/Logger"
-import createStorage, { BiometryType } from "@/utils/storage/SecureStorage"
+import { SecureBiometricStorage } from '@/services/SecureBiometricStorage';
 
 interface IExtra {
   token: string
@@ -80,8 +80,8 @@ export class AuthService {
           errorCode: ErrorCode.CLIENT_UNKNOWN_ERROR,
         })
       }
-      const storage = await createStorage()
-      await storage.save(SecureStorageKey.AuthCredential, userStr, "")
+      const storage = new SecureBiometricStorage()
+      await storage.save(SecureStorageKey.AuthCredential, userStr)
     } catch (e) {
       this._logger.error("Secure storage set failed", (e as { message: string }).message)
     }
@@ -89,12 +89,12 @@ export class AuthService {
 
   public async getCredentialFromSecureStore(): Promise<(IUserClient & IExtra) | null> {
     try {
-      const storage = await createStorage()
-      const credential = await storage.get(SecureStorageKey.AuthCredential)
-      if (!credential?.key) {
+      const storage = new SecureBiometricStorage()
+      const key = await storage.get(SecureStorageKey.AuthCredential)
+      if (!key) {
         return null
       }
-      const user = this.deserialize(credential.key)
+      const user = this.deserialize(key)
       const error = ErrorUtils.validateObjectFields(
         {
           token: user?.token,
@@ -115,7 +115,7 @@ export class AuthService {
 
   public async cleanCredentialStore(): Promise<void> {
     try {
-      const storage = await createStorage()
+      const storage = new SecureBiometricStorage()
       await storage.remove(SecureStorageKey.AuthCredential)
     } catch (e) {
       this._logger.error("Secure storage cleanup failed", (e as { message: string }).message)
@@ -235,9 +235,5 @@ export class AuthService {
       await AuthService.instance().unauthorized()
     }
     return response
-  }
-  public async checkBiometry(): Promise<BiometryType> {
-    const storage = await createStorage()
-    return storage.checkBiometry()
   }
 }

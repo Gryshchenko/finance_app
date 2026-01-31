@@ -1,28 +1,18 @@
-import { useEffect, useState } from "react"
-import { Pressable, TextStyle, ViewStyle } from "react-native"
-import { MaterialIcons } from "@expo/vector-icons"
-import * as Keychain from "react-native-keychain"
+import { useEffect, useState } from 'react';
+import { Pressable, TextStyle, ViewStyle } from 'react-native';
+import { MaterialIcons } from '@expo/vector-icons';
 
-import { Text } from "@/components/Text"
-import { useAppTheme } from "@/theme/context"
-import { ThemedStyle } from "@/theme/types"
+import { Text } from '@/components/Text';
+import { useAppTheme } from '@/theme/context';
+import { ThemedStyle } from '@/theme/types';
+import { Logger } from '@/utils/logger/Logger';
+import { SecureBiometricStorage } from '@/services/SecureBiometricStorage';
+import { AuthenticationType } from 'expo-local-authentication';
 
 type QuickAccessType = "fingerprint" | "face" | null
 
 type Props = {
   onPress?: (type: QuickAccessType) => void
-}
-
-const mapBiometryType = (type: Keychain.BIOMETRY_TYPE | null): QuickAccessType => {
-  switch (type) {
-    case Keychain.BIOMETRY_TYPE.FACE_ID:
-      return "face"
-    case Keychain.BIOMETRY_TYPE.TOUCH_ID:
-    case Keychain.BIOMETRY_TYPE.FINGERPRINT:
-      return "fingerprint"
-    default:
-      return null
-  }
 }
 
 export const QuickAccessButton = ({}: Props) => {
@@ -33,11 +23,25 @@ export const QuickAccessButton = ({}: Props) => {
   const [type, setType] = useState<QuickAccessType>(null)
 
   useEffect(() => {
-    try {
-      Keychain?.getSupportedBiometryType().then((biometryType) => {
-        setType(mapBiometryType(biometryType))
-      })
-    } catch {}
+    const handler = async () => {
+      try {
+        const storage = new SecureBiometricStorage()
+        const isBiometricAvailable = await storage.isBiometricAvailable()
+        if (isBiometricAvailable) {
+          const support = await storage.supportedAuthenticationTypes();
+          if (support.includes(AuthenticationType.FACIAL_RECOGNITION)) {
+            setType('face')
+          }
+          if (support.includes(AuthenticationType.FINGERPRINT)) {
+            setType('fingerprint')
+          }
+
+        }
+      } catch (e: unknown) {
+        Logger.Of('QuickAccessButton').error(JSON.stringify(e))
+      }
+    }
+    void handler();
   }, [])
 
   if (!type) return null
