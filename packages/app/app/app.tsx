@@ -11,6 +11,7 @@
  * if you're interested in adding screens and navigators.
  */
 import { Platform } from 'react-native';
+
 if (__DEV__ && Platform.OS !== 'web') {
     // Load Reactotron in development only.
     // Note that you must be using metro's `inlineRequires` for this to work.
@@ -25,6 +26,8 @@ import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { KeyboardProvider } from 'react-native-keyboard-controller';
 import { initialWindowMetrics, SafeAreaProvider } from 'react-native-safe-area-context';
 
+import { SecureBiometricStorage } from '@/services/SecureBiometricStorage';
+
 import { AuthProvider } from './context/AuthContext';
 import { initI18n } from './i18n';
 import { AppNavigator } from './navigators/AppNavigator';
@@ -32,7 +35,6 @@ import { useNavigationPersistence } from './navigators/navigationUtilities';
 import { ThemeProvider } from './theme/context';
 import { customFontsToLoad } from './theme/typography';
 import { loadDateFnsLocale } from './utils/formatDate';
-import { SecureBiometricStorage } from '@/services/SecureBiometricStorage';
 
 export const NAVIGATION_PERSISTENCE_KEY = 'NAVIGATION_STATE';
 
@@ -43,7 +45,6 @@ const config = {
         Login: {
             path: '',
         },
-        Welcome: 'welcome',
         SignUp: 'signup',
         SignUpConfirmation: 'signupconfirmation',
         Overview: 'overview',

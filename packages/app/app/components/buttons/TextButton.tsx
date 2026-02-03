@@ -120,8 +120,9 @@ export function TextButton(props: TextButtonProps) {
         return [
             themed($viewPresets[preset]),
             $viewStyleOverride,
-            !!pressed && themed([$pressedViewPresets[preset], $pressedViewStyleOverride]),
+            !!pressed && themed([$pressedViewStyleOverride]),
             !!disabled && $disabledViewStyleOverride,
+            disabled && themed($disabledTextStyle),
         ];
     }
     /**
@@ -135,6 +136,7 @@ export function TextButton(props: TextButtonProps) {
             $textStyleOverride,
             !!pressed && themed([$pressedTextPresets[preset], $pressedTextStyleOverride]),
             !!disabled && $disabledTextStyleOverride,
+            disabled && themed($disabledTextStyle),
         ];
     }
 
@@ -184,21 +186,19 @@ const $baseTextStyle: ThemedStyle<TextStyle> = ({ typography, colors, spacing })
 
 const $viewPresets: Record<Presets, ThemedStyleArray<ViewStyle>> = {
     default: [$styles.row, $baseViewStyle],
-    filled: [$styles.row, $baseViewStyle, ({ colors }) => ({ backgroundColor: colors.palette.neutral300 })],
-    reversed: [$styles.row, $baseViewStyle, ({ colors }) => ({ backgroundColor: colors.palette.neutral800 })],
+    filled: [$styles.row, $baseViewStyle],
+    reversed: [$styles.row, $baseViewStyle],
 };
 
 const $textPresets: Record<Presets, ThemedStyleArray<TextStyle>> = {
     default: [$baseTextStyle],
-    filled: [$baseTextStyle],
-    reversed: [$baseTextStyle, ({ colors }) => ({ color: colors.palette.neutral100 })],
+    filled: [$baseTextStyle, ({ colors }) => ({ color: colors.text })],
+    reversed: [$baseTextStyle, ({ colors }) => ({ color: colors.text })],
 };
 
-const $pressedViewPresets: Record<Presets, ThemedStyle<ViewStyle>> = {
-    default: ({ colors }) => ({ backgroundColor: colors.palette.neutral200 }),
-    filled: ({ colors }) => ({ backgroundColor: colors.palette.neutral400 }),
-    reversed: ({ colors }) => ({ backgroundColor: colors.palette.neutral700 }),
-};
+const $disabledTextStyle: ThemedStyle<TextStyle> = () => ({
+    opacity: 0.6,
+});
 
 const $pressedTextPresets: Record<Presets, ThemedStyle<TextStyle>> = {
     default: () => ({ opacity: 0.5 }),

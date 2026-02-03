@@ -1,5 +1,5 @@
 import ToastManager, { Toast } from 'toastify-react-native';
-import React from 'react';
+
 import { DefaultToast } from '@/components/DefaultToast';
 import { TxKeyPath } from '@/i18n/index';
 
@@ -32,7 +32,6 @@ class ToastService {
             text1,
             text2,
             visibilityTime: duration,
-            autoHide: false,
             position: 'top',
             props: {
                 type,

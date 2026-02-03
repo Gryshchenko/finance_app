@@ -15,11 +15,10 @@ import { ErrorBoundary } from '@/screens/ErrorScreen/ErrorBoundary';
 import { LoginScreen } from '@/screens/LoginScreen';
 import { SignUpConfirmationScreen } from '@/screens/SignUpConfirmationScreen';
 import { SignUpScreen } from '@/screens/SignUpScreen';
-import { WelcomeScreen } from '@/screens/WelcomeScreen';
+import ToastService from '@/services/ToastService';
 import { useAppTheme } from '@/theme/context';
 
 import { navigationRef, useBackButtonHandler } from './navigationUtilities';
-import ToastService from '@/services/ToastService';
 
 /**
  * This type allows TypeScript to know what routes are defined in this navigator
@@ -79,10 +78,7 @@ const AppStack = () => {
             return [{ name: 'signUpConfirmation', component: SignUpConfirmationScreen }];
         }
 
-        return [
-            { name: 'welcome', component: WelcomeScreen },
-            { name: 'overview', component: OverviewNavigator },
-        ];
+        return [{ name: 'overview', component: OverviewNavigator }];
     };
 
     return (

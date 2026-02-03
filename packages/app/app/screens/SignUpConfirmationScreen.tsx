@@ -1,50 +1,49 @@
 import { FC, useEffect, useState } from 'react';
-import { TextStyle, ViewStyle } from 'react-native';
-import { IEmailConfirmationResponse } from 'tenpercent/shared';
+import { TextStyle, View, ViewStyle } from 'react-native';
+import { KeyboardAwareScrollView } from 'react-native-keyboard-controller';
+import { IEmailConfirmationResponse, Utils } from 'tenpercent/shared';
 import { IEmailResendResponse } from 'tenpercent/shared';
 import { EmailConfirmationStatusType } from 'tenpercent/shared';
 import { ErrorCode } from 'tenpercent/shared';
 import { Time } from 'tenpercent/shared';
 
 import { Button } from '@/components/buttons/Button';
+import { TextButton } from '@/components/buttons/TextButton';
+import { HeaderTitle } from '@/components/HeaderTitle';
+import { OtpCodeInput } from '@/components/OtpCodeInput';
 import { Screen } from '@/components/Screen';
 import { Text } from '@/components/Text';
-import { TextField } from '@/components/TextField';
 import { useAuth } from '@/context/AuthContext';
+import { useEditView } from '@/hooks/useEditView';
 import { TxKeyPath } from '@/i18n';
 import { translate } from '@/i18n/translate';
 import type { AppStackScreenProps } from '@/navigators/AppNavigator';
+import { signUpConfirmationShema } from '@/schems/validationSchemas';
 import AlertService from '@/services/AlertService';
 import { buildGeneralApiBaseHandler, GeneralApiProblemKind } from '@/services/api/apiProblem';
 import { AuthService } from '@/services/AuthService';
 import { SignupService } from '@/services/SignUpService';
+import ToastService from '@/services/ToastService';
 import { useAppTheme } from '@/theme/context';
 import type { ThemedStyle } from '@/theme/types';
+import { getMessageFromErrorCode } from '@/utils/getMessageFromErrorCode';
 import { Logger } from '@/utils/logger/Logger';
-import { useHeader } from '@/utils/useHeader';
-import { validateCode } from '@/utils/validation';
 
 interface SignUpConfirmationScreenProps extends AppStackScreenProps<'SignUpConfirmation'> {}
 
 const _logger: Logger = Logger.Of('SignUpConfirmationScreen');
 
 export const SignUpConfirmationScreen: FC<SignUpConfirmationScreenProps> = () => {
-    const [confirmationCode, setConfirmationCode] = useState<string>('');
-    const [validationCodeError, setValidationCodeError] = useState<TxKeyPath | undefined>();
+    const { form, handleChange, save, errors, setErrors } = useEditView<{ confirmationCode: string | null }>(
+        { confirmationCode: null },
+        signUpConfirmationShema,
+    );
     const [isResendDisabled, setIsResendDisabled] = useState(false);
     const [resendTimer, setResendTimer] = useState(0);
     const { doSetUserConfirmed } = useAuth();
 
     const { themed } = useAppTheme();
     const { doLogout } = useAuth();
-
-    useHeader(
-        {
-            rightTx: 'common:logOut',
-            onRightPress: doLogout,
-        },
-        [doLogout],
-    );
 
     function setTimer(expiresAt: string) {
         const seconds = Time.getSecondsLeft(expiresAt);
@@ -54,11 +53,6 @@ export const SignUpConfirmationScreen: FC<SignUpConfirmationScreenProps> = () =>
         }
     }
 
-    function unexpectedProperties(context: string, payload: unknown): void {
-        _logger.error(`${context} failed due reason: ${JSON.stringify(payload)}`);
-        setValidationCodeError('errorCode:UNEXPECTED_PROPERTY');
-    }
-
     useEffect(() => {
         const handler = async () => {
             const userId = AuthService.instance().userId as number;
@@ -66,15 +60,20 @@ export const SignUpConfirmationScreen: FC<SignUpConfirmationScreenProps> = () =>
             switch (response.kind) {
                 case GeneralApiProblemKind.Ok: {
                     const { expiresAt } = response.data as IEmailConfirmationResponse;
-                    setTimer(expiresAt);
+                    if (!expiresAt) {
+                        await resend();
+                    } else {
+                        setTimer(expiresAt);
+                    }
                     break;
                 }
                 default: {
+                    setResendTimer(0);
                     buildGeneralApiBaseHandler(response);
                 }
             }
         };
-        handler();
+        void handler();
     }, []);
 
     useEffect(() => {
@@ -83,24 +82,25 @@ export const SignUpConfirmationScreen: FC<SignUpConfirmationScreenProps> = () =>
             timer = setTimeout(() => setResendTimer(resendTimer - 1), 1000) as unknown;
         } else if (resendTimer === 0) {
             setIsResendDisabled(false);
-            setResendTimer(60);
+            setResendTimer(0);
+            clearTimeout(timer as number);
         }
         return () => clearTimeout(timer as number);
     }, [isResendDisabled, resendTimer]);
 
     async function verify() {
         try {
-            const userId = AuthService.instance().userId;
-            const codeErr = validateCode(confirmationCode);
-
-            setValidationCodeError(codeErr);
-            if (codeErr) {
+            const { confirmationCode } = form;
+            if (resendTimer <= 0) {
+                ToastService.error({ message: 'signUpConfirmation:expiredCode' });
                 return;
             }
+            if (!confirmationCode || errors.confirmationCode) return;
+            const userId = AuthService.instance().userId;
 
             if (!userId) {
                 _logger.error(`userId missed on verify action`);
-                AlertService.error(translate('common:error'), translate('errorCode:UNEXPECTED_PROPERTY' as TxKeyPath));
+                ToastService.error({ message: 'errorCode:UNEXPECTED_PROPERTY' });
                 return;
             }
 
@@ -113,13 +113,20 @@ export const SignUpConfirmationScreen: FC<SignUpConfirmationScreenProps> = () =>
                     const { status } = response.data as IEmailResendResponse;
                     if (status === EmailConfirmationStatusType.Confirmed) {
                         doSetUserConfirmed();
-                    } else {
-                        unexpectedProperties('Verify', 'mail not confirmed');
                     }
                     break;
                 }
                 case GeneralApiProblemKind.BadData: {
-                    unexpectedProperties('Verify', response);
+                    const errors = response.errors ?? [];
+                    for (const error of errors) {
+                        const payload = error?.payload;
+                        const errorCode = error?.errorCode;
+                        if (payload?.field === 'confirmationCode') {
+                            setErrors({ confirmationCode: 'validation:codeInvalided' });
+                        } else if (errorCode) {
+                            ToastService.error({ message: getMessageFromErrorCode(errorCode) });
+                        }
+                    }
                     break;
                 }
                 default: {
@@ -136,7 +143,7 @@ export const SignUpConfirmationScreen: FC<SignUpConfirmationScreenProps> = () =>
         const userId = AuthService.instance().userId;
         if (!userId) {
             _logger.error(`userId missed on verify action`);
-            AlertService.error(translate('common:error'), translate('errorCode:UNEXPECTED_PROPERTY' as TxKeyPath));
+            ToastService.info({ message: 'errorCode:UNEXPECTED_PROPERTY' });
             return;
         }
         try {
@@ -147,7 +154,9 @@ export const SignUpConfirmationScreen: FC<SignUpConfirmationScreenProps> = () =>
                     if (status === EmailConfirmationStatusType.Confirmed) {
                         doSetUserConfirmed();
                     } else {
+                        ToastService.info({ message: 'signUpConfirmation:codeSent' });
                         setTimer(expiresAt);
+                        handleChange('confirmationCode', '');
                     }
                     break;
                 }
@@ -156,9 +165,9 @@ export const SignUpConfirmationScreen: FC<SignUpConfirmationScreenProps> = () =>
                     for (const error of errors) {
                         const errorCode = error?.errorCode;
                         if (errorCode === ErrorCode.EMAIL_VERIFICATION_CODE_EXPIRED_ERROR) {
-                            setValidationCodeError('errorCode:EMAIL_VERIFICATION_CODE_EXPIRED_ERROR');
+                            ToastService.error({ message: 'errorCode:EMAIL_VERIFICATION_CODE_EXPIRED_ERROR' });
                         } else if (errorCode === ErrorCode.EMAIL_VERIFICATION_CODE_STILL_ACTIVE_ERROR) {
-                            setValidationCodeError('errorCode:EMAIL_VERIFICATION_CODE_STILL_ACTIVE_ERROR');
+                            ToastService.error({ message: 'errorCode:EMAIL_VERIFICATION_CODE_STILL_ACTIVE_ERROR' });
                         }
                     }
                     break;
@@ -172,67 +181,117 @@ export const SignUpConfirmationScreen: FC<SignUpConfirmationScreenProps> = () =>
             AlertService.error(translate('common:error'), translate('errorCode:UNEXPECTED_PROPERTY' as TxKeyPath));
         }
     }
+
     return (
         <Screen preset="auto" contentContainerStyle={themed($screenContentContainer)} safeAreaEdges={['top', 'bottom']}>
-            <Text testID="signUp-heading" tx="signUpConfirmation:title" preset="heading" style={themed($logIn)} />
-            <Text tx="signUpConfirmation:description" preset="subheading" style={themed($enterDetails)} />
-
-            <TextField
-                value={confirmationCode}
-                onChangeText={(code) => {
-                    if (validationCodeError) {
-                        setValidationCodeError(validateCode(code));
-                    }
-                    setConfirmationCode(code);
-                }}
-                containerStyle={themed($textField)}
-                autoCapitalize="none"
-                autoCorrect={false}
-                keyboardType="numeric"
-                labelTx="common:confirmationCodeFieldLabel"
-                placeholderTx="common:confirmationCodeFieldPlaceholder"
-                helperTx={validationCodeError}
-                status={validationCodeError ? 'error' : undefined}
-                maxLength={8}
-            />
-
-            <Button
-                testID="signUp-button"
-                tx="signUpConfirmation:confirmButton"
-                style={themed($tapButton)}
-                preset="reversed"
-                onPress={verify}
-            />
-
-            <Button
-                tx={isResendDisabled ? 'signUpConfirmation:resendInfo' : 'signUpConfirmation:resendButton'}
-                txOptions={isResendDisabled ? { seconds: Time.secondsToMinutes(resendTimer) } : undefined}
-                style={themed($tapButton)}
-                preset="default"
-                onPress={resend}
-                disabled={isResendDisabled}
-            />
+            <HeaderTitle subLogoText={'loginScreen:authorization'} />
+            <View style={themed($content)}>
+                <View style={themed($header)}>
+                    <Text tx={'signUpConfirmation:title'} style={themed($title)}></Text>
+                    <Text tx={'signUpConfirmation:description'} style={themed($subtitle)}></Text>
+                </View>
+                <KeyboardAwareScrollView bottomOffset={62}>
+                    <OtpCodeInput
+                        value={form?.confirmationCode ?? ''}
+                        helperTx={errors?.confirmationCode}
+                        status={errors?.confirmationCode ? 'error' : undefined}
+                        onFinish={async (code: string) => {
+                            handleChange('confirmationCode', code);
+                            await save();
+                            if (resendTimer > 0) {
+                                await verify();
+                            } else {
+                                ToastService.error({ message: 'signUpConfirmation:expiredCode' });
+                            }
+                        }}
+                    />
+                </KeyboardAwareScrollView>
+                <View style={themed($screen)}>
+                    <Text tx={resendTimer <= 0 ? 'signUpConfirmation:invalidCode' : undefined} style={themed($timer)}>
+                        {resendTimer <= 0 ? '' : Time.secondsToMinutes(resendTimer)}
+                    </Text>
+                    <Button
+                        testID="signUp-button"
+                        tx="signUpConfirmation:confirmButton"
+                        style={themed($tapButton)}
+                        preset={'reversed'}
+                        disabled={
+                            resendTimer <= 0 ||
+                            !Utils.isEmpty(errors?.confirmationCode as string) ||
+                            Utils.isEmpty(form?.confirmationCode as string)
+                        }
+                        onPress={verify}
+                    />
+                    <TextButton
+                        tx={'signUpConfirmation:resendButton'}
+                        style={themed($tapButton)}
+                        onPress={resend}
+                        preset={'reversed'}
+                        disabled={isResendDisabled}
+                    />
+                    <TextButton style={themed($tapButton)} tx="signUpConfirmation:goToLogin" onPress={doLogout} />
+                </View>
+            </View>
         </Screen>
     );
 };
 
+export const $header: ThemedStyle<ViewStyle> = ({ spacing }) => ({
+    marginTop: 40,
+    alignItems: 'center',
+    marginBottom: spacing.xxl,
+});
+
+export const $title: ThemedStyle<TextStyle> = ({ colors, typography }) => ({
+    fontSize: 24,
+    fontFamily: typography.primary.bold,
+    color: colors.text,
+    marginBottom: 12,
+    textAlign: 'center',
+});
+
+export const $subtitle: ThemedStyle<TextStyle> = ({ colors, typography }) => ({
+    fontSize: 14,
+    fontFamily: typography.primary.medium,
+    color: colors.textDim,
+    textAlign: 'center',
+    lineHeight: 20,
+});
 const $screenContentContainer: ThemedStyle<ViewStyle> = ({ spacing }) => ({
     paddingVertical: spacing.xxl,
     paddingHorizontal: spacing.lg,
 });
 
-const $logIn: ThemedStyle<TextStyle> = ({ spacing }) => ({
-    marginBottom: spacing.sm,
-});
-
-const $enterDetails: ThemedStyle<TextStyle> = ({ spacing }) => ({
-    marginBottom: spacing.lg,
-});
-
-const $textField: ThemedStyle<ViewStyle> = ({ spacing }) => ({
-    marginBottom: spacing.lg,
+export const $timer: ThemedStyle<TextStyle> = ({ colors, typography, spacing }) => ({
+    marginTop: spacing.xs,
+    marginBottom: spacing.md,
+    color: colors.textDim,
+    fontSize: 14,
+    fontFamily: typography.primary.medium,
+    letterSpacing: 1,
+    textAlign: 'center',
 });
 
 const $tapButton: ThemedStyle<ViewStyle> = ({ spacing }) => ({
     marginTop: spacing.xs,
+    width: '100%',
+});
+
+export const $screen: ThemedStyle<ViewStyle> = () => ({
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+    display: 'flex',
+    flexDirection: 'column',
+    width: '100%',
+});
+
+export const $content: ThemedStyle<ViewStyle> = ({ spacing }) => ({
+    flexGrow: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+    paddingHorizontal: spacing.lg,
+    width: '100%',
+    alignSelf: 'center',
+    marginTop: 100,
 });

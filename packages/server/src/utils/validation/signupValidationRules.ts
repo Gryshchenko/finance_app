@@ -18,9 +18,9 @@ const signupValidationRules = [
         max: 40,
         onlyASCII: true,
     }),
-    ...createSignupValidationRules('currencyId', 'number', {
-        min: 0,
-        max: Number.MAX_SAFE_INTEGER,
+    ...createSignupValidationRules('currencyCode', 'string', {
+        min: 1,
+        max: 10,
     }),
 ];
 

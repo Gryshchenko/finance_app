@@ -31,3 +31,7 @@ export function translate(key: TxKeyPath, options?: TOptions): string {
     }
     return key;
 }
+
+export function hasTranslate(key: TxKeyPath): boolean {
+    return i18n.exists(key);
+}

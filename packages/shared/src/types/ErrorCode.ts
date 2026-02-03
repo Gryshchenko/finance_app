@@ -53,3 +53,7 @@ export enum ErrorCode {
     CLIENT_UNKNOWN_ERROR = 6000,
     CLIENT_AUTH_ERROR = 6001,
 }
+
+export function getErrorCodeKey(code: number): string | undefined {
+    return ErrorCode[code];
+}

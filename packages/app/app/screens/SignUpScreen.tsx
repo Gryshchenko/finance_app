@@ -1,5 +1,4 @@
 import { ComponentType, FC, useEffect, useMemo, useRef, useState } from 'react';
-// eslint-disable-next-line no-restricted-imports
 import { TextInput, TextStyle, ViewStyle } from 'react-native';
 import { ErrorCode, Utils } from 'tenpercent/shared';
 
@@ -17,7 +16,6 @@ import { TxKeyPath } from '@/i18n';
 import { IClientConfigLanguage } from '@/interfaces/IClientConfigLanguages';
 import type { AppStackScreenProps } from '@/navigators/AppNavigator';
 import { GeneralApiProblemKind } from '@/services/api/apiProblem';
-import { ClientConfigService } from '@/services/ClientConfigService';
 import { useAppTheme } from '@/theme/context';
 import type { ThemedStyle } from '@/theme/types';
 import detectLanguage from '@/utils/detectLanguage';
@@ -50,24 +48,32 @@ export const SignUpScreen: FC<SignUpScreenProps> = (_props) => {
     const { doSignUp } = useAuth();
 
     useEffect(() => {
-        const fetcher = async () => {
-            const currentUserLocale: string = detectLanguage();
-            const data = await fetchConfig();
-            if (Utils.isArrayNotEmpty(data!)) {
-                const config = data?.find((data) => {
-                    const locale = data.locale.split('-')[0];
-                    return locale === currentUserLocale;
-                });
-                setConfig(data);
-                if (Utils.isNotNull(config!)) {
-                    const inWork = config as IClientConfigLanguage;
-                    setCurrency(inWork.currencyCode);
-                    setLanguage(inWork.locale);
-                    return;
-                }
-            }
+        const setDefault = () => {
             setCurrency('USD');
             setLanguage('en-US');
+        };
+        const fetcher = async () => {
+            try {
+                const currentUserLocale: string = detectLanguage();
+                const data = await fetchConfig();
+                if (Utils.isArrayNotEmpty(data!)) {
+                    const config = data?.find((data) => {
+                        const locale = data.locale.split('-')[0];
+                        return locale === currentUserLocale;
+                    });
+                    setConfig(data);
+                    if (Utils.isNotNull(config!)) {
+                        const inWork = config as IClientConfigLanguage;
+                        setCurrency(inWork.currencyCode);
+                        setLanguage(inWork.locale);
+                        return;
+                    } else {
+                        setDefault();
+                    }
+                }
+            } catch (e) {
+                setDefault();
+            }
         };
         void fetcher();
     }, []);
@@ -101,7 +107,8 @@ export const SignUpScreen: FC<SignUpScreenProps> = (_props) => {
             password: authPassword as string,
             email: authEmail as string,
             publicName: publicName as string,
-            locale: 'US-en',
+            locale: language,
+            currencyCode: currency,
         });
         switch (response.kind) {
             case GeneralApiProblemKind.Ok: {
@@ -127,6 +134,9 @@ export const SignUpScreen: FC<SignUpScreenProps> = (_props) => {
                     }
                     if (payload?.field === 'publicName') {
                         setPublicNameError(ValidationTypes.REQUIRED);
+                    }
+                    if (payload?.field === 'currencyId') {
+                        setCurrencyError(ValidationTypes.REQUIRED);
                     }
                 }
                 break;

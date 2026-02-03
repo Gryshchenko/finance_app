@@ -44,5 +44,6 @@ export function useEditView<T extends object>(initialData: T, schema?: Yup.Objec
         save,
         errors,
         validate,
+        setErrors,
     };
 }

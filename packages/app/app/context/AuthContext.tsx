@@ -1,17 +1,13 @@
-import { createContext, FC, PropsWithChildren, useCallback, useContext, useEffect, useState } from 'react';
+import { createContext, FC, PropsWithChildren, useCallback, useContext, useState } from 'react';
 import { IUserClient } from 'tenpercent/shared';
 import { ResponseStatusType } from 'tenpercent/shared';
-import { Utils } from 'tenpercent/shared';
 import { UserStatus } from 'tenpercent/shared';
 
 import { buildGeneralApiBaseHandler, GeneralApiProblem, GeneralApiProblemKind } from '@/services/api/apiProblem';
 import { AuthService } from '@/services/AuthService';
 import { LoginService } from '@/services/LoginService';
 import { SignupService } from '@/services/SignUpService';
-import { StorageKey } from '@/types/StorageKey';
-import { ValidationError } from '@/utils/errors/ValidationError';
 import { Logger } from '@/utils/logger/Logger';
-import { SecureBiometricStorage } from '@/services/SecureBiometricStorage';
 
 export interface AuthContextType {
     isAuthenticated: boolean;
@@ -24,11 +20,13 @@ export interface AuthContextType {
         email,
         publicName,
         locale,
+        currencyCode,
     }: {
         password: string;
         email: string;
         publicName: string;
         locale: string;
+        currencyCode: string;
     }) => Promise<GeneralApiProblem>;
 }
 
@@ -41,65 +39,6 @@ const _logger = Logger.Of('AuthContext');
 export const AuthProvider: FC<PropsWithChildren<AuthProviderProps>> = ({ children }) => {
     const [isAuthenticated, setIsAuthenticated] = useState<boolean>(false);
     const [isUserConfirmed, setIsUserConfirmed] = useState<boolean>(false);
-    const [isPasswordSaveCheckbox, setIsPasswordSave] = useState<boolean>(false);
-
-    useEffect(() => {
-        (async () => {
-            try {
-                const authService = new AuthService();
-                const saved = 'loadString(StorageKey.isSavePassword)';
-                const isPassword: boolean = saved ? (Utils.parseBoolean(saved) as boolean) : false;
-
-                if (!isPassword) {
-                    _logger.info('Auto authentication disabled');
-                    return;
-                }
-                const user = await authService.getCredentialFromSecureStore();
-                if (!user) {
-                    throw new ValidationError({
-                        message: 'miss configuration for auto login',
-                    });
-                }
-                const { token, userId, tokenLong, status, email } = user as IUserClient;
-                const result = await AuthService.instance().authorize({
-                    token,
-                    tokenLong,
-                    status,
-                    userId,
-                    email,
-                });
-                const response = await LoginService.instance().doTokenVerify({ userId });
-                switch (response.kind) {
-                    case GeneralApiProblemKind.Ok: {
-                        if (result) {
-                            setIsAuthenticated(true);
-                            setIsUserConfirmed(status === UserStatus.ACTIVE);
-                        } else {
-                            throw new ValidationError({
-                                message: 'authorize failed',
-                            });
-                        }
-                        break;
-                    }
-                    case GeneralApiProblemKind.BadData:
-                    case GeneralApiProblemKind.Unauthorized:
-                    case GeneralApiProblemKind.Forbidden: {
-                        throw new ValidationError({
-                            message: JSON.stringify(response.errors),
-                        });
-                    }
-                    default: {
-                        buildGeneralApiBaseHandler(response);
-                    }
-                }
-            } catch (e) {
-                await AuthService.instance().unauthorized();
-                setIsUserConfirmed(false);
-                setIsAuthenticated(false);
-                _logger.error('Auto authentication failed due reason: ', (e as { message: string }).message);
-            }
-        })();
-    }, []);
 
     async function doAuthorize({
         token,
@@ -145,17 +84,20 @@ export const AuthProvider: FC<PropsWithChildren<AuthProviderProps>> = ({ childre
             email,
             publicName,
             locale,
+            currencyCode,
         }: {
             password: string;
             email: string;
             publicName: string;
             locale: string;
+            currencyCode: string;
         }): Promise<GeneralApiProblem> => {
             const response = await SignupService.instance().doSignUp({
                 password,
                 email,
                 publicName,
                 locale,
+                currencyCode,
             });
             switch (response.kind) {
                 case GeneralApiProblemKind.Ok: {
@@ -218,19 +160,19 @@ export const AuthProvider: FC<PropsWithChildren<AuthProviderProps>> = ({ childre
     const doLogout = useCallback(async (): Promise<boolean> => {
         try {
             const response = await LoginService.instance().doLogout();
-            const storage = new SecureBiometricStorage();
 
             switch (response.kind) {
                 case GeneralApiProblemKind.Ok: {
                     await AuthService.instance().unauthorized();
                     setIsAuthenticated(false);
                     setIsUserConfirmed(false);
-                    setIsPasswordSave(false);
-                    await storage.save(StorageKey.isSavePassword, String(false));
                     return true;
                 }
                 default: {
                     _logger.error('Do logout failed due reason: ', response.kind);
+                    await AuthService.instance().unauthorized();
+                    setIsAuthenticated(false);
+                    setIsUserConfirmed(false);
                     buildGeneralApiBaseHandler(response);
                     return false;
                 }

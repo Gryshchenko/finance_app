@@ -123,7 +123,9 @@ export function Button(props: ButtonProps) {
             themed($viewPresets[preset]),
             $viewStyleOverride,
             !!pressed && themed([$pressedViewPresets[preset], $pressedViewStyleOverride]),
-            !!disabled && $disabledViewStyleOverride,
+            !!disabled && $disabledViewStyleOverride && themed($disabledTextStyle),
+            disabled && themed($disabledTextStyle),
+            ,
         ];
     }
     /**
@@ -137,6 +139,7 @@ export function Button(props: ButtonProps) {
             $textStyleOverride,
             !!pressed && themed([$pressedTextPresets[preset], $pressedTextStyleOverride]),
             !!disabled && $disabledTextStyleOverride,
+            disabled && themed($disabledTextStyle),
         ];
     }
 
@@ -186,6 +189,8 @@ const $baseTextStyle: ThemedStyle<TextStyle> = ({ typography }) => ({
     lineHeight: 16,
     letterSpacing: 1.2,
     fontWeight: '500',
+    textTransform: 'uppercase',
+    width: '100%',
 });
 
 const $rightAccessoryStyle: ThemedStyle<ViewStyle> = ({ spacing }) => ({
@@ -216,6 +221,9 @@ const $textPresets: Record<Presets, ThemedStyleArray<TextStyle>> = {
     filled: [$baseTextStyle],
     reversed: [$baseTextStyle, ({ colors }) => ({ color: colors.palette.neutral100 })],
 };
+const $disabledTextStyle: ThemedStyle<TextStyle> = () => ({
+    opacity: 0.6,
+});
 
 const $pressedViewPresets: Record<Presets, ThemedStyle<ViewStyle>> = {
     default: ({ colors }) => ({ backgroundColor: colors.palette.neutral200 }),

@@ -151,10 +151,6 @@ const $forgotPassword: ThemedStyle<TextStyle> = ({ typography, colors }) => ({
     marginTop: -20,
 });
 
-const $responseError: ThemedStyle<TextStyle> = ({ colors }) => ({
-    color: colors.error,
-});
-
 const $textField: ThemedStyle<ViewStyle> = () => ({
     marginBottom: 0,
 });

@@ -1,13 +1,15 @@
 import { useEffect, useState } from 'react';
-import { Pressable, TextStyle, ViewStyle } from 'react-native';
+import { Pressable, TextStyle, View, ViewStyle } from 'react-native';
+import { AuthenticationType } from 'expo-local-authentication';
 import { MaterialIcons } from '@expo/vector-icons';
 
 import { Text } from '@/components/Text';
+import { AuthContext } from '@/context/AuthContext';
+import { AuthService } from '@/services/AuthService';
+import { SecureBiometricStorage } from '@/services/SecureBiometricStorage';
 import { useAppTheme } from '@/theme/context';
 import { ThemedStyle } from '@/theme/types';
 import { Logger } from '@/utils/logger/Logger';
-import { SecureBiometricStorage } from '@/services/SecureBiometricStorage';
-import { AuthenticationType } from 'expo-local-authentication';
 
 type QuickAccessType = 'fingerprint' | 'face' | null;
 
@@ -27,7 +29,8 @@ export const QuickAccessButton = ({}: Props) => {
             try {
                 const storage = new SecureBiometricStorage();
                 const isBiometricAvailable = await storage.isBiometricAvailable();
-                if (isBiometricAvailable) {
+                const isCredentialStored = await AuthService.instance().isCredentialStored();
+                if (isBiometricAvailable && isCredentialStored) {
                     const support = await storage.supportedAuthenticationTypes();
                     if (support.includes(AuthenticationType.FACIAL_RECOGNITION)) {
                         setType('face');
@@ -50,16 +53,23 @@ export const QuickAccessButton = ({}: Props) => {
     return (
         <Pressable style={themed($quickAccessContainer)} onPress={() => {}}>
             {({ pressed }) => (
-                <>
+                <View style={themed($container)}>
                     <MaterialIcons name={iconName} size={40} color={pressed ? colors.text : colors.textDim} />
-                    <Text tx={'loginScreen:quickAccess'} style={themed($quickAccessLabel)} />{' '}
-                </>
+                    <Text tx={'loginScreen:quickAccess'} style={themed($quickAccessLabel)} />
+                </View>
             )}
         </Pressable>
     );
 };
 
+const $container: ThemedStyle<ViewStyle> = () => ({
+    display: 'flex',
+    justifyContent: 'center',
+    alignItems: 'center',
+    alignContent: 'center',
+});
 const $quickAccessLabel: ThemedStyle<TextStyle> = ({ typography, colors }) => ({
+    marginTop: 5,
     fontSize: 10,
     lineHeight: 14,
     letterSpacing: 2,

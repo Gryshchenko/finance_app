@@ -2,7 +2,7 @@ import { IEmailConfirmationDataAccess } from 'interfaces/IEmailConfirmationDataA
 import { IDatabaseConnection, IDBTransaction } from 'interfaces/IDatabaseConnection';
 import { LoggerBase } from 'src/helper/logger/LoggerBase';
 import { IEmailConfirmationData } from 'interfaces/IEmailConfirmationData';
-import { Utils } from 'tenpercent/shared';
+import { Time, Utils } from 'tenpercent/shared';
 import { DBError } from 'src/utils/errors/DBError';
 import { ValidationError } from 'src/utils/errors/ValidationError';
 import { ErrorCode } from 'tenpercent/shared';
@@ -102,6 +102,8 @@ export default class EmailConfirmationDataAccess extends LoggerBase implements I
             const data = await this._db
                 .engine()<IEmailConfirmationData>('email_confirmations')
                 .where({ userId, email })
+                .andWhere('email_confirmations.expiresAt', '>', Time.getISODateNowUTC())
+                .orderBy('expiresAt', 'desc')
                 .select(['confirmationId', 'userId', 'email', 'confirmationCode', 'expiresAt', 'status'])
                 .first();
             if (data) {

@@ -94,7 +94,13 @@ export class SignupService extends ApiAbstract {
             };
         }
     }
-    public async doSignUp(body: { password: string; email: string; publicName: string; locale: string }): Promise<
+    public async doSignUp(body: {
+        password: string;
+        email: string;
+        publicName: string;
+        locale: string;
+        currencyCode: string;
+    }): Promise<
         | {
               kind: GeneralApiProblemKind.Ok;
               data: { userId: number } | undefined;

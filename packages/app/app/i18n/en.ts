@@ -68,12 +68,9 @@ const en = {
             'Your password must include an uppercase letter, a lowercase letter, a number, and a special character (e.g., !@#$%).',
     },
     signUpConfirmation: {
-        title: 'Confirm your email',
-        description: 'We have sent an 8-digit confirmation code to your email address.',
+        title: 'Check your email',
+        description: 'Enter the 8-digit code sent to your email to confirm your account.',
         enterCode: 'Please enter the 8-digit code below to confirm your email.',
-        resendInfo: 'You can request a new code in {{seconds}} seconds.',
-        resendLimit: 'You can request up to 10 codes per day for this session.',
-        remainingAttempts: 'You have {{remaining}} attempts left today.',
         codeSent: 'A new confirmation code has been sent to your email.',
         invalidCode: 'Invalid confirmation code. Please check and try again.',
         expiredCode: 'This code has expired. Please request a new one.',
@@ -87,6 +84,7 @@ const en = {
         },
         confirmButton: 'Confirm',
         resendButton: 'Resend code',
+        goToLogin: 'Go Back to Login',
         success: 'Your email has been successfully confirmed.',
     },
     common: {

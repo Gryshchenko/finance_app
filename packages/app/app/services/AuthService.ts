@@ -5,11 +5,11 @@ import { UserStatus } from 'tenpercent/shared';
 
 import { buildGeneralApiBadData, GeneralApiProblem, GeneralApiProblemKind } from '@/services/api/apiProblem';
 import { LoginService } from '@/services/LoginService';
+import { SecureBiometricStorage } from '@/services/SecureBiometricStorage';
 import { SecureStorageKey } from '@/types/SecureStorageKey';
 import { ErrorUtils } from '@/utils/errors/ErrorUtils';
 import { ValidationError } from '@/utils/errors/ValidationError';
 import { Logger } from '@/utils/logger/Logger';
-import { SecureBiometricStorage } from '@/services/SecureBiometricStorage';
 
 interface IExtra {
     token: string;
@@ -65,6 +65,20 @@ export class AuthService {
     }
     public get token(): string | null {
         return this._token;
+    }
+
+    public async isCredentialStored(): Promise<boolean> {
+        try {
+            const storage = new SecureBiometricStorage();
+            const key = await storage.get(SecureStorageKey.AuthCredential);
+            if (!key) {
+                return false;
+            }
+            return true;
+        } catch (e) {
+            this._logger.error('Get from secure storage failed', e);
+            return false;
+        }
     }
 
     public async setCredentialToSecureStore(user: IUserClient & IExtra): Promise<void> {

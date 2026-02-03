@@ -6,6 +6,7 @@ const translationsKeys = {
     valueTooShort: 'validation:valueTooShort',
     valueTooLong: 'validation:valueTooLong',
     valueInvalidRange: 'validation:valueInvalidRange',
+    codeInvalided: 'validation:codeInvalided',
 };
 
 const incomeCreate = {
@@ -50,6 +51,12 @@ const accountEdit = {
     amount: Yup.number().min(0, translationsKeys.valueTooShort).notRequired(),
     accountName: Yup.string().min(3, translationsKeys.valueTooShort).max(50, translationsKeys.valueTooLong).notRequired(),
     currencyId: Yup.number().notRequired(),
+};
+const signUpConfirmation = {
+    confirmationCode: Yup.string()
+        .min(6, translationsKeys.valueTooShort)
+        .max(8, translationsKeys.valueTooLong)
+        .required(translationsKeys.codeInvalided),
 };
 
 const categoryEdit = {
@@ -169,6 +176,8 @@ const accountEditSchema = Yup.object(accountEdit);
 const categoryCreateSchema = Yup.object(categoryCreate);
 const categoryEditSchema = Yup.object(categoryEdit);
 
+const signUpConfirmationShema = Yup.object(signUpConfirmation);
+
 export {
     incomeEditSchema,
     incomeCreateSchema,
@@ -178,4 +187,5 @@ export {
     categoryCreateSchema,
     buildTransactionCreateSchema,
     buildTransactionEditSchema,
+    signUpConfirmationShema,
 };

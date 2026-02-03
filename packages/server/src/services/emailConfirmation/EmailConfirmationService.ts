@@ -21,7 +21,7 @@ import { Utils } from 'tenpercent/shared';
 import { UserStatus } from 'tenpercent/shared';
 import { IEmailVerifyResponse } from 'tenpercent/shared';
 
-const CONFIRMATION_MAIL_EXPIRED_TIME = [0, 1, 0];
+const CONFIRMATION_MAIL_EXPIRED_TIME = [0, 10, 0];
 
 export default class EmailConfirmationService extends LoggerBase implements IEmailConfirmationService {
     protected emailConfirmationDataAccess: IEmailConfirmationDataAccess;

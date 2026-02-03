@@ -1,7 +1,8 @@
-import * as SecureStore from 'expo-secure-store';
-import * as LocalAuthentication from 'expo-local-authentication';
-import { Logger } from '@/utils/logger/Logger';
 import { AuthenticationType } from 'expo-local-authentication';
+import * as LocalAuthentication from 'expo-local-authentication';
+import * as SecureStore from 'expo-secure-store';
+
+import { Logger } from '@/utils/logger/Logger';
 
 export type SecureKey = string;
 
