@@ -8,6 +8,7 @@ import { CurrencyProvider } from '@/context/CurrencyContext';
 import { translate } from '@/i18n/translate';
 import { AccountsPath, AccountsStackNavigator, AccountsStackParamList } from '@/navigators/AccountsStackNavigator';
 import { CategoriesPath, CategoriesStackNavigator, CategoriesStackParamList } from '@/navigators/CategoriesStackNavigator';
+import { DashboardPath, DashboardStackNavigator } from '@/navigators/DashboardStackNavigator';
 import { HistoryStackNavigator, HistoryStackParamList } from '@/navigators/HistoryStackNavigator';
 import { IncomePath, IncomesStackNavigator, IncomesStackParamList } from '@/navigators/IncomesStackNavigator';
 import { SettingsScreen } from '@/screens/SettingsScreen';
@@ -19,6 +20,7 @@ import { TransactionPath } from '@/types/TransactionPath';
 import { AppStackParamList, AppStackScreenProps } from './AppNavigator';
 
 export type OverviewTabParamList = {
+    dashboard: NavigatorScreenParams<IncomesStackParamList> | {};
     incomes: NavigatorScreenParams<IncomesStackParamList> | {};
     balances: NavigatorScreenParams<AccountsStackParamList> | {};
     expenses: NavigatorScreenParams<CategoriesStackParamList> | {};
@@ -66,6 +68,21 @@ export function OverviewNavigator() {
                     tabBarItemStyle: themed($tabBarItem),
                 }}
             >
+                <Tab.Screen
+                    name="dashboard"
+                    component={DashboardStackNavigator}
+                    listeners={({ navigation }) => ({
+                        tabPress: (event) => {
+                            event.preventDefault();
+                            navigation.navigate(OverviewPath.Dashboard, { screen: DashboardPath.Overview });
+                        },
+                    })}
+                    options={{
+                        tabBarIcon: ({ focused }) => (
+                            <Icon icon="components" color={focused ? colors.tint : colors.tintInactive} size={30} />
+                        ),
+                    }}
+                />
                 <Tab.Screen
                     name="incomes"
                     component={IncomesStackNavigator}

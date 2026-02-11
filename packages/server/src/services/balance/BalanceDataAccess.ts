@@ -1,7 +1,7 @@
 import { IDatabaseConnection, IDBTransaction } from 'interfaces/IDatabaseConnection';
 import { LoggerBase } from 'helper/logger/LoggerBase';
 import { IBalanceDataAccess } from 'interfaces/IBalanceDataAccess';
-import { IBalance } from 'interfaces/IBalance';
+import { IBalance } from '../../../../shared/src/interfaces/IBalance';
 import { NotFoundError } from 'src/utils/errors/NotFoundError';
 import { DBError } from 'src/utils/errors/DBError';
 import { isBaseError } from 'src/utils/errors/isBaseError';

@@ -1,7 +1,7 @@
 import { IBalanceDataAccess } from 'interfaces/IBalanceDataAccess';
 import { IBalanceService } from 'interfaces/IBalanceService';
 import { LoggerBase } from 'helper/logger/LoggerBase';
-import { IBalance } from 'interfaces/IBalance';
+import { IBalance } from '../../../../shared/src/interfaces/IBalance';
 import { IDBTransaction } from 'interfaces/IDatabaseConnection';
 import { IProfileService } from 'interfaces/IProfileService';
 import { Utils } from 'tenpercent/shared';

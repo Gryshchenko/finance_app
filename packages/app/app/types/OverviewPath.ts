@@ -1,4 +1,5 @@
 export enum OverviewPath {
+    Dashboard = 'dashboard',
     Balances = 'balances',
     Incomes = 'incomes',
     Expenses = 'expenses',

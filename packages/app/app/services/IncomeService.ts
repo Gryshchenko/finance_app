@@ -66,9 +66,9 @@ export class IncomeService extends ApiAbstract {
             const userId = this._authService.userId;
             const response = await this.authGet(`/user/${userId}/income/${incometId}`);
             if (response.kind === GeneralApiProblemKind.Ok) {
-                this._logger.info(`Fetching account successfully: ${(response.data as IIncome)?.incomeId}`);
+                this._logger.info(`Fetching income successfully: ${(response.data as IIncome)?.incomeId}`);
             } else {
-                this._logger.info(`Fetching account failed: ${response.kind}`);
+                this._logger.info(`Fetching income failed: ${response.kind}`);
             }
             return response;
         } catch (e) {

@@ -11,6 +11,7 @@ import { Logger } from '@/utils/logger/Logger';
 export interface CurrencyContextType {
     getCurrency: (currencyId: number) => ICurrency | undefined;
     getCurrencySymbol: (currencyId: number) => string;
+    defaultCurrency: string;
     currencies: Map<number, ICurrency>;
 }
 
@@ -71,6 +72,7 @@ export const CurrencyProvider: FC<PropsWithChildren<CurrencyProviderProps>> = ({
         getCurrency,
         getCurrencySymbol,
         currencies,
+        defaultCurrency: '$',
     };
 
     useEffect(() => {

@@ -1,5 +1,5 @@
 import { IDBTransaction } from 'interfaces/IDatabaseConnection';
-import { IBalance } from 'interfaces/IBalance';
+import { IBalance } from '../../../shared/src/interfaces/IBalance';
 
 export interface IBalanceService {
     get(userId: number): Promise<IBalance>;
