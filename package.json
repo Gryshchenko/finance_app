@@ -5,7 +5,10 @@
         "packages/*"
     ],
     "dependencies": {
-        "luxon": "^3.6.1"
+        "luxon": "^3.6.1",
+        "expo": "~54.0.33",
+        "react": "19.1.0",
+        "react-native": "0.81.5"
     },
     "devDependencies": {
         "@babel/core": "^7.20.0",
@@ -40,12 +43,15 @@
         "prettier:check": "prettier \"**/*\" --check --ignore-unknown",
         "eslint": "pnpm --filter './packages/server' run lint && pnpm --filter './packages/app' run lint",
         "eslint:check": "eslint --ext .js,.ts packages/",
-        "prepare": "husky install"
+        "prepare": "husky install",
+        "android": "expo run:android",
+        "ios": "expo run:ios"
     },
     "pnpm": {
         "neverBuiltDependencies": [
             "react-native"
         ],
         "publicHoistPattern": []
-    }
+    },
+    "version": "1.0.0"
 }

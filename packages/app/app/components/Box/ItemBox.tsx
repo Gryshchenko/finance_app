@@ -37,6 +37,7 @@ export function ItemBox({
     value,
     icon,
     id,
+    droppableId,
     onDragEnd,
     onDragging,
     onDragStart,
@@ -44,8 +45,6 @@ export function ItemBox({
     onDrop,
     isDraggable,
     type,
-    isActive,
-    setIsActive,
     styles,
     BoxProps,
 }: ItemBoxProps) {
@@ -56,6 +55,7 @@ export function ItemBox({
             text={BoxProps?.text}
             onDragEnd={onDragEnd}
             onDrop={onDrop}
+            droppableId={droppableId}
             onDragging={onDragging}
             onDragStart={onDragStart}
             isDroppable={isDroppable}
@@ -63,8 +63,6 @@ export function ItemBox({
             type={type}
             id={id}
             icon={icon}
-            isActive={isActive}
-            setIsActive={setIsActive}
             styles={BoxProps?.styles}
         >
             <View style={themed($textContainer)}>

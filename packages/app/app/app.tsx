@@ -10,9 +10,9 @@
  * The app navigation resides in ./app/navigators, so head over there
  * if you're interested in adding screens and navigators.
  */
+
 import { useEffect, useState } from 'react';
 import { Platform } from 'react-native';
-import { GestureHandlerRootView } from 'react-native-gesture-handler';
 
 if (__DEV__ && Platform.OS !== 'web') {
     // Load Reactotron in development only.
@@ -24,6 +24,7 @@ if (__DEV__ && Platform.OS !== 'web') {
 import { useFonts } from 'expo-font';
 import * as Linking from 'expo-linking';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
+import { GestureHandlerRootView } from 'react-native-gesture-handler';
 import { KeyboardProvider } from 'react-native-keyboard-controller';
 import { initialWindowMetrics, SafeAreaProvider } from 'react-native-safe-area-context';
 

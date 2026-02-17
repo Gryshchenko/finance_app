@@ -1,28 +1,33 @@
-import { useState } from 'react';
+import { JSX, useEffect, useRef, useState } from 'react';
 import { TextStyle, View, ViewStyle } from 'react-native';
+import { useSharedValue } from 'react-native-reanimated';
 import { Draggable, Droppable } from 'react-native-reanimated-dnd';
 
+import { useDragOverlay } from '@/components/Box/DragOverlayContext';
 import { ItemType } from '@/components/Box/ItemBox';
-import PulsingBlock from '@/components/Box/PulsingBlock';
 import { Text } from '@/components/Text';
 import { useAppTheme } from '@/theme/context';
 import { ThemedStyle } from '@/theme/types';
 
-export type IDrag = { id: string; type: ItemType };
+export const DASH_BOARD_BOX_SIZE: number = 56;
 
-export interface IBoxProps<T = unknown> {
-    id: string;
-    children: React.ReactNode;
-    icon?: React.ReactNode;
-    isDraggable?: boolean;
-    isDroppable: boolean;
+export interface IBoxDragAndDrop<T> {
     onDrop: (data: T) => void;
     onDragStart?: (data: IDrag) => void;
     onDragging?: (data: { x: number; y: number; tx: number; ty: number; itemData: IDrag }) => void;
     onDragEnd?: (data: IDrag) => void;
+    isDraggable?: boolean;
+    isDroppable: boolean;
+}
+
+export type IDrag = { id: string; type: ItemType; element?: JSX.Element };
+
+export interface IBoxProps<T = unknown> extends IBoxDragAndDrop<T> {
+    id: string;
+    droppableId: string;
+    children: React.ReactNode;
+    icon?: React.ReactNode;
     type: ItemType;
-    isActive: boolean;
-    setIsActive: (isActive: boolean) => void;
     text?: string;
     styles?: {
         box?: ViewStyle;
@@ -40,58 +45,74 @@ export function Box({
     onDrop,
     onDragging,
     type,
-    setIsActive,
     styles,
-    isActive,
     text,
 }: IBoxProps) {
+    const [isDragging, setIsDragging] = useState<boolean>(false);
+    const viewRef = useRef<View>(null);
     const { themed } = useAppTheme();
-    const [isDragOn, setIsDragOn] = useState(false);
+    const { startDrag, updatePosition, endDrag, endDragDroppable } = useDragOverlay();
+    const offsetX = useSharedValue(0);
+    const offsetY = useSharedValue(0);
 
-    const handleActiveChange = (isActive: boolean) => {
-        console.log('isDragOn', isActive, id);
-        setIsDragOn(isActive);
-    };
-    const onDragStar = () => {
-        setIsActive(true);
-        console.log(1);
-    };
-
-    const onDragStop = () => {
-        setIsActive(false);
-        console.log(2);
-    };
+    useEffect(() => {
+        viewRef.current?.measureInWindow((x, y) => {
+            offsetX.value = x - 25;
+            offsetY.value = y - 82;
+        });
+    }, []);
 
     return (
         <View style={[themed($base), styles?.container]}>
-            <Droppable dropDisabled={!isDroppable} onDrop={onDrop} onActiveChange={handleActiveChange}>
+            <Droppable
+                dropAlignment={'center'}
+                dropDisabled={!isDroppable}
+                onDrop={(data) => {
+                    onDrop?.(data);
+                    endDragDroppable();
+                }}
+            >
                 <Draggable
                     onDragStart={(data) => {
-                        onDragStar();
+                        setIsDragging(true);
+                        console.log(1);
                         onDragStart?.(data);
                     }}
                     onDragEnd={(data) => {
-                        onDragStop();
+                        setIsDragging(false);
                         onDragEnd?.(data);
+                        endDrag();
+                        console.log(2);
                     }}
-                    onDragging={onDragging}
+                    onDragging={(data) => {
+                        startDrag({
+                            element: (
+                                <View style={[themed($iconContainer), styles?.box]}>
+                                    {text && <Text style={themed($text)}>{text}</Text>}
+                                </View>
+                            ),
+                            id: data.itemData.id,
+                            type: data.itemData.type,
+                        });
+                        updatePosition(data.tx + offsetX.value, data.ty + offsetY.value);
+                        onDragging?.(data);
+                    }}
                     draggableId={id}
                     dragDisabled={!isDraggable}
                     data={{ id, type }}
                 >
-                    <PulsingBlock active={isDragOn} style={[themed($iconContainer), styles?.box]}>
+                    <View ref={viewRef} style={[themed($iconContainer), styles?.box, isDragging && themed($opacity)]}>
                         {text && <Text style={themed($text)}>{text}</Text>}
-                    </PulsingBlock>
+                    </View>
                 </Draggable>
             </Droppable>
-            {isActive && <View style={[themed($iconContainer), themed($active)]}></View>}
             {children}
         </View>
     );
 }
 const $iconContainer: ThemedStyle<ViewStyle> = () => ({
-    width: 56,
-    height: 56,
+    width: DASH_BOARD_BOX_SIZE,
+    height: DASH_BOARD_BOX_SIZE,
     justifyContent: 'center',
     alignItems: 'center',
     borderWidth: 1,
@@ -110,11 +131,6 @@ const $text: ThemedStyle<TextStyle> = ({ colors, typography }) => ({
     fontSize: 22,
 });
 
-const $active: ThemedStyle<ViewStyle> = ({ colors }) => ({
-    position: 'absolute',
-    opacity: 0.5,
-    backgroundColor: colors.background,
-    borderWidth: 1,
-    borderColor: colors.border,
-    zIndex: -1,
+const $opacity: ThemedStyle<ViewStyle> = () => ({
+    opacity: 1,
 });

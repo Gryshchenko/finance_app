@@ -1,11 +1,10 @@
-import { useState } from 'react';
 import { ViewStyle } from 'react-native';
 
 import { ItemBox, ItemBoxProps, ItemType } from '@/components/Box/ItemBox';
 import { useAppTheme } from '@/theme/context';
 import { ThemedStyle } from '@/theme/types';
 
-interface AccountBoxProps extends Omit<ItemBoxProps, 'type' | 'isActive' | 'setIsActive'> {}
+interface AccountBoxProps extends Omit<ItemBoxProps, 'type' | 'isDragging' | 'setIsDragging' | 'droppableId'> {}
 
 export function AccountBox({
     title,
@@ -22,11 +21,11 @@ export function AccountBox({
 }: AccountBoxProps) {
     const droppableId = `${id}-${ItemType.Account}`;
     const { themed } = useAppTheme();
-    const [isActive, setIsActive] = useState<boolean>(false);
     return (
         <ItemBox
             type={ItemType.Account}
-            id={droppableId}
+            id={id}
+            droppableId={droppableId}
             title={title}
             icon={icon}
             value={value}
@@ -36,8 +35,6 @@ export function AccountBox({
             onDragging={onDragging}
             onDrop={onDrop}
             isDraggable={isDraggable}
-            isActive={isActive}
-            setIsActive={setIsActive}
             BoxProps={{
                 text: title?.[0],
                 styles: {

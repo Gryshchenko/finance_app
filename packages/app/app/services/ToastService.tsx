@@ -15,6 +15,7 @@ export interface ToestMessage {
     title?: TxKeyPath;
     message: TxKeyPath;
     duration?: number;
+    systemMessage?: string;
 }
 
 interface ToastOptions {

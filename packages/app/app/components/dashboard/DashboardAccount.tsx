@@ -1,0 +1,83 @@
+import { useNavigation } from '@react-navigation/native';
+import { IAccountListItem, TransactionType, Utils } from 'tenpercent/shared';
+
+import { AccountBox } from '@/components/Box/AccountBox';
+import { IDrag } from '@/components/Box/Box';
+import { useDragOverlay } from '@/components/Box/DragOverlayContext';
+import { ItemType } from '@/components/Box/ItemBox';
+import { IDashboardItem } from '@/components/dashboard/DashboardItem';
+import { useCurrency } from '@/context/CurrencyContext';
+import ToastService from '@/services/ToastService';
+import { OverviewPath } from '@/types/OverviewPath';
+import { TransactionPath } from '@/types/TransactionPath';
+import { CurrencyUtils } from '@/utils/CurrencyUtils';
+
+export default function DashboardAccount(props: IDashboardItem) {
+    const { getCurrencySymbol } = useCurrency();
+    const { setDraggingType, draggingType } = useDragOverlay();
+    const { BoxProps } = props;
+    const item = props.item as IAccountListItem;
+    const navigation = useNavigation();
+    return (
+        <AccountBox
+            BoxProps={{
+                styles: BoxProps?.styles,
+            }}
+            id={String(item.accountId)}
+            key={item.accountName}
+            title={item.accountName}
+            icon={'tmp'}
+            value={CurrencyUtils.formatWithDelimiter(item.amount, getCurrencySymbol(item.currencyId))}
+            isDraggable={true}
+            onDragStart={() => {
+                setDraggingType(ItemType.Account);
+            }}
+            isDroppable={[ItemType.Account, ItemType.Income].includes(draggingType as ItemType)}
+            onDrop={(dropItem) => {
+                const inWorkDropItem: IDrag = dropItem as unknown as IDrag;
+                if (Utils.isNull(item?.accountId) || Utils.isNull(inWorkDropItem.id)) {
+                    ToastService.error({
+                        message: 'errorCode:ACCOUNT_ERROR',
+                        systemMessage: `DnD account miss property accountId: ${item?.accountId}, dropId: ${inWorkDropItem.id}`,
+                    });
+                    return;
+                }
+                switch (inWorkDropItem.type) {
+                    case ItemType.Account:
+                        {
+                            navigation.getParent()?.navigate(OverviewPath.Balances, {
+                                screen: TransactionPath.TransactionCreate,
+                                params: {
+                                    payload: {
+                                        transactionTypeId: TransactionType.Transafer,
+                                        accountId: item.accountId,
+                                        targetAccountId: inWorkDropItem.id,
+                                    },
+                                },
+                            });
+                        }
+                        break;
+                    case ItemType.Income: {
+                        navigation.getParent()?.navigate(OverviewPath.Balances, {
+                            screen: TransactionPath.TransactionCreate,
+                            params: {
+                                payload: {
+                                    transactionTypeId: TransactionType.Income,
+                                    accountId: item.accountId,
+                                    incomeId: inWorkDropItem.id,
+                                },
+                            },
+                        });
+                        break;
+                    }
+                    default: {
+                        ToastService.error({
+                            message: 'errorCode:ACCOUNT_ERROR',
+                            systemMessage: `DnD account unknown item type: ${inWorkDropItem.type}`,
+                        });
+                    }
+                }
+            }}
+        />
+    );
+}

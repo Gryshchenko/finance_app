@@ -10,6 +10,10 @@ interface BuildMatrixParams<T> {
     items: T[];
 }
 
+export interface IBuildMatrixPayload {
+    calculatedGap: number;
+}
+
 export function buildMatrix<T>({
     containerWidth,
     itemWidth,
@@ -18,7 +22,7 @@ export function buildMatrix<T>({
     minColumns = 1,
     maxColumns = Infinity,
     items,
-}: BuildMatrixParams<T>): { matrix: Matrix<T>; payload: { calculatedGap: number } } {
+}: BuildMatrixParams<T>): { matrix: Matrix<T>; payload: IBuildMatrixPayload } {
     if (containerWidth <= 0 || itemWidth <= 0 || items.length === 0)
         return {
             matrix: [],
