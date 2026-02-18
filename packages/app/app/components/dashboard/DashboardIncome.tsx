@@ -1,3 +1,4 @@
+import { memo } from 'react';
 import { IIncome } from 'tenpercent/shared';
 
 import { useDragOverlay } from '@/components/Box/DragOverlayContext';
@@ -7,7 +8,7 @@ import { IDashboardItem } from '@/components/dashboard/DashboardItem';
 import { useCurrency } from '@/context/CurrencyContext';
 import { CurrencyUtils } from '@/utils/CurrencyUtils';
 
-export default function DashboardIncome(props: IDashboardItem) {
+export default memo(function DashboardIncome(props: IDashboardItem) {
     const { getCurrencySymbol } = useCurrency();
     const { setDraggingType } = useDragOverlay();
     const { BoxProps } = props;
@@ -31,4 +32,4 @@ export default function DashboardIncome(props: IDashboardItem) {
             }}
         />
     );
-}
+});

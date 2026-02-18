@@ -1,6 +1,6 @@
 import { ViewStyle } from 'react-native';
 
-import { ItemBox, ItemBoxProps, ItemType } from '@/components/Box/ItemBox';
+import ItemBox, { ItemBoxProps, ItemType } from '@/components/Box/ItemBox';
 import { useAppTheme } from '@/theme/context';
 import { ThemedStyle } from '@/theme/types';
 
@@ -10,7 +10,7 @@ interface CategoryBoxProps
         'type' | 'onDragStart' | 'onDragEnd' | 'isDraggable' | 'isDragging' | 'setIsDragging' | 'droppableId'
     > {}
 
-export function CategoryBox({ title, value, icon, id, isDroppable, onDragging, onDrop, BoxProps }: CategoryBoxProps) {
+export function CategoryBox({ title, value, icon, id, isDroppable, onDrop, BoxProps }: CategoryBoxProps) {
     const droppableId = `${id}-${ItemType.Category}`;
     const { themed } = useAppTheme();
     return (
@@ -24,7 +24,6 @@ export function CategoryBox({ title, value, icon, id, isDroppable, onDragging, o
             isDroppable={isDroppable}
             onDragStart={() => null}
             onDragEnd={() => null}
-            onDragging={onDragging}
             onDrop={onDrop}
             isDraggable={false}
             BoxProps={{

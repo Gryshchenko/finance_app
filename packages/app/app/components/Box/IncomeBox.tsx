@@ -1,12 +1,12 @@
 import { ViewStyle } from 'react-native';
 
-import { ItemBox, ItemBoxProps, ItemType } from '@/components/Box/ItemBox';
+import ItemBox, { ItemBoxProps, ItemType } from '@/components/Box/ItemBox';
 import { useAppTheme } from '@/theme/context';
 import { ThemedStyle } from '@/theme/types';
 
 interface IncomeBoxProps extends Omit<ItemBoxProps, 'type' | 'isDroppable' | 'onDrop' | 'droppableId'> {}
 
-export function IncomeBox({ title, value, icon, id, onDragStart, onDragging, onDragEnd, isDraggable, BoxProps }: IncomeBoxProps) {
+export function IncomeBox({ title, value, icon, id, onDragStart, onDragEnd, isDraggable, BoxProps }: IncomeBoxProps) {
     const droppableId = `${id}-${ItemType.Income}`;
     const { themed } = useAppTheme();
     return (
@@ -20,7 +20,6 @@ export function IncomeBox({ title, value, icon, id, onDragStart, onDragging, onD
             isDroppable={false}
             onDragStart={onDragStart}
             onDragEnd={onDragEnd}
-            onDragging={onDragging}
             onDrop={() => null}
             isDraggable={isDraggable}
             BoxProps={{

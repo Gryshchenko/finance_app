@@ -1,6 +1,6 @@
 import { ViewStyle } from 'react-native';
 
-import { ItemBox, ItemBoxProps, ItemType } from '@/components/Box/ItemBox';
+import ItemBox, { ItemBoxProps, ItemType } from '@/components/Box/ItemBox';
 import { useAppTheme } from '@/theme/context';
 import { ThemedStyle } from '@/theme/types';
 
@@ -13,7 +13,6 @@ export function AccountBox({
     id,
     isDroppable,
     onDragStart,
-    onDragging,
     onDragEnd,
     onDrop,
     isDraggable,
@@ -32,7 +31,6 @@ export function AccountBox({
             isDroppable={isDroppable}
             onDragStart={onDragStart}
             onDragEnd={onDragEnd}
-            onDragging={onDragging}
             onDrop={onDrop}
             isDraggable={isDraggable}
             BoxProps={{

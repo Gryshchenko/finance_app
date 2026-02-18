@@ -1,3 +1,4 @@
+import { memo } from 'react';
 import { TextStyle, View, ViewStyle } from 'react-native';
 
 import { Box, IBoxProps } from '@/components/Box/Box';
@@ -11,7 +12,7 @@ export enum ItemType {
     Income = 'income',
 }
 
-export interface ItemBoxProps extends Omit<IBoxProps, 'children' | 'styles'> {
+export interface ItemBoxProps extends Omit<IBoxProps, 'children' | 'styles' | 'onDragging'> {
     id: string;
     title: string;
     value?: string;
@@ -32,14 +33,13 @@ export interface ItemBoxProps extends Omit<IBoxProps, 'children' | 'styles'> {
     };
 }
 
-export function ItemBox({
+export default memo(function ItemBox({
     title,
     value,
     icon,
     id,
     droppableId,
     onDragEnd,
-    onDragging,
     onDragStart,
     isDroppable,
     onDrop,
@@ -53,15 +53,14 @@ export function ItemBox({
     return (
         <Box
             text={BoxProps?.text}
+            onDragStart={onDragStart}
             onDragEnd={onDragEnd}
             onDrop={onDrop}
+            id={id}
             droppableId={droppableId}
-            onDragging={onDragging}
-            onDragStart={onDragStart}
             isDroppable={isDroppable}
             isDraggable={isDraggable}
             type={type}
-            id={id}
             icon={icon}
             styles={BoxProps?.styles}
         >
@@ -71,7 +70,7 @@ export function ItemBox({
             </View>
         </Box>
     );
-}
+});
 
 const $textContainer: ThemedStyle<ViewStyle> = () => ({
     alignItems: 'center',

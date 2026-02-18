@@ -1,7 +1,26 @@
-import { createContext, FC, JSX, PropsWithChildren, useContext, useRef, useState } from 'react';
+import {
+    createContext,
+    Dispatch,
+    FC,
+    JSX,
+    PropsWithChildren,
+    SetStateAction,
+    useCallback,
+    useContext,
+    useEffect,
+    useRef,
+    useState,
+} from 'react';
 import { Dimensions, type ViewStyle } from 'react-native';
-import { ScrollHandlerProcessed, useAnimatedScrollHandler, useAnimatedStyle, useSharedValue } from 'react-native-reanimated';
+import {
+    ScrollHandlerProcessed,
+    useAnimatedScrollHandler,
+    useAnimatedStyle,
+    useSharedValue,
+    withTiming,
+} from 'react-native-reanimated';
 import { AnimatedScrollView } from 'react-native-reanimated/lib/typescript/component/ScrollView';
+import { scheduleOnRN } from 'react-native-worklets';
 
 import { IDrag } from '@/components/Box/Box';
 import { ItemType } from '@/components/Box/ItemBox';
@@ -22,8 +41,8 @@ type ContextType = {
     scrollRef: React.Ref<AnimatedScrollView | null> | null;
     setDraggingType: (type: ItemType | undefined) => void;
     startDrag: (data: IDrag) => void;
-    updatePosition: (x: number, y: number, tx?: number, ty?: number) => void;
-    endDrag: () => void;
+    updatePosition: (x: number, y: number) => void;
+    onInitialPosition: (x: number, y: number) => void;
     draggingType?: ItemType;
     element: JSX.Element | undefined;
     scrollHandler: ScrollHandlerProcessed<Record<string, unknown>>;
@@ -31,6 +50,8 @@ type ContextType = {
     onLayout: (data: IDragOverlayLayout) => void;
     endDragDroppable: () => void;
     uuid: number;
+    setDraggingElementId: Dispatch<SetStateAction<string | undefined>>;
+    draggingElementId: string | undefined;
 };
 
 export const DragOverlayContext = createContext<ContextType | null>(null);
@@ -39,6 +60,7 @@ export const DragOverlayProvider: FC<PropsWithChildren> = ({ children }) => {
     const layout = useSharedValue<IDragOverlayLayout>({ width: null, height: null, x: null, y: null });
     const scrollY = useSharedValue(0);
     const [uuid, setUuid] = useState<number>(1);
+    const [draggingElementId, setDraggingElementId] = useState<string | undefined>(undefined);
     const scrollRef = useRef<AnimatedScrollView>(null);
 
     const [draggingType, setDraggingType] = useState<ItemType | undefined>(undefined);
@@ -48,29 +70,60 @@ export const DragOverlayProvider: FC<PropsWithChildren> = ({ children }) => {
     const translateX = useSharedValue(0);
     const translateY = useSharedValue(0);
 
-    const onLayout = (data: IDragOverlayLayout) => {
-        layout.value = {
-            x: data.x,
-            y: data.y,
-            width: data.width,
-            height: data.height,
-        };
+    const endDragDroppable = () => {
+        setUuid((prev) => prev + 1);
     };
+
+    const onLayout = useCallback(
+        (data: IDragOverlayLayout) => {
+            layout.value = {
+                x: data.x,
+                y: data.y,
+                width: data.width,
+                height: data.height,
+            };
+        },
+        [layout],
+    );
     const animatedStyle = useAnimatedStyle(() => ({
         transform: [{ translateX: translateX.value }, { translateY: translateY.value }],
     }));
 
-    const startDrag = ({ element: newElement }: IDrag) => {
-        if (element === undefined) {
-            setElement(newElement);
-        }
+    const clean = () => {
+        setDraggingElementId(undefined);
+        setElement(undefined);
     };
+
+    useEffect(() => {
+        translateX.value = withTiming(100, { duration: 500 }, (finished) => {
+            if (finished) {
+                scheduleOnRN(clean);
+            }
+        });
+    }, []);
+
+    const startDrag = useCallback(
+        ({ element: newElement }: IDrag) => {
+            if (element === undefined) {
+                setElement(newElement);
+            }
+        },
+        [element],
+    );
 
     const scrollHandler = useAnimatedScrollHandler({
         onScroll: (event) => {
             scrollY.value = event.contentOffset.y;
         },
     });
+
+    const onInitialPosition = (x: number, y: number) => {
+        const newX = x;
+        const newY = y + scrollY.value - (layout.value.y ?? 0);
+        const duration = 500;
+        translateY.value = withTiming(newY, { duration });
+        translateX.value = withTiming(newX, { duration });
+    };
 
     const updatePosition = (x: number, y: number) => {
         const newX = x;
@@ -96,21 +149,8 @@ export const DragOverlayProvider: FC<PropsWithChildren> = ({ children }) => {
         }
     };
 
-    const endDrag = () => {
-        setElement(undefined);
-        translateX.value = 0;
-        translateY.value = 0;
-    };
-
-    const endDragDroppable = () => {
-        setElement(undefined);
-        translateX.value = 0;
-        translateY.value = 0;
-        setUuid((prev) => prev + 1);
-    };
     const value = {
         element,
-        endDrag,
         updatePosition,
         scrollHandler,
         startDrag,
@@ -121,6 +161,9 @@ export const DragOverlayProvider: FC<PropsWithChildren> = ({ children }) => {
         onLayout,
         uuid,
         endDragDroppable,
+        setDraggingElementId,
+        draggingElementId,
+        onInitialPosition,
     };
     return <DragOverlayContext.Provider value={value}>{children}</DragOverlayContext.Provider>;
 };

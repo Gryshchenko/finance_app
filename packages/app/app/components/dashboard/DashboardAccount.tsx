@@ -1,3 +1,4 @@
+import { memo } from 'react';
 import { useNavigation } from '@react-navigation/native';
 import { IAccountListItem, TransactionType, Utils } from 'tenpercent/shared';
 
@@ -12,7 +13,7 @@ import { OverviewPath } from '@/types/OverviewPath';
 import { TransactionPath } from '@/types/TransactionPath';
 import { CurrencyUtils } from '@/utils/CurrencyUtils';
 
-export default function DashboardAccount(props: IDashboardItem) {
+export default memo(function DashboardAccount(props: IDashboardItem) {
     const { getCurrencySymbol } = useCurrency();
     const { setDraggingType, draggingType } = useDragOverlay();
     const { BoxProps } = props;
@@ -80,4 +81,4 @@ export default function DashboardAccount(props: IDashboardItem) {
             }}
         />
     );
-}
+});

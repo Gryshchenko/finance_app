@@ -13,7 +13,6 @@ import { useAppQuery } from '@/hooks/useAppQuery';
 import { fetchAccounts } from '@/screens/AccountScreens/AccountsScreen';
 import { fetchCategories } from '@/screens/CategoryScreens/CategoriesScreen';
 import { fetchIncomes } from '@/screens/IncomeScreens/IncomesScreen';
-// import { useAppTheme } from '@/theme/context';
 import { spacing } from '@/theme/spacing';
 import { ThemedStyle } from '@/theme/types';
 
@@ -36,7 +35,6 @@ export default function DashboardItems() {
                 <DashboardDraggableItem />
                 <DashboardItem
                     keyGetter={(item: unknown) => {
-                        console.log(333, String((item as IIncome).incomeId));
                         return String((item as IIncome).incomeId);
                     }}
                     Item={DashboardIncome}
@@ -44,7 +42,6 @@ export default function DashboardItems() {
                 />
                 <DashboardItem
                     keyGetter={(item: unknown) => {
-                        console.log(444, String((item as IAccountListItem).accountId));
                         return String((item as IAccountListItem).accountId);
                     }}
                     Item={DashboardAccount}

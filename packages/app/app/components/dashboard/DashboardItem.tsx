@@ -1,4 +1,4 @@
-import { useState, ComponentType } from 'react';
+import { useState, ComponentType, memo } from 'react';
 import { View, ViewStyle } from 'react-native';
 
 import { useAppTheme } from '@/theme/context';
@@ -24,7 +24,7 @@ interface IProps<T = unknown> {
 
 export const DASH_BOARD_ITEM_WIDTH: number = 80;
 
-export default function DashboardItem(props: IProps) {
+export default memo(function DashboardItem(props: IProps) {
     const { Item, items, keyGetter } = props;
     const { themed } = useAppTheme();
     const [containerWidth, setContainerWidth] = useState(0);
@@ -41,7 +41,6 @@ export default function DashboardItem(props: IProps) {
             {matrix.map((row: unknown[], y: number) => (
                 <View key={y} style={themed($item)}>
                     {row.map((item: unknown, index: number) => {
-                        console.log('key', keyGetter?.(item) ?? y + index);
                         return (
                             <Item
                                 key={keyGetter?.(item) ?? y + index}
@@ -61,7 +60,7 @@ export default function DashboardItem(props: IProps) {
             ))}
         </View>
     );
-}
+});
 
 export const $item: ThemedStyle<ViewStyle> = () => ({
     flexDirection: 'row',

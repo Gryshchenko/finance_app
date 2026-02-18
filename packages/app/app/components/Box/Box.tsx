@@ -1,4 +1,4 @@
-import { JSX, useEffect, useRef, useState } from 'react';
+import { JSX, useEffect, useRef } from 'react';
 import { TextStyle, View, ViewStyle } from 'react-native';
 import { useSharedValue } from 'react-native-reanimated';
 import { Draggable, Droppable } from 'react-native-reanimated-dnd';
@@ -35,38 +35,39 @@ export interface IBoxProps<T = unknown> extends IBoxDragAndDrop<T> {
     };
 }
 
-export function Box({
-    children,
-    isDraggable,
-    id,
-    isDroppable,
-    onDragStart,
-    onDragEnd,
-    onDrop,
-    onDragging,
-    type,
-    styles,
-    text,
-}: IBoxProps) {
-    const [isDragging, setIsDragging] = useState<boolean>(false);
+export function Box(props: IBoxProps) {
+    const { children, isDraggable, id, isDroppable, onDragStart, onDragEnd, onDrop, onDragging, type, styles, text } = props;
     const viewRef = useRef<View>(null);
     const { themed } = useAppTheme();
-    const { startDrag, updatePosition, endDrag, endDragDroppable } = useDragOverlay();
+    const { startDrag, updatePosition, endDragDroppable, draggingElementId, setDraggingElementId, onInitialPosition } =
+        useDragOverlay();
+
+    const initialOffset = { x: 0, y: 0 };
+
     const offsetX = useSharedValue(0);
     const offsetY = useSharedValue(0);
 
+    const isDragging = id === draggingElementId;
+
     useEffect(() => {
-        viewRef.current?.measureInWindow((x, y) => {
+        viewRef?.current?.measureInWindow((x, y) => {
             offsetX.value = x - 25;
             offsetY.value = y - 82;
         });
+    }, [offsetX, offsetY]);
+
+    useEffect(() => {
+        return () => {
+            setDraggingElementId(undefined);
+            onInitialPosition(initialOffset.x - 25, initialOffset.y - 82);
+        };
     }, []);
 
     return (
         <View style={[themed($base), styles?.container]}>
             <Droppable
                 dropAlignment={'center'}
-                dropDisabled={!isDroppable}
+                dropDisabled={!isDroppable || isDragging}
                 onDrop={(data) => {
                     onDrop?.(data);
                     endDragDroppable();
@@ -74,17 +75,17 @@ export function Box({
             >
                 <Draggable
                     onDragStart={(data) => {
-                        setIsDragging(true);
-                        console.log(1);
                         onDragStart?.(data);
                     }}
                     onDragEnd={(data) => {
-                        setIsDragging(false);
                         onDragEnd?.(data);
-                        endDrag();
-                        console.log(2);
+                        onInitialPosition(initialOffset.x - 25, initialOffset.y - 82);
                     }}
                     onDragging={(data) => {
+                        setDraggingElementId(data.itemData.id);
+                        initialOffset.x = data.x;
+                        initialOffset.y = data.y;
+
                         startDrag({
                             element: (
                                 <View style={[themed($iconContainer), styles?.box]}>
@@ -132,5 +133,5 @@ const $text: ThemedStyle<TextStyle> = ({ colors, typography }) => ({
 });
 
 const $opacity: ThemedStyle<ViewStyle> = () => ({
-    opacity: 1,
+    opacity: 0,
 });
