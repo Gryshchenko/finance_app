@@ -10,6 +10,7 @@ export enum ItemType {
     Account = 'account',
     Category = 'category',
     Income = 'income',
+    AddNew = 'add_new',
 }
 
 export interface ItemBoxProps extends Omit<IBoxProps, 'children' | 'styles' | 'onDragging'> {

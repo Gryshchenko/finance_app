@@ -7,7 +7,6 @@ import {
     SetStateAction,
     useCallback,
     useContext,
-    useEffect,
     useRef,
     useState,
 } from 'react';
@@ -34,7 +33,7 @@ export interface IDragOverlayLayout {
 
 const { height: SCREEN_HEIGHT } = Dimensions.get('window');
 
-const EDGE = 50;
+const EDGE = 300;
 const SPEED = 12;
 
 type ContextType = {
@@ -94,14 +93,6 @@ export const DragOverlayProvider: FC<PropsWithChildren> = ({ children }) => {
         setElement(undefined);
     };
 
-    useEffect(() => {
-        translateX.value = withTiming(100, { duration: 500 }, (finished) => {
-            if (finished) {
-                scheduleOnRN(clean);
-            }
-        });
-    }, []);
-
     const startDrag = useCallback(
         ({ element: newElement }: IDrag) => {
             if (element === undefined) {
@@ -121,8 +112,16 @@ export const DragOverlayProvider: FC<PropsWithChildren> = ({ children }) => {
         const newX = x;
         const newY = y + scrollY.value - (layout.value.y ?? 0);
         const duration = 500;
-        translateY.value = withTiming(newY, { duration });
-        translateX.value = withTiming(newX, { duration });
+        translateY.value = withTiming(newY, { duration }, (finished) => {
+            if (finished) {
+                scheduleOnRN(clean);
+            }
+        });
+        translateX.value = withTiming(newX, { duration }, (finished) => {
+            if (finished) {
+                scheduleOnRN(clean);
+            }
+        });
     };
 
     const updatePosition = (x: number, y: number) => {

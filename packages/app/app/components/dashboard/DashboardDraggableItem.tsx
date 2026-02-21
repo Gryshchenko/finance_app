@@ -20,5 +20,8 @@ export default function DashboardDraggableItem() {
 
 export const $item: ThemedStyle<ViewStyle> = () => ({
     position: 'absolute',
-    zIndex: 9999,
+    zIndex: 100,
+    scaleY: 1.2,
+    scaleX: 1.2,
+    opacity: 0.6,
 });

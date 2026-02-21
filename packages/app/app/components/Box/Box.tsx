@@ -1,4 +1,4 @@
-import { JSX, useEffect, useRef } from 'react';
+import { JSX, useEffect, useRef, useState } from 'react';
 import { TextStyle, View, ViewStyle } from 'react-native';
 import { useSharedValue } from 'react-native-reanimated';
 import { Draggable, Droppable } from 'react-native-reanimated-dnd';
@@ -41,31 +41,33 @@ export function Box(props: IBoxProps) {
     const { themed } = useAppTheme();
     const { startDrag, updatePosition, endDragDroppable, draggingElementId, setDraggingElementId, onInitialPosition } =
         useDragOverlay();
+    const [isDragOver, setIsDragOver] = useState(false);
 
     const initialOffset = { x: 0, y: 0 };
 
-    const offsetX = useSharedValue(0);
-    const offsetY = useSharedValue(0);
+    const offset = useSharedValue<{ x: number; y: number; width: number; height: number }>({ x: 0, y: 0, width: 0, height: 0 });
 
     const isDragging = id === draggingElementId;
 
     useEffect(() => {
-        viewRef?.current?.measureInWindow((x, y) => {
-            offsetX.value = x - 25;
-            offsetY.value = y - 82;
+        viewRef?.current?.measureInWindow((x, y, width: number, height: number) => {
+            offset.value = { x, y, width, height };
         });
-    }, [offsetX, offsetY]);
+    }, [offset]);
 
     useEffect(() => {
         return () => {
             setDraggingElementId(undefined);
             onInitialPosition(initialOffset.x - 25, initialOffset.y - 82);
         };
-    }, []);
+    }, [initialOffset.x, initialOffset.y]);
 
     return (
         <View style={[themed($base), styles?.container]}>
             <Droppable
+                onActiveChange={(isActive) => {
+                    setIsDragOver(isActive);
+                }}
                 dropAlignment={'center'}
                 dropDisabled={!isDroppable || isDragging}
                 onDrop={(data) => {
@@ -95,17 +97,26 @@ export function Box(props: IBoxProps) {
                             id: data.itemData.id,
                             type: data.itemData.type,
                         });
-                        updatePosition(data.tx + offsetX.value, data.ty + offsetY.value);
+                        updatePosition(data.tx + offset.value.x - 25, data.ty + offset.value.y - 82);
                         onDragging?.(data);
                     }}
                     draggableId={id}
                     dragDisabled={!isDraggable}
                     data={{ id, type }}
                 >
-                    <View ref={viewRef} style={[themed($iconContainer), styles?.box, isDragging && themed($opacity)]}>
+                    <View
+                        ref={viewRef}
+                        style={[
+                            themed($iconContainer),
+                            styles?.box,
+                            isDragging && themed($opacity),
+                            isDragOver && themed($dragOver),
+                        ]}
+                    >
                         {text && <Text style={themed($text)}>{text}</Text>}
                     </View>
                 </Draggable>
+                {isDragging && <View ref={viewRef} style={[themed($iconContainer), themed($dragging)]}></View>}
             </Droppable>
             {children}
         </View>
@@ -134,4 +145,17 @@ const $text: ThemedStyle<TextStyle> = ({ colors, typography }) => ({
 
 const $opacity: ThemedStyle<ViewStyle> = () => ({
     opacity: 0,
+    position: 'absolute',
+});
+
+const $dragging: ThemedStyle<ViewStyle> = ({ colors }) => ({
+    borderStyle: 'dashed',
+    borderColor: colors.border,
+    backgroundColor: colors.palette.grey300,
+});
+
+const $dragOver: ThemedStyle<ViewStyle> = ({ colors }) => ({
+    borderStyle: 'dashed',
+    borderColor: colors.palette.grey400,
+    backgroundColor: colors.palette.grey300,
 });

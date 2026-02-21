@@ -1,5 +1,10 @@
 const palette = {
     green400: '#27AE60',
+
+    grey200: '#F2F2F2',
+    grey300: '#e5e5e5',
+    grey400: '#888888',
+
     neutral900: '#FFFFFF',
     neutral800: '#F4F2F1',
     neutral700: '#D7CEC9',

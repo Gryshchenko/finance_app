@@ -1,12 +1,13 @@
 import { useState, ComponentType, memo } from 'react';
 import { View, ViewStyle } from 'react-native';
 
+import { IBoxDataItem } from '@/interfaces/IBoxDataItem';
 import { useAppTheme } from '@/theme/context';
 import { ThemedStyle } from '@/theme/types';
 import { buildMatrix } from '@/utils/buildMatrix';
 
-export interface IDashboardItem {
-    item: unknown;
+export interface IDashboardItem<T> {
+    item: IBoxDataItem<T>;
     key: string | number;
     BoxProps?: {
         styles?: {
@@ -17,9 +18,9 @@ export interface IDashboardItem {
 }
 
 interface IProps<T = unknown> {
-    Item: ComponentType<IDashboardItem>;
-    items: T[];
-    keyGetter?: (item: unknown) => string;
+    Item: ComponentType<IDashboardItem<T>>;
+    items: IBoxDataItem<T>[];
+    keyGetter?: (item: IBoxDataItem<T>) => string;
 }
 
 export const DASH_BOARD_ITEM_WIDTH: number = 80;
@@ -42,18 +43,20 @@ export default memo(function DashboardItem(props: IProps) {
                 <View key={y} style={themed($item)}>
                     {row.map((item: unknown, index: number) => {
                         return (
-                            <Item
-                                key={keyGetter?.(item) ?? y + index}
-                                item={item}
-                                BoxProps={{
-                                    styles: {
-                                        container: {
-                                            alignItems: 'center',
-                                            marginRight: index !== row.length - 1 ? payload.calculatedGap : 0,
+                            <>
+                                <Item
+                                    key={keyGetter?.(item as IBoxDataItem<unknown>) ?? y + index}
+                                    item={item as IBoxDataItem<unknown>}
+                                    BoxProps={{
+                                        styles: {
+                                            container: {
+                                                alignItems: 'center',
+                                                marginRight: index !== row.length - 1 ? payload.calculatedGap : 0,
+                                            },
                                         },
-                                    },
-                                }}
-                            />
+                                    }}
+                                />
+                            </>
                         );
                     })}
                 </View>

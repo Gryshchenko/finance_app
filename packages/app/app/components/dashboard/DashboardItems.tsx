@@ -1,20 +1,24 @@
+import { ComponentType } from 'react';
 import { ViewStyle } from 'react-native';
 import Animated from 'react-native-reanimated';
 import { DropProvider } from 'react-native-reanimated-dnd';
 import { IAccountListItem, ICategory, IIncome } from 'tenpercent/shared';
 
+import { boxDataItemAdapter } from '@/components/Box/boxDataItemAdapter';
 import { useDragOverlay } from '@/components/Box/DragOverlayContext';
 import DashboardAccount from '@/components/dashboard/DashboardAccount';
 import DashboardCategory from '@/components/dashboard/DashboardCategory';
 import DashboardDraggableItem from '@/components/dashboard/DashboardDraggableItem';
 import DashboardIncome from '@/components/dashboard/DashboardIncome';
-import DashboardItem from '@/components/dashboard/DashboardItem';
+import DashboardItem, { IDashboardItem } from '@/components/dashboard/DashboardItem';
 import { useAppQuery } from '@/hooks/useAppQuery';
+import { IBoxDataItem } from '@/interfaces/IBoxDataItem';
 import { fetchAccounts } from '@/screens/AccountScreens/AccountsScreen';
 import { fetchCategories } from '@/screens/CategoryScreens/CategoriesScreen';
 import { fetchIncomes } from '@/screens/IncomeScreens/IncomesScreen';
 import { spacing } from '@/theme/spacing';
 import { ThemedStyle } from '@/theme/types';
+import { BoxDataItemType } from '@/types/BoxDataItemType';
 
 export default function DashboardItems() {
     const { scrollHandler, scrollRef, onLayout, uuid } = useDragOverlay();
@@ -34,23 +38,34 @@ export default function DashboardItems() {
             >
                 <DashboardDraggableItem />
                 <DashboardItem
-                    keyGetter={(item: unknown) => {
-                        return String((item as IIncome).incomeId);
+                    keyGetter={(item: IBoxDataItem<unknown>): string => {
+                        if (item.type === BoxDataItemType.Default) {
+                            return String((item.data as IIncome)?.incomeId);
+                        }
+                        return 'new';
                     }}
-                    Item={DashboardIncome}
-                    items={incomes.data ?? []}
+                    Item={DashboardIncome as ComponentType<IDashboardItem<unknown>>}
+                    items={boxDataItemAdapter<IIncome>(incomes.data ?? [])}
                 />
                 <DashboardItem
-                    keyGetter={(item: unknown) => {
-                        return String((item as IAccountListItem).accountId);
+                    keyGetter={(item: IBoxDataItem<unknown>): string => {
+                        if (item.type === BoxDataItemType.Default) {
+                            return String((item.data as IAccountListItem)?.accountId);
+                        }
+                        return 'new';
                     }}
-                    Item={DashboardAccount}
-                    items={accounts.data ?? []}
+                    Item={DashboardAccount as ComponentType<IDashboardItem<unknown>>}
+                    items={boxDataItemAdapter<IAccountListItem>(accounts.data ?? [])}
                 />
                 <DashboardItem
-                    keyGetter={(item: unknown) => String((item as ICategory).categoryId)}
-                    Item={DashboardCategory}
-                    items={categories.data ?? []}
+                    keyGetter={(item: IBoxDataItem<unknown>): string => {
+                        if (item.type === BoxDataItemType.Default) {
+                            return String((item.data as ICategory)?.categoryId);
+                        }
+                        return 'new';
+                    }}
+                    Item={DashboardCategory as ComponentType<IDashboardItem<unknown>>}
+                    items={boxDataItemAdapter<ICategory>(categories.data ?? [])}
                 />
             </Animated.ScrollView>
         </DropProvider>
