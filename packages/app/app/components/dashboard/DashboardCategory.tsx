@@ -18,7 +18,7 @@ import { CurrencyUtils } from '@/utils/CurrencyUtils';
 
 export default memo(function DashboardCategory(props: IDashboardItem<ICategory>) {
     const { getCurrencySymbol } = useCurrency();
-    const { draggingType } = useDragOverlay();
+    const { draggingItemType } = useDragOverlay();
     const { BoxProps } = props;
     const navigation = useNavigation();
     const container = props.item;
@@ -34,7 +34,7 @@ export default memo(function DashboardCategory(props: IDashboardItem<ICategory>)
                     title={item.categoryName}
                     icon={'tmp'}
                     value={CurrencyUtils.formatWithDelimiter(2321, getCurrencySymbol(item.currencyId))}
-                    isDroppable={draggingType === ItemType.Account}
+                    isDroppable={draggingItemType === ItemType.Account}
                     onDrop={(dropItem: unknown) => {
                         const inWorkDropItem: IDrag = dropItem as unknown as IDrag;
                         if (Utils.isNull(item?.categoryId) || Utils.isNull(inWorkDropItem.id)) {

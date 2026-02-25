@@ -15,7 +15,7 @@ import { CurrencyUtils } from '@/utils/CurrencyUtils';
 
 export default memo(function DashboardIncome(props: IDashboardItem<IIncome>) {
     const { getCurrencySymbol } = useCurrency();
-    const { setDraggingType } = useDragOverlay();
+    const { setDraggingItemType } = useDragOverlay();
     const { BoxProps } = props;
     const container = props.item;
     const navigation = useNavigation();
@@ -34,10 +34,10 @@ export default memo(function DashboardIncome(props: IDashboardItem<IIncome>) {
                     value={CurrencyUtils.formatWithDelimiter(231, getCurrencySymbol(item.currencyId))}
                     isDraggable={true}
                     onDragStart={() => {
-                        setDraggingType(ItemType.Income);
+                        setDraggingItemType(ItemType.Income);
                     }}
                     onDragEnd={() => {
-                        setDraggingType(undefined);
+                        setDraggingItemType(undefined);
                     }}
                 />
             );

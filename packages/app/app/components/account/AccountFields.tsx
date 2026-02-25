@@ -1,5 +1,5 @@
 import { FC } from 'react';
-import { StyleProp, TextStyle, ViewStyle } from 'react-native';
+import { StyleProp, TextStyle, View, ViewStyle } from 'react-native';
 import { IAccount } from 'tenpercent/shared';
 import { ICurrency } from 'tenpercent/shared';
 
@@ -25,7 +25,7 @@ export const AccountFields: FC<IProps> = function AccountFields(_props) {
     const { isView, form, handleChange, handleSave, edit, cancel, onDelete, errors, isEdit } = _props;
     return (
         <GeneralDetailView isView={isView} onEdit={edit} onCancel={cancel} onSave={handleSave} onDelete={onDelete}>
-            <view style={$fieldWrapper as undefined}>
+            <View style={$fieldWrapper as undefined}>
                 <Field
                     style={$fieldName}
                     label={translate('common:name')}
@@ -53,8 +53,8 @@ export const AccountFields: FC<IProps> = function AccountFields(_props) {
                         }
                     }}
                 />
-            </view>
-            <view>
+            </View>
+            <View>
                 <Field
                     style={$fieldName}
                     label={translate('common:amount')}
@@ -70,7 +70,7 @@ export const AccountFields: FC<IProps> = function AccountFields(_props) {
                         },
                     }}
                 />
-            </view>
+            </View>
         </GeneralDetailView>
     );
 };

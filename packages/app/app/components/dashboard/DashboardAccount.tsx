@@ -18,7 +18,7 @@ import { CurrencyUtils } from '@/utils/CurrencyUtils';
 
 export default memo(function DashboardAccount(props: IDashboardItem<IAccountListItem>) {
     const { getCurrencySymbol } = useCurrency();
-    const { setDraggingType, draggingType } = useDragOverlay();
+    const { setDraggingItemType, draggingItemType } = useDragOverlay();
     const { BoxProps } = props;
     const container = props.item;
     const navigation = useNavigation();
@@ -37,9 +37,9 @@ export default memo(function DashboardAccount(props: IDashboardItem<IAccountList
                     value={CurrencyUtils.formatWithDelimiter(item.amount, getCurrencySymbol(item.currencyId))}
                     isDraggable={true}
                     onDragStart={() => {
-                        setDraggingType(ItemType.Account);
+                        setDraggingItemType(ItemType.Account);
                     }}
-                    isDroppable={[ItemType.Account, ItemType.Income].includes(draggingType as ItemType)}
+                    isDroppable={[ItemType.Account, ItemType.Income].includes(draggingItemType as ItemType)}
                     onDrop={(dropItem) => {
                         const inWorkDropItem: IDrag = dropItem as unknown as IDrag;
                         if (Utils.isNull(item?.accountId) || Utils.isNull(inWorkDropItem.id)) {

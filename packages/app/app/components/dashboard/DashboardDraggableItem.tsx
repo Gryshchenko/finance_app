@@ -7,11 +7,11 @@ import { ThemedStyle } from '@/theme/types';
 
 export default function DashboardDraggableItem() {
     const { themed } = useAppTheme();
-    const { element, animatedStyle } = useDragOverlay();
-    if (element) {
+    const { draggedElement, draggedElementStyle } = useDragOverlay();
+    if (draggedElement) {
         return (
             <View style={themed($item)} pointerEvents="none">
-                <Animated.View style={animatedStyle}>{element}</Animated.View>
+                <Animated.View style={draggedElementStyle}>{draggedElement}</Animated.View>
             </View>
         );
     }

@@ -66,7 +66,9 @@ export default memo(function ItemBox({
             styles={BoxProps?.styles}
         >
             <View style={themed($textContainer)}>
-                <Text style={[themed($title), styles?.title]}>{title}</Text>
+                <Text numberOfLines={1} ellipsizeMode="tail" style={[themed($title), styles?.title]}>
+                    {title}
+                </Text>
                 {value && <Text style={[themed($value), styles?.value]}>{value}</Text>}
             </View>
         </Box>

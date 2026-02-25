@@ -1,5 +1,5 @@
 import { JSX, useEffect, useRef, useState } from 'react';
-import { TextStyle, View, ViewStyle } from 'react-native';
+import { View, ViewStyle, TextStyle } from 'react-native';
 import { useSharedValue } from 'react-native-reanimated';
 import { Draggable, Droppable } from 'react-native-reanimated-dnd';
 
@@ -9,7 +9,7 @@ import { Text } from '@/components/Text';
 import { useAppTheme } from '@/theme/context';
 import { ThemedStyle } from '@/theme/types';
 
-export const DASH_BOARD_BOX_SIZE: number = 56;
+const DASH_BOARD_BOX_SIZE: number = 56;
 
 export interface IBoxDragAndDrop<T> {
     onDrop: (data: T) => void;
@@ -39,26 +39,34 @@ export function Box(props: IBoxProps) {
     const { children, isDraggable, id, isDroppable, onDragStart, onDragEnd, onDrop, onDragging, type, styles, text } = props;
     const viewRef = useRef<View>(null);
     const { themed } = useAppTheme();
-    const { startDrag, updatePosition, endDragDroppable, draggingElementId, setDraggingElementId, onInitialPosition } =
-        useDragOverlay();
+    const {
+        initiateItemDrag,
+        updateDragPosition,
+        resetDragState,
+        draggedElementId,
+        setDraggedElementId,
+        setInitialDragPosition,
+        extendedGrid,
+    } = useDragOverlay();
     const [isDragOver, setIsDragOver] = useState(false);
 
     const initialOffset = { x: 0, y: 0 };
 
     const offset = useSharedValue<{ x: number; y: number; width: number; height: number }>({ x: 0, y: 0, width: 0, height: 0 });
 
-    const isDragging = id === draggingElementId;
+    const isDragging = id === draggedElementId;
 
     useEffect(() => {
         viewRef?.current?.measureInWindow((x, y, width: number, height: number) => {
             offset.value = { x, y, width, height };
+            console.log('Measured box position:', { x, y, width, height, id });
         });
-    }, [offset]);
+    }, [extendedGrid.accounts.isOpen, extendedGrid.incomes.isOpen, offset]);
 
     useEffect(() => {
         return () => {
-            setDraggingElementId(undefined);
-            onInitialPosition(initialOffset.x - 25, initialOffset.y - 82);
+            setDraggedElementId(undefined);
+            setInitialDragPosition(initialOffset.x - 25, initialOffset.y - 82);
         };
     }, [initialOffset.x, initialOffset.y]);
 
@@ -72,7 +80,7 @@ export function Box(props: IBoxProps) {
                 dropDisabled={!isDroppable || isDragging}
                 onDrop={(data) => {
                     onDrop?.(data);
-                    endDragDroppable();
+                    resetDragState();
                 }}
             >
                 <Draggable
@@ -81,14 +89,14 @@ export function Box(props: IBoxProps) {
                     }}
                     onDragEnd={(data) => {
                         onDragEnd?.(data);
-                        onInitialPosition(initialOffset.x - 25, initialOffset.y - 82);
+                        setInitialDragPosition(initialOffset.x - 25, initialOffset.y - 82);
                     }}
                     onDragging={(data) => {
-                        setDraggingElementId(data.itemData.id);
+                        setDraggedElementId(data.itemData.id);
                         initialOffset.x = data.x;
                         initialOffset.y = data.y;
 
-                        startDrag({
+                        initiateItemDrag({
                             element: (
                                 <View style={[themed($iconContainer), styles?.box]}>
                                     {text && <Text style={themed($text)}>{text}</Text>}
@@ -97,7 +105,7 @@ export function Box(props: IBoxProps) {
                             id: data.itemData.id,
                             type: data.itemData.type,
                         });
-                        updatePosition(data.tx + offset.value.x - 25, data.ty + offset.value.y - 82);
+                        updateDragPosition(data.tx + offset.value.x - 25, data.ty + offset.value.y - 82);
                         onDragging?.(data);
                     }}
                     draggableId={id}
