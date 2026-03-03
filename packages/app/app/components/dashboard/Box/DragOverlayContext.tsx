@@ -4,6 +4,7 @@ import {
     FC,
     JSX,
     PropsWithChildren,
+    Ref,
     SetStateAction,
     useCallback,
     useContext,
@@ -22,19 +23,14 @@ import {
 import { AnimatedScrollView } from 'react-native-reanimated/lib/typescript/component/ScrollView';
 import { scheduleOnRN } from 'react-native-worklets';
 
-import { IDrag } from '@/components/Box/Box';
-import { ItemType } from '@/components/Box/ItemBox';
+import { IDrag } from '@/components/dashboard/Box/Box';
+import { ItemType } from '@/components/dashboard/Box/ItemBox';
 
 export interface IDragOverlayLayout {
     width: number | null;
     height: number | null;
     x: number | null;
     y: number | null;
-}
-
-export interface IExtendedGridState {
-    incomes: { isOpen: boolean };
-    accounts: { isOpen: boolean };
 }
 
 export interface IDragOverlayZone {
@@ -56,7 +52,7 @@ const AUTO_SCROLL_SPEED = 12;
 const ANIMATION_TIMEOUT_MS = 600;
 
 type ContextType = {
-    scrollRef: React.Ref<AnimatedScrollView | null> | null;
+    scrollRef: Ref<AnimatedScrollView | null> | null;
     setDraggingItemType: (type: ItemType | undefined) => void;
     initiateItemDrag: (data: IDrag) => void;
     updateDragPosition: (x: number, y: number) => void;
@@ -70,13 +66,20 @@ type ContextType = {
     dragSessionId: number;
     setDraggedElementId: Dispatch<SetStateAction<string | undefined>>;
     draggedElementId: string | undefined;
-    setExtendedGrid: Dispatch<SetStateAction<IExtendedGridState>>;
-    extendedGrid: IExtendedGridState;
     addZone: (zone: IDragOverlayZone) => void;
-    activeZone: IDragOverlayZone | null;
+    activeZones?: string;
 };
-const isPointInside = (x: number, y: number, rect: { pageX: number; pageY: number; width: number; height: number }) => {
-    return x >= rect.pageX && x <= rect.pageX + rect.width && y >= rect.pageY && y <= rect.pageY + rect.height;
+const isPointInside = (
+    draggableX: number,
+    draggableY: number,
+    rect: { pageX: number; pageY: number; width: number; height: number },
+) => {
+    return (
+        draggableX < rect.pageX + rect.width &&
+        draggableX + 10 > rect.pageX &&
+        draggableY < rect.pageY + rect.height &&
+        draggableY + 10 > rect.pageY
+    );
 };
 
 export const DragOverlayContext = createContext<ContextType | null>(null);
@@ -85,19 +88,24 @@ export const DragOverlayProvider: FC<PropsWithChildren> = ({ children }) => {
     const overlayLayout = useSharedValue<IDragOverlayLayout>({ width: null, height: null, x: null, y: null });
 
     const zonesRef = useRef<Map<string, IDragOverlayZone>>(new Map());
-    const [activeZone, setActiveZone] = useState<IDragOverlayZone | null>(null);
+
+    const activeZoneMapRef = useRef<Map<string, boolean>>(new Map());
+
+    const [activeZones, setActiveZones] = useState<string | undefined>(undefined);
+
+    const addZone = useCallback((zone: IDragOverlayZone) => {
+        if (!zonesRef.current?.has(zone.id)) {
+            zonesRef.current?.set(zone.id, zone);
+        }
+    }, []);
 
     useEffect(() => {
         return () => {
             zonesRef.current?.clear();
             cleanupDragSessionWithWatchdog();
+            activeZoneMapRef.current?.clear();
         };
     }, []);
-
-    const [extendedGrid, setExtendedGrid] = useState<IExtendedGridState>({
-        incomes: { isOpen: false },
-        accounts: { isOpen: false },
-    });
 
     const scrollY = useSharedValue(0);
     const [dragSessionId, setDragSessionId] = useState<number>(1);
@@ -169,7 +177,7 @@ export const DragOverlayProvider: FC<PropsWithChildren> = ({ children }) => {
 
     const setInitialDragPosition = (x: number, y: number) => {
         const newX = x;
-        const newY = y + scrollY.value - (overlayLayout.value.y ?? 0);
+        const newY = y + scrollY.value;
         const duration = 500;
         cleanupDragSessionWithTimeout();
         dragTranslateY.value = withTiming(newY, { duration }, (finished) => {
@@ -182,19 +190,33 @@ export const DragOverlayProvider: FC<PropsWithChildren> = ({ children }) => {
                 scheduleOnRN(cleanupDragSessionWithWatchdog);
             }
         });
+        activeZoneMapRef.current?.clear();
     };
 
     const updateDragPosition = (x: number, y: number) => {
         const newX = x;
-        const newY = y + scrollY.value - (overlayLayout.value.y ?? 0);
+        const newY = y + scrollY.value;
         for (const zone of zonesRef.current?.values()) {
             const layout = zone.measure;
             const withOffSetX = x;
             const withOffSetY = y - (overlayLayout.value.y ?? 0);
-            // const isInside = isPointInside(withOffSetX, withOffSetY, layout);
+            const isInside = isPointInside(withOffSetX, withOffSetY, layout);
+            if (isInside) {
+                if (!activeZoneMapRef.current.get(zone.id)) {
+                    activeZoneMapRef.current.set(zone.id, true);
+                    console.log('Entering zone', zone.id);
+                    setActiveZones(zone.id);
+                }
+            } else {
+                if (activeZoneMapRef.current.get(zone.id)) {
+                    activeZoneMapRef.current.set(zone.id, false);
+                    console.log('Leave zone', zone.id);
+                    setActiveZones(undefined);
+                }
+            }
         }
 
-        if (newX >= 0 && newX <= (overlayLayout.value.width ?? 0) - 56) {
+        if (newX >= 0 && newX <= (overlayLayout.value.width ?? 0)) {
             dragTranslateX.value = newX;
             if (y > SCREEN_HEIGHT - AUTO_SCROLL_EDGE_THRESHOLD) {
                 scrollRef.current?.scrollTo({
@@ -203,7 +225,7 @@ export const DragOverlayProvider: FC<PropsWithChildren> = ({ children }) => {
                 });
             }
         }
-        if (newY >= 0 && newY + 80 <= (overlayLayout.value.height ?? 0) + scrollY.value) {
+        if (newY >= 0 && newY <= (overlayLayout.value.height ?? 0) + scrollY.value) {
             dragTranslateY.value = newY;
             if (y < AUTO_SCROLL_EDGE_THRESHOLD) {
                 scrollRef.current?.scrollTo({
@@ -229,14 +251,8 @@ export const DragOverlayProvider: FC<PropsWithChildren> = ({ children }) => {
         setDraggedElementId,
         draggedElementId,
         setInitialDragPosition,
-        extendedGrid,
-        setExtendedGrid,
-        addZone: (zone: IDragOverlayZone) => {
-            if (!zonesRef.current?.has(zone.id)) {
-                zonesRef.current?.set(zone.id, zone);
-            }
-        },
-        activeZone,
+        addZone,
+        activeZones,
     };
     return <DragOverlayContext.Provider value={value}>{children}</DragOverlayContext.Provider>;
 };

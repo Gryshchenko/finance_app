@@ -1,9 +1,6 @@
 import { createContext, FC, PropsWithChildren, useCallback, useContext, useEffect, useMemo, useState } from 'react';
 import { StyleProp, useColorScheme } from 'react-native';
 import { DarkTheme as NavDarkTheme, DefaultTheme as NavDefaultTheme, Theme as NavTheme } from '@react-navigation/native';
-import { useMMKVString } from 'react-native-mmkv';
-
-import { storage } from '@/utils/storage';
 
 import { setImperativeTheming } from './context.utils';
 import { darkTheme, lightTheme } from './theme';

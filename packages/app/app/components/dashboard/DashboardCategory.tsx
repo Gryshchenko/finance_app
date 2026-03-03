@@ -2,11 +2,12 @@ import { memo } from 'react';
 import { useNavigation } from '@react-navigation/native';
 import { ICategory, TransactionType, Utils } from 'tenpercent/shared';
 
-import { AddBox } from '@/components/Box/AddBox';
-import { IDrag } from '@/components/Box/Box';
-import { CategoryBox } from '@/components/Box/CategoryBox';
-import { useDragOverlay } from '@/components/Box/DragOverlayContext';
-import { ItemType } from '@/components/Box/ItemBox';
+import { AccountIcon } from '@/components/CategoryIcon';
+import { AddBox } from '@/components/dashboard/Box/AddBox';
+import { IDrag } from '@/components/dashboard/Box/Box';
+import { CategoryBox } from '@/components/dashboard/Box/CategoryBox';
+import { useDragOverlay } from '@/components/dashboard/Box/DragOverlayContext';
+import { ItemType } from '@/components/dashboard/Box/ItemBox';
 import { IDashboardItem } from '@/components/dashboard/DashboardItem';
 import { useCurrency } from '@/context/CurrencyContext';
 import { CategoriesPath } from '@/navigators/CategoriesStackNavigator';
@@ -32,8 +33,8 @@ export default memo(function DashboardCategory(props: IDashboardItem<ICategory>)
                     }}
                     id={String(item.categoryId)}
                     title={item.categoryName}
-                    icon={'tmp'}
-                    value={CurrencyUtils.formatWithDelimiter(2321, getCurrencySymbol(item.currencyId))}
+                    icon={AccountIcon.Cash}
+                    value={CurrencyUtils.formatWithDelimiter(0, getCurrencySymbol(item.currencyId), 2, true)}
                     isDroppable={draggingItemType === ItemType.Account}
                     onDrop={(dropItem: unknown) => {
                         const inWorkDropItem: IDrag = dropItem as unknown as IDrag;

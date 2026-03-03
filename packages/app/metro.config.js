@@ -5,6 +5,10 @@ const { getDefaultConfig } = require('expo/metro-config');
 /** @type {import('expo/metro-config').MetroConfig} */
 const config = getDefaultConfig(__dirname);
 
+config.transformer.babelTransformerPath = require.resolve('react-native-svg-transformer');
+
+config.resolver.assetExts = config.resolver.assetExts.filter((ext) => ext !== 'svg');
+
 config.transformer.getTransformOptions = async () => ({
     transform: {
         // Inline requires are very useful for deferring loading of large dependencies/components.
@@ -27,5 +31,6 @@ config.resolver.unstable_conditionNames = ['require', 'default', 'browser'];
 // This helps support certain popular third-party libraries
 // such as Firebase that use the extension cjs.
 config.resolver.sourceExts.push('cjs');
+config.resolver.sourceExts.push('svg');
 
 module.exports = config;

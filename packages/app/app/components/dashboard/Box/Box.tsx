@@ -1,15 +1,15 @@
-import { JSX, useEffect, useRef, useState } from 'react';
-import { View, ViewStyle, TextStyle } from 'react-native';
+import { JSX, useEffect, useRef, useState, ReactNode } from 'react';
+import { View, ViewStyle } from 'react-native';
 import { useSharedValue } from 'react-native-reanimated';
 import { Draggable, Droppable } from 'react-native-reanimated-dnd';
 
-import { useDragOverlay } from '@/components/Box/DragOverlayContext';
-import { ItemType } from '@/components/Box/ItemBox';
-import { Text } from '@/components/Text';
+import { BoxDraggableItem, IBoxDraggableItem } from '@/components/dashboard/Box/BoxDraggableItem';
+import { useDragOverlay } from '@/components/dashboard/Box/DragOverlayContext';
+import { ItemType } from '@/components/dashboard/Box/ItemBox';
 import { useAppTheme } from '@/theme/context';
 import { ThemedStyle } from '@/theme/types';
 
-const DASH_BOARD_BOX_SIZE: number = 56;
+export const DASH_BOARD_BOX_SIZE: number = 56;
 
 export interface IBoxDragAndDrop<T> {
     onDrop: (data: T) => void;
@@ -25,18 +25,29 @@ export type IDrag = { id: string; type: ItemType; element?: JSX.Element };
 export interface IBoxProps<T = unknown> extends IBoxDragAndDrop<T> {
     id: string;
     droppableId: string;
-    children: React.ReactNode;
-    icon?: React.ReactNode;
+    children: ReactNode;
     type: ItemType;
-    text?: string;
     styles?: {
-        box?: ViewStyle;
         container?: ViewStyle;
     };
+    BoxDraggableItemProps?: IBoxDraggableItem;
 }
 
 export function Box(props: IBoxProps) {
-    const { children, isDraggable, id, isDroppable, onDragStart, onDragEnd, onDrop, onDragging, type, styles, text } = props;
+    const {
+        children,
+        isDraggable,
+        id,
+        isDroppable,
+        onDragStart,
+        onDragEnd,
+        onDrop,
+        onDragging,
+        type,
+        styles,
+        droppableId,
+        BoxDraggableItemProps = {},
+    } = props;
     const viewRef = useRef<View>(null);
     const { themed } = useAppTheme();
     const {
@@ -46,7 +57,6 @@ export function Box(props: IBoxProps) {
         draggedElementId,
         setDraggedElementId,
         setInitialDragPosition,
-        extendedGrid,
     } = useDragOverlay();
     const [isDragOver, setIsDragOver] = useState(false);
 
@@ -59,14 +69,13 @@ export function Box(props: IBoxProps) {
     useEffect(() => {
         viewRef?.current?.measureInWindow((x, y, width: number, height: number) => {
             offset.value = { x, y, width, height };
-            console.log('Measured box position:', { x, y, width, height, id });
         });
-    }, [extendedGrid.accounts.isOpen, extendedGrid.incomes.isOpen, offset]);
+    }, [offset]);
 
     useEffect(() => {
         return () => {
             setDraggedElementId(undefined);
-            setInitialDragPosition(initialOffset.x - 25, initialOffset.y - 82);
+            setInitialDragPosition(initialOffset.x, initialOffset.y - DASH_BOARD_BOX_SIZE);
         };
     }, [initialOffset.x, initialOffset.y]);
 
@@ -84,12 +93,13 @@ export function Box(props: IBoxProps) {
                 }}
             >
                 <Draggable
+                    collisionAlgorithm={'intersect'}
                     onDragStart={(data) => {
                         onDragStart?.(data);
                     }}
                     onDragEnd={(data) => {
                         onDragEnd?.(data);
-                        setInitialDragPosition(initialOffset.x - 25, initialOffset.y - 82);
+                        setInitialDragPosition(initialOffset.x, initialOffset.y - DASH_BOARD_BOX_SIZE);
                     }}
                     onDragging={(data) => {
                         setDraggedElementId(data.itemData.id);
@@ -97,60 +107,50 @@ export function Box(props: IBoxProps) {
                         initialOffset.y = data.y;
 
                         initiateItemDrag({
-                            element: (
-                                <View style={[themed($iconContainer), styles?.box]}>
-                                    {text && <Text style={themed($text)}>{text}</Text>}
-                                </View>
-                            ),
+                            element: <BoxDraggableItem {...BoxDraggableItemProps} />,
                             id: data.itemData.id,
                             type: data.itemData.type,
                         });
-                        updateDragPosition(data.tx + offset.value.x - 25, data.ty + offset.value.y - 82);
+                        updateDragPosition(data.tx + data.x, data.ty + data.y - DASH_BOARD_BOX_SIZE);
                         onDragging?.(data);
                     }}
-                    draggableId={id}
+                    draggableId={droppableId}
                     dragDisabled={!isDraggable}
                     data={{ id, type }}
                 >
-                    <View
+                    <BoxDraggableItem
                         ref={viewRef}
-                        style={[
-                            themed($iconContainer),
-                            styles?.box,
-                            isDragging && themed($opacity),
-                            isDragOver && themed($dragOver),
-                        ]}
-                    >
-                        {text && <Text style={themed($text)}>{text}</Text>}
-                    </View>
+                        {...BoxDraggableItemProps}
+                        styles={{
+                            ...BoxDraggableItemProps.styles,
+                            box: [
+                                isDragging ? themed($opacity) : undefined,
+                                ...(BoxDraggableItemProps.styles?.box ?? []),
+                                isDragOver ? themed($dragOver) : undefined,
+                            ],
+                        }}
+                    />
                 </Draggable>
-                {isDragging && <View ref={viewRef} style={[themed($iconContainer), themed($dragging)]}></View>}
+                {isDragging && (
+                    <BoxDraggableItem
+                        {...BoxDraggableItemProps}
+                        styles={{
+                            ...BoxDraggableItemProps.styles,
+                            box: [themed($dragging), ...(BoxDraggableItemProps.styles?.box ?? [])],
+                        }}
+                    />
+                )}
             </Droppable>
             {children}
         </View>
     );
 }
-const $iconContainer: ThemedStyle<ViewStyle> = () => ({
-    width: DASH_BOARD_BOX_SIZE,
-    height: DASH_BOARD_BOX_SIZE,
-    justifyContent: 'center',
-    alignItems: 'center',
-    borderWidth: 1,
-});
-
 const $base: ThemedStyle<ViewStyle> = () => ({
     width: 80,
     height: 97,
     alignItems: 'center',
     gap: 8,
 });
-
-const $text: ThemedStyle<TextStyle> = ({ colors, typography }) => ({
-    color: colors.text,
-    fontFamily: typography.fonts.funnelSans.bold,
-    fontSize: 22,
-});
-
 const $opacity: ThemedStyle<ViewStyle> = () => ({
     opacity: 0,
     position: 'absolute',

@@ -1,6 +1,8 @@
 import { Pressable, ViewStyle } from 'react-native';
 
-import ItemBox, { ItemType } from '@/components/Box/ItemBox';
+import ItemBox, { ItemType } from '@/components/dashboard/Box/ItemBox';
+import { iconRegistry } from '@/components/Icon';
+import { translate } from '@/i18n/translate';
 import { useAppTheme } from '@/theme/context';
 import { ThemedStyle } from '@/theme/types';
 
@@ -16,8 +18,7 @@ export function AddBox({ onPress }: AddBoxProps) {
                 type={ItemType.Account}
                 id={'add'}
                 droppableId={'add'}
-                title={'Add'}
-                icon={''}
+                title={translate('dashboardScreen:add')}
                 value={undefined}
                 isDroppable={false}
                 isDraggable={false}
@@ -25,8 +26,11 @@ export function AddBox({ onPress }: AddBoxProps) {
                 onDragEnd={() => null}
                 onDrop={() => null}
                 BoxProps={{
-                    styles: {
-                        box: themed($boxDefault),
+                    BoxDraggableItemProps: {
+                        icon: 'add',
+                        styles: {
+                            box: [themed($boxDefault)],
+                        },
                     },
                 }}
             />

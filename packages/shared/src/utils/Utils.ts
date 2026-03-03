@@ -1,4 +1,14 @@
 export class Utils {
+    public static getSecureRandom(maxExclusive: number): number {
+        if (maxExclusive <= 0) return 0;
+        const cryptoApi = globalThis.crypto;
+        if (cryptoApi?.getRandomValues) {
+            const buffer = new Uint32Array(1);
+            cryptoApi.getRandomValues(buffer);
+            return buffer[0] % maxExclusive;
+        }
+        return Math.floor(Math.random() * maxExclusive);
+    }
     public static roundNumber(value: number): number {
         return Number.parseFloat(Number(value).toFixed(2));
     }

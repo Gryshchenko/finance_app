@@ -2,7 +2,7 @@ import { TextStyle } from 'react-native';
 import { NativeStackScreenProps } from '@react-navigation/native-stack';
 
 import { BalanceSummary } from '@/components/BalanceSummary';
-import { DragOverlayProvider } from '@/components/Box/DragOverlayContext';
+import { DragOverlayProvider } from '@/components/dashboard/Box/DragOverlayContext';
 import DashboardItems from '@/components/dashboard/DashboardItems';
 import { HeaderV2 } from '@/components/HeaderV2';
 import { Screen } from '@/components/Screen';

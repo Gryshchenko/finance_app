@@ -1,15 +1,17 @@
+import { useMemo } from 'react';
 import { ViewStyle } from 'react-native';
 
-import ItemBox, { ItemBoxProps, ItemType } from '@/components/Box/ItemBox';
-import { useAppTheme } from '@/theme/context';
-import { ThemedStyle } from '@/theme/types';
+import { CategoryIconIcon } from '@/components/CategoryIcon';
+import ItemBox, { ItemBoxProps, ItemType } from '@/components/dashboard/Box/ItemBox';
+import { ColorService } from '@/services/ColorService';
 
-interface AccountBoxProps extends Omit<ItemBoxProps, 'type' | 'isDragging' | 'setIsDragging' | 'droppableId'> {}
+interface AccountBoxProps extends Omit<ItemBoxProps, 'type' | 'isDragging' | 'setIsDragging' | 'droppableId'> {
+    icon: CategoryIconIcon;
+}
 
 export function AccountBox({
     title,
     value,
-    icon,
     id,
     isDroppable,
     onDragStart,
@@ -19,14 +21,15 @@ export function AccountBox({
     BoxProps,
 }: AccountBoxProps) {
     const droppableId = `${id}-${ItemType.Account}`;
-    const { themed } = useAppTheme();
+    const color = useMemo(() => {
+        return new ColorService().getAccountColor(id);
+    }, [id]);
     return (
         <ItemBox
             type={ItemType.Account}
             id={id}
             droppableId={droppableId}
             title={title}
-            icon={icon}
             value={value}
             isDroppable={isDroppable}
             onDragStart={onDragStart}
@@ -34,22 +37,28 @@ export function AccountBox({
             onDrop={onDrop}
             isDraggable={isDraggable}
             BoxProps={{
-                text: title?.[0],
+                BoxDraggableItemProps: {
+                    text: title?.[0],
+                    icon: undefined,
+                    color,
+                    styles: {
+                        box: [$boxDefault(color)],
+                    },
+                },
                 styles: {
-                    box: themed($boxDefault),
                     container: BoxProps?.styles?.container,
                 },
             }}
         />
     );
 }
-const $boxDefault: ThemedStyle<ViewStyle> = () => ({
-    backgroundColor: 'rgba(26, 26, 26, 1)',
+const $boxDefault = (color: string): ViewStyle => ({
+    backgroundColor: color,
     shadowColor: 'rgba(0, 0, 0, 0.05)',
     shadowOffset: { width: 0, height: 2 },
-    color: 'rgba(255, 255, 255, 1)',
     shadowOpacity: 1,
     shadowRadius: 15,
     elevation: 5,
     padding: 16,
+    borderWidth: 0,
 });

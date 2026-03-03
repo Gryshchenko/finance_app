@@ -1,3 +1,5 @@
+import { border } from '@/theme/border';
+
 import { colors as colorsLight } from './colors';
 import { colors as colorsDark } from './colorsDark';
 import { spacing as spacingLight } from './spacing';
@@ -12,12 +14,14 @@ export const lightTheme: Theme = {
     spacing: spacingLight,
     typography,
     timing,
+    border,
     isDark: false,
 };
 export const darkTheme: Theme = {
-    colors: colorsLight,
-    spacing: spacingLight,
+    colors: colorsDark,
+    spacing: spacingDark,
     typography,
     timing,
+    border,
     isDark: true,
 };

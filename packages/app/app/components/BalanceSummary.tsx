@@ -68,7 +68,9 @@ export const BalanceSummary: React.FC<Props> = () => {
             <View style={themed($left)}>
                 <Text tx={'common:totalBalance'} style={themed($label)}></Text>
                 <View style={themed($totalRow)}>
-                    <Text style={themed($totalValue)}>{CurrencyUtils.formatWithDelimiter(totalInt, defaultCurrency, 0)}</Text>
+                    <Text style={themed($totalValue)}>
+                        {CurrencyUtils.formatWithDelimiter(totalInt, defaultCurrency, 0, false)}
+                    </Text>
                     <Text style={themed($totalDecimals)}>.{totalDecimals}</Text>
                 </View>
             </View>
@@ -77,13 +79,13 @@ export const BalanceSummary: React.FC<Props> = () => {
                     <Text tx={'common:income'} style={themed($label)}></Text>
                     <Text style={themed($income)}>
                         {income > 0 ? '+' : ''}
-                        {CurrencyUtils.formatWithDelimiter(income, defaultCurrency, 2)}
+                        {CurrencyUtils.formatWithDelimiter(income, defaultCurrency, 2, true)}
                     </Text>
                 </View>
 
                 <View style={themed($statBlock)}>
                     <Text tx={'common:expenses'} style={themed($label)}></Text>
-                    <Text style={themed($expenses)}>{CurrencyUtils.formatWithDelimiter(expenses, defaultCurrency, 2)}</Text>
+                    <Text style={themed($expenses)}>{CurrencyUtils.formatWithDelimiter(expenses, defaultCurrency, 2, true)}</Text>
                 </View>
             </View>
         </View>

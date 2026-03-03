@@ -2,10 +2,11 @@ import { memo } from 'react';
 import { useNavigation } from '@react-navigation/native';
 import { IIncome, TransactionType } from 'tenpercent/shared';
 
-import { AddBox } from '@/components/Box/AddBox';
-import { useDragOverlay } from '@/components/Box/DragOverlayContext';
-import { IncomeBox } from '@/components/Box/IncomeBox';
-import { ItemType } from '@/components/Box/ItemBox';
+import { AccountIcon } from '@/components/CategoryIcon';
+import { AddBox } from '@/components/dashboard/Box/AddBox';
+import { useDragOverlay } from '@/components/dashboard/Box/DragOverlayContext';
+import { IncomeBox } from '@/components/dashboard/Box/IncomeBox';
+import { ItemType } from '@/components/dashboard/Box/ItemBox';
 import { IDashboardItem } from '@/components/dashboard/DashboardItem';
 import { useCurrency } from '@/context/CurrencyContext';
 import { IncomePath } from '@/navigators/IncomesStackNavigator';
@@ -27,11 +28,11 @@ export default memo(function DashboardIncome(props: IDashboardItem<IIncome>) {
                     BoxProps={{
                         styles: BoxProps?.styles,
                     }}
+                    icon={AccountIcon.Cash}
                     id={String(item.incomeId)}
                     key={item.incomeName}
                     title={item.incomeName}
-                    icon={'tmp'}
-                    value={CurrencyUtils.formatWithDelimiter(231, getCurrencySymbol(item.currencyId))}
+                    value={CurrencyUtils.formatWithDelimiter(0, getCurrencySymbol(item.currencyId), 2, true)}
                     isDraggable={true}
                     onDragStart={() => {
                         setDraggingItemType(ItemType.Income);

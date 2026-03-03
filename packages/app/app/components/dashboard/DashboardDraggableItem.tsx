@@ -1,7 +1,7 @@
 import { View, ViewStyle } from 'react-native';
 import Animated from 'react-native-reanimated';
 
-import { useDragOverlay } from '@/components/Box/DragOverlayContext';
+import { useDragOverlay } from '@/components/dashboard/Box/DragOverlayContext';
 import { useAppTheme } from '@/theme/context';
 import { ThemedStyle } from '@/theme/types';
 
@@ -21,7 +21,5 @@ export default function DashboardDraggableItem() {
 export const $item: ThemedStyle<ViewStyle> = () => ({
     position: 'absolute',
     zIndex: 100,
-    scaleY: 1.2,
-    scaleX: 1.2,
     opacity: 0.6,
 });

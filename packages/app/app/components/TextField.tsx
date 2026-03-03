@@ -271,16 +271,15 @@ const $inputWrapperBorderNoFocusStyle: ThemedStyle<ViewStyle> = ({ colors }) => 
     borderColor: colors.border,
 });
 
-const $inputWrapperStyle: ThemedStyle<ViewStyle> = ({ colors }) => ({
+const $inputWrapperStyle: ThemedStyle<ViewStyle> = ({ colors, border }) => ({
     alignItems: 'flex-start',
-    borderWidth: 1,
-    borderRadius: 0,
+    borderWidth: border.borderWidth,
     backgroundColor: colors.palette.neutral100,
     overflow: 'hidden',
     shadowColor: '#000',
     shadowOffset: { width: 0, height: 1 },
     shadowOpacity: 0.05,
-    shadowRadius: 2,
+    shadowRadius: border.borderRadius,
     elevation: 1,
 });
 

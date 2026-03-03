@@ -209,6 +209,7 @@ const en = {
     },
     dashboardScreen: {
         dashboard: 'Dashboard',
+        add: 'Add',
     },
 };
 

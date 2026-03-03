@@ -1,12 +1,11 @@
-import { useEffect, useRef, useState } from 'react';
+import { useEffect, useRef, useCallback } from 'react';
 import { View } from 'react-native';
 import { ViewStyle } from 'react-native';
 import { Gesture, GestureDetector } from 'react-native-gesture-handler';
-import Animated, { useSharedValue, useAnimatedStyle, withSpring, clamp, useAnimatedRef } from 'react-native-reanimated';
-import { Droppable } from 'react-native-reanimated-dnd';
+import Animated, { useSharedValue, useAnimatedStyle, withSpring, clamp } from 'react-native-reanimated';
 import { scheduleOnRN } from 'react-native-worklets';
 
-import { useDragOverlay } from '@/components/Box/DragOverlayContext';
+import { useDragOverlay } from '@/components/dashboard/Box/DragOverlayContext';
 import { useAppTheme } from '@/theme/context';
 import { ThemedStyle } from '@/theme/types';
 
@@ -17,20 +16,58 @@ type Props = {
     id: string;
 };
 
-const ANIMATION_TIMEOUT_MS = 200; // Watchdog timeout - should be longer than animation duration
-
 export default function DashboardExpandableGrid({ rowHeight, rows, children, id }: Props) {
     const { themed } = useAppTheme();
-    const { setExtendedGrid, addZone } = useDragOverlay();
-    const viewRef = useRef<View>(null);
-    const handleRef = useRef<View>(null);
+    const { addZone, activeZones } = useDragOverlay();
+
     const MIN_HEIGHT = rowHeight;
     const MAX_HEIGHT = rowHeight * rows;
     const showHandle = rows >= 2;
 
+    const viewRef = useRef<View>(null);
+    const handleRef = useRef<View>(null);
+    const isOpened = useRef(false);
     const height = useSharedValue(MIN_HEIGHT);
-    const isOpened = useSharedValue(false);
-    const animationTimeoutRef = useRef<number | null>(null);
+
+    const openGrid = useCallback(() => {
+        if (height.value !== MIN_HEIGHT) return;
+        height.value = withSpring(
+            MAX_HEIGHT,
+            {
+                damping: 15,
+                stiffness: 150,
+            },
+            (finished) => {
+                if (finished) {
+                    // Optional cleanup logic here
+                }
+            },
+        );
+    }, [MAX_HEIGHT, MIN_HEIGHT, height]);
+
+    const closeGrid = useCallback(() => {
+        if (height.value !== MAX_HEIGHT) return;
+        height.value = withSpring(
+            MIN_HEIGHT,
+            {
+                damping: 15,
+                stiffness: 150,
+            },
+            (finished) => {
+                if (finished) {
+                    // Optional cleanup logic here
+                }
+            },
+        );
+    }, [MAX_HEIGHT, MIN_HEIGHT, height]);
+
+    useEffect(() => {
+        if (activeZones === `${id}-view`) {
+            openGrid();
+        } else {
+            closeGrid();
+        }
+    }, [activeZones, id, openGrid, closeGrid]);
 
     useEffect(() => {
         const measureZones = () => {
@@ -42,24 +79,6 @@ export default function DashboardExpandableGrid({ rowHeight, rows, children, id 
                         pageY: y,
                         width,
                         height: heightElement,
-                    },
-                    onEnter: () => {
-                        height.value = withSpring(
-                            MAX_HEIGHT,
-                            {
-                                damping: 15,
-                                stiffness: 150,
-                            },
-                            (finished) => {
-                                if (finished) {
-                                    scheduleOnRN(setExtendedGridWithWatchdog, true);
-                                }
-                            },
-                        );
-                        isOpened.value = true;
-                    },
-                    onLeave: () => {
-                        isOpened.value = true;
                     },
                 });
             });
@@ -78,38 +97,18 @@ export default function DashboardExpandableGrid({ rowHeight, rows, children, id 
 
         // let layout finish
         setTimeout(measureZones, 0);
-        return () => {
-            clearAnimationTimeout();
-        };
+        return () => {};
     }, []);
-
-    const clearAnimationTimeout = () => {
-        if (animationTimeoutRef.current) {
-            clearTimeout(animationTimeoutRef.current);
-            animationTimeoutRef.current = null;
-        }
-    };
-
-    const setExtendedGridWithWatchdog = (isExtended: boolean) => {
-        clearAnimationTimeout();
-        setExtendedGrid((prev) => ({ ...prev, [id]: { isOpen: isExtended } }));
-    };
-
-    const setExtendedGridWithTimeout = (isExtended: boolean) => {
-        clearAnimationTimeout();
-        // Set watchdog timeout as fallback
-        animationTimeoutRef.current = setTimeout(() => {
-            setExtendedGridWithWatchdog(isExtended);
-        }, ANIMATION_TIMEOUT_MS);
-    };
 
     const gesture = Gesture.Pan()
         .onUpdate((e) => {
             if (!showHandle) return;
-            if (isOpened.value && e.translationY < 0) return;
+            if (isOpened && e.translationY < 0) return;
 
-            if (!isOpened.value && e.translationY > 0) return;
+            if (!isOpened && e.translationY > 0) return;
+
             const newHeight = MIN_HEIGHT - e.translationY;
+
             height.value = clamp(newHeight, MIN_HEIGHT, MAX_HEIGHT);
         })
         .onEnd((e) => {
@@ -117,42 +116,15 @@ export default function DashboardExpandableGrid({ rowHeight, rows, children, id 
             const mid = (MIN_HEIGHT + MAX_HEIGHT) / 2;
 
             if (height.value > mid || e.velocityY < -300) {
-                scheduleOnRN(setExtendedGridWithTimeout, true);
-                height.value = withSpring(
-                    MAX_HEIGHT,
-                    {
-                        damping: 15,
-                        stiffness: 150,
-                    },
-                    (finished) => {
-                        if (finished) {
-                            scheduleOnRN(setExtendedGridWithWatchdog, true);
-                        }
-                    },
-                );
-                isOpened.value = true;
+                scheduleOnRN(openGrid);
             } else {
-                scheduleOnRN(setExtendedGridWithTimeout, false);
-                height.value = withSpring(
-                    MIN_HEIGHT,
-                    {
-                        damping: 15,
-                        stiffness: 150,
-                    },
-                    (finished) => {
-                        if (finished) {
-                            scheduleOnRN(setExtendedGridWithWatchdog, false);
-                        }
-                    },
-                );
-                isOpened.value = false;
+                scheduleOnRN(closeGrid);
             }
         });
 
     const animatedStyle = useAnimatedStyle(() => ({
         height: height.value,
     }));
-
     return (
         <View ref={viewRef} style={themed($wrapper)}>
             <GestureDetector gesture={gesture}>
@@ -170,18 +142,20 @@ export const $wrapper: ThemedStyle<ViewStyle> = () => ({
     width: '100%',
 });
 
-export const $container: ThemedStyle<ViewStyle> = () => ({
+export const $container: ThemedStyle<ViewStyle> = ({ border, colors }) => ({
     width: '100%',
     paddingTop: 10,
-    borderRadius: 0,
+    borderRadius: border.borderRadius,
+    borderColor: colors.border,
+    borderWidth: border.borderWidth,
     backgroundColor: '#fff',
     overflow: 'hidden',
 });
 
-export const $handle: ThemedStyle<ViewStyle> = ({ colors }) => ({
+export const $handle: ThemedStyle<ViewStyle> = ({ colors, border }) => ({
     width: 40,
     height: 4,
-    borderRadius: 2,
+    borderRadius: border.borderRadius,
     backgroundColor: colors.palette.neutral300,
     alignSelf: 'center',
     marginVertical: 8,

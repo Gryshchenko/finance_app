@@ -1,6 +1,7 @@
 import { ApiResponse, ApisauceInstance, create } from 'apisauce';
+import createAuthRefreshInterceptor from 'axios-auth-refresh';
+import axiosRetry from 'axios-retry';
 import { IResponse } from 'tenpercent/shared';
-import { IResponseError } from 'tenpercent/shared';
 import { ErrorCode } from 'tenpercent/shared';
 import { ResponseStatusType } from 'tenpercent/shared';
 
@@ -17,14 +18,13 @@ export const DEFAULT_API_CONFIG = {
     timeout: 10000,
 };
 
-const MAX_TRY = 1;
-
 export abstract class ApiAbstract {
     private apisauce: ApisauceInstance;
     private config: ApiConfig;
     protected _logger: Logger = Logger.Of('ApiAbstract');
+    private readonly _authService: AuthService;
 
-    constructor(config: ApiConfig = DEFAULT_API_CONFIG) {
+    constructor(config: ApiConfig = DEFAULT_API_CONFIG, authService: AuthService = AuthService.instance()) {
         this.config = config;
         this.apisauce = create({
             baseURL: this.config.url,
@@ -33,12 +33,15 @@ export abstract class ApiAbstract {
                 Accept: 'application/json',
             },
         });
+        this._authService = authService;
+        createAuthRefreshInterceptor(this.apisauce.axiosInstance, this.refresh);
+        axiosRetry(this.apisauce.axiosInstance, { retries: 5, retryDelay: axiosRetry.exponentialDelay });
     }
 
     private async refresh(): Promise<boolean> {
         try {
-            const userId = AuthService.instance().userId;
-            const tokenLong = await AuthService.instance().getTokenLong();
+            const userId = this._authService.userId;
+            const tokenLong = await this._authService.getTokenLong();
             if (!userId) throw new Error('refresh failed userId empty');
             const response: ApiResponse<IResponse<IRefreshResponse>> = await this.apisauce.post(`auth/${userId}/refresh`, {
                 token: tokenLong,
@@ -59,38 +62,17 @@ export abstract class ApiAbstract {
         }
     }
 
-    private async withRetry<T>(fn: () => Promise<ApiResponse<IResponse<T>>>): Promise<GeneralApiProblem<T>> {
-        let counter = 0;
-        while (counter < MAX_TRY) {
-            const response = await fn();
-            counter++;
-            if (response.ok) {
-                return {
-                    kind: GeneralApiProblemKind.Ok,
-                    data: response.data?.data as T,
-                    errors: response.data?.errors,
-                    status: response.data?.status,
-                };
-            }
-            const errors = response.data?.errors as IResponseError[];
-            if (errors?.some((e) => e.errorCode !== ErrorCode.TOKEN_EXPIRED_ERROR)) {
-                return getGeneralApiProblem(response) as GeneralApiProblem<T>;
-            }
-            this._logger.info('Request token update on refresh');
-            const isSuccess = await this.refresh();
-            if (isSuccess) {
-                continue;
-            } else {
-                await AuthService.instance().unauthorized();
-                break;
-            }
+    private async buildResponse<T>(fn: () => Promise<ApiResponse<IResponse<T>>>): Promise<GeneralApiProblem<T>> {
+        const response = await fn();
+        if (response.ok) {
+            return {
+                kind: GeneralApiProblemKind.Ok,
+                data: response.data?.data as T,
+                errors: response.data?.errors,
+                status: response.data?.status,
+            };
         }
-        return {
-            kind: GeneralApiProblemKind.BadData,
-            data: undefined,
-            errors: [{ errorCode: ErrorCode.CLIENT_UNKNOWN_ERROR }],
-            status: ResponseStatusType.APP,
-        };
+        return getGeneralApiProblem(response) as GeneralApiProblem<T>;
     }
 
     private getAuthError<T>(msg: string): GeneralApiProblem<T> {
@@ -141,7 +123,7 @@ export abstract class ApiAbstract {
             return this.getAuthError<T>('Token not exist');
         }
 
-        return await this.withRetry(
+        return await this.buildResponse(
             async () =>
                 await this.apisauce.post(url, body, {
                     headers: {
@@ -183,7 +165,7 @@ export abstract class ApiAbstract {
     ): Promise<GeneralApiProblem<T>> {
         const { token } = options;
         if (!this.isAuthTokenExist(token)) return this.getAuthError('Token not exist');
-        return await this.withRetry(async () => {
+        return await this.buildResponse(async () => {
             const response: ApiResponse<IResponse<T>> = await this.apisauce.get(
                 url,
                 {},
@@ -207,7 +189,7 @@ export abstract class ApiAbstract {
     ): Promise<GeneralApiProblem<T>> {
         const { token } = options;
         if (!this.isAuthTokenExist(token)) return this.getAuthError('Token not exist');
-        return await this.withRetry(async () => {
+        return await this.buildResponse(async () => {
             const response: ApiResponse<IResponse<T>> = await this.apisauce.patch(url, body, {
                 headers: {
                     Authorization: `Bearer ${token}`,
@@ -226,7 +208,7 @@ export abstract class ApiAbstract {
     ): Promise<GeneralApiProblem<T>> {
         const { token } = options;
         if (!this.isAuthTokenExist(token)) return this.getAuthError('Token not exist');
-        return await this.withRetry(async () => {
+        return await this.buildResponse(async () => {
             const response: ApiResponse<IResponse<T>> = await this.apisauce.delete(
                 url,
                 {},

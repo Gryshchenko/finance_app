@@ -3,8 +3,8 @@ import Animated from 'react-native-reanimated';
 import { DropProvider } from 'react-native-reanimated-dnd';
 import { IAccountListItem, ICategory, IIncome } from 'tenpercent/shared';
 
-import { boxDataItemAdapter } from '@/components/Box/boxDataItemAdapter';
-import { useDragOverlay } from '@/components/Box/DragOverlayContext';
+import { boxDataItemAdapter } from '@/components/dashboard/Box/boxDataItemAdapter';
+import { useDragOverlay } from '@/components/dashboard/Box/DragOverlayContext';
 import DashboardAccount from '@/components/dashboard/DashboardAccount';
 import DashboardCategory from '@/components/dashboard/DashboardCategory';
 import DashboardDraggableItem from '@/components/dashboard/DashboardDraggableItem';
@@ -25,6 +25,7 @@ export default function DashboardItems() {
     const categories = useAppQuery<ICategory[] | undefined>(['categories'], async () => fetchCategories());
     return (
         <DropProvider key={dragSessionId}>
+            <DashboardDraggableItem />
             <Animated.ScrollView
                 ref={scrollRef}
                 onScroll={scrollHandler}
@@ -34,7 +35,6 @@ export default function DashboardItems() {
                 }}
                 contentContainerStyle={{ gap: spacing.md, marginTop: spacing.lg }}
             >
-                <DashboardDraggableItem />
                 <DashboardItem
                     id={'incomes'}
                     isExpanded={true}
@@ -47,29 +47,29 @@ export default function DashboardItems() {
                     Item={DashboardIncome as ComponentType<IDashboardItem<unknown>>}
                     items={boxDataItemAdapter<IIncome>(incomes.data ?? [])}
                 />
-                {/*<DashboardItem*/}
-                {/*    id={'accounts'}*/}
-                {/*    isExpanded={true}*/}
-                {/*    keyGetter={(item: IBoxDataItem<unknown>): string => {*/}
-                {/*        if (item.type === BoxDataItemType.Default) {*/}
-                {/*            return String((item.data as IAccountListItem)?.accountId);*/}
-                {/*        }*/}
-                {/*        return 'new';*/}
-                {/*    }}*/}
-                {/*    Item={DashboardAccount as ComponentType<IDashboardItem<unknown>>}*/}
-                {/*    items={boxDataItemAdapter<IAccountListItem>(accounts.data ?? [])}*/}
-                {/*/>*/}
-                {/*<DashboardItem*/}
-                {/*    id={'categories'}*/}
-                {/*    keyGetter={(item: IBoxDataItem<unknown>): string => {*/}
-                {/*        if (item.type === BoxDataItemType.Default) {*/}
-                {/*            return String((item.data as ICategory)?.categoryId);*/}
-                {/*        }*/}
-                {/*        return 'new';*/}
-                {/*    }}*/}
-                {/*    Item={DashboardCategory as ComponentType<IDashboardItem<unknown>>}*/}
-                {/*    items={boxDataItemAdapter<ICategory>(categories.data ?? [])}*/}
-                {/*/>*/}
+                <DashboardItem
+                    id={'accounts'}
+                    isExpanded={true}
+                    keyGetter={(item: IBoxDataItem<unknown>): string => {
+                        if (item.type === BoxDataItemType.Default) {
+                            return String((item.data as IAccountListItem)?.accountId);
+                        }
+                        return 'new';
+                    }}
+                    Item={DashboardAccount as ComponentType<IDashboardItem<unknown>>}
+                    items={boxDataItemAdapter<IAccountListItem>(accounts.data ?? [])}
+                />
+                <DashboardItem
+                    id={'categories'}
+                    keyGetter={(item: IBoxDataItem<unknown>): string => {
+                        if (item.type === BoxDataItemType.Default) {
+                            return String((item.data as ICategory)?.categoryId);
+                        }
+                        return 'new';
+                    }}
+                    Item={DashboardCategory as ComponentType<IDashboardItem<unknown>>}
+                    items={boxDataItemAdapter<ICategory>(categories.data ?? [])}
+                />
             </Animated.ScrollView>
         </DropProvider>
     );

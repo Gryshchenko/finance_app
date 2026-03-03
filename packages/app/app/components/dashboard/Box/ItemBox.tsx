@@ -1,7 +1,8 @@
 import { memo } from 'react';
 import { TextStyle, View, ViewStyle } from 'react-native';
 
-import { Box, IBoxProps } from '@/components/Box/Box';
+import { Box, IBoxProps } from '@/components/dashboard/Box/Box';
+import { IBoxDraggableItem } from '@/components/dashboard/Box/BoxDraggableItem';
 import { Text } from '@/components/Text';
 import { useAppTheme } from '@/theme/context';
 import { ThemedStyle } from '@/theme/types';
@@ -13,11 +14,10 @@ export enum ItemType {
     AddNew = 'add_new',
 }
 
-export interface ItemBoxProps extends Omit<IBoxProps, 'children' | 'styles' | 'onDragging'> {
+export interface ItemBoxProps extends Omit<IBoxProps, 'children' | 'styles' | 'onDragging' | 'BoxDraggableItemProps'> {
     id: string;
     title: string;
     value?: string;
-    icon: React.ReactNode;
     type: ItemType;
     isDraggable?: boolean;
     isDroppable: boolean;
@@ -26,9 +26,9 @@ export interface ItemBoxProps extends Omit<IBoxProps, 'children' | 'styles' | 'o
         value?: TextStyle;
     }>;
     BoxProps?: {
+        BoxDraggableItemProps?: IBoxDraggableItem;
         text?: string;
         styles?: {
-            box?: ViewStyle;
             container?: ViewStyle;
         };
     };
@@ -37,7 +37,6 @@ export interface ItemBoxProps extends Omit<IBoxProps, 'children' | 'styles' | 'o
 export default memo(function ItemBox({
     title,
     value,
-    icon,
     id,
     droppableId,
     onDragEnd,
@@ -53,7 +52,6 @@ export default memo(function ItemBox({
 
     return (
         <Box
-            text={BoxProps?.text}
             onDragStart={onDragStart}
             onDragEnd={onDragEnd}
             onDrop={onDrop}
@@ -62,7 +60,7 @@ export default memo(function ItemBox({
             isDroppable={isDroppable}
             isDraggable={isDraggable}
             type={type}
-            icon={icon}
+            BoxDraggableItemProps={BoxProps?.BoxDraggableItemProps}
             styles={BoxProps?.styles}
         >
             <View style={themed($textContainer)}>
