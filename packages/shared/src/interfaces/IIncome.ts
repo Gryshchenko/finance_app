@@ -5,6 +5,7 @@ export interface IIncome {
     userId: number;
     incomeName: string;
     currencyId: number;
+    iconId: string;
     status: AccountStatusType;
     createdAt: Date;
     updatedAt: Date;

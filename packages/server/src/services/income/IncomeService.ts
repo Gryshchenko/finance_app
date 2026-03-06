@@ -40,7 +40,7 @@ export default class IncomeService extends LoggerBase implements IIncomeService 
         };
     }
     async create(userId: number, income: ICreateIncome, trx?: IDBTransaction): Promise<IIncome> {
-        validateAllowedProperties(income as unknown as Record<string, string | number>, ['incomeName', 'amount', 'currencyId']);
+        validateAllowedProperties(income as unknown as Record<string, string | number>, ['incomeName', 'amount', 'currencyId', 'iconId']);
         const incomes = await this._incomeDataAccess.create(userId, [income], trx);
         return incomes[0];
     }

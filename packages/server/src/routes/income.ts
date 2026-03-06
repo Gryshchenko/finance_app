@@ -24,7 +24,7 @@ incomesRouter.get(
 incomeRouter.post(
     '/',
     validateQuery({}),
-    sanitizeRequestBody(['currencyId', 'incomeName', 'amount']),
+    sanitizeRequestBody(['currencyId', 'incomeName', 'amount', 'iconId']),
     routesInputValidation(createIncomeValidationRules, incomeConvertValidationMessageToErrorCode),
     IncomeController.post,
 );

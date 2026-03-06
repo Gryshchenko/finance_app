@@ -1,24 +1,41 @@
+import { ReactNode, FC } from 'react';
 import { ScrollView, View } from 'react-native';
 
 import { EditButtons } from '@/components/buttons/EditButtons';
 import { spacing } from '@/theme/spacing';
 
 interface GeneralDetailViewProps {
-    children: React.ReactNode;
+    children: ReactNode;
     isView: boolean;
+    isCreate: boolean;
+    isEdit: boolean;
     onEdit?: () => void;
     onCancel?: () => void;
     onSave?: () => void;
     onDelete?: () => void;
 }
 
-export const GeneralDetailView: React.FC<GeneralDetailViewProps> = ({ children, isView, onEdit, onCancel, onSave, onDelete }) => {
+export const GeneralDetailView: FC<GeneralDetailViewProps> = ({
+    children,
+    isView,
+    onEdit,
+    onCancel,
+    onSave,
+    onDelete,
+    isCreate,
+}) => {
     return (
         <>
             <ScrollView contentContainerStyle={{ gap: spacing.md, marginTop: spacing.lg }}>{children}</ScrollView>
-
             <View style={{ marginTop: spacing.xl }}>
-                <EditButtons isView={isView} onEdit={onEdit} onCancel={onCancel} onSave={onSave} onDelete={onDelete} />
+                <EditButtons
+                    isView={isView}
+                    onEdit={onEdit}
+                    onCancel={onCancel}
+                    onSave={onSave}
+                    onDelete={onDelete}
+                    isCreate={isCreate}
+                />
             </View>
         </>
     );

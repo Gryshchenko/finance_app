@@ -1,7 +1,17 @@
 import { IUserService } from 'interfaces/IUserService';
 import { LoggerBase } from 'src/helper/logger/LoggerBase';
 import { IGroupService } from 'interfaces/IGroupService';
-import { ErrorCode, HttpCode, ICurrency, LanguageType, RoleType, UserStatus, Utils } from 'tenpercent/shared';
+import {
+    AccountIcon,
+    CategoryIconType,
+    ErrorCode,
+    HttpCode,
+    ICurrency,
+    LanguageType,
+    RoleType,
+    UserStatus,
+    Utils,
+} from 'tenpercent/shared';
 import { IMailService } from 'interfaces/IMailService';
 import { IMailTemplateService } from 'interfaces/IMailTemplateService';
 import { IEmailConfirmationService } from 'interfaces/IEmailConfirmationService';
@@ -237,13 +247,15 @@ export default class UserRegistrationService extends LoggerBase {
     private async createInitialDataForNewUser(userId: number, profile: IProfile, trx: IDBTransaction): Promise<boolean> {
         try {
             const translatedDefaultData = this.getTranslatedDefaultData(profile?.locale);
+            const incomesIcons = [AccountIcon.Cash, AccountIcon.BankCard];
             await Promise.all([
                 await this.groupService.createGroup(userId, translatedDefaultData.group, trx),
                 await this.incomeService.creates(
                     userId,
-                    translatedDefaultData.income.map((incomeName) => ({
+                    translatedDefaultData.income.map((incomeName, index) => ({
                         incomeName,
                         currencyId: profile.currencyId,
+                        iconId: incomesIcons[index],
                     })),
                     trx,
                 ),

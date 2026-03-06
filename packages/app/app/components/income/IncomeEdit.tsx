@@ -55,6 +55,7 @@ export const IncomeEdit: FC<IIncomePros> = function IncomeEdit(_props) {
     return (
         <IncomeFields
             form={form}
+            isCreate={false}
             isEdit={true}
             errors={errors}
             isView={false}

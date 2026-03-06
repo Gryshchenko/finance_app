@@ -4,7 +4,7 @@ import { IAccount } from 'tenpercent/shared';
 import { ICurrency } from 'tenpercent/shared';
 
 import { Field } from '@/components/Field';
-import { GeneralDetailView } from '@/components/GeneralDetailViewю';
+import { GeneralDetailView } from '@/components/GeneralDetailView';
 import { CurrencyDropdown } from '@/components/Toggle/CurrencyDropdown';
 import { TxKeyPath } from '@/i18n';
 import { translate } from '@/i18n/translate';

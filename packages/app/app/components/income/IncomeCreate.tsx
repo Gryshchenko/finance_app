@@ -25,10 +25,12 @@ export const IncomeCreate: FC = function IncomeCreate(_props) {
         const incomeService = IncomeService.instance();
         if (Utils.isEmpty(form.incomeName)) return;
         if (Utils.isNull(form.currencyId)) return;
+        if (Utils.isNull(form.iconId)) return;
 
         const response = await incomeService.doCreateIncome({
             incomeName: form.incomeName!,
             currencyId: form.currencyId!,
+            iconId: form.iconId!,
         });
         if (response.kind === GeneralApiProblemKind.Ok) {
             AlertService.info(translate('common:info'), translate('common:createAccountSuccess'));
@@ -48,6 +50,7 @@ export const IncomeCreate: FC = function IncomeCreate(_props) {
     return (
         <IncomeFields
             form={form}
+            isCreate={true}
             errors={errors}
             isView={false}
             isEdit={true}

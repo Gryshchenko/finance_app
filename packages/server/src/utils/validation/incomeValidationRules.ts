@@ -22,6 +22,10 @@ const createIncomeValidationRules = [
         min: 3,
         max: 128,
     }),
+    ...createSignupValidationRules('iconId', 'string', {
+        min: 3,
+        max: 128,
+    }),
     ...createSignupValidationRules('currencyId', 'number', {
         min: Number.MIN_SAFE_INTEGER,
         max: Number.MAX_SAFE_INTEGER,
@@ -31,6 +35,10 @@ const createIncomeValidationRules = [
 const patchIncomeValidationRules = [
     ...createSignupValidationRules('incomeName', 'string', {
         optional: true,
+        min: 3,
+        max: 128,
+    }),
+    ...createSignupValidationRules('iconId', 'string', {
         min: 3,
         max: 128,
     }),

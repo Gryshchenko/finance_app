@@ -41,6 +41,7 @@ export default class IncomeDataAccess extends LoggerBase implements IIncomeDataA
                     'incomes.userId',
                     'incomes.incomeName',
                     'incomes.currencyId',
+                    'incomes.iconId',
                     this._db.engine().raw('COALESCE(SUM(dis.amount_total), 0) as amount'),
                 )
                 .leftJoin('daily_incomes_stats as dis', function () {
@@ -75,11 +76,13 @@ export default class IncomeDataAccess extends LoggerBase implements IIncomeDataA
         try {
             const query = trx || this._db.engine();
             const data = await query('incomes').insert(
-                incomes.map(({ incomeName, currencyId }) => ({
+                incomes.map(({ incomeName, currencyId, iconId }) => ({
                     userId,
                     incomeName,
                     currencyId,
                     status: AccountStatusType.Enable,
+                    iconId
+
                 })),
                 ['incomeId', 'userId', 'incomeName', 'currencyId'],
             );
@@ -155,6 +158,7 @@ export default class IncomeDataAccess extends LoggerBase implements IIncomeDataA
                 'incomes.currencyId',
                 'incomes.createdAt',
                 'incomes.updatedAt',
+                'incomes.iconId',
                 'currencies.currencyCode',
                 'currencies.currencyName',
                 'currencies.symbol',
@@ -167,9 +171,10 @@ export default class IncomeDataAccess extends LoggerBase implements IIncomeDataA
                 incomeName: properties.incomeName,
                 updatedAt: Time.getISODateNowUTC(),
                 status: properties.status,
+                iconId: properties.iconId,
             };
 
-            const allowedKeys = ['incomeName', 'updatedAt', 'status'];
+            const allowedKeys = ['incomeName', 'updatedAt', 'status', 'iconId'];
             validateAllowedProperties(allowedProperties, allowedKeys);
             const properestForUpdate = getOnlyNotEmptyProperties(allowedProperties, allowedKeys);
             const query = trx || this._db.engine();

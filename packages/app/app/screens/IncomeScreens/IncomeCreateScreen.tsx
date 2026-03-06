@@ -13,7 +13,7 @@ export const IncomeCreateScreen = function IncomeCreateScreen(_props: Props) {
     const navigation = useNavigation();
     return (
         <GenericListScreen
-            name={translate('common:new')}
+            name={translate('incomeScreen:createTitle')}
             isError={false}
             isPending={false}
             onBack={() =>

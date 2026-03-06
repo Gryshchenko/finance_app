@@ -1,13 +1,10 @@
 import { StyleProp, TextStyle, View } from 'react-native';
 
-import { Text } from '@/components/Text';
 import { TextField } from '@/components/TextField';
 import { TxKeyPath } from '@/i18n';
-import { spacing } from '@/theme/spacing';
 
 interface FieldProps<T> {
     style?: StyleProp<TextStyle>;
-    label: string;
     Component?: React.FC<T>;
     componentProps?: {
         value: string | undefined;
@@ -20,15 +17,14 @@ interface FieldProps<T> {
     };
 }
 
-export const Field: React.FC<FieldProps<unknown>> = ({ label, style, Component = TextField, componentProps }) => {
+export const Field: React.FC<FieldProps<unknown>> = ({ style, Component = TextField, componentProps }) => {
     return (
         <View style={[$wrapper, style]}>
-            <Text text={label} preset="subheading" size={'xs'} />
             <Component {...componentProps} />
         </View>
     );
 };
 
 const $wrapper: StyleProp<TextStyle> = {
-    marginBottom: spacing.md,
+    marginBottom: 0,
 };

@@ -6,7 +6,7 @@ import { AccountDropdown } from '@/components/account/AccountDropdown';
 import { CategoryDropdown } from '@/components/category/CateogryDropdown';
 import { CurrencyField } from '@/components/CurrencyField';
 import { Field } from '@/components/Field';
-import { GeneralDetailView } from '@/components/GeneralDetailViewю';
+import { GeneralDetailView } from '@/components/GeneralDetailView';
 import { DatePickerType, IgniteDatePicker } from '@/components/IgniteDatePicker';
 import IgniteSwitcher from '@/components/IgniteSwitcher';
 import { IncomeDropdown } from '@/components/income/IncomeDropdown';

@@ -4,6 +4,7 @@ import { IIncome } from 'tenpercent/shared';
 import { Utils } from 'tenpercent/shared';
 
 import { IncomeEdit } from '@/components/income/IncomeEdit';
+import { translate } from '@/i18n/translate';
 import { IncomePath } from '@/navigators/IncomesStackNavigator';
 import { OverviewTabParamList } from '@/navigators/OverviewNavigator';
 import { GenericListScreen } from '@/screens/GenericListScreen';
@@ -16,7 +17,7 @@ export const IncomeEditScreen = function IncomeEditScreen(_props: Props) {
     const data = Utils.parseObject<IIncome | undefined>(params.payload);
     return (
         <GenericListScreen
-            name={data?.incomeName ?? ''}
+            name={data?.incomeName ?? translate('incomeScreen:editTitle')}
             isError={false}
             isPending={false}
             onBack={() =>

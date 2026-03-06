@@ -13,7 +13,7 @@ export const AccountCreateScreen = function AccountCreateScreen(_props: Props) {
     const navigation = useNavigation();
     return (
         <GenericListScreen
-            name={translate('common:new')}
+            name={translate('accountScreen:createAccount')}
             isError={false}
             isPending={false}
             onBack={() =>

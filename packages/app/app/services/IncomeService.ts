@@ -3,22 +3,19 @@ import { ErrorCode } from 'tenpercent/shared';
 
 import { ApiAbstract } from '@/services/api/apiAbstract';
 import { GeneralApiProblem, GeneralApiProblemKind } from '@/services/api/apiProblem';
-import { AuthService } from '@/services/AuthService';
 import { Logger } from '@/utils/logger/Logger';
 
 export class IncomeService extends ApiAbstract {
     protected readonly _logger: Logger = Logger.Of('IncomeService');
-    private readonly _authService: AuthService;
 
     private static _instance: IncomeService;
 
     public static instance(): IncomeService {
-        return IncomeService._instance || (IncomeService._instance = new IncomeService(AuthService.instance()));
+        return IncomeService._instance || (IncomeService._instance = new IncomeService());
     }
 
-    constructor(authService: AuthService) {
+    constructor() {
         super();
-        this._authService = authService;
     }
 
     public async doDeleteIncome(incomeId: number): Promise<
@@ -161,7 +158,7 @@ export class IncomeService extends ApiAbstract {
         }
     }
 
-    public async doCreateIncome(body: { incomeName: string; currencyId: number }): Promise<
+    public async doCreateIncome(body: { incomeName: string; currencyId: number; iconId: string }): Promise<
         | {
               kind: GeneralApiProblemKind.Ok;
               data: IIncome | undefined;
@@ -174,6 +171,7 @@ export class IncomeService extends ApiAbstract {
             const response = await this.authPost(`/user/${userId}/income`, {
                 incomeName: String(body.incomeName),
                 currencyId: Number(body.currencyId),
+                iconId: String(body.iconId),
             });
             if (response.kind === GeneralApiProblemKind.Ok) {
                 this._logger.info(`Create income successfully: ${(response?.data as IIncome)?.incomeId}`);

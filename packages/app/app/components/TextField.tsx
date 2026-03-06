@@ -275,11 +275,11 @@ const $inputWrapperStyle: ThemedStyle<ViewStyle> = ({ colors, border }) => ({
     alignItems: 'flex-start',
     borderWidth: border.borderWidth,
     backgroundColor: colors.palette.neutral100,
+    borderRadius: border.borderRadius,
     overflow: 'hidden',
     shadowColor: '#000',
     shadowOffset: { width: 0, height: 1 },
     shadowOpacity: 0.05,
-    shadowRadius: border.borderRadius,
     elevation: 1,
 });
 
@@ -293,6 +293,7 @@ const $inputStyle: ThemedStyle<TextStyle> = ({ colors, typography }) => ({
     paddingHorizontal: 16,
     paddingVertical: 14,
     color: colors.textDim,
+    width: '80%',
 });
 
 const $helperStyle: ThemedStyle<TextStyle> = ({ spacing }) => ({

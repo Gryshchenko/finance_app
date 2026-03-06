@@ -2,11 +2,11 @@ import { useState } from 'react';
 import { View, Pressable, Modal, ViewStyle, TextStyle, StyleProp } from 'react-native';
 
 import { ListItem } from '@/components/ListItem';
+import SectionListWithKeyboardAwareScrollView from '@/components/SectionListWithKeyboardAwareScrollView';
 import { Text, TextProps } from '@/components/Text';
 import { useAppQuery } from '@/hooks/useAppQuery';
 import { TxKeyPath } from '@/i18n';
 import { translate } from '@/i18n/translate';
-import SectionListWithKeyboardAwareScrollView from '@/components/SectionListWithKeyboardAwareScrollView';
 import { colors } from '@/theme/colors';
 import { useAppTheme } from '@/theme/context';
 import { ThemedStyle } from '@/theme/types';
@@ -151,7 +151,7 @@ const $trigger: ThemedStyle<ViewStyle> = ({ colors }) => ({
     height: 54,
 });
 const $triggerBorderFocusStyle: ThemedStyle<ViewStyle> = ({ colors }) => ({
-    borderColor: colors.palette.neutral900,
+    borderColor: colors.border,
 });
 const $triggerBorderNoFocusStyle: ThemedStyle<ViewStyle> = ({ colors }) => ({
     borderColor: colors.border,
@@ -176,19 +176,11 @@ const $triggerTextSelected: ThemedStyle<TextStyle> = ({ colors }) => ({
     color: colors.text,
 });
 
-const $overlay: ThemedStyle<ViewStyle> = ({ colors, typography }) => ({
-    flex: 1,
-    backgroundColor: colors.palette.neutral100,
-    fontFamily: typography.primary.normal,
-    justifyContent: 'center',
-    alignItems: 'center',
-});
-
 const $dropdown: ThemedStyle<ViewStyle> = ({ colors, spacing, typography }) => ({
     width: '100%',
-    height: '90%',
+    height: '80%',
     marginTop: 'auto',
-    backgroundColor: colors.palette.neutral100,
+    backgroundColor: colors.background,
     fontFamily: typography.primary.normal,
     borderRadius: spacing.xxs,
     overflow: 'hidden',
@@ -225,4 +217,15 @@ const $labelStyle: ThemedStyle<TextStyle> = ({ spacing, typography }) => ({
     textTransform: 'uppercase',
     color: colors.textDim,
     fontFamily: typography.fonts.funnelSans.semiBold,
+});
+
+const $overlay: ThemedStyle<ViewStyle> = ({ typography }) => ({
+    flex: 1,
+    fontFamily: typography.primary.normal,
+    justifyContent: 'center',
+    alignItems: 'center',
+    shadowColor: '#000',
+    shadowOpacity: 0.1,
+    shadowRadius: 8,
+    elevation: 5,
 });

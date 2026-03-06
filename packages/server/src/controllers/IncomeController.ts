@@ -59,10 +59,11 @@ export class IncomeController {
     public static async post(req: Request, res: Response) {
         const responseBuilder = new ResponseBuilder();
         try {
-            const { incomeName, currencyId } = req.body;
+            const { incomeName, currencyId, iconId } = req.body;
             const income = await IncomeServiceBuilder.build().create(req.user?.userId as number, {
                 incomeName,
                 currencyId,
+                iconId,
             });
             res.status(HttpCode.OK).json(responseBuilder.setStatus(ResponseStatusType.OK).setData(income).build());
         } catch (e: unknown) {

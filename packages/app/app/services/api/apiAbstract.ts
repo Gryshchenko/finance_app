@@ -22,7 +22,7 @@ export abstract class ApiAbstract {
     private apisauce: ApisauceInstance;
     private config: ApiConfig;
     protected _logger: Logger = Logger.Of('ApiAbstract');
-    private readonly _authService: AuthService;
+    protected readonly _authService: AuthService;
 
     constructor(config: ApiConfig = DEFAULT_API_CONFIG, authService: AuthService = AuthService.instance()) {
         this.config = config;

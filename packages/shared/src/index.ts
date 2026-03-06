@@ -41,6 +41,7 @@ export * from './types/StatsPeriod';
 export * from './types/TransactionFieldType';
 export * from './types/TransactionType';
 export * from './types/UserStatus';
+export * from './types/CategoryIconType';
 
 // --- Utils ---
 export * from './utils/Utils';
