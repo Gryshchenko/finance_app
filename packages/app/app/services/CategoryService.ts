@@ -8,17 +8,11 @@ import { Logger } from '@/utils/logger/Logger';
 
 export class CategoryService extends ApiAbstract {
     protected readonly _logger: Logger = Logger.Of('CategoryService');
-    private readonly _authService: AuthService;
 
     private static _instance: CategoryService;
 
     public static instance(): CategoryService {
-        return CategoryService._instance || (CategoryService._instance = new CategoryService(AuthService.instance()));
-    }
-
-    constructor(authService: AuthService) {
-        super();
-        this._authService = authService;
+        return CategoryService._instance || (CategoryService._instance = new CategoryService());
     }
 
     public async doGetCategory(categoryId: number): Promise<
@@ -91,7 +85,7 @@ export class CategoryService extends ApiAbstract {
 
     public async doPatchCategory(
         id: number,
-        body: { categoryName: string },
+        body: { categoryName: string; iconId?: string },
     ): Promise<
         | {
               kind: GeneralApiProblemKind.Ok;
@@ -104,6 +98,7 @@ export class CategoryService extends ApiAbstract {
             const userId = this._authService.userId;
             const response = await this.authPatch(`/user/${userId}/category/${id}`, {
                 categoryName: String(body.categoryName),
+                iconId: body.iconId ? String(body.iconId) : undefined,
             });
             if (response.kind === GeneralApiProblemKind.Ok) {
                 this._logger.info(`Patch category successfully: ${(response.data as [])?.length}`);
@@ -128,7 +123,7 @@ export class CategoryService extends ApiAbstract {
         }
     }
 
-    public async doCreateCategory(body: { categoryName: string; currencyId: number }): Promise<
+    public async doCreateCategory(body: { categoryName: string; currencyId: number; iconId: string }): Promise<
         | {
               kind: GeneralApiProblemKind.Ok;
               data: ICategory | undefined;
@@ -141,6 +136,7 @@ export class CategoryService extends ApiAbstract {
             const response = await this.authPost(`/user/${userId}/category`, {
                 categoryName: String(body.categoryName),
                 currencyId: Number(body.currencyId),
+                iconId: String(body.iconId),
             });
             if (response.kind === GeneralApiProblemKind.Ok) {
                 this._logger.info(`Create category successfully: ${(response?.data as ICategory)?.categoryId}`);

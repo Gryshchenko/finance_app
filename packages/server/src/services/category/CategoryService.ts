@@ -40,7 +40,7 @@ export default class CategoryService extends LoggerBase implements ICategoryServ
     }
 
     async create(userId: number, category: ICreateCategory, trx?: IDBTransaction): Promise<ICategory> {
-        validateAllowedProperties(category as unknown as Record<string, string | number>, ['categoryName', 'currencyId']);
+        validateAllowedProperties(category as unknown as Record<string, string | number>, ['categoryName', 'currencyId', 'iconId']);
         const categories = await this._categoryDataAccess.create(userId, [category], trx);
         return categories[0];
     }

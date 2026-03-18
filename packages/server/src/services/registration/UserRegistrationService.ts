@@ -3,12 +3,12 @@ import { LoggerBase } from 'src/helper/logger/LoggerBase';
 import { IGroupService } from 'interfaces/IGroupService';
 import {
     AccountIcon,
-    CategoryIconType,
     ErrorCode,
     HttpCode,
-    ICurrency,
+    ICurrency, IncomeIcon,
     LanguageType,
     RoleType,
+    SpendIcon,
     UserStatus,
     Utils,
 } from 'tenpercent/shared';
@@ -247,7 +247,22 @@ export default class UserRegistrationService extends LoggerBase {
     private async createInitialDataForNewUser(userId: number, profile: IProfile, trx: IDBTransaction): Promise<boolean> {
         try {
             const translatedDefaultData = this.getTranslatedDefaultData(profile?.locale);
-            const incomesIcons = [AccountIcon.Cash, AccountIcon.BankCard];
+            const incomesIcons = [IncomeIcon.BNB, IncomeIcon.P2P];
+            const accountIcons = [AccountIcon.Cash, AccountIcon.BankCard];
+            const categoryIcons = [
+                SpendIcon.ShoppingCart,      // Food
+                SpendIcon.Store,             // Housing
+                SpendIcon.ShoppingBag,       // Transport
+                SpendIcon.ShoppingBag2,      // Health and Medicine
+                SpendIcon.ShoppingBag3,      // Education
+                SpendIcon.ShoppingBag4,      // Entertainment
+                SpendIcon.ShoppingBasket,    // Leisure and Travel
+                SpendIcon.PriceTag,          // Clothing and Accessories
+                SpendIcon.PriceTag2,         // Communication and Internet
+                SpendIcon.Gift,              // Gifts and Charity
+                SpendIcon.Coupon,            // Personal Expenses
+                SpendIcon.Store2,            // Savings and Investments
+            ];
             await Promise.all([
                 await this.groupService.createGroup(userId, translatedDefaultData.group, trx),
                 await this.incomeService.creates(
@@ -261,18 +276,20 @@ export default class UserRegistrationService extends LoggerBase {
                 ),
                 await this.accountService.createAccounts(
                     userId,
-                    translatedDefaultData.accounts.map((accountName: string) => ({
+                    translatedDefaultData.accounts.map((accountName: string, index: number) => ({
                         accountName,
                         amount: 0,
                         currencyId: profile.currencyId,
+                        iconId: accountIcons[index],
                     })),
                     trx,
                 ),
                 await this.categoryService.creates(
                     userId,
-                    translatedDefaultData.categories.map((categoryName: string) => ({
+                    translatedDefaultData.categories.map((categoryName: string, index: number) => ({
                         categoryName,
                         currencyId: profile.currencyId,
+                        iconId: categoryIcons[index] ?? SpendIcon.ShoppingBag,
                     })),
                     trx,
                 ),

@@ -35,18 +35,20 @@ export default class AccountDataAccess extends LoggerBase implements IAccountDat
                     'accountName',
                     'amount',
                     'currencyId',
+                    'iconId',
                 ]);
             }
             const query = trx || this._db.engine();
             const data = await query('accounts').insert(
-                accounts.map(({ accountName, currencyId, amount }) => ({
+                accounts.map(({ accountName, currencyId, amount, iconId }) => ({
                     userId,
                     accountName,
                     currencyId,
+                    iconId,
                     status: AccountStatusType.Enable,
                     amount: Number(amount.toFixed(2)),
                 })),
-                ['accountId', 'userId', 'accountName', 'currencyId', 'amount'],
+                ['accountId', 'userId', 'accountName', 'currencyId', 'amount', 'iconId'],
             );
 
             this._logger.info(`Successfully created ${data.length} accounts for userId: ${userId}`);
@@ -65,7 +67,7 @@ export default class AccountDataAccess extends LoggerBase implements IAccountDat
 
             const data = await this._db
                 .engine()('accounts')
-                .select('accounts.accountId', 'accounts.amount', 'accounts.accountName', 'accounts.currencyId')
+                .select('accounts.accountId', 'accounts.amount', 'accounts.accountName', 'accounts.currencyId', 'accounts.iconId')
                 .where({ userId, 'status': AccountStatusType.Enable, 'accounts.isDeleted': false });
 
             if (!data.length) {
@@ -95,6 +97,7 @@ export default class AccountDataAccess extends LoggerBase implements IAccountDat
                     'accounts.amount',
                     'accounts.accountName',
                     'accounts.currencyId',
+                    'accounts.iconId',
                     'accounts.createdAt',
                     'accounts.updatedAt',
                     'currencies.currencyCode',
@@ -130,11 +133,12 @@ export default class AccountDataAccess extends LoggerBase implements IAccountDat
             const allowedProperties = {
                 accountName: properties.accountName,
                 amount: properties.amount,
+                iconId: properties.iconId,
                 updatedAt: Time.getISODateNowUTC(),
                 status: properties.status,
             };
 
-            const allowedKeys = ['accountName', 'amount', 'updatedAt', 'status'];
+            const allowedKeys = ['accountName', 'amount', 'iconId', 'updatedAt', 'status'];
             validateAllowedProperties(allowedProperties, allowedKeys);
             const properestForUpdate = getOnlyNotEmptyProperties(allowedProperties, allowedKeys);
             const query = trx || this._db.engine();

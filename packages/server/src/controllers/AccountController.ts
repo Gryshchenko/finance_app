@@ -37,11 +37,12 @@ export class AccountController {
     public static async post(req: Request, res: Response) {
         const responseBuilder = new ResponseBuilder();
         try {
-            const { accountName, amount, currencyId } = req.body;
+            const { accountName, amount, currencyId, iconId } = req.body;
             const account = await AccountOrchestrationServiceBuilder.build().create(req.user?.userId as number, {
                 accountName,
                 amount,
                 currencyId,
+                iconId,
             });
             res.status(HttpCode.OK).json(responseBuilder.setStatus(ResponseStatusType.OK).setData(account).build());
         } catch (e: unknown) {
@@ -65,14 +66,15 @@ export class AccountController {
         const responseBuilder = new ResponseBuilder();
         try {
             const accountId = Number(req.params?.accountId);
-            const { accountName, amount, status } = req.body;
-            if (Utils.isEmpty(accountName) && Utils.isNull(amount) && Utils.isNull(status)) {
+            const { accountName, amount, status, iconId } = req.body;
+            if (Utils.isEmpty(accountName) && Utils.isNull(amount) && Utils.isNull(status) && Utils.isEmpty(iconId)) {
                 throw new ValidationError({ message: 'Path account failed due reason: empty body' });
             }
             await AccountOrchestrationServiceBuilder.build().patch(req.user?.userId as number, accountId, {
                 accountName,
                 amount,
                 status,
+                iconId,
             });
             res.status(HttpCode.NO_CONTENT).json(responseBuilder.setStatus(ResponseStatusType.OK).setData({}).build());
         } catch (e: unknown) {

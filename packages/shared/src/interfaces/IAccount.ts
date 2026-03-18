@@ -7,5 +7,6 @@ export interface IAccount {
     currencyId: number;
     currencyCode: string;
     symbol: string;
+    iconId: string;
     status: AccountStatusType;
 }

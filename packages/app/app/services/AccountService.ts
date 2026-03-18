@@ -4,22 +4,15 @@ import { ErrorCode } from 'tenpercent/shared';
 
 import { ApiAbstract } from '@/services/api/apiAbstract';
 import { GeneralApiProblem, GeneralApiProblemKind } from '@/services/api/apiProblem';
-import { AuthService } from '@/services/AuthService';
 import { Logger } from '@/utils/logger/Logger';
 
 export class AccountService extends ApiAbstract {
     protected readonly _logger: Logger = Logger.Of('AccountService');
-    private readonly _authService: AuthService;
 
     private static _instance: AccountService;
 
     public static instance(): AccountService {
-        return AccountService._instance || (AccountService._instance = new AccountService(AuthService.instance()));
-    }
-
-    constructor(authService: AuthService) {
-        super();
-        this._authService = authService;
+        return AccountService._instance || (AccountService._instance = new AccountService());
     }
 
     public async doGetAccount(accountId: number): Promise<
@@ -126,7 +119,7 @@ export class AccountService extends ApiAbstract {
 
     public async doPatchAccount(
         id: number,
-        body: { accountName: string; amount?: number },
+        body: { accountName: string; amount?: number; iconId?: string },
     ): Promise<
         | {
               kind: GeneralApiProblemKind.Ok;
@@ -140,6 +133,7 @@ export class AccountService extends ApiAbstract {
             const response = await this.authPatch(`/user/${userId}/account/${id}`, {
                 accountName: String(body.accountName),
                 amount: Number(body.amount),
+                iconId: body.iconId ? String(body.iconId) : undefined,
             });
             if (response.kind === GeneralApiProblemKind.Ok) {
                 this._logger.info(`Patch account successfully: ${(response.data as [])?.length}`);
@@ -164,7 +158,7 @@ export class AccountService extends ApiAbstract {
         }
     }
 
-    public async doCreateAccount(body: { accountName: string; currencyId: number; amount: number }): Promise<
+    public async doCreateAccount(body: { accountName: string; currencyId: number; amount: number; iconId: string }): Promise<
         | {
               kind: GeneralApiProblemKind.Ok;
               data: IAccount | undefined;
@@ -178,6 +172,7 @@ export class AccountService extends ApiAbstract {
                 accountName: String(body.accountName),
                 currencyId: Number(body.currencyId),
                 amount: Number(body.amount),
+                iconId: String(body.iconId),
             });
             if (response.kind === GeneralApiProblemKind.Ok) {
                 this._logger.info(`Create account successfully: ${(response?.data as IAccount)?.accountId}`);

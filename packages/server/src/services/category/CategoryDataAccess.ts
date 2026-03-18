@@ -37,6 +37,7 @@ export default class CategoryDataAccess extends LoggerBase implements ICategoryD
                     'categories.userId',
                     'categories.categoryName',
                     'categories.currencyId',
+                    'categories.iconId',
                     this._db.engine().raw('COALESCE(SUM(dcs.amount_total), 0) as amount'),
                 )
                 .leftJoin('daily_categories_stats as dcs', function () {
@@ -48,7 +49,7 @@ export default class CategoryDataAccess extends LoggerBase implements ICategoryD
                         ]);
                 })
                 .where('categories.userId', userId)
-                .groupBy('categories.categoryId', 'categories.userId', 'categories.categoryName', 'categories.currencyId');
+                .groupBy('categories.categoryId', 'categories.userId', 'categories.categoryName', 'categories.currencyId', 'categories.iconId');
             if (data) {
                 this._logger.info(`Fetched ${data.length} categories retrieved successfully for user: ${userId}`);
             } else {
@@ -71,10 +72,11 @@ export default class CategoryDataAccess extends LoggerBase implements ICategoryD
         const query = trx || this._db.engine();
 
         try {
-            const formattedCategories = categories.map(({ categoryName, currencyId }) => ({
+            const formattedCategories = categories.map(({ categoryName, currencyId, iconId }) => ({
                 userId,
                 categoryName,
                 currencyId,
+                iconId,
             }));
 
             const data = await query('categories').insert(formattedCategories, [
@@ -82,6 +84,7 @@ export default class CategoryDataAccess extends LoggerBase implements ICategoryD
                 'userId',
                 'categoryName',
                 'currencyId',
+                'iconId',
             ]);
 
             this._logger.info(`Categories created successfully for user: ${userId}`);
@@ -155,11 +158,12 @@ export default class CategoryDataAccess extends LoggerBase implements ICategoryD
             this._logger.info(`Patch categoryId: ${categoryId} for userId: ${userId}`);
             const allowedProperties = {
                 categoryName: properties.categoryName,
+                iconId: properties.iconId,
                 updatedAt: Time.getISODateNowUTC(),
                 status: properties.status,
             };
 
-            validateAllowedProperties(allowedProperties, ['categoryName', 'updatedAt', 'status']);
+            validateAllowedProperties(allowedProperties, ['categoryName', 'iconId', 'updatedAt', 'status']);
             const query = trx || this._db.engine();
             const data = await query('categories').update(properties).where({ userId, categoryId });
 
@@ -212,6 +216,7 @@ export default class CategoryDataAccess extends LoggerBase implements ICategoryD
                 'categories.userId',
                 'categories.categoryName',
                 'categories.currencyId',
+                'categories.iconId',
                 'categories.createdAt',
                 'categories.updatedAt',
                 'currencies.currencyCode',

@@ -1,7 +1,6 @@
 import { FC } from 'react';
 import { useNavigation } from '@react-navigation/native';
-import { IAccount } from 'tenpercent/shared';
-import { Utils } from 'tenpercent/shared';
+import { AccountIcon, IAccount, Utils } from 'tenpercent/shared';
 
 import { AccountFields } from '@/components/account/AccountFields';
 import { useEditView } from '@/hooks/useEditView';
@@ -18,6 +17,7 @@ export const AccountCreate: FC = function AccountCreate(_props) {
             accountName: '',
             currencyId: 1,
             amount: 0,
+            iconId: AccountIcon.Wallet,
         },
         accountCreateSchema,
     );
@@ -31,6 +31,7 @@ export const AccountCreate: FC = function AccountCreate(_props) {
             accountName: form.accountName!,
             currencyId: form.currencyId!,
             amount: form.amount ?? 0,
+            iconId: form.iconId ?? AccountIcon.Wallet,
         });
         if (response.kind === GeneralApiProblemKind.Ok) {
             AlertService.info(translate('common:info'), translate('common:createAccountSuccess'));

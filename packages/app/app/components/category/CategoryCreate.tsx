@@ -1,7 +1,6 @@
 import { FC } from 'react';
 import { useNavigation } from '@react-navigation/native';
-import { ICategory } from 'tenpercent/shared';
-import { Utils } from 'tenpercent/shared';
+import { ICategory, SpendIcon, Utils } from 'tenpercent/shared';
 
 import { CategoryFields } from '@/components/category/CategoryFields';
 import { useEditView } from '@/hooks/useEditView';
@@ -17,6 +16,7 @@ export const CategoryCreate: FC = function CategoryCreate(_props) {
         {
             categoryName: '',
             currencyId: 1,
+            iconId: SpendIcon.ShoppingBag,
         },
         categoryCreateSchema,
     );
@@ -29,6 +29,7 @@ export const CategoryCreate: FC = function CategoryCreate(_props) {
         const response = await categoryService.doCreateCategory({
             categoryName: form.categoryName!,
             currencyId: form.currencyId!,
+            iconId: form.iconId ?? SpendIcon.ShoppingBag,
         });
         if (response.kind === GeneralApiProblemKind.Ok) {
             AlertService.info(translate('common:info'), translate('categoryScreen:createCategorySuccess'));

@@ -27,7 +27,7 @@ export default class AccountService extends LoggerBase implements IAccountServic
     }
 
     async createAccount(userId: number, account: ICreateAccount, trx?: IDBTransaction): Promise<IAccount> {
-        validateAllowedProperties(account as unknown as Record<string, string | number>, ['accountName', 'amount', 'currencyId']);
+        validateAllowedProperties(account as unknown as Record<string, string | number>, ['accountName', 'amount', 'currencyId', 'iconId']);
         const accounts = await this._accountDataAccess.createAccounts(userId, [account], trx);
         if (Utils.isArrayNotEmpty(accounts)) {
             return accounts[0];

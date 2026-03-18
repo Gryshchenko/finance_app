@@ -31,6 +31,7 @@ export const CategoryEdit: FC<ICategoryPros> = function CategoryEdit(_props) {
 
         const response = await incomeService.doPatchCategory(form.categoryId!, {
             categoryName: form.categoryName!,
+            iconId: form.iconId,
         });
         if (response.kind === GeneralApiProblemKind.Ok) {
             AlertService.info(translate('common:info'), translate('categoryScreen:updateCategorySuccess'));

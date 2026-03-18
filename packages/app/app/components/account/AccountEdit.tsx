@@ -32,6 +32,7 @@ export const AccountEdit: FC<IAccountPros> = function AccountEdit(_props) {
         const response = await incomeService.doPatchAccount(form.accountId!, {
             accountName: form.accountName!,
             amount: form.amount!,
+            iconId: form.iconId,
         });
         if (response.kind === GeneralApiProblemKind.Ok) {
             AlertService.info(translate('common:info'), translate('common:updateAccountSuccess'));
