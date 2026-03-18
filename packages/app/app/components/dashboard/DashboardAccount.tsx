@@ -2,7 +2,6 @@ import { memo } from 'react';
 import { useNavigation } from '@react-navigation/native';
 import { IAccountListItem, TransactionType, Utils } from 'tenpercent/shared';
 
-import { AccountIcon } from '@/components/CategoryIcon';
 import { AccountBox } from '@/components/dashboard/Box/AccountBox';
 import { AddBox } from '@/components/dashboard/Box/AddBox';
 import { IDrag } from '@/components/dashboard/Box/Box';
@@ -34,7 +33,7 @@ export default memo(function DashboardAccount(props: IDashboardItem<IAccountList
                     id={String(item.accountId)}
                     key={item.accountName}
                     title={item.accountName}
-                    icon={AccountIcon.Cash}
+                    icon={item.iconId}
                     value={CurrencyUtils.formatWithDelimiter(item.amount, getCurrencySymbol(item.currencyId), 2, true)}
                     isDraggable={true}
                     onDragStart={() => {

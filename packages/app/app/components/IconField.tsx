@@ -1,10 +1,8 @@
 import { useState } from 'react';
 import { Modal, Pressable, ScrollView, StyleProp, TextStyle, View, ViewStyle } from 'react-native';
-
 import {
     AccountIcon,
-    CategoryIcon,
-    CategoryIconIcon,
+    CategoryIconType,
     HealthIcon,
     IncomeIcon,
     LeisureIcon,
@@ -12,7 +10,9 @@ import {
     TechIcon,
     TransportIcon,
     VIPIcon,
-} from '@/components/CategoryIcon';
+} from 'tenpercent/shared';
+
+import { CategoryIcon } from '@/components/CategoryIcon';
 import { iconRegistry } from '@/components/Icon';
 import { Text, TextProps } from '@/components/Text';
 import { TxKeyPath } from '@/i18n';
@@ -24,7 +24,7 @@ import { ThemedStyle } from '@/theme/types';
 
 type IconCategory = {
     name: string;
-    icons: CategoryIconIcon[];
+    icons: CategoryIconType[];
 };
 
 const iconCategories: IconCategory[] = [
@@ -39,8 +39,8 @@ const iconCategories: IconCategory[] = [
 ];
 
 type IconFieldProps = {
-    value: CategoryIconIcon | string | undefined;
-    onChange?: (icon: CategoryIconIcon) => void;
+    value: CategoryIconType | string | undefined;
+    onChange?: (icon: CategoryIconType) => void;
     labelTx?: TxKeyPath;
     label?: string;
     style?: StyleProp<ViewStyle>;
@@ -66,10 +66,10 @@ export function IconField({
     helperTxOptions,
 }: IconFieldProps) {
     const [isOpen, setIsOpen] = useState(false);
-    const valueInWork = iconRegistry[value as unknown as CategoryIconIcon] ? (value as CategoryIconIcon) : AccountIcon.Cash;
+    const valueInWork = iconRegistry[value as unknown as CategoryIconType] ? (value as CategoryIconType) : AccountIcon.Cash;
     const { themed, theme } = useAppTheme();
 
-    const handleSelect = (icon: CategoryIconIcon) => {
+    const handleSelect = (icon: CategoryIconType) => {
         setIsOpen(false);
         onChange?.(icon);
     };

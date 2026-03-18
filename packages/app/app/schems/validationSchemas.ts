@@ -17,6 +17,7 @@ const incomeCreate = {
     currencyId: Yup.number()
         .min(Number.MIN_VALUE, translationsKeys.valueTooShort)
         .max(Number.MAX_VALUE, translationsKeys.valueTooLong),
+    iconId: Yup.string(),
 };
 
 const accountCreate = {

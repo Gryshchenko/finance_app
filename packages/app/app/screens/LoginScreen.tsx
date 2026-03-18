@@ -22,8 +22,8 @@ interface LoginScreenProps extends AppStackScreenProps<'Login'> {}
 export const LoginScreen: FC<LoginScreenProps> = (_props) => {
     const authPasswordInput = useRef<TextInput>(null);
     const { navigation } = _props;
-    const [authPassword, setAuthPassword] = useState<string>('t7tDgenv6ed^b^^aaa');
-    const [authEmail, setAuthEmail] = useState<string>('test_ifepj2nb@test.com');
+    const [authPassword, setAuthPassword] = useState<string>('Qwerty!2345');
+    const [authEmail, setAuthEmail] = useState<string>('andy@test.com');
     const [isAuthPasswordHidden, setIsAuthPasswordHidden] = useState<boolean>(true);
     const [emailError, setEmailError] = useState<TxKeyPath | undefined>();
     const [passwordError, setPasswordError] = useState<TxKeyPath | undefined>();

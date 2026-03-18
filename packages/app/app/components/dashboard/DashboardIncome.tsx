@@ -2,7 +2,6 @@ import { memo } from 'react';
 import { useNavigation } from '@react-navigation/native';
 import { IIncome, TransactionType } from 'tenpercent/shared';
 
-import { AccountIcon } from '@/components/CategoryIcon';
 import { AddBox } from '@/components/dashboard/Box/AddBox';
 import { useDragOverlay } from '@/components/dashboard/Box/DragOverlayContext';
 import { IncomeBox } from '@/components/dashboard/Box/IncomeBox';
@@ -28,7 +27,7 @@ export default memo(function DashboardIncome(props: IDashboardItem<IIncome>) {
                     BoxProps={{
                         styles: BoxProps?.styles,
                     }}
-                    icon={AccountIcon.Cash}
+                    icon={item.iconId}
                     id={String(item.incomeId)}
                     key={item.incomeName}
                     title={item.incomeName}

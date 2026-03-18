@@ -1,21 +1,21 @@
 import { FC } from 'react';
 import { useNavigation } from '@react-navigation/native';
-import { IIncome } from 'tenpercent/shared';
+import { IIncome, IncomeIcon } from 'tenpercent/shared';
 import { Utils } from 'tenpercent/shared';
 
 import { IncomeFields } from '@/components/income/IncomeFields';
 import { useEditView } from '@/hooks/useEditView';
-import { translate } from '@/i18n/translate';
 import { incomeCreateSchema } from '@/schems/validationSchemas';
-import AlertService from '@/services/AlertService';
 import { GeneralApiProblemKind } from '@/services/api/apiProblem';
 import { IncomeService } from '@/services/IncomeService';
+import ToastService from '@/services/ToastService';
 
 export const IncomeCreate: FC = function IncomeCreate(_props) {
     const navigation = useNavigation();
     const { form, handleChange, save, errors } = useEditView<Partial<IIncome>>(
         {
             incomeName: '',
+            iconId: IncomeIcon.P2P,
             currencyId: 1,
         },
         incomeCreateSchema,
@@ -23,9 +23,14 @@ export const IncomeCreate: FC = function IncomeCreate(_props) {
 
     const handleCreate = async () => {
         const incomeService = IncomeService.instance();
-        if (Utils.isEmpty(form.incomeName)) return;
-        if (Utils.isNull(form.currencyId)) return;
-        if (Utils.isNull(form.iconId)) return;
+        console.log(form);
+        if (Utils.isEmpty(form.incomeName) || Utils.isNull(form.currencyId) || Utils.isNull(form.iconId)) {
+            ToastService.error({
+                message: 'errorCode:UNKNOWN_ERROR',
+                systemMessage: `Validation error on create income, incomeName: ${form.incomeName}, currencyId: ${form.currencyId}, iconId: ${form.iconId}`,
+            });
+            return;
+        }
 
         const response = await incomeService.doCreateIncome({
             incomeName: form.incomeName!,
@@ -33,12 +38,14 @@ export const IncomeCreate: FC = function IncomeCreate(_props) {
             iconId: form.iconId!,
         });
         if (response.kind === GeneralApiProblemKind.Ok) {
-            AlertService.info(translate('common:info'), translate('common:createAccountSuccess'));
             navigation.getParent()?.navigate('incomes', {
                 screen: 'accounts',
             });
         } else {
-            AlertService.error(translate('common:error'), translate('common:createAccountFailed'));
+            ToastService.error({
+                message: 'errorCode:UNKNOWN_ERROR',
+                systemMessage: `response kind: ${response.kind}, on create income with name: ${form.incomeName}, currencyId: ${form.currencyId}, iconId: ${form.iconId}`,
+            });
         }
     };
 

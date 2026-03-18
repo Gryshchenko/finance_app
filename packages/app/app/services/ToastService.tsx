@@ -2,6 +2,7 @@ import ToastManager, { Toast } from 'toastify-react-native';
 
 import { DefaultToast } from '@/components/DefaultToast';
 import { TxKeyPath } from '@/i18n/index';
+import { Logger } from '@/utils/logger/Logger';
 
 export enum ToastType {
     Success = 'success',
@@ -26,6 +27,7 @@ interface ToastOptions {
 }
 
 class ToastService {
+    protected static _logger: Logger = Logger.Of('ToastService');
     static show({ text1, text2, type = ToastType.Info, duration = 3000 }: ToastOptions) {
         Toast.show({
             // @ts-ignore
@@ -49,7 +51,8 @@ class ToastService {
         });
     }
 
-    static error({ title = 'common:error', message, duration }: ToestMessage) {
+    static error({ title = 'common:error', message, duration, systemMessage }: ToestMessage) {
+        ToastService._logger.error(`Error: ${systemMessage}`);
         this.show({
             text1: title,
             text2: message,

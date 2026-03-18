@@ -2,7 +2,6 @@ import { memo } from 'react';
 import { useNavigation } from '@react-navigation/native';
 import { ICategory, TransactionType, Utils } from 'tenpercent/shared';
 
-import { AccountIcon } from '@/components/CategoryIcon';
 import { AddBox } from '@/components/dashboard/Box/AddBox';
 import { IDrag } from '@/components/dashboard/Box/Box';
 import { CategoryBox } from '@/components/dashboard/Box/CategoryBox';
@@ -33,7 +32,7 @@ export default memo(function DashboardCategory(props: IDashboardItem<ICategory>)
                     }}
                     id={String(item.categoryId)}
                     title={item.categoryName}
-                    icon={AccountIcon.Cash}
+                    icon={item.iconId}
                     value={CurrencyUtils.formatWithDelimiter(0, getCurrencySymbol(item.currencyId), 2, true)}
                     isDroppable={draggingItemType === ItemType.Account}
                     onDrop={(dropItem: unknown) => {

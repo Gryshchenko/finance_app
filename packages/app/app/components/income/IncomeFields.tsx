@@ -39,10 +39,10 @@ export const IncomeFields: FC<IProps> = function IncomeFields(_props) {
         >
             <View style={$fieldWrapper as undefined}>
                 <IconField
-                    value={form.icon}
+                    value={form.iconId}
                     onChange={(newIcon) => {
                         if (handleChange) {
-                            handleChange('icon', newIcon);
+                            handleChange('iconId', newIcon);
                         }
                     }}
                 />
