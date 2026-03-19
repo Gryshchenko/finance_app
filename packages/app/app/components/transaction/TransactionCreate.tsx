@@ -5,11 +5,11 @@ import { Time } from 'tenpercent/shared';
 
 import { TransactionFields } from '@/components/transaction/TransactionFields';
 import { useEditView } from '@/hooks/useEditView';
-import { translate } from '@/i18n/translate';
 import { buildTransactionCreateSchema } from '@/schems/validationSchemas';
-import AlertService from '@/services/AlertService';
 import { GeneralApiProblemKind } from '@/services/api/apiProblem';
+import ToastService from '@/services/ToastService';
 import { TransactionService } from '@/services/TransactionService';
+import { OverviewPath } from '@/types/OverviewPath';
 import { Logger } from '@/utils/logger/Logger';
 
 interface IProps {
@@ -43,10 +43,12 @@ export const TransactionCreate: FC<IProps> = function TransactionCreate(_props: 
             description: form.description,
         });
         if (response.kind === GeneralApiProblemKind.Ok) {
-            AlertService.info(translate('common:info'), translate('transactionScreen:createSuccess'));
-            navigation.getParent()?.goBack();
+            navigation.getParent()?.navigate(OverviewPath.Dashboard);
         } else {
-            AlertService.error(translate('common:error'), translate('transactionScreen:createFailed'));
+            ToastService.error({
+                message: 'errorCode:UNKNOWN_ERROR',
+                systemMessage: `response kind: ${response.kind}, on create transaction`,
+            });
         }
     };
 
@@ -62,18 +64,14 @@ export const TransactionCreate: FC<IProps> = function TransactionCreate(_props: 
     return (
         <TransactionFields
             form={form}
+            isCreate={true}
             errors={errors}
             isView={false}
             isEdit={true}
             handleChange={(key: string, value: string | number) => {
                 handleChange(key as keyof ITransaction, value);
             }}
-            cancel={() => {
-                // navigation.getParent()?.navigate("history", {
-                //   screen: "view",
-                //   params: { id: form.transactionId, name: form.transactionName },
-                // })
-            }}
+            cancel={() => navigation.goBack()}
             handleSave={handleSave}
         />
     );

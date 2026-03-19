@@ -6,6 +6,7 @@ import { translate } from '@/i18n/translate';
 import { IncomePath } from '@/navigators/IncomesStackNavigator';
 import { OverviewTabParamList } from '@/navigators/OverviewNavigator';
 import { GenericListScreen } from '@/screens/GenericListScreen';
+import { OverviewPath } from '@/types/OverviewPath';
 
 type Props = NativeStackScreenProps<OverviewTabParamList, IncomePath.IncomeCreate>;
 
@@ -16,11 +17,7 @@ export const IncomeCreateScreen = function IncomeCreateScreen(_props: Props) {
             name={translate('incomeScreen:createTitle')}
             isError={false}
             isPending={false}
-            onBack={() =>
-                navigation.getParent()?.navigate('incomes', {
-                    screen: 'accounts',
-                })
-            }
+            onBack={() => navigation.getParent()?.navigate(OverviewPath.Dashboard)}
             props={{
                 data: undefined,
             }}

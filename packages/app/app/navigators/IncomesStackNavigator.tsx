@@ -24,9 +24,6 @@ export enum IncomePath {
 export interface IncomesStackParamList {
     accounts: undefined;
     transactions: { id: number; type: TransactionFieldType; name: string };
-    transactionCreate: { id: number };
-    transactionEdit: { id: number };
-    transactionView: { id: number };
     incomeView: { id: number; name: string };
     incomeEdit: { id: number; name: string; payload: string };
     incomeCreate: { payload: string };
@@ -40,9 +37,6 @@ function IncomesStackNavigator() {
             <IncomesStack.Screen name={IncomePath.IncomeCreate} component={IncomeCreateScreen} />
             <IncomesStack.Screen name={IncomePath.IncomeEdit} component={IncomeEditScreen} />
             <IncomesStack.Screen name={TransactionPath.Transactions} component={TransactionsScreen} />
-            <IncomesStack.Screen name={TransactionPath.TransactionEdit} component={HistoryTransactionEditScreen} />
-            <IncomesStack.Screen name={TransactionPath.TransactionView} component={TransactionViewScreen} />
-            <IncomesStack.Screen name={TransactionPath.TransactionCreate} component={TransactionCreateScreen} />
         </IncomesStack.Navigator>
     );
 }

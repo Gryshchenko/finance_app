@@ -40,6 +40,7 @@ export const IncomeFields: FC<IProps> = function IncomeFields(_props) {
             <View style={$fieldWrapper as undefined}>
                 <IconField
                     value={form.iconId}
+                    disabled={isView}
                     onChange={(newIcon) => {
                         if (handleChange) {
                             handleChange('iconId', newIcon);

@@ -1,9 +1,9 @@
-import { useNavigation } from '@react-navigation/native';
 import { NativeStackScreenProps } from '@react-navigation/native-stack';
 import { ICategory } from 'tenpercent/shared';
 import { Utils } from 'tenpercent/shared';
 
 import { CategoryEdit } from '@/components/category/CategoryEdit';
+import { translate } from '@/i18n/translate';
 import { CategoriesPath } from '@/navigators/CategoriesStackNavigator';
 import { OverviewTabParamList } from '@/navigators/OverviewNavigator';
 import { GenericListScreen } from '@/screens/GenericListScreen';
@@ -12,18 +12,13 @@ type Props = NativeStackScreenProps<OverviewTabParamList, CategoriesPath.Categor
 
 export const CategoryEditScreen = function CategoryEditScreen(_props: Props) {
     const params = _props?.route?.params as { id: number; name: string; payload: string };
-    const navigation = useNavigation();
     const data = Utils.parseObject<ICategory | undefined>(params.payload);
     return (
         <GenericListScreen
-            name={data?.categoryName ?? ''}
+            name={data?.categoryName ?? translate('categoryScreen:editTitle')}
             isError={false}
             isPending={false}
-            onBack={() =>
-                navigation.getParent()?.navigate('expenses', {
-                    screen: 'categories',
-                })
-            }
+            onBack={undefined}
             props={{
                 data,
             }}

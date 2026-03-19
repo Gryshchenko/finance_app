@@ -1,9 +1,9 @@
-import { useNavigation } from '@react-navigation/native';
 import { NativeStackScreenProps } from '@react-navigation/native-stack';
 import { ITransaction } from 'tenpercent/shared';
 import { Utils } from 'tenpercent/shared';
 
 import { TransactionEdit } from '@/components/transaction/TransactionEdit';
+import { translate } from '@/i18n/translate';
 import { OverviewTabParamList } from '@/navigators/OverviewNavigator';
 import { GenericListScreen } from '@/screens/GenericListScreen';
 import { TransactionPath } from '@/types/TransactionPath';
@@ -12,19 +12,16 @@ type Props = NativeStackScreenProps<OverviewTabParamList, TransactionPath.Transa
 
 export const TransactionEditScreen = function TransactionsScreen(_props: Props) {
     const params = _props?.route?.params as { id: number; name: string; payload: string };
-    const { name } = params;
-    const navigation = useNavigation();
-
     const data = Utils.parseObject<ITransaction | undefined>(params.payload);
     return (
         <GenericListScreen
-            name={name}
+            name={params?.name ?? translate('common:edit')}
             isError={false}
             isPending={false}
+            onBack={undefined}
             props={{
                 data,
             }}
-            onBack={() => navigation.goBack()}
             RenderComponent={TransactionEdit}
         />
     );

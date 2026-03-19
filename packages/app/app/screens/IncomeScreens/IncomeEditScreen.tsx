@@ -13,18 +13,13 @@ type Props = NativeStackScreenProps<OverviewTabParamList, IncomePath.IncomeEdit>
 
 export const IncomeEditScreen = function IncomeEditScreen(_props: Props) {
     const params = _props?.route?.params as { id: number; name: string; payload: string };
-    const navigation = useNavigation();
     const data = Utils.parseObject<IIncome | undefined>(params.payload);
     return (
         <GenericListScreen
             name={data?.incomeName ?? translate('incomeScreen:editTitle')}
             isError={false}
             isPending={false}
-            onBack={() =>
-                navigation.getParent()?.navigate('incomes', {
-                    screen: 'accounts',
-                })
-            }
+            onBack={undefined}
             props={{
                 data,
             }}

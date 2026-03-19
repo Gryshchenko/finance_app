@@ -8,11 +8,12 @@ import { EmptyState } from '@/components/EmptyState';
 import { IncomeFields } from '@/components/income/IncomeFields';
 import { useInvalidateQuery } from '@/hooks/useAppQuery';
 import { useEditView } from '@/hooks/useEditView';
-import { translate } from '@/i18n/translate';
+import { IncomePath } from '@/navigators/IncomesStackNavigator';
 import { incomeEditSchema } from '@/schems/validationSchemas';
-import AlertService from '@/services/AlertService';
 import { GeneralApiProblemKind } from '@/services/api/apiProblem';
 import { IncomeService } from '@/services/IncomeService';
+import ToastService from '@/services/ToastService';
+import { OverviewPath } from '@/types/OverviewPath';
 
 interface IIncomePros {
     data: Partial<IIncome> | undefined;
@@ -33,14 +34,18 @@ export const IncomeEdit: FC<IIncomePros> = function IncomeEdit(_props) {
             incomeName: form.incomeName!,
         });
         if (response.kind === GeneralApiProblemKind.Ok) {
-            AlertService.info(translate('common:info'), translate('common:updateAccountSuccess'));
+            ToastService.info({
+                title: 'common:info',
+                message: 'common:updateAccountSuccess',
+            });
             await invalidateQuery([['incomes']]);
             await invalidateQuery([['income', form.incomeId]]);
-            navigation.getParent()?.navigate('incomes', {
-                screen: 'accounts',
-            });
+            navigation.getParent()?.navigate(OverviewPath.Dashboard);
         } else {
-            AlertService.error(translate('common:error'), translate('common:updateAccountFailed'));
+            ToastService.error({
+                title: 'common:error',
+                message: 'common:updateAccountFailed',
+            });
         }
     };
 
@@ -63,8 +68,8 @@ export const IncomeEdit: FC<IIncomePros> = function IncomeEdit(_props) {
                 handleChange(key as keyof IIncome, value);
             }}
             cancel={() => {
-                navigation.getParent()?.navigate('incomes', {
-                    screen: 'view',
+                navigation.getParent()?.navigate(OverviewPath.Incomes, {
+                    screen: IncomePath.IncomeView,
                     params: { id: form.incomeId, name: form.incomeName },
                 });
             }}

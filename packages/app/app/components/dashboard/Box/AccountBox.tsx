@@ -1,12 +1,12 @@
 import { useMemo } from 'react';
 import { ViewStyle } from 'react-native';
+import { CategoryIconType } from 'tenpercent/shared';
 
-import { CategoryIconIcon } from '@/components/CategoryIcon';
 import ItemBox, { ItemBoxProps, ItemType } from '@/components/dashboard/Box/ItemBox';
 import { ColorService } from '@/services/ColorService';
 
 interface AccountBoxProps extends Omit<ItemBoxProps, 'type' | 'isDragging' | 'setIsDragging' | 'droppableId'> {
-    icon: CategoryIconIcon;
+    icon: CategoryIconType;
 }
 
 export function AccountBox({
@@ -19,6 +19,7 @@ export function AccountBox({
     onDrop,
     isDraggable,
     BoxProps,
+    onTap,
 }: AccountBoxProps) {
     const droppableId = `${id}-${ItemType.Account}`;
     const color = useMemo(() => {
@@ -26,6 +27,7 @@ export function AccountBox({
     }, [id]);
     return (
         <ItemBox
+            onTap={onTap}
             type={ItemType.Account}
             id={id}
             droppableId={droppableId}

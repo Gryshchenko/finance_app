@@ -1,7 +1,8 @@
 import { RefObject } from 'react';
 import { TextStyle, View, ViewStyle } from 'react-native';
+import { AccountIcon, CategoryIconType } from 'tenpercent/shared';
 
-import { AccountIcon, CategoryIcon, CategoryIconIcon } from '@/components/CategoryIcon';
+import { CategoryIcon } from '@/components/CategoryIcon';
 import { DASH_BOARD_BOX_SIZE } from '@/components/dashboard/Box/Box';
 import { Text } from '@/components/Text';
 import { useAppTheme } from '@/theme/context';
@@ -11,7 +12,7 @@ export interface IBoxDraggableItem {
     text?: string;
     ref?: RefObject<View | null>;
     color?: string;
-    icon?: CategoryIconIcon;
+    icon?: CategoryIconType;
     styles?: {
         box?: Array<ViewStyle | undefined>;
     };

@@ -7,11 +7,11 @@ import { EmptyState } from '@/components/EmptyState';
 import { TransactionFields } from '@/components/transaction/TransactionFields';
 import { useInvalidateQuery } from '@/hooks/useAppQuery';
 import { useEditView } from '@/hooks/useEditView';
-import { translate } from '@/i18n/translate';
 import { buildTransactionEditSchema } from '@/schems/validationSchemas';
-import AlertService from '@/services/AlertService';
 import { GeneralApiProblemKind } from '@/services/api/apiProblem';
+import ToastService from '@/services/ToastService';
 import { TransactionService } from '@/services/TransactionService';
+import { OverviewPath } from '@/types/OverviewPath';
 
 interface ITransactionPros {
     data: Partial<ITransaction> | undefined;
@@ -37,14 +37,18 @@ export const TransactionEdit: FC<ITransactionPros> = function TransactionEdit(_p
             description: form.description,
         });
         if (response.kind === GeneralApiProblemKind.Ok) {
-            AlertService.info(translate('common:info'), translate('transactionScreen:updateSuccess'));
+            ToastService.info({
+                title: 'common:info',
+                message: 'transactionScreen:updateSuccess',
+            });
             await invalidateQuery([['transactions']]);
             await invalidateQuery([['transaction', form.transactionId]]);
-            navigation.getParent()?.navigate('transactions', {
-                screen: 'accounts',
-            });
+            navigation.getParent()?.navigate(OverviewPath.Dashboard);
         } else {
-            AlertService.error(translate('common:error'), translate('transactionScreen:updateFailed'));
+            ToastService.error({
+                title: 'common:error',
+                message: 'transactionScreen:updateFailed',
+            });
         }
     };
 
@@ -59,13 +63,14 @@ export const TransactionEdit: FC<ITransactionPros> = function TransactionEdit(_p
     return (
         <TransactionFields
             form={form}
+            isCreate={false}
             isEdit={true}
             errors={errors}
             isView={false}
             handleChange={(key: string, value: string | number) => {
                 handleChange(key as keyof ITransaction, value);
             }}
-            cancel={() => {}}
+            cancel={() => navigation.goBack()}
             handleSave={handleSave}
         />
     );

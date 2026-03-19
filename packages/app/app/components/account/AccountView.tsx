@@ -9,9 +9,12 @@ import { EmptyState } from '@/components/EmptyState';
 import { useInvalidateQuery } from '@/hooks/useAppQuery';
 import { useEditView } from '@/hooks/useEditView';
 import { translate } from '@/i18n/translate';
+import { AccountsPath } from '@/navigators/AccountsStackNavigator';
 import { AccountService } from '@/services/AccountService';
 import AlertService from '@/services/AlertService';
 import { GeneralApiProblemKind } from '@/services/api/apiProblem';
+import ToastService from '@/services/ToastService';
+import { OverviewPath } from '@/types/OverviewPath';
 
 interface IAccountPros {
     data: IAccount | undefined;
@@ -29,11 +32,18 @@ export const AccountView: FC<IAccountPros> = function AccountView(_props) {
 
         const response = await accountService.doDeleteAccount(form.accountId);
         if (response.kind === GeneralApiProblemKind.Ok) {
-            AlertService.info(translate('common:info'), translate('common:deleteAccountSuccess'));
-            await invalidateQuery([['account_accounts']]);
-            await invalidateQuery([['account_account', form.accountId]]);
+            ToastService.info({
+                title: 'common:info',
+                message: 'common:deleteAccountSuccess',
+            });
+            await invalidateQuery([['accounts']]);
+            await invalidateQuery([['account', form.accountId]]);
+            navigation.getParent()?.navigate(OverviewPath.Dashboard);
         } else {
-            AlertService.error(translate('common:error'), translate('common:deleteAccountFailed'));
+            ToastService.error({
+                title: 'common:error',
+                message: 'common:deleteAccountFailed',
+            });
         }
     };
 
@@ -47,12 +57,13 @@ export const AccountView: FC<IAccountPros> = function AccountView(_props) {
 
     return (
         <AccountFields
+            isCreate={false}
             isEdit={false}
             form={form}
             isView={true}
             edit={() => {
-                navigation.getParent()?.navigate('balances', {
-                    screen: 'edit',
+                navigation.getParent()?.navigate(OverviewPath.Balances, {
+                    screen: AccountsPath.AccountEdit,
                     params: {
                         id: form.accountId,
                         name: form.accountName,

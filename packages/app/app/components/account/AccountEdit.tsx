@@ -8,11 +8,12 @@ import { AccountFields } from '@/components/account/AccountFields';
 import { EmptyState } from '@/components/EmptyState';
 import { useInvalidateQuery } from '@/hooks/useAppQuery';
 import { useEditView } from '@/hooks/useEditView';
-import { translate } from '@/i18n/translate';
+import { AccountsPath } from '@/navigators/AccountsStackNavigator';
 import { accountEditSchema } from '@/schems/validationSchemas';
 import { AccountService } from '@/services/AccountService';
-import AlertService from '@/services/AlertService';
 import { GeneralApiProblemKind } from '@/services/api/apiProblem';
+import ToastService from '@/services/ToastService';
+import { OverviewPath } from '@/types/OverviewPath';
 
 interface IAccountPros {
     data: Partial<IAccount> | undefined;
@@ -25,24 +26,28 @@ export const AccountEdit: FC<IAccountPros> = function AccountEdit(_props) {
     const { form, handleChange, save, errors } = useEditView<Partial<IAccount>>(data!, accountEditSchema);
 
     const handlePatch = async () => {
-        const incomeService = AccountService.instance();
+        const accountService = AccountService.instance();
         if (Utils.isEmpty(form.accountName)) return;
         if (Utils.isNull(form.accountId)) return;
 
-        const response = await incomeService.doPatchAccount(form.accountId!, {
+        const response = await accountService.doPatchAccount(form.accountId!, {
             accountName: form.accountName!,
             amount: form.amount!,
             iconId: form.iconId,
         });
         if (response.kind === GeneralApiProblemKind.Ok) {
-            AlertService.info(translate('common:info'), translate('common:updateAccountSuccess'));
-            await invalidateQuery([['income_accounts']]);
-            await invalidateQuery([['income_account', form.accountId]]);
-            navigation.getParent()?.navigate('balances', {
-                screen: 'accounts',
+            ToastService.info({
+                title: 'common:info',
+                message: 'common:updateAccountSuccess',
             });
+            await invalidateQuery([['accounts']]);
+            await invalidateQuery([['account', form.accountId]]);
+            navigation.getParent()?.navigate(OverviewPath.Dashboard);
         } else {
-            AlertService.error(translate('common:error'), translate('common:updateAccountFailed'));
+            ToastService.error({
+                title: 'common:error',
+                message: 'common:updateAccountFailed',
+            });
         }
     };
 
@@ -57,15 +62,16 @@ export const AccountEdit: FC<IAccountPros> = function AccountEdit(_props) {
     return (
         <AccountFields
             form={form}
-            errors={errors}
+            isCreate={false}
             isEdit={true}
+            errors={errors}
             isView={false}
             handleChange={(key: string, value: string | number) => {
                 handleChange(key as keyof IAccount, value);
             }}
             cancel={() => {
-                navigation.getParent()?.navigate('balances', {
-                    screen: 'view',
+                navigation.getParent()?.navigate(OverviewPath.Balances, {
+                    screen: AccountsPath.AccountView,
                     params: { id: form.accountId, name: form.accountName },
                 });
             }}

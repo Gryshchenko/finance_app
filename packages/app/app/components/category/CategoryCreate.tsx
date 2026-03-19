@@ -4,11 +4,12 @@ import { ICategory, SpendIcon, Utils } from 'tenpercent/shared';
 
 import { CategoryFields } from '@/components/category/CategoryFields';
 import { useEditView } from '@/hooks/useEditView';
-import { translate } from '@/i18n/translate';
+import { CategoriesPath } from '@/navigators/CategoriesStackNavigator';
 import { categoryCreateSchema } from '@/schems/validationSchemas';
-import AlertService from '@/services/AlertService';
 import { GeneralApiProblemKind } from '@/services/api/apiProblem';
 import { CategoryService } from '@/services/CategoryService';
+import ToastService from '@/services/ToastService';
+import { OverviewPath } from '@/types/OverviewPath';
 
 export const CategoryCreate: FC = function CategoryCreate(_props) {
     const navigation = useNavigation();
@@ -23,8 +24,13 @@ export const CategoryCreate: FC = function CategoryCreate(_props) {
 
     const handleCreate = async () => {
         const categoryService = CategoryService.instance();
-        if (Utils.isEmpty(form.categoryName)) return;
-        if (Utils.isNull(form.currencyId)) return;
+        if (Utils.isEmpty(form.categoryName) || Utils.isNull(form.currencyId) || Utils.isNull(form.iconId)) {
+            ToastService.error({
+                message: 'errorCode:UNKNOWN_ERROR',
+                systemMessage: `Validation error on create category, categoryName: ${form.categoryName}, currencyId: ${form.currencyId}, iconId: ${form.iconId}`,
+            });
+            return;
+        }
 
         const response = await categoryService.doCreateCategory({
             categoryName: form.categoryName!,
@@ -32,12 +38,14 @@ export const CategoryCreate: FC = function CategoryCreate(_props) {
             iconId: form.iconId ?? SpendIcon.ShoppingBag,
         });
         if (response.kind === GeneralApiProblemKind.Ok) {
-            AlertService.info(translate('common:info'), translate('categoryScreen:createCategorySuccess'));
-            navigation.getParent()?.navigate('expenses', {
+            navigation.getParent()?.navigate(OverviewPath.Expenses, {
                 screen: 'categories',
             });
         } else {
-            AlertService.error(translate('common:error'), translate('categoryScreen:createCategoryFailed'));
+            ToastService.error({
+                message: 'errorCode:UNKNOWN_ERROR',
+                systemMessage: `response kind: ${response.kind}, on create category with name: ${form.categoryName}, currencyId: ${form.currencyId}, iconId: ${form.iconId}`,
+            });
         }
     };
 
@@ -49,15 +57,16 @@ export const CategoryCreate: FC = function CategoryCreate(_props) {
     return (
         <CategoryFields
             form={form}
-            errors={errors}
+            isCreate={true}
             isEdit={true}
+            errors={errors}
             isView={false}
             handleChange={(key: string, value: string | number) => {
                 handleChange(key as keyof ICategory, value);
             }}
             cancel={() => {
-                navigation.getParent()?.navigate('expenses', {
-                    screen: 'view',
+                navigation.getParent()?.navigate(OverviewPath.Expenses, {
+                    screen: CategoriesPath.CategoryView,
                     params: { id: form.categoryId, name: form.categoryName },
                 });
             }}

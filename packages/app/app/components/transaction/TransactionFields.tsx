@@ -1,4 +1,5 @@
 import { FC, FunctionComponent } from 'react';
+import { StyleProp, TextStyle, ViewStyle } from 'react-native';
 import { ITransaction } from 'tenpercent/shared';
 import { TransactionType } from 'tenpercent/shared';
 
@@ -10,9 +11,12 @@ import { GeneralDetailView } from '@/components/GeneralDetailView';
 import { DatePickerType, IgniteDatePicker } from '@/components/IgniteDatePicker';
 import IgniteSwitcher from '@/components/IgniteSwitcher';
 import { IncomeDropdown } from '@/components/income/IncomeDropdown';
+import { TextField } from '@/components/TextField';
 import { useCurrency } from '@/context/CurrencyContext';
 import { TxKeyPath } from '@/i18n';
 import { translate } from '@/i18n/translate';
+import { useAppTheme } from '@/theme/context';
+import { ThemedStyle } from '@/theme/types';
 
 interface IProps {
     form: Partial<ITransaction>;
@@ -20,6 +24,7 @@ interface IProps {
     handleChange?: (key: string, value: string | number) => void;
     isView: boolean;
     isEdit: boolean;
+    isCreate: boolean;
     edit?: () => void;
     cancel?: () => void;
     onDelete?: () => void;
@@ -27,8 +32,9 @@ interface IProps {
 }
 
 export const TransactionFields: FC<IProps> = function TransactionFields(_props) {
-    const { isView, form, handleChange, handleSave, edit, cancel, onDelete, errors } = _props;
+    const { isView, form, handleChange, handleSave, edit, cancel, onDelete, errors, isEdit, isCreate } = _props;
     const { getCurrencySymbol } = useCurrency();
+    const { themed } = useAppTheme();
 
     const renderInputs = () => {
         switch (form.transactionTypeId) {
@@ -94,7 +100,15 @@ export const TransactionFields: FC<IProps> = function TransactionFields(_props) 
         }
     };
     return (
-        <GeneralDetailView isView={isView} onEdit={edit} onCancel={cancel} onSave={handleSave} onDelete={onDelete}>
+        <GeneralDetailView
+            isCreate={isCreate}
+            isEdit={isEdit}
+            isView={isView}
+            onEdit={edit}
+            onCancel={cancel}
+            onSave={handleSave}
+            onDelete={onDelete}
+        >
             <IgniteSwitcher
                 disabled={isView}
                 options={[
@@ -133,15 +147,19 @@ export const TransactionFields: FC<IProps> = function TransactionFields(_props) 
                 }}
             />
 
-            <Field
-                label={translate('transactionScreen:description')}
-                componentProps={{
-                    value: form.description!,
-                    editable: !isView,
-                    helperTx: errors?.description,
-                    status: errors?.description ? 'error' : undefined,
-                    onChangeText: (v) => handleChange?.('description', v),
+            <TextField
+                inputWrapperStyle={themed($inputWrapperStyle)}
+                labelTx={'transactionScreen:description'}
+                value={form.description!}
+                helperTx={errors?.description}
+                status={errors?.description ? 'error' : undefined}
+                editable={!isView}
+                style={themed($inputStyleOverride)}
+                containerStyle={themed($containerStyleOverride)}
+                LabelTextProps={{
+                    style: themed($labelStyle),
                 }}
+                onChangeText={(v) => handleChange?.('description', v)}
             />
 
             <IgniteDatePicker
@@ -155,3 +173,26 @@ export const TransactionFields: FC<IProps> = function TransactionFields(_props) 
         </GeneralDetailView>
     );
 };
+
+const $inputWrapperStyle: ThemedStyle<ViewStyle> = ({ colors }) => ({
+    backgroundColor: colors.background,
+    borderRadius: 0,
+    borderLeftWidth: 0,
+    borderRightWidth: 0,
+    borderTopWidth: 0,
+});
+
+const $labelStyle: ThemedStyle<TextStyle> = () => ({
+    fontSize: 12,
+    textAlign: 'center',
+});
+
+const $inputStyleOverride: ThemedStyle<TextStyle> = ({ colors }) => ({
+    fontSize: 16,
+    textAlign: 'left',
+    color: colors.text,
+});
+
+const $containerStyleOverride: ThemedStyle<ViewStyle> = () => ({
+    marginVertical: 8,
+});

@@ -28,11 +28,7 @@ export const HistoryTransactionViewScreen = function TransactionViewScreen(_prop
             props={{
                 data,
             }}
-            onBack={() =>
-                navigation.getParent()?.navigate(OverviewPath.History, {
-                    screen: TransactionPath.Transactions,
-                })
-            }
+            onBack={() => navigation.getParent()?.navigate(OverviewPath.Dashboard)}
             RenderComponent={TransactionView}
         />
     );

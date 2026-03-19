@@ -8,11 +8,12 @@ import { CategoryFields } from '@/components/category/CategoryFields';
 import { EmptyState } from '@/components/EmptyState';
 import { useInvalidateQuery } from '@/hooks/useAppQuery';
 import { useEditView } from '@/hooks/useEditView';
-import { translate } from '@/i18n/translate';
+import { CategoriesPath } from '@/navigators/CategoriesStackNavigator';
 import { categoryEditSchema } from '@/schems/validationSchemas';
-import AlertService from '@/services/AlertService';
 import { GeneralApiProblemKind } from '@/services/api/apiProblem';
 import { CategoryService } from '@/services/CategoryService';
+import ToastService from '@/services/ToastService';
+import { OverviewPath } from '@/types/OverviewPath';
 
 interface ICategoryPros {
     data: Partial<ICategory> | undefined;
@@ -25,23 +26,27 @@ export const CategoryEdit: FC<ICategoryPros> = function CategoryEdit(_props) {
     const { form, handleChange, save, errors } = useEditView<Partial<ICategory>>(data!, categoryEditSchema);
 
     const handlePatch = async () => {
-        const incomeService = CategoryService.instance();
+        const categoryService = CategoryService.instance();
         if (Utils.isEmpty(form.categoryName)) return;
         if (Utils.isNull(form.categoryId)) return;
 
-        const response = await incomeService.doPatchCategory(form.categoryId!, {
+        const response = await categoryService.doPatchCategory(form.categoryId!, {
             categoryName: form.categoryName!,
             iconId: form.iconId,
         });
         if (response.kind === GeneralApiProblemKind.Ok) {
-            AlertService.info(translate('common:info'), translate('categoryScreen:updateCategorySuccess'));
+            ToastService.info({
+                title: 'common:info',
+                message: 'categoryScreen:updateCategorySuccess',
+            });
             await invalidateQuery([['categories']]);
             await invalidateQuery([['category', form.categoryId]]);
-            navigation.getParent()?.navigate('expenses', {
-                screen: 'categories',
-            });
+            navigation.getParent()?.navigate(OverviewPath.Dashboard);
         } else {
-            AlertService.error(translate('common:error'), translate('categoryScreen:updateCategoryFailed'));
+            ToastService.error({
+                title: 'common:error',
+                message: 'categoryScreen:updateCategoryFailed',
+            });
         }
     };
 
@@ -56,15 +61,16 @@ export const CategoryEdit: FC<ICategoryPros> = function CategoryEdit(_props) {
     return (
         <CategoryFields
             form={form}
-            errors={errors}
+            isCreate={false}
             isEdit={true}
+            errors={errors}
             isView={false}
             handleChange={(key: string, value: string | number) => {
                 handleChange(key as keyof ICategory, value);
             }}
             cancel={() => {
-                navigation.getParent()?.navigate('expenses', {
-                    screen: 'view',
+                navigation.getParent()?.navigate(OverviewPath.Expenses, {
+                    screen: CategoriesPath.CategoryView,
                     params: { id: form.categoryId, name: form.categoryName },
                 });
             }}

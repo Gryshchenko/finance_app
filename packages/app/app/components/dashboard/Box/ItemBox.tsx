@@ -47,11 +47,13 @@ export default memo(function ItemBox({
     type,
     styles,
     BoxProps,
+    onTap,
 }: ItemBoxProps) {
     const { themed } = useAppTheme();
 
     return (
         <Box
+            onTap={onTap}
             onDragStart={onDragStart}
             onDragEnd={onDragEnd}
             onDrop={onDrop}

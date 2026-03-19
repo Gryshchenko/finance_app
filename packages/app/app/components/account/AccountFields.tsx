@@ -3,11 +3,13 @@ import { StyleProp, TextStyle, View, ViewStyle } from 'react-native';
 import { IAccount } from 'tenpercent/shared';
 import { ICurrency } from 'tenpercent/shared';
 
-import { Field } from '@/components/Field';
 import { GeneralDetailView } from '@/components/GeneralDetailView';
+import { IconField } from '@/components/IconField';
+import { TextField } from '@/components/TextField';
 import { CurrencyDropdown } from '@/components/Toggle/CurrencyDropdown';
 import { TxKeyPath } from '@/i18n';
-import { translate } from '@/i18n/translate';
+import { useAppTheme } from '@/theme/context';
+import { ThemedStyle } from '@/theme/types';
 
 interface IProps {
     form: Partial<IAccount>;
@@ -15,6 +17,7 @@ interface IProps {
     handleChange?: (key: string, value: string | number) => void;
     isView: boolean;
     isEdit: boolean;
+    isCreate: boolean;
     edit?: () => void;
     cancel?: () => void;
     onDelete?: () => void;
@@ -22,23 +25,56 @@ interface IProps {
 }
 
 export const AccountFields: FC<IProps> = function AccountFields(_props) {
-    const { isView, form, handleChange, handleSave, edit, cancel, onDelete, errors, isEdit } = _props;
+    const { isView, form, handleChange, handleSave, edit, cancel, onDelete, errors, isEdit, isCreate } = _props;
+    const { themed } = useAppTheme();
     return (
-        <GeneralDetailView isView={isView} onEdit={edit} onCancel={cancel} onSave={handleSave} onDelete={onDelete}>
+        <GeneralDetailView
+            isCreate={isCreate}
+            isEdit={isEdit}
+            isView={isView}
+            onEdit={edit}
+            onCancel={cancel}
+            onSave={handleSave}
+            onDelete={onDelete}
+        >
             <View style={$fieldWrapper as undefined}>
-                <Field
-                    style={$fieldName}
-                    label={translate('common:name')}
-                    componentProps={{
-                        value: String(form.accountName),
-                        helperTx: errors?.accountName,
-                        status: errors?.accountName ? 'error' : undefined,
-                        editable: !isView,
-                        onChangeText: (v) => {
-                            if (handleChange) {
-                                handleChange('accountName', v);
-                            }
-                        },
+                <IconField
+                    value={form.iconId}
+                    disabled={isView}
+                    onChange={(newIcon) => {
+                        if (handleChange) {
+                            handleChange('iconId', newIcon);
+                        }
+                    }}
+                />
+                <TextField
+                    inputWrapperStyle={themed($inputWrapperStyle)}
+                    labelTx={'common:name'}
+                    value={String(form.accountName)}
+                    helperTx={errors?.accountName}
+                    status={errors?.accountName ? 'error' : undefined}
+                    editable={!isView}
+                    style={themed($inputStyleOverride)}
+                    containerStyle={themed($containerStyleOverride)}
+                    LabelTextProps={{
+                        style: themed($labelStyle),
+                    }}
+                    onChangeText={(v) => {
+                        if (handleChange) {
+                            handleChange('accountName', v);
+                        }
+                    }}
+                />
+                <TextField
+                    labelTx={'common:amount'}
+                    value={String(form.amount)}
+                    helperTx={errors?.amount}
+                    status={errors?.amount ? 'error' : undefined}
+                    editable={!isView}
+                    onChangeText={(v) => {
+                        if (handleChange) {
+                            handleChange('amount', v);
+                        }
                     }}
                 />
                 <CurrencyDropdown
@@ -54,23 +90,6 @@ export const AccountFields: FC<IProps> = function AccountFields(_props) {
                     }}
                 />
             </View>
-            <View>
-                <Field
-                    style={$fieldName}
-                    label={translate('common:amount')}
-                    componentProps={{
-                        value: String(form.amount),
-                        helperTx: errors?.amount,
-                        status: errors?.amount ? 'error' : undefined,
-                        editable: !isView,
-                        onChangeText: (v) => {
-                            if (handleChange) {
-                                handleChange('amount', v);
-                            }
-                        },
-                    }}
-                />
-            </View>
         </GeneralDetailView>
     );
 };
@@ -78,9 +97,32 @@ const $fieldWrapper: StyleProp<ViewStyle> = {
     display: 'flex',
     justifyContent: 'space-between',
 };
-const $fieldName: StyleProp<TextStyle> = {
-    width: '60%',
-};
+
 const $fieldCurrency: StyleProp<TextStyle> = {
-    width: '38%',
+    width: '100%',
 };
+
+const $inputWrapperStyle: ThemedStyle<ViewStyle> = ({ colors }) => ({
+    backgroundColor: colors.background,
+    borderRadius: 0,
+    borderLeftWidth: 0,
+    borderRightWidth: 0,
+    borderTopWidth: 0,
+});
+
+const $labelStyle: ThemedStyle<TextStyle> = () => ({
+    fontSize: 12,
+    textAlign: 'center',
+});
+
+const $inputStyleOverride: ThemedStyle<TextStyle> = ({ colors }) => ({
+    fontSize: 64,
+    letterSpacing: -1.6,
+    height: 120,
+    textAlign: 'center',
+    text: colors.text,
+});
+
+const $containerStyleOverride: ThemedStyle<ViewStyle> = () => ({
+    height: 170,
+});

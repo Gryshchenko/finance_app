@@ -27,6 +27,15 @@ export default memo(function DashboardAccount(props: IDashboardItem<IAccountList
             const item = container.data as IAccountListItem;
             return (
                 <AccountBox
+                    onTap={() => {
+                        navigation.getParent()?.navigate(OverviewPath.Balances, {
+                            screen: AccountsPath.AccountView,
+                            params: {
+                                id: item.accountId,
+                                name: item.accountName,
+                            },
+                        });
+                    }}
                     BoxProps={{
                         styles: BoxProps?.styles,
                     }}
@@ -38,6 +47,9 @@ export default memo(function DashboardAccount(props: IDashboardItem<IAccountList
                     isDraggable={true}
                     onDragStart={() => {
                         setDraggingItemType(ItemType.Account);
+                    }}
+                    onDragEnd={() => {
+                        setDraggingItemType(undefined);
                     }}
                     isDroppable={[ItemType.Account, ItemType.Income].includes(draggingItemType as ItemType)}
                     onDrop={(dropItem) => {

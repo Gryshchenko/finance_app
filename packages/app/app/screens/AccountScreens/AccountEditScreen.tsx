@@ -1,9 +1,9 @@
-import { useNavigation } from '@react-navigation/native';
 import { NativeStackScreenProps } from '@react-navigation/native-stack';
 import { IAccount } from 'tenpercent/shared';
 import { Utils } from 'tenpercent/shared';
 
 import { AccountEdit } from '@/components/account/AccountEdit';
+import { translate } from '@/i18n/translate';
 import { AccountsPath } from '@/navigators/AccountsStackNavigator';
 import { OverviewTabParamList } from '@/navigators/OverviewNavigator';
 import { GenericListScreen } from '@/screens/GenericListScreen';
@@ -12,18 +12,13 @@ type Props = NativeStackScreenProps<OverviewTabParamList, AccountsPath.AccountEd
 
 export const AccountEditScreen = function AccountEditScreen(_props: Props) {
     const params = _props?.route?.params as { id: number; name: string; payload: string };
-    const navigation = useNavigation();
     const data = Utils.parseObject<IAccount | undefined>(params.payload);
     return (
         <GenericListScreen
-            name={data?.accountName ?? ''}
+            name={data?.accountName ?? translate('accountScreen:editTitle')}
             isError={false}
             isPending={false}
-            onBack={() =>
-                navigation.getParent()?.navigate('balances', {
-                    screen: 'accounts',
-                })
-            }
+            onBack={undefined}
             props={{
                 data,
             }}

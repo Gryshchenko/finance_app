@@ -4,11 +4,12 @@ import { AccountIcon, IAccount, Utils } from 'tenpercent/shared';
 
 import { AccountFields } from '@/components/account/AccountFields';
 import { useEditView } from '@/hooks/useEditView';
-import { translate } from '@/i18n/translate';
+import { AccountsPath } from '@/navigators/AccountsStackNavigator';
 import { accountCreateSchema } from '@/schems/validationSchemas';
 import { AccountService } from '@/services/AccountService';
-import AlertService from '@/services/AlertService';
 import { GeneralApiProblemKind } from '@/services/api/apiProblem';
+import ToastService from '@/services/ToastService';
+import { OverviewPath } from '@/types/OverviewPath';
 
 export const AccountCreate: FC = function AccountCreate(_props) {
     const navigation = useNavigation();
@@ -24,8 +25,13 @@ export const AccountCreate: FC = function AccountCreate(_props) {
 
     const handleCreate = async () => {
         const accountService = AccountService.instance();
-        if (Utils.isEmpty(form.accountName)) return;
-        if (Utils.isNull(form.currencyId)) return;
+        if (Utils.isEmpty(form.accountName) || Utils.isNull(form.currencyId) || Utils.isNull(form.iconId)) {
+            ToastService.error({
+                message: 'errorCode:UNKNOWN_ERROR',
+                systemMessage: `Validation error on create account, accountName: ${form.accountName}, currencyId: ${form.currencyId}, iconId: ${form.iconId}`,
+            });
+            return;
+        }
 
         const response = await accountService.doCreateAccount({
             accountName: form.accountName!,
@@ -34,12 +40,14 @@ export const AccountCreate: FC = function AccountCreate(_props) {
             iconId: form.iconId ?? AccountIcon.Wallet,
         });
         if (response.kind === GeneralApiProblemKind.Ok) {
-            AlertService.info(translate('common:info'), translate('common:createAccountSuccess'));
-            navigation.getParent()?.navigate('balances', {
+            navigation.getParent()?.navigate(OverviewPath.Balances, {
                 screen: 'accounts',
             });
         } else {
-            AlertService.error(translate('common:error'), translate('common:createAccountFailed'));
+            ToastService.error({
+                message: 'errorCode:UNKNOWN_ERROR',
+                systemMessage: `response kind: ${response.kind}, on create account with name: ${form.accountName}, currencyId: ${form.currencyId}, iconId: ${form.iconId}`,
+            });
         }
     };
 
@@ -50,6 +58,7 @@ export const AccountCreate: FC = function AccountCreate(_props) {
 
     return (
         <AccountFields
+            isCreate={true}
             isEdit={true}
             form={form}
             errors={errors}
@@ -58,8 +67,8 @@ export const AccountCreate: FC = function AccountCreate(_props) {
                 handleChange(key as keyof IAccount, value);
             }}
             cancel={() => {
-                navigation.getParent()?.navigate('balances', {
-                    screen: 'view',
+                navigation.getParent()?.navigate(OverviewPath.Balances, {
+                    screen: AccountsPath.AccountView,
                     params: { id: form.accountId, name: form.accountName },
                 });
             }}

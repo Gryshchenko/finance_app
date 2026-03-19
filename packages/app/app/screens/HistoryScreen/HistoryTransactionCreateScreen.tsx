@@ -17,11 +17,7 @@ export const HistoryTransactionCreateScreen = function TransactionCreateScreen(_
             name={translate('common:new')}
             isError={false}
             isPending={false}
-            onBack={() =>
-                navigation.getParent()?.navigate(OverviewPath.History, {
-                    screen: TransactionPath.Transactions,
-                })
-            }
+            onBack={() => navigation.getParent()?.navigate(OverviewPath.Dashboard)}
             props={{
                 data: undefined,
             }}

@@ -9,9 +9,12 @@ import { EmptyState } from '@/components/EmptyState';
 import { useInvalidateQuery } from '@/hooks/useAppQuery';
 import { useEditView } from '@/hooks/useEditView';
 import { translate } from '@/i18n/translate';
+import { CategoriesPath } from '@/navigators/CategoriesStackNavigator';
 import AlertService from '@/services/AlertService';
 import { GeneralApiProblemKind } from '@/services/api/apiProblem';
 import { CategoryService } from '@/services/CategoryService';
+import ToastService from '@/services/ToastService';
+import { OverviewPath } from '@/types/OverviewPath';
 
 interface ICategoryPros {
     data: ICategory | undefined;
@@ -29,14 +32,18 @@ export const CategoryView: FC<ICategoryPros> = function CategoryView(_props) {
 
         const response = await categoryService.doDeleteCategory(form.categoryId);
         if (response.kind === GeneralApiProblemKind.Ok) {
-            AlertService.info(translate('common:info'), translate('categoryScreen:deleteCategorySuccess'));
+            ToastService.info({
+                title: 'common:info',
+                message: 'categoryScreen:deleteCategorySuccess',
+            });
             await invalidateQuery([['categories']]);
             await invalidateQuery([['category', form.categoryId]]);
-            navigation.getParent()?.navigate('expenses', {
-                screen: 'categories',
-            });
+            navigation.getParent()?.navigate(OverviewPath.Dashboard);
         } else {
-            AlertService.error(translate('common:error'), translate('categoryScreen:deleteCategoryFailed'));
+            ToastService.error({
+                title: 'common:error',
+                message: 'categoryScreen:deleteCategoryFailed',
+            });
         }
     };
 
@@ -54,12 +61,13 @@ export const CategoryView: FC<ICategoryPros> = function CategoryView(_props) {
 
     return (
         <CategoryFields
+            isCreate={false}
+            isEdit={false}
             form={form}
             isView={true}
-            isEdit={false}
             edit={() => {
-                navigation.getParent()?.navigate('expenses', {
-                    screen: 'edit',
+                navigation.getParent()?.navigate(OverviewPath.Expenses, {
+                    screen: CategoriesPath.CategoryEdit,
                     params: {
                         id: form.categoryId,
                         name: form.categoryName,

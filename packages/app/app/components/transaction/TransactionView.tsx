@@ -10,7 +10,9 @@ import { useEditView } from '@/hooks/useEditView';
 import { translate } from '@/i18n/translate';
 import AlertService from '@/services/AlertService';
 import { GeneralApiProblemKind } from '@/services/api/apiProblem';
+import ToastService from '@/services/ToastService';
 import { TransactionService } from '@/services/TransactionService';
+import { OverviewPath } from '@/types/OverviewPath';
 
 interface ITransactionPros {
     data: ITransaction | undefined;
@@ -28,12 +30,18 @@ export const TransactionView: FC<ITransactionPros> = function TransactionView(_p
 
         const response = await transactionService.doDeleteTransaction(form.transactionId);
         if (response.kind === GeneralApiProblemKind.Ok) {
+            ToastService.info({
+                title: 'common:info',
+                message: 'transactionScreen:deleteSuccess',
+            });
             await invalidateQuery([['transactions']]);
             await invalidateQuery([['transaction', form.transactionId]]);
-            AlertService.info(translate('common:info'), translate('transactionScreen:deleteSuccess'));
-            navigation.goBack();
+            navigation.getParent()?.navigate(OverviewPath.Dashboard);
         } else {
-            AlertService.error(translate('common:error'), translate('transactionScreen:deleteFailed'));
+            ToastService.error({
+                title: 'common:error',
+                message: 'transactionScreen:deleteFailed',
+            });
         }
     };
 
@@ -49,7 +57,7 @@ export const TransactionView: FC<ITransactionPros> = function TransactionView(_p
         return <EmptyState style={$containerStyleOverride} buttonOnPress={() => navigation.goBack()} />;
     }
 
-    return <TransactionFields form={form} isView={true} isEdit={false} onDelete={onDelete} />;
+    return <TransactionFields form={form} isCreate={false} isView={true} isEdit={false} onDelete={onDelete} />;
 };
 const $containerStyleOverride: StyleProp<ViewStyle> = {
     margin: 'auto',

@@ -1,6 +1,6 @@
 import { ViewStyle } from 'react-native';
+import { CategoryIconType } from 'tenpercent/shared';
 
-import { CategoryIconIcon } from '@/components/CategoryIcon';
 import ItemBox, { ItemBoxProps, ItemType } from '@/components/dashboard/Box/ItemBox';
 import { useAppTheme } from '@/theme/context';
 import { ThemedStyle } from '@/theme/types';
@@ -10,14 +10,15 @@ interface CategoryBoxProps
         ItemBoxProps,
         'type' | 'onDragStart' | 'onDragEnd' | 'isDraggable' | 'isDragging' | 'setIsDragging' | 'droppableId'
     > {
-    icon: CategoryIconIcon;
+    icon: CategoryIconType;
 }
 
-export function CategoryBox({ title, value, icon, id, isDroppable, onDrop, BoxProps }: CategoryBoxProps) {
+export function CategoryBox({ title, value, icon, id, isDroppable, onDrop, BoxProps, onTap }: CategoryBoxProps) {
     const droppableId = `${id}-${ItemType.Category}`;
     const { themed } = useAppTheme();
     return (
         <ItemBox
+            onTap={onTap}
             type={ItemType.Category}
             id={id}
             droppableId={droppableId}

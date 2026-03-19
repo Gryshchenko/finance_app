@@ -7,6 +7,7 @@ import { TransactionCreate } from '@/components/transaction/TransactionCreate';
 import { translate } from '@/i18n/translate';
 import { OverviewTabParamList } from '@/navigators/OverviewNavigator';
 import { GenericListScreen } from '@/screens/GenericListScreen';
+import { OverviewPath } from '@/types/OverviewPath';
 import { TransactionPath } from '@/types/TransactionPath';
 
 type Props = NativeStackScreenProps<OverviewTabParamList, TransactionPath.TransactionCreate>;
@@ -24,7 +25,7 @@ export const TransactionCreateScreen = function TransactionsScreen(_props: Props
             props={{
                 data,
             }}
-            onBack={() => navigation.goBack()}
+            onBack={() => navigation.getParent()?.navigate(OverviewPath.Dashboard)}
             RenderComponent={TransactionCreate}
         />
     );

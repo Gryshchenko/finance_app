@@ -10,6 +10,7 @@ import { OverviewTabParamList } from '@/navigators/OverviewNavigator';
 import { GenericListScreen } from '@/screens/GenericListScreen';
 import { GeneralApiProblemKind } from '@/services/api/apiProblem';
 import { IncomeService } from '@/services/IncomeService';
+import { OverviewPath } from '@/types/OverviewPath';
 import { ValidationError } from '@/utils/errors/ValidationError';
 import { Logger } from '@/utils/logger/Logger';
 
@@ -48,11 +49,7 @@ export const IncomeViewScreen = function IncomeViewScreen(_props: Props) {
             name={data?.incomeName ?? ''}
             isError={isError}
             isPending={isPending}
-            onBack={() =>
-                navigation.getParent()?.navigate('incomes', {
-                    screen: 'accounts',
-                })
-            }
+            onBack={() => navigation.getParent()?.navigate(OverviewPath.Dashboard)}
             props={{
                 data,
             }}

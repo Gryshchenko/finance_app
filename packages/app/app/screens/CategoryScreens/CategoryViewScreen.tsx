@@ -10,6 +10,7 @@ import { OverviewTabParamList } from '@/navigators/OverviewNavigator';
 import { GenericListScreen } from '@/screens/GenericListScreen';
 import { GeneralApiProblemKind } from '@/services/api/apiProblem';
 import { CategoryService } from '@/services/CategoryService';
+import { OverviewPath } from '@/types/OverviewPath';
 import { ValidationError } from '@/utils/errors/ValidationError';
 import { Logger } from '@/utils/logger/Logger';
 
@@ -50,11 +51,7 @@ export const CategoryViewScreen = function CategoryViewScreen(_props: Props) {
             name={data?.categoryName ?? ''}
             isError={isError}
             isPending={isPending}
-            onBack={() =>
-                navigation.getParent()?.navigate('expenses', {
-                    screen: 'categories',
-                })
-            }
+            onBack={() => navigation.getParent()?.navigate(OverviewPath.Dashboard)}
             props={{
                 data,
             }}

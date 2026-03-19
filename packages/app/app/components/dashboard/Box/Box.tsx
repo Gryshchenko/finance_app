@@ -27,6 +27,7 @@ export interface IBoxProps<T = unknown> extends IBoxDragAndDrop<T> {
     droppableId: string;
     children: ReactNode;
     type: ItemType;
+    onTap?: () => void;
     styles?: {
         container?: ViewStyle;
     };
@@ -43,12 +44,15 @@ export function Box(props: IBoxProps) {
         onDragEnd,
         onDrop,
         onDragging,
+        onTap,
         type,
         styles,
         droppableId,
         BoxDraggableItemProps = {},
     } = props;
     const viewRef = useRef<View>(null);
+    const tapTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+    const wasDragged = useRef(false);
     const { themed } = useAppTheme();
     const {
         initiateItemDrag,
@@ -95,13 +99,36 @@ export function Box(props: IBoxProps) {
                 <Draggable
                     collisionAlgorithm={'intersect'}
                     onDragStart={(data) => {
+                        wasDragged.current = false;
+                        tapTimerRef.current = setTimeout(() => {
+                            if (!wasDragged.current) {
+                                onTap?.();
+                            }
+                            tapTimerRef.current = null;
+                        }, 300);
                         onDragStart?.(data);
                     }}
                     onDragEnd={(data) => {
+                        if (tapTimerRef.current) {
+                            clearTimeout(tapTimerRef.current);
+                            tapTimerRef.current = null;
+                        }
+                        if (!wasDragged.current) {
+                            onTap?.();
+                        }
+                        wasDragged.current = false;
                         onDragEnd?.(data);
                         setInitialDragPosition(initialOffset.x, initialOffset.y - DASH_BOARD_BOX_SIZE);
                     }}
                     onDragging={(data) => {
+                        if (!wasDragged.current) {
+                            wasDragged.current = true;
+                            if (tapTimerRef.current) {
+                                clearTimeout(tapTimerRef.current);
+                                tapTimerRef.current = null;
+                            }
+                        }
+
                         setDraggedElementId(data.itemData.id);
                         initialOffset.x = data.x;
                         initialOffset.y = data.y;
