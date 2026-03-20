@@ -49,7 +49,13 @@ export default class CategoryDataAccess extends LoggerBase implements ICategoryD
                         ]);
                 })
                 .where('categories.userId', userId)
-                .groupBy('categories.categoryId', 'categories.userId', 'categories.categoryName', 'categories.currencyId', 'categories.iconId');
+                .groupBy(
+                    'categories.categoryId',
+                    'categories.userId',
+                    'categories.categoryName',
+                    'categories.currencyId',
+                    'categories.iconId',
+                );
             if (data) {
                 this._logger.info(`Fetched ${data.length} categories retrieved successfully for user: ${userId}`);
             } else {

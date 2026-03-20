@@ -1,24 +1,24 @@
 import { forwardRef, useState } from 'react';
-import { SectionList, TextStyle, View, ViewStyle } from 'react-native';
+import { Pressable, SectionList, TextStyle, View, ViewStyle } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
-import { IPagination } from 'tenpercent/shared';
+import { AccountIcon, IPagination } from 'tenpercent/shared';
 import { ITransactionListItem } from 'tenpercent/shared';
 import { TransactionType } from 'tenpercent/shared';
 import { Utils } from 'tenpercent/shared';
 import { DateFormat, Time } from 'tenpercent/shared';
 
+import { CategoryIcon } from '@/components/CategoryIcon';
 import { EmptyState } from '@/components/EmptyState';
+import { Icon } from '@/components/Icon';
+import SectionListWithKeyboardAwareScrollView, { SectionType } from '@/components/SectionListWithKeyboardAwareScrollView';
 import { Text } from '@/components/Text';
 import { useCurrency } from '@/context/CurrencyContext';
 import { TxKeyPath } from '@/i18n';
 import { translate } from '@/i18n/translate';
-import SectionListWithKeyboardAwareScrollView, { SectionType } from '@/components/SectionListWithKeyboardAwareScrollView';
 import { useAppTheme } from '@/theme/context';
 import { ThemedStyle } from '@/theme/types';
 import { CurrencyUtils } from '@/utils/CurrencyUtils';
 import { Logger } from '@/utils/logger/Logger';
-
-import { ListItem } from '../ListItem';
 
 export type fetchTransactionType = ({
     cursor,
@@ -47,31 +47,47 @@ const getTypeKey = (typeId: TransactionType): string => {
     }
 };
 
-const getFromName = (transaction: ITransactionListItem): string => {
+const getTransactionLabel = (transaction: ITransactionListItem): string => {
     switch (transaction.transactionTypeId) {
         case TransactionType.Expense:
-            return transaction.accountName ?? '-';
+            return transaction.categoryName ?? transaction.description ?? '-';
         case TransactionType.Income:
-            return transaction.incomeName ?? '-';
+            return transaction.incomeName ?? transaction.description ?? '-';
         case TransactionType.Transafer:
-            return transaction.accountName ?? '-';
+            return transaction.accountName ?? transaction.description ?? '-';
         default:
-            return '-';
+            return transaction.description ?? '-';
     }
 };
 
-const getToName = (transaction: ITransactionListItem): string => {
-    switch (transaction.transactionTypeId) {
-        case TransactionType.Expense:
-            return transaction.categoryName ?? '-';
-        case TransactionType.Income:
-            return transaction.accountName ?? '-';
-        case TransactionType.Transafer:
-            return transaction.targetAccountName ?? '-';
-        default:
-            return '-';
+const getSubtitleCategory = (transaction: ITransactionListItem): string => {
+    return translate(`common:${getTypeKey(transaction.transactionTypeId)}` as TxKeyPath);
+};
+
+const getFormattedTime = (createdAt: string): string => {
+    try {
+        return Time.formatDate(createdAt, DateFormat.TIME_ONLY);
+    } catch {
+        return '';
     }
 };
+
+const isIncome = (typeId: TransactionType): boolean => typeId === TransactionType.Income;
+
+const formatAmount = (amount: number, typeId: TransactionType, currencySymbol: string): string => {
+    const formatted = CurrencyUtils.formatWithDelimiter(Math.abs(amount), currencySymbol);
+    if (isIncome(typeId)) return `+${formatted}`;
+    return `-${formatted}`;
+};
+
+const formatSectionDate = (dateStr: string): string => {
+    try {
+        return Time.formatDate(dateStr, DateFormat.SHORT_WITH_TIME).split(' ').slice(0, 2).join(' ');
+    } catch {
+        return dateStr;
+    }
+};
+
 function mergeSections<T>(a: SectionType<T>[], b: SectionType<T>[]): SectionType<T>[] {
     const map = new Map<string, SectionType<T>>();
 
@@ -93,6 +109,7 @@ function mergeSections<T>(a: SectionType<T>[], b: SectionType<T>[]): SectionType
 
     return Array.from(map.values());
 }
+
 const groupByDate = (transactions: ITransactionListItem[]): SectionType<ITransactionListItem>[] => {
     const groupedByDate = transactions?.reduce((acc: Record<string, unknown[]>, tx) => {
         const date = Time.formatDate(tx.createdAt, DateFormat.YYYY_MM_DD);
@@ -116,6 +133,7 @@ const TransactionSectionList = forwardRef<SectionList<ITransactionListItem>, Pro
         const { getCurrencySymbol } = useCurrency();
         const [cursor, setCursor] = useState<number | null>(defaultCursor);
         const [sections, setSections] = useState<SectionType<ITransactionListItem>[]>(groupByDate(transactions));
+
         const loadMore = async () => {
             if (Utils.isNull(cursor)) return;
             if (Utils.isNull(fetch)) return;
@@ -126,7 +144,6 @@ const TransactionSectionList = forwardRef<SectionList<ITransactionListItem>, Pro
                 return;
             }
             const newSections = groupByDate(response.data);
-
             setSections(mergeSections(sections, newSections));
             setCursor(response.cursor);
         };
@@ -144,32 +161,52 @@ const TransactionSectionList = forwardRef<SectionList<ITransactionListItem>, Pro
                 onPressHandler(transactionId, transactionName);
             }
         };
+
         const renderItem = ({ item: transaction }: { item: ITransactionListItem }) => {
             if (!transaction) return null;
-            const { transactionId, amount, currencyId } = transaction;
-            const name = translate(`common:${getTypeKey(transaction.transactionTypeId)}` as TxKeyPath);
+            const { transactionId, amount, currencyId, transactionTypeId, createdAt } = transaction;
+            const label = getTransactionLabel(transaction);
+            const category = getSubtitleCategory(transaction);
+            const time = getFormattedTime(createdAt);
+            const incomeType = isIncome(transactionTypeId);
+            const amountText = formatAmount(amount, transactionTypeId, getCurrencySymbol(currencyId));
+
             return (
-                <ListItem
+                <Pressable
                     key={transactionId}
                     disabled={!Utils.isNumber(transactionId as unknown as string)}
-                    bottomSeparator
-                    onPress={() => onPress(transactionId, name)}
-                    RightComponent={
-                        <Text style={themed([$center])}>
-                            {CurrencyUtils.formatWithDelimiter(amount, getCurrencySymbol(currencyId))}
-                        </Text>
-                    }
+                    onPress={() => onPress(transactionId, label)}
+                    style={themed([$card])}
                 >
-                    <View style={themed([$leftContainer])}>
-                        <Text style={themed([$typeLabel])}>{name}</Text>
-                        <Text style={themed([$flowText])} numberOfLines={1} ellipsizeMode="tail">
-                            {`#${transaction.transactionId} ${translate('transactionScreen:from' as TxKeyPath)}: ${getFromName(transaction)}\n${translate(
-                                'transactionScreen:to' as TxKeyPath,
-                            )}: ${getToName(transaction)}`}
-                        </Text>
-                        <Text style={themed([$description])}>{transaction.description?.slice(0, 15) ?? ''}</Text>
+                    <View style={themed([$cardContent])}>
+                        {/* Icon circle */}
+                        <View style={themed([$iconCircle, incomeType && $iconCircleIncome])}>
+                            <CategoryIcon name={AccountIcon.Wallet} size={20} color={incomeType ? '#27ae60' : '#1a1a1a'} />
+                        </View>
+
+                        {/* Name + subtitle */}
+                        <View style={$labelContainer}>
+                            <Text style={themed([$transactionName])} numberOfLines={1} ellipsizeMode="tail">
+                                {label}
+                            </Text>
+                            <View style={$subtitleRow}>
+                                <Text style={themed([$subtitleText])}>{category}</Text>
+                                {time ? (
+                                    <>
+                                        <View style={themed([$dot])} />
+                                        <Text style={themed([$subtitleText])}>{time}</Text>
+                                    </>
+                                ) : null}
+                            </View>
+                        </View>
+
+                        {/* Amount + chevron */}
+                        <View style={$amountContainer}>
+                            <Text style={themed([$amountText, incomeType && $amountIncome])}>{amountText}</Text>
+                            <Icon icon={'caretRight'} size={16} color="#888888" />
+                        </View>
                     </View>
-                </ListItem>
+                </Pressable>
             );
         };
 
@@ -183,52 +220,127 @@ const TransactionSectionList = forwardRef<SectionList<ITransactionListItem>, Pro
                 stickySectionHeadersEnabled={true}
                 onEndReachedThreshold={0.5}
                 renderSectionHeader={({ section }) => {
-                    return <Text style={themed([$header])}>{section.name}</Text>;
+                    const dateLabel = formatSectionDate(`${section.name}T00:00:00`);
+                    return (
+                        <View style={themed([$sectionHeader])}>
+                            <View style={themed([$sectionLine])} />
+                            <Text style={themed([$sectionHeaderText])}>{dateLabel}</Text>
+                            <View style={themed([$sectionLine])} />
+                        </View>
+                    );
                 }}
             />
         );
     },
 );
 
-export default TransactionSectionList;
+TransactionSectionList.displayName = 'TransactionSectionList';
 
-export const $center: ThemedStyle<ViewStyle> = () => ({
-    alignContent: 'center',
-    alignItems: 'center',
-    display: 'flex',
-    height: '100%',
-});
+export default TransactionSectionList;
 
 export const $containerStyleOverride: ThemedStyle<ViewStyle> = () => ({
     margin: 'auto',
 });
 
-export const $description: ThemedStyle<TextStyle> = (theme) => ({
-    fontSize: 13,
-    color: theme.colors.textDim,
-});
+/* ── Section header: centered date with horizontal lines ── */
 
-export const $flowText: ThemedStyle<TextStyle> = () => ({
-    fontSize: 13,
-    lineHeight: 18,
-});
-
-export const $header: ThemedStyle<ViewStyle> = ({ colors }) => ({
+const $sectionHeader: ThemedStyle<ViewStyle> = ({ colors }) => ({
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 8,
+    paddingTop: 16,
+    paddingBottom: 8,
     backgroundColor: colors.background,
-    display: 'flex',
+});
+
+const $sectionLine: ThemedStyle<ViewStyle> = ({ colors }) => ({
+    flex: 1,
+    height: 1,
+    backgroundColor: colors.separator,
+});
+
+const $sectionHeaderText: ThemedStyle<TextStyle> = ({ colors }) => ({
+    fontSize: 11,
+    fontWeight: '500',
+    color: colors.textDim,
+    textTransform: 'uppercase',
+    letterSpacing: 2,
+});
+
+/* ── Transaction card ── */
+
+const $card: ThemedStyle<ViewStyle> = ({ colors }) => ({
+    backgroundColor: '#ffffff',
+    borderWidth: 1,
+    borderColor: colors.separator,
+    padding: 16,
+    marginBottom: 8,
+});
+
+const $cardContent: ViewStyle = {
+    flexDirection: 'row',
+    alignItems: 'center',
+};
+
+const $iconCircle: ThemedStyle<ViewStyle> = ({ colors }) => ({
+    width: 40,
+    height: 40,
+    borderRadius: 20,
+    backgroundColor: colors.background,
+    alignItems: 'center',
     justifyContent: 'center',
-    paddingBottom: 10,
-    paddingTop: 10,
+    marginRight: 12,
 });
 
-export const $leftContainer: ThemedStyle<ViewStyle> = () => ({
+const $iconCircleIncome: ThemedStyle<ViewStyle> = () => ({
+    backgroundColor: 'rgba(39, 174, 96, 0.1)',
+});
+
+const $labelContainer: ViewStyle = {
+    flex: 1,
     flexDirection: 'column',
+};
+
+const $transactionName: ThemedStyle<TextStyle> = ({ colors }) => ({
+    fontSize: 15,
+    fontWeight: '500',
+    color: colors.text,
 });
 
-export const $typeLabel: ThemedStyle<TextStyle> = (theme) => ({
-    fontSize: 14,
-    fontWeight: '600',
-    marginBottom: 2,
-    color: theme.colors.text,
-    textTransform: 'capitalize',
+const $subtitleRow: ViewStyle = {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 6,
+    marginTop: 2,
+};
+
+const $subtitleText: ThemedStyle<TextStyle> = ({ colors }) => ({
+    fontSize: 11,
+    color: colors.textDim,
+    textTransform: 'uppercase',
+    letterSpacing: 1,
+});
+
+const $dot: ThemedStyle<ViewStyle> = ({ colors }) => ({
+    width: 3,
+    height: 3,
+    borderRadius: 1.5,
+    backgroundColor: colors.textDim,
+});
+
+const $amountContainer: ViewStyle = {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 8,
+    marginLeft: 8,
+};
+
+const $amountText: ThemedStyle<TextStyle> = ({ colors }) => ({
+    fontSize: 16,
+    fontWeight: '500',
+    color: colors.text,
+});
+
+const $amountIncome: ThemedStyle<TextStyle> = () => ({
+    color: '#27ae60',
 });

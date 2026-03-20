@@ -1,5 +1,6 @@
 import { useNavigation } from '@react-navigation/native';
 import { NativeStackScreenProps } from '@react-navigation/native-stack';
+import { ITransaction, TransactionType } from 'tenpercent/shared';
 
 import { TransactionCreate } from '@/components/transaction/TransactionCreate';
 import { translate } from '@/i18n/translate';
@@ -10,16 +11,32 @@ import { TransactionPath } from '@/types/TransactionPath';
 
 type Props = NativeStackScreenProps<OverviewTabParamList, TransactionPath.TransactionCreate>;
 
+const getScreenTitle = (typeId?: number): string => {
+    switch (typeId) {
+        case TransactionType.Expense:
+            return `${translate('common:create')} ${translate('common:expense')}`;
+        case TransactionType.Income:
+            return `${translate('common:create')} ${translate('common:income')}`;
+        case TransactionType.Transafer:
+            return `${translate('common:create')} ${translate('common:transfer')}`;
+        default:
+            return translate('common:create');
+    }
+};
+
 export const HistoryTransactionCreateScreen = function TransactionCreateScreen(_props: Props) {
     const navigation = useNavigation();
+    const params = _props?.route?.params as { payload?: Partial<ITransaction> } | undefined;
+    const payload = params?.payload;
+
     return (
         <GenericListScreen
-            name={translate('common:new')}
+            name={getScreenTitle(payload?.transactionTypeId)}
             isError={false}
             isPending={false}
             onBack={() => navigation.getParent()?.navigate(OverviewPath.Dashboard)}
             props={{
-                data: undefined,
+                data: payload,
             }}
             RenderComponent={TransactionCreate}
         />

@@ -3,10 +3,12 @@ import { StyleProp, TextStyle, View, ViewStyle } from 'react-native';
 import { IAccount } from 'tenpercent/shared';
 import { ICurrency } from 'tenpercent/shared';
 
+import { CurrencyField } from '@/components/CurrencyField';
 import { GeneralDetailView } from '@/components/GeneralDetailView';
 import { IconField } from '@/components/IconField';
 import { TextField } from '@/components/TextField';
 import { CurrencyDropdown } from '@/components/Toggle/CurrencyDropdown';
+import { useCurrency } from '@/context/CurrencyContext';
 import { TxKeyPath } from '@/i18n';
 import { useAppTheme } from '@/theme/context';
 import { ThemedStyle } from '@/theme/types';
@@ -27,6 +29,7 @@ interface IProps {
 export const AccountFields: FC<IProps> = function AccountFields(_props) {
     const { isView, form, handleChange, handleSave, edit, cancel, onDelete, errors, isEdit, isCreate } = _props;
     const { themed } = useAppTheme();
+    const { getCurrencySymbol } = useCurrency();
     return (
         <GeneralDetailView
             isCreate={isCreate}
@@ -48,6 +51,7 @@ export const AccountFields: FC<IProps> = function AccountFields(_props) {
                     }}
                 />
                 <TextField
+                    focusable={true}
                     inputWrapperStyle={themed($inputWrapperStyle)}
                     labelTx={'common:name'}
                     value={String(form.accountName)}
@@ -65,13 +69,14 @@ export const AccountFields: FC<IProps> = function AccountFields(_props) {
                         }
                     }}
                 />
-                <TextField
+                <CurrencyField
                     labelTx={'common:amount'}
                     value={String(form.amount)}
                     helperTx={errors?.amount}
                     status={errors?.amount ? 'error' : undefined}
                     editable={!isView}
-                    onChangeText={(v) => {
+                    currency={getCurrencySymbol(form?.currencyId as number)}
+                    onChangeCleaned={(v) => {
                         if (handleChange) {
                             handleChange('amount', v);
                         }

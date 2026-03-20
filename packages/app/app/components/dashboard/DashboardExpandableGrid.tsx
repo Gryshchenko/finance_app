@@ -30,36 +30,22 @@ export default function DashboardExpandableGrid({ rowHeight, rows, children, id 
     const height = useSharedValue(MIN_HEIGHT);
 
     const openGrid = useCallback(() => {
-        if (height.value !== MIN_HEIGHT) return;
-        height.value = withSpring(
-            MAX_HEIGHT,
-            {
-                damping: 15,
-                stiffness: 150,
-            },
-            (finished) => {
-                if (finished) {
-                    // Optional cleanup logic here
-                }
-            },
-        );
-    }, [MAX_HEIGHT, MIN_HEIGHT, height]);
+        if (isOpened.current) return;
+        isOpened.current = true;
+        height.value = withSpring(MAX_HEIGHT, {
+            damping: 15,
+            stiffness: 150,
+        });
+    }, [MAX_HEIGHT, height]);
 
     const closeGrid = useCallback(() => {
-        if (height.value !== MAX_HEIGHT) return;
-        height.value = withSpring(
-            MIN_HEIGHT,
-            {
-                damping: 15,
-                stiffness: 150,
-            },
-            (finished) => {
-                if (finished) {
-                    // Optional cleanup logic here
-                }
-            },
-        );
-    }, [MAX_HEIGHT, MIN_HEIGHT, height]);
+        if (!isOpened.current) return;
+        isOpened.current = false;
+        height.value = withSpring(MIN_HEIGHT, {
+            damping: 15,
+            stiffness: 150,
+        });
+    }, [MIN_HEIGHT, height]);
 
     useEffect(() => {
         if (activeZones === `${id}-view`) {
@@ -71,7 +57,7 @@ export default function DashboardExpandableGrid({ rowHeight, rows, children, id 
 
     useEffect(() => {
         const measureZones = () => {
-            viewRef.current?.measure((x, y, width, heightElement) => {
+            viewRef.current?.measureInWindow((x, y, width, heightElement) => {
                 addZone({
                     id: `${id}-view`,
                     measure: {
@@ -82,14 +68,14 @@ export default function DashboardExpandableGrid({ rowHeight, rows, children, id 
                     },
                 });
             });
-            handleRef.current?.measure((x, y) => {
+            handleRef.current?.measureInWindow((x, y, width, heightElement) => {
                 addZone({
                     id: `${id}-handle`,
                     measure: {
                         pageX: x,
                         pageY: y,
-                        width: 100,
-                        height: 50,
+                        width: width || 100,
+                        height: heightElement || 50,
                     },
                 });
             });
@@ -97,17 +83,17 @@ export default function DashboardExpandableGrid({ rowHeight, rows, children, id 
 
         // let layout finish
         setTimeout(measureZones, 0);
-        return () => {};
-    }, []);
+    }, [addZone, id]);
 
     const gesture = Gesture.Pan()
         .onUpdate((e) => {
             if (!showHandle) return;
-            if (isOpened && e.translationY < 0) return;
+            // When opened, only allow swipe up (negative translationY) to close
+            if (isOpened.current && e.translationY > 0) return;
+            // When closed, only allow swipe down (positive translationY) to open
+            if (!isOpened.current && e.translationY < 0) return;
 
-            if (!isOpened && e.translationY > 0) return;
-
-            const newHeight = MIN_HEIGHT - e.translationY;
+            const newHeight = (isOpened.current ? MAX_HEIGHT : MIN_HEIGHT) + e.translationY;
 
             height.value = clamp(newHeight, MIN_HEIGHT, MAX_HEIGHT);
         })
@@ -115,7 +101,7 @@ export default function DashboardExpandableGrid({ rowHeight, rows, children, id 
             if (!showHandle) return;
             const mid = (MIN_HEIGHT + MAX_HEIGHT) / 2;
 
-            if (height.value > mid || e.velocityY < -300) {
+            if (height.value > mid || e.velocityY > 300) {
                 scheduleOnRN(openGrid);
             } else {
                 scheduleOnRN(closeGrid);

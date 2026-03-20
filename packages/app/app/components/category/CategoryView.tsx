@@ -66,7 +66,7 @@ export const CategoryView: FC<ICategoryPros> = function CategoryView(_props) {
             form={form}
             isView={true}
             edit={() => {
-                navigation.getParent()?.navigate(OverviewPath.Expenses, {
+                navigation.getParent()?.navigate(OverviewPath.Categories, {
                     screen: CategoriesPath.CategoryEdit,
                     params: {
                         id: form.categoryId,

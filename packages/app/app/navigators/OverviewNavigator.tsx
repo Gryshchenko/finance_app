@@ -1,11 +1,9 @@
 import { TextStyle, ViewStyle } from 'react-native';
 import { BottomTabScreenProps, createBottomTabNavigator } from '@react-navigation/bottom-tabs';
 import { CompositeScreenProps, NavigatorScreenParams, ParamListBase } from '@react-navigation/native';
-import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 import { Icon } from '@/components/Icon';
 import { CurrencyProvider } from '@/context/CurrencyContext';
-import { translate } from '@/i18n/translate';
 import { AccountsPath, AccountsStackNavigator, AccountsStackParamList } from '@/navigators/AccountsStackNavigator';
 import { CategoriesPath, CategoriesStackNavigator, CategoriesStackParamList } from '@/navigators/CategoriesStackNavigator';
 import { DashboardPath, DashboardStackNavigator } from '@/navigators/DashboardStackNavigator';
@@ -23,8 +21,8 @@ export type OverviewTabParamList = {
     dashboard: NavigatorScreenParams<IncomesStackParamList> | {};
     incomes: NavigatorScreenParams<IncomesStackParamList> | {};
     balances: NavigatorScreenParams<AccountsStackParamList> | {};
-    expenses: NavigatorScreenParams<CategoriesStackParamList> | {};
-    history: NavigatorScreenParams<HistoryStackParamList> | {};
+    categories: NavigatorScreenParams<CategoriesStackParamList> | {};
+    transactions: NavigatorScreenParams<HistoryStackParamList> | {};
     settings: undefined;
     demo: undefined;
 } & ParamListBase;
@@ -41,6 +39,19 @@ export type MainTabScreenProps<T extends keyof OverviewTabParamList> = Composite
 
 const Tab = createBottomTabNavigator<OverviewTabParamList>();
 
+// /**
+//  * Center "Add" tab button — black square with white "+" icon, matching code.html design.
+//  */
+// function AddTabButton({ onPress }: { onPress?: () => void }) {
+//     const { themed } = useAppTheme();
+//
+//     return (
+//         <Pressable onPress={onPress} style={themed([$addButton])}>
+//             <Icon icon="add" size={24} color="#ffffff" />
+//         </Pressable>
+//     );
+// }
+
 /**
  * This is the main navigator for the demo screens with a bottom tab bar.
  * Each tab is a stack navigator with its own set of screens.
@@ -49,7 +60,6 @@ const Tab = createBottomTabNavigator<OverviewTabParamList>();
  * @returns {JSX.Element} The rendered `DemoNavigator`.
  */
 export function OverviewNavigator() {
-    const { bottom } = useSafeAreaInsets();
     const {
         themed,
         theme: { colors },
@@ -61,11 +71,12 @@ export function OverviewNavigator() {
                 screenOptions={{
                     headerShown: false,
                     tabBarHideOnKeyboard: true,
-                    tabBarStyle: themed([$tabBar, { height: bottom + 70 }]),
+                    tabBarStyle: { display: 'none' },
                     tabBarActiveTintColor: colors.text,
-                    tabBarInactiveTintColor: colors.text,
+                    tabBarInactiveTintColor: colors.textDim,
                     tabBarLabelStyle: themed($tabBarLabel),
                     tabBarItemStyle: themed($tabBarItem),
+                    tabBarShowLabel: false,
                 }}
             >
                 <Tab.Screen
@@ -77,11 +88,38 @@ export function OverviewNavigator() {
                             navigation.navigate(OverviewPath.Dashboard, { screen: DashboardPath.Overview });
                         },
                     })}
-                    options={{
-                        tabBarIcon: ({ focused }) => (
-                            <Icon icon="components" color={focused ? colors.tint : colors.tintInactive} size={30} />
-                        ),
-                    }}
+                />
+
+                <Tab.Screen
+                    name="transactions"
+                    component={HistoryStackNavigator}
+                    listeners={({ navigation }) => ({
+                        tabPress: (event) => {
+                            event.preventDefault();
+                            navigation.navigate(OverviewPath.Transactions, { screen: TransactionPath.Transactions });
+                        },
+                    })}
+                />
+
+                <Tab.Screen
+                    name="balances"
+                    component={AccountsStackNavigator}
+                    listeners={({ navigation }) => ({
+                        tabPress: (event) => {
+                            event.preventDefault();
+                            navigation.navigate(OverviewPath.Balances, { screen: AccountsPath.Accounts });
+                        },
+                    })}
+                />
+                <Tab.Screen
+                    name="categories"
+                    component={CategoriesStackNavigator}
+                    listeners={({ navigation }) => ({
+                        tabPress: (event) => {
+                            event.preventDefault();
+                            navigation.navigate(OverviewPath.Categories, { screen: CategoriesPath.Categories });
+                        },
+                    })}
                 />
                 <Tab.Screen
                     name="incomes"
@@ -92,86 +130,17 @@ export function OverviewNavigator() {
                             navigation.navigate(OverviewPath.Incomes, { screen: IncomePath.Incomes });
                         },
                     })}
-                    options={{
-                        tabBarLabel: translate('common:incomes'),
-                        tabBarIcon: ({ focused }) => (
-                            <Icon icon="components" color={focused ? colors.tint : colors.tintInactive} size={30} />
-                        ),
-                    }}
                 />
-                <Tab.Screen
-                    name="balances"
-                    component={AccountsStackNavigator}
-                    listeners={({ navigation }) => ({
-                        tabPress: (event) => {
-                            event.preventDefault();
-                            navigation.navigate(OverviewPath.Balances, { screen: AccountsPath.Accounts });
-                        },
-                    })}
-                    options={{
-                        tabBarLabel: translate('common:balance'),
-                        tabBarIcon: ({ focused }) => (
-                            <Icon icon="components" color={focused ? colors.tint : colors.tintInactive} size={30} />
-                        ),
-                    }}
-                />
-
-                <Tab.Screen
-                    name="expenses"
-                    component={CategoriesStackNavigator}
-                    listeners={({ navigation }) => ({
-                        tabPress: (event) => {
-                            event.preventDefault();
-                            navigation.navigate(OverviewPath.Expenses, { screen: CategoriesPath.Categories });
-                        },
-                    })}
-                    options={{
-                        tabBarLabel: translate('common:expenses'),
-                        tabBarIcon: ({ focused }) => (
-                            <Icon icon="community" color={focused ? colors.tint : colors.tintInactive} size={30} />
-                        ),
-                    }}
-                />
-
-                <Tab.Screen
-                    name="history"
-                    component={HistoryStackNavigator}
-                    listeners={({ navigation }) => ({
-                        tabPress: (event) => {
-                            event.preventDefault();
-                            navigation.navigate(OverviewPath.History, { screen: TransactionPath.Transactions });
-                        },
-                    })}
-                    options={{
-                        tabBarLabel: translate('common:history'),
-                        tabBarIcon: ({ focused }) => (
-                            <Icon icon="podcast" color={focused ? colors.tint : colors.tintInactive} size={30} />
-                        ),
-                    }}
-                />
-
-                <Tab.Screen
-                    name="settings"
-                    component={SettingsScreen}
-                    options={{
-                        tabBarLabel: translate('common:settings'),
-                        tabBarIcon: ({ focused }) => (
-                            <Icon icon="debug" color={focused ? colors.tint : colors.tintInactive} size={30} />
-                        ),
-                    }}
-                />
+                <Tab.Screen name="settings" component={SettingsScreen} />
             </Tab.Navigator>
         </CurrencyProvider>
     );
 }
 
-const $tabBar: ThemedStyle<ViewStyle> = ({ colors }) => ({
-    backgroundColor: colors.background,
-    borderTopColor: colors.transparent,
-});
-
-const $tabBarItem: ThemedStyle<ViewStyle> = ({ spacing }) => ({
-    paddingTop: spacing.md,
+const $tabBarItem: ThemedStyle<ViewStyle> = () => ({
+    paddingTop: 12,
+    alignItems: 'center',
+    justifyContent: 'center',
 });
 
 const $tabBarLabel: ThemedStyle<TextStyle> = ({ colors, typography }) => ({

@@ -28,7 +28,7 @@ export default memo(function DashboardCategory(props: IDashboardItem<ICategory>)
             return (
                 <CategoryBox
                     onTap={() => {
-                        navigation.getParent()?.navigate(OverviewPath.Expenses, {
+                        navigation.getParent()?.navigate(OverviewPath.Categories, {
                             screen: CategoriesPath.CategoryView,
                             params: {
                                 id: item.categoryId,
@@ -54,7 +54,7 @@ export default memo(function DashboardCategory(props: IDashboardItem<ICategory>)
                             return;
                         }
                         if (inWorkDropItem.type === ItemType.Account) {
-                            navigation.getParent()?.navigate(OverviewPath.Balances, {
+                            navigation.getParent()?.navigate(OverviewPath.Transactions, {
                                 screen: TransactionPath.TransactionCreate,
                                 params: {
                                     payload: {
@@ -77,7 +77,7 @@ export default memo(function DashboardCategory(props: IDashboardItem<ICategory>)
             return (
                 <AddBox
                     onPress={() => {
-                        navigation.getParent()?.navigate(OverviewPath.Expenses, {
+                        navigation.getParent()?.navigate(OverviewPath.Categories, {
                             screen: CategoriesPath.CategoriesCreate,
                         });
                     }}

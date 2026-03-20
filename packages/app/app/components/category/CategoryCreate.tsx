@@ -38,7 +38,7 @@ export const CategoryCreate: FC = function CategoryCreate(_props) {
             iconId: form.iconId ?? SpendIcon.ShoppingBag,
         });
         if (response.kind === GeneralApiProblemKind.Ok) {
-            navigation.getParent()?.navigate(OverviewPath.Expenses, {
+            navigation.getParent()?.navigate(OverviewPath.Categories, {
                 screen: 'categories',
             });
         } else {
@@ -65,7 +65,7 @@ export const CategoryCreate: FC = function CategoryCreate(_props) {
                 handleChange(key as keyof ICategory, value);
             }}
             cancel={() => {
-                navigation.getParent()?.navigate(OverviewPath.Expenses, {
+                navigation.getParent()?.navigate(OverviewPath.Categories, {
                     screen: CategoriesPath.CategoryView,
                     params: { id: form.categoryId, name: form.categoryName },
                 });

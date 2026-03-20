@@ -1,5 +1,5 @@
-import { useState } from 'react';
-import { Modal, Pressable, ScrollView, StyleProp, TextStyle, View, ViewStyle } from 'react-native';
+import { ScrollView, StyleProp, TextStyle, View, ViewStyle } from 'react-native';
+import { Pressable } from 'react-native';
 import {
     AccountIcon,
     CategoryIconType,
@@ -13,11 +13,11 @@ import {
 } from 'tenpercent/shared';
 
 import { CategoryIcon } from '@/components/CategoryIcon';
+import { FieldModal } from '@/components/FieldModal';
 import { iconRegistry } from '@/components/Icon';
 import { Text, TextProps } from '@/components/Text';
 import { TxKeyPath } from '@/i18n';
 import { translate } from '@/i18n/translate';
-import { colors } from '@/theme/colors';
 import { useAppTheme } from '@/theme/context';
 import { spacing } from '@/theme/spacing';
 import { ThemedStyle } from '@/theme/types';
@@ -65,113 +65,75 @@ export function IconField({
     helperTx,
     helperTxOptions,
 }: IconFieldProps) {
-    const [isOpen, setIsOpen] = useState(false);
     const valueInWork = iconRegistry[value as unknown as CategoryIconType] ? (value as CategoryIconType) : AccountIcon.Cash;
     const { themed, theme } = useAppTheme();
 
-    const handleSelect = (icon: CategoryIconType) => {
-        setIsOpen(false);
-        onChange?.(icon);
-    };
-
-    const $helperStyles = [$helperStyle, status === 'error' && { color: colors.error }, HelperTextProps?.style];
-
-    const $triggers = [
-        themed($trigger),
-        status === 'error' && { borderColor: colors.error },
-        status !== 'error' && (isOpen ? themed($triggerBorderFocusStyle) : themed($triggerBorderNoFocusStyle)),
-    ];
-
     return (
-        <View style={[themed($containerStyle), style]}>
-            {!!(label || labelTx) && (
-                <Text size={'xs'} style={themed($labelStyle)} preset="formLabel" tx={labelTx} text={label} />
-            )}
-            <Pressable disabled={disabled || status === 'disabled'} style={$triggers} onPress={() => setIsOpen(true)}>
-                {valueInWork ? (
+        <FieldModal
+            labelTx={labelTx}
+            label={label}
+            style={[themed($containerOverride), style]}
+            disabled={disabled}
+            status={status}
+            helper={helper}
+            helperTx={helperTx}
+            helperTxOptions={helperTxOptions}
+            HelperTextProps={HelperTextProps}
+            triggerStyle={themed($triggerOverride)}
+            renderTrigger={() =>
+                valueInWork ? (
                     <View style={themed($selectedIconWrapper)}>
                         <CategoryIcon name={valueInWork} size={28} color={theme.colors.text} />
                     </View>
                 ) : (
                     <Text style={themed($placeholderText)}>{translate('common:icon')}</Text>
-                )}
-            </Pressable>
-            {!!(helper || helperTx) && (
-                <Text
-                    preset="formHelper"
-                    text={helper}
-                    tx={helperTx}
-                    txOptions={helperTxOptions}
-                    {...HelperTextProps}
-                    style={themed($helperStyles)}
-                />
-            )}
-
-            <Modal visible={isOpen} transparent animationType="slide" onRequestClose={() => setIsOpen(false)}>
-                <Pressable style={themed($overlay)} onPress={() => setIsOpen(false)}>
-                    <View style={themed($dropdown)}>
-                        <Pressable onPress={(e) => e.stopPropagation()}>
-                            <ScrollView showsVerticalScrollIndicator={false} style={{ gap: spacing.md, marginTop: spacing.lg }}>
-                                {iconCategories.map((category) => (
-                                    <View key={category.name} style={themed($categorySection)}>
-                                        <Text style={themed($categoryTitle)}>{category.name}</Text>
-                                        <View style={themed($iconGrid)}>
-                                            {category.icons.map((icon) => (
-                                                <Pressable
-                                                    key={icon}
-                                                    style={[themed($iconItem), value === icon && themed($iconItemSelected)]}
-                                                    onPress={() => handleSelect(icon)}
-                                                >
-                                                    <CategoryIcon
-                                                        name={icon}
-                                                        size={28}
-                                                        color={
-                                                            value === icon ? theme.colors.palette.primary500 : theme.colors.text
-                                                        }
-                                                    />
-                                                </Pressable>
-                                            ))}
-                                        </View>
-                                    </View>
+                )
+            }
+            renderContent={(close) => (
+                <ScrollView showsVerticalScrollIndicator={false} style={{ gap: spacing.md, marginTop: spacing.lg }}>
+                    {iconCategories.map((category) => (
+                        <View key={category.name} style={themed($categorySection)}>
+                            <Text style={themed($categoryTitle)}>{category.name}</Text>
+                            <View style={themed($iconGrid)}>
+                                {category.icons.map((icon) => (
+                                    <Pressable
+                                        key={icon}
+                                        style={[themed($iconItem), value === icon && themed($iconItemSelected)]}
+                                        onPress={() => {
+                                            close();
+                                            onChange?.(icon);
+                                        }}
+                                    >
+                                        <CategoryIcon
+                                            name={icon}
+                                            size={28}
+                                            color={value === icon ? theme.colors.palette.primary500 : theme.colors.text}
+                                        />
+                                    </Pressable>
                                 ))}
-                            </ScrollView>
-                        </Pressable>
-                    </View>
-                </Pressable>
-            </Modal>
-        </View>
+                            </View>
+                        </View>
+                    ))}
+                </ScrollView>
+            )}
+        />
     );
 }
 
-const $containerStyle: ThemedStyle<ViewStyle> = () => ({
+/* ── IconField-specific style overrides ── */
+
+const $containerOverride: ThemedStyle<ViewStyle> = () => ({
     height: 80,
     width: '100%',
     alignItems: 'center',
     justifyContent: 'center',
 });
 
-const $trigger: ThemedStyle<ViewStyle> = ({ colors }) => ({
+const $triggerOverride: ThemedStyle<ViewStyle> = () => ({
     alignItems: 'center',
     justifyContent: 'center',
-    borderWidth: 1,
-    borderRadius: 0,
-    backgroundColor: colors.background,
-    overflow: 'hidden',
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 1 },
-    shadowOpacity: 0.05,
-    shadowRadius: 2,
-    elevation: 1,
     height: 54,
     width: 54,
-});
-
-const $triggerBorderFocusStyle: ThemedStyle<ViewStyle> = ({ colors }) => ({
-    borderColor: colors.palette.neutral900,
-});
-
-const $triggerBorderNoFocusStyle: ThemedStyle<ViewStyle> = ({ colors }) => ({
-    borderColor: colors.border,
 });
 
 const $selectedIconWrapper: ThemedStyle<ViewStyle> = () => ({
@@ -184,22 +146,6 @@ const $selectedIconWrapper: ThemedStyle<ViewStyle> = () => ({
 const $placeholderText: ThemedStyle<TextStyle> = ({ colors }) => ({
     color: colors.textDim,
     fontSize: 12,
-});
-
-const $dropdown: ThemedStyle<ViewStyle> = ({ colors, spacing, typography }) => ({
-    width: '100%',
-    maxHeight: '80%',
-    marginTop: 'auto',
-    backgroundColor: colors.background,
-    fontFamily: typography.primary.normal,
-    borderTopLeftRadius: spacing.sm,
-    borderTopRightRadius: spacing.sm,
-    overflow: 'hidden',
-    shadowColor: '#000',
-    shadowOpacity: 0.1,
-    shadowRadius: 8,
-    elevation: 5,
-    paddingBottom: spacing.lg,
 });
 
 const $categorySection: ThemedStyle<ViewStyle> = ({ spacing }) => ({
@@ -236,28 +182,4 @@ const $iconItemSelected: ThemedStyle<ViewStyle> = ({ colors }) => ({
     backgroundColor: colors.palette.primary100,
     borderWidth: 2,
     borderColor: colors.palette.primary500,
-});
-
-const $helperStyle: ThemedStyle<TextStyle> = ({ typography, spacing, colors }) => ({
-    fontFamily: typography.primary.normal,
-    color: colors.textDim,
-    marginTop: spacing.xxxs,
-    fontSize: 10,
-});
-
-const $labelStyle: ThemedStyle<TextStyle> = ({ spacing, typography }) => ({
-    fontSize: 10,
-    letterSpacing: 1.5,
-    fontWeight: '700',
-    marginBottom: spacing.lg,
-    marginLeft: 4,
-    textTransform: 'uppercase',
-    color: colors.textDim,
-    fontFamily: typography.fonts.funnelSans.semiBold,
-});
-
-const $overlay: ThemedStyle<ViewStyle> = () => ({
-    flex: 1,
-    justifyContent: 'flex-end',
-    backgroundColor: 'rgba(0, 0, 0, 0.5)',
 });

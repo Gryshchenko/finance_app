@@ -13,6 +13,7 @@ import {
 import { useScrollToTop } from '@react-navigation/native';
 import { SystemBars, SystemBarsProps, SystemBarStyle } from 'react-native-edge-to-edge';
 import { KeyboardAwareScrollView } from 'react-native-keyboard-controller';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 import { useAppTheme } from '@/theme/context';
 import { $styles } from '@/theme/styles';
@@ -246,6 +247,7 @@ export function Screen(props: ScreenProps) {
         systemBarStyle,
     } = props;
 
+    const { bottom } = useSafeAreaInsets();
     const $containerInsets = useSafeAreaInsetsStyle(safeAreaEdges);
 
     return (
@@ -260,6 +262,7 @@ export function Screen(props: ScreenProps) {
             >
                 {isNonScrolling(props.preset) ? <ScreenWithoutScrolling {...props} /> : <ScreenWithScrolling {...props} />}
             </KeyboardAvoidingView>
+            <View style={{ height: bottom }} />
         </View>
     );
 }

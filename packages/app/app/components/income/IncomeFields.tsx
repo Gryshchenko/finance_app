@@ -48,6 +48,7 @@ export const IncomeFields: FC<IProps> = function IncomeFields(_props) {
                     }}
                 />
                 <TextField
+                    focusable={true}
                     inputWrapperStyle={themed($inputWrapperStyle)}
                     labelTx={'incomeScreen:incomeName'}
                     value={String(form.incomeName)}

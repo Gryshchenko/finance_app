@@ -1,11 +1,12 @@
 import { useState } from 'react';
 import { Platform, Pressable, TextStyle, View, ViewStyle } from 'react-native';
-import DateTimePicker from '@react-native-community/datetimepicker';
+import DateTimePicker, { DateTimePickerEvent } from '@react-native-community/datetimepicker';
 import { DateFormat, Time } from 'tenpercent/shared';
 
+import { FieldModal } from '@/components/FieldModal';
 import { Text, TextProps } from '@/components/Text';
 import { TxKeyPath } from '@/i18n';
-import { colors } from '@/theme/colors';
+import { translate } from '@/i18n/translate';
 import { useAppTheme } from '@/theme/context';
 import { ThemedStyle } from '@/theme/types';
 
@@ -33,6 +34,12 @@ type IgniteDatePickerProps = {
     helperTxOptions?: TextProps['txOptions'];
 };
 
+const iosModeMap: Record<DatePickerType, IOSMode> = {
+    [DatePickerType.Date]: 'date',
+    [DatePickerType.Time]: 'time',
+    [DatePickerType.Datetime]: 'datetime',
+};
+
 export const IgniteDatePicker: React.FC<IgniteDatePickerProps> = ({
     value,
     onChange,
@@ -49,67 +56,127 @@ export const IgniteDatePicker: React.FC<IgniteDatePickerProps> = ({
     helperTxOptions,
 }) => {
     const { themed } = useAppTheme();
-    const [show, setShow] = useState(false);
+    const [tempDate, setTempDate] = useState<Date>(Time.toJSDate(value || Time.getISODateNow()));
 
-    const handleChange = (_event: any, selectedDate?: Date) => {
-        setShow(Platform.OS === 'ios');
-        if (selectedDate) onChange(selectedDate);
+    const currentDate = Time.toJSDate(value || Time.getISODateNow());
+    const formattedDate = value ? Time.formatDate(value, DateFormat.DATE_WITH_TIME_SECONDS) : placeholder;
+
+    // Android: native dialog, auto-closes on select
+    const handleAndroidChange = (_event: DateTimePickerEvent, selectedDate?: Date) => {
+        if (_event.type === 'set' && selectedDate) {
+            onChange(selectedDate);
+        }
     };
 
-    const $helperStyles = [$helperStyle, status === 'error' && { color: colors.error }, HelperTextProps?.style];
-    const formattedDate = value ? value : placeholder;
-
-    const iosModeMap: Record<DatePickerType, IOSMode> = {
-        [DatePickerType.Date]: 'date',
-        [DatePickerType.Time]: 'time',
-        [DatePickerType.Datetime]: 'datetime',
+    // iOS: spinner in modal, user picks then taps Done
+    const handleIOSChange = (_event: DateTimePickerEvent, selectedDate?: Date) => {
+        if (selectedDate) setTempDate(selectedDate);
     };
 
+    if (Platform.OS === 'android') {
+        return (
+            <FieldModal
+                labelTx={'common:date'}
+                style={style}
+                disabled={disabled}
+                status={status}
+                helper={helper}
+                helperTx={helperTx}
+                helperTxOptions={helperTxOptions}
+                HelperTextProps={HelperTextProps}
+                renderTrigger={() => <Text style={themed($inputText)}>{formattedDate}</Text>}
+                renderContent={(close) => (
+                    <DateTimePicker
+                        disabled={disabled}
+                        value={currentDate}
+                        mode={iosModeMap[mode]}
+                        display="default"
+                        onChange={(event, date) => {
+                            close();
+                            handleAndroidChange(event, date);
+                        }}
+                        minimumDate={minimumDate}
+                        maximumDate={maximumDate}
+                    />
+                )}
+            />
+        );
+    }
+
+    // iOS — spinner inside FieldModal with Done/Cancel header
     return (
-        <View style={style}>
-            <Text preset="formLabel" tx={'common:date'} />
-            <Pressable disabled={disabled} style={themed($input)} onPress={() => setShow(true)}>
-                <Text style={themed($text)}>{Time.formatDate(formattedDate, DateFormat.DATE_WITH_TIME_SECONDS)}</Text>
-            </Pressable>
-            {!!(helper || helperTx) && (
-                <Text
-                    preset="formHelper"
-                    text={helper}
-                    tx={helperTx}
-                    txOptions={helperTxOptions}
-                    {...HelperTextProps}
-                    style={themed($helperStyles)}
-                />
-            )}
+        <FieldModal
+            labelTx={'common:date'}
+            style={style}
+            disabled={disabled}
+            status={status}
+            helper={helper}
+            helperTx={helperTx}
+            helperTxOptions={helperTxOptions}
+            HelperTextProps={HelperTextProps}
+            onOpen={() => setTempDate(currentDate)}
+            renderTrigger={() => <Text style={themed($inputText)}>{formattedDate}</Text>}
+            renderContent={(close) => {
+                const handleConfirm = () => {
+                    close();
+                    onChange(tempDate);
+                };
 
-            {show && (
-                <DateTimePicker
-                    disabled={disabled}
-                    value={Time.toJSDate(value || Time.getISODateNow())}
-                    mode={iosModeMap[mode]}
-                    display={Platform.OS === 'ios' ? 'spinner' : 'default'}
-                    onChange={handleChange}
-                    minimumDate={minimumDate}
-                    maximumDate={maximumDate}
-                />
-            )}
-        </View>
+                return (
+                    <View>
+                        <View style={themed($modalHeader)}>
+                            <Pressable onPress={close}>
+                                <Text style={themed($modalCancelText)}>{translate('common:cancel')}</Text>
+                            </Pressable>
+                            <Pressable onPress={handleConfirm}>
+                                <Text style={themed($modalDoneText)}>{translate('common:ok')}</Text>
+                            </Pressable>
+                        </View>
+                        <DateTimePicker
+                            disabled={disabled}
+                            value={tempDate}
+                            mode={iosModeMap[mode]}
+                            display="spinner"
+                            onChange={handleIOSChange}
+                            minimumDate={minimumDate}
+                            maximumDate={maximumDate}
+                        />
+                    </View>
+                );
+            }}
+        />
     );
 };
 
-const $input: ThemedStyle<ViewStyle> = ({ colors, spacing }) => ({
-    borderWidth: 1,
-    borderColor: colors.border,
-    borderRadius: spacing.xxs,
-    backgroundColor: colors.background,
+/* ── DatePicker-specific styles ── */
+
+const $inputText: ThemedStyle<TextStyle> = ({ colors, typography }) => ({
+    flex: 1,
+    fontFamily: typography.primary.normal,
+    fontSize: 14,
+    height: 54,
+    lineHeight: 54,
+    paddingHorizontal: 16,
+    color: colors.textDim,
 });
 
-const $text: ThemedStyle<TextStyle> = ({ colors }) => ({
-    fontSize: 16,
-    color: colors.text,
-    marginVertical: 8,
-    marginHorizontal: 12,
+const $modalHeader: ThemedStyle<ViewStyle> = () => ({
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    paddingHorizontal: 20,
+    paddingVertical: 14,
+    borderBottomWidth: 1,
+    borderBottomColor: '#e5e5e5',
 });
-const $helperStyle: ThemedStyle<TextStyle> = ({ spacing }) => ({
-    marginTop: spacing.xs,
+
+const $modalCancelText: ThemedStyle<TextStyle> = () => ({
+    color: '#9CA3AF',
+    fontSize: 16,
+    fontWeight: '500',
+});
+
+const $modalDoneText: ThemedStyle<TextStyle> = () => ({
+    color: '#1a1a1a',
+    fontSize: 16,
+    fontWeight: '600',
 });

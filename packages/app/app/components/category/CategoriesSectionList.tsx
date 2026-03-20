@@ -60,7 +60,7 @@ const CategorySectionList = forwardRef<SectionList<ICategory>, Props>(({ categor
                             <ViewButton
                                 style={$button}
                                 onPress={() => {
-                                    navigation.getParent()?.navigate(OverviewPath.Expenses, {
+                                    navigation.getParent()?.navigate(OverviewPath.Categories, {
                                         screen: CategoriesPath.CategoryView,
                                         params: { id: categoryId, name: categoryName },
                                     });

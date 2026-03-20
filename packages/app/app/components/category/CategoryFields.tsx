@@ -48,6 +48,7 @@ export const CategoryFields: FC<IProps> = function CategoryFields(_props) {
                     }}
                 />
                 <TextField
+                    focusable={true}
                     inputWrapperStyle={themed($inputWrapperStyle)}
                     labelTx={'common:name'}
                     value={String(form.categoryName)}

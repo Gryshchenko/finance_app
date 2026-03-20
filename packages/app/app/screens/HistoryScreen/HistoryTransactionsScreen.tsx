@@ -31,7 +31,7 @@ export const HistoryTransactionsScreen = function HistoryScreen(_props: Props) {
                 data,
                 fetch: async ({ cursor, limit }) => await fetchTransactions(undefined, undefined, cursor, limit),
                 onPress: (id: number, name: string) => {
-                    navigation.getParent()?.navigate(OverviewPath.History, {
+                    navigation.getParent()?.navigate(OverviewPath.Transactions, {
                         screen: TransactionPath.TransactionView,
                         params: { id, name },
                     });
@@ -40,7 +40,7 @@ export const HistoryTransactionsScreen = function HistoryScreen(_props: Props) {
             RightActionComponent={
                 <AddButton
                     onPress={() => {
-                        navigation.getParent()?.navigate(OverviewPath.History, {
+                        navigation.getParent()?.navigate(OverviewPath.Transactions, {
                             screen: TransactionPath.TransactionCreate,
                             params: {
                                 payload: {

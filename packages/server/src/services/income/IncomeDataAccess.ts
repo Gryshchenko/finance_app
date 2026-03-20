@@ -81,8 +81,7 @@ export default class IncomeDataAccess extends LoggerBase implements IIncomeDataA
                     incomeName,
                     currencyId,
                     status: AccountStatusType.Enable,
-                    iconId
-
+                    iconId,
                 })),
                 ['incomeId', 'userId', 'incomeName', 'currencyId'],
             );

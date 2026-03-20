@@ -545,6 +545,10 @@ declare const en: {
         returnBack: string;
         transactions: string;
         selectAccount: string;
+        account: string;
+        expense: string;
+        category: string;
+        targetAccount: string;
         date: string;
         selectOption: string;
         deleteAccountTitle: string;
@@ -570,9 +574,11 @@ declare const en: {
         deleteTitle: string;
     };
     transactionScreen: {
+        recentActivity: string;
         from: string;
         to: string;
         description: string;
+        optionalDescription: string;
         deleteTitle: string;
         deleteMessage: string;
         deleteSuccess: string;

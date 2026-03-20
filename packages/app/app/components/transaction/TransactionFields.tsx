@@ -1,5 +1,5 @@
 import { FC, FunctionComponent } from 'react';
-import { StyleProp, TextStyle, ViewStyle } from 'react-native';
+import { StyleProp, TextStyle, View, ViewStyle } from 'react-native';
 import { ITransaction } from 'tenpercent/shared';
 import { TransactionType } from 'tenpercent/shared';
 
@@ -9,12 +9,10 @@ import { CurrencyField } from '@/components/CurrencyField';
 import { Field } from '@/components/Field';
 import { GeneralDetailView } from '@/components/GeneralDetailView';
 import { DatePickerType, IgniteDatePicker } from '@/components/IgniteDatePicker';
-import IgniteSwitcher from '@/components/IgniteSwitcher';
 import { IncomeDropdown } from '@/components/income/IncomeDropdown';
 import { TextField } from '@/components/TextField';
 import { useCurrency } from '@/context/CurrencyContext';
 import { TxKeyPath } from '@/i18n';
-import { translate } from '@/i18n/translate';
 import { useAppTheme } from '@/theme/context';
 import { ThemedStyle } from '@/theme/types';
 
@@ -99,6 +97,7 @@ export const TransactionFields: FC<IProps> = function TransactionFields(_props) 
                 return null;
         }
     };
+
     return (
         <GeneralDetailView
             isCreate={isCreate}
@@ -109,69 +108,50 @@ export const TransactionFields: FC<IProps> = function TransactionFields(_props) 
             onSave={handleSave}
             onDelete={onDelete}
         >
-            <IgniteSwitcher
-                disabled={isView}
-                options={[
-                    {
-                        id: TransactionType.Income,
-                        label: translate('common:incomes'),
-                        value: TransactionType.Income,
-                    },
-                    {
-                        id: TransactionType.Expense,
-                        label: translate('common:expenses'),
-                        value: TransactionType.Expense,
-                    },
-                    {
-                        id: TransactionType.Transafer,
-                        label: translate('common:transfer'),
-                        value: TransactionType.Transafer,
-                    },
-                ]}
-                value={form.transactionTypeId}
-                onChange={(opt) => handleChange?.('transactionTypeId', opt.value as number)}
-            />
+            <View style={$fieldWrapper as undefined}>
+                <Field
+                    Component={CurrencyField as FunctionComponent<unknown>}
+                    componentProps={{
+                        onChangeCleaned: (v: string) => handleChange?.('amount', v),
+                        currency: getCurrencySymbol(form.currencyId!),
+                        value: String(form.amount!),
+                        editable: !isView,
+                        helperTx: errors?.amount,
+                        status: errors?.amount ? 'error' : undefined,
+                        inputWrapperStyle: themed($inputWrapperStyle),
+                        style: themed($amountInputStyle),
+                        containerStyle: themed($amountContainerStyle),
+                        LabelTextProps: { style: themed($labelStyle) },
+                    }}
+                />
 
-            {renderInputs()}
+                {renderInputs()}
 
-            <Field
-                label={translate('common:amount')}
-                Component={CurrencyField as FunctionComponent<unknown>}
-                componentProps={{
-                    onChangeCleaned: (v: string) => handleChange?.('amount', v),
-                    currency: getCurrencySymbol(form.currencyId!),
-                    value: String(form.amount!),
-                    editable: !isView,
-                    helperTx: errors?.amount,
-                    status: errors?.amount ? 'error' : undefined,
-                }}
-            />
+                <IgniteDatePicker
+                    disabled={isView}
+                    mode={DatePickerType.Datetime}
+                    value={form.createdAt!}
+                    helperTx={errors?.createdAt}
+                    status={errors?.createdAt ? 'error' : undefined}
+                    onChange={() => null}
+                />
 
-            <TextField
-                inputWrapperStyle={themed($inputWrapperStyle)}
-                labelTx={'transactionScreen:description'}
-                value={form.description!}
-                helperTx={errors?.description}
-                status={errors?.description ? 'error' : undefined}
-                editable={!isView}
-                style={themed($inputStyleOverride)}
-                containerStyle={themed($containerStyleOverride)}
-                LabelTextProps={{
-                    style: themed($labelStyle),
-                }}
-                onChangeText={(v) => handleChange?.('description', v)}
-            />
-
-            <IgniteDatePicker
-                disabled={isView}
-                mode={DatePickerType.Datetime}
-                value={form.createdAt!}
-                helperTx={errors?.createdAt}
-                status={errors?.createdAt ? 'error' : undefined}
-                onChange={() => null}
-            />
+                <TextField
+                    labelTx={'transactionScreen:description'}
+                    value={form.description!}
+                    helperTx={errors?.description}
+                    status={errors?.description ? 'error' : undefined}
+                    editable={!isView}
+                    onChangeText={(v) => handleChange?.('description', v)}
+                />
+            </View>
         </GeneralDetailView>
     );
+};
+
+const $fieldWrapper: StyleProp<ViewStyle> = {
+    display: 'flex',
+    justifyContent: 'space-between',
 };
 
 const $inputWrapperStyle: ThemedStyle<ViewStyle> = ({ colors }) => ({
@@ -187,12 +167,14 @@ const $labelStyle: ThemedStyle<TextStyle> = () => ({
     textAlign: 'center',
 });
 
-const $inputStyleOverride: ThemedStyle<TextStyle> = ({ colors }) => ({
-    fontSize: 16,
-    textAlign: 'left',
+const $amountInputStyle: ThemedStyle<TextStyle> = ({ colors }) => ({
+    fontSize: 64,
+    letterSpacing: -1.6,
+    height: 120,
+    textAlign: 'center',
     color: colors.text,
 });
 
-const $containerStyleOverride: ThemedStyle<ViewStyle> = () => ({
-    marginVertical: 8,
+const $amountContainerStyle: ThemedStyle<ViewStyle> = () => ({
+    height: 170,
 });

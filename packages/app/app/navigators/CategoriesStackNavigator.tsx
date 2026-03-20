@@ -20,9 +20,6 @@ export enum CategoriesPath {
 export interface CategoriesStackParamList {
     categories: undefined;
     transactions: { id: number; type: TransactionFieldType; name: string };
-    transactionCreate: { id: number };
-    transactionEdit: { id: number };
-    transactionView: { id: number };
     categoryView: { id: number; name: string };
     categoryEdit: { id: number; name: string; payload: string };
     categoryCreate: { payload: string };

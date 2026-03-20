@@ -46,9 +46,9 @@ export const CategoriesScreen: FC<MainTabScreenProps<'categories'>> = function E
             props={{
                 data,
                 onPress: (id: number, name: string) => {
-                    navigation.getParent()?.navigate(OverviewPath.Expenses, {
+                    navigation.getParent()?.navigate(OverviewPath.Categories, {
                         screen: TransactionPath.Transactions,
-                        params: { id, name, type: TransactionFieldType.Category, path: OverviewPath.Expenses },
+                        params: { id, name, type: TransactionFieldType.Category, path: OverviewPath.Categories },
                     });
                 },
             }}
@@ -56,7 +56,7 @@ export const CategoriesScreen: FC<MainTabScreenProps<'categories'>> = function E
             RightActionComponent={
                 <AddButton
                     onPress={() => {
-                        navigation.getParent()?.navigate(OverviewPath.Expenses, {
+                        navigation.getParent()?.navigate(OverviewPath.Categories, {
                             screen: TransactionPath.TransactionCreate,
                             params: {
                                 payload: {

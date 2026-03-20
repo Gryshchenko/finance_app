@@ -23,8 +23,8 @@ export const TransactionCreate: FC<IProps> = function TransactionCreate(_props: 
         {
             amount: 0,
             currencyId: 1,
-            transactionTypeId: data?.transactionTypeId,
-            createdAt: data?.createdAt || Time.getISODateNow(),
+            createdAt: Time.getISODateNow(),
+            ...data,
         },
         buildTransactionCreateSchema(),
     );

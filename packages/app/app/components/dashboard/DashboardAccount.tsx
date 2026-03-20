@@ -1,6 +1,6 @@
 import { memo } from 'react';
 import { useNavigation } from '@react-navigation/native';
-import { IAccountListItem, TransactionType, Utils } from 'tenpercent/shared';
+import { CategoryIconType, IAccountListItem, TransactionType, Utils } from 'tenpercent/shared';
 
 import { AccountBox } from '@/components/dashboard/Box/AccountBox';
 import { AddBox } from '@/components/dashboard/Box/AddBox';
@@ -42,7 +42,7 @@ export default memo(function DashboardAccount(props: IDashboardItem<IAccountList
                     id={String(item.accountId)}
                     key={item.accountName}
                     title={item.accountName}
-                    icon={item.iconId}
+                    icon={item.iconId as CategoryIconType}
                     value={CurrencyUtils.formatWithDelimiter(item.amount, getCurrencySymbol(item.currencyId), 2, true)}
                     isDraggable={true}
                     onDragStart={() => {
@@ -64,7 +64,7 @@ export default memo(function DashboardAccount(props: IDashboardItem<IAccountList
                         switch (inWorkDropItem.type) {
                             case ItemType.Account:
                                 {
-                                    navigation.getParent()?.navigate(OverviewPath.Balances, {
+                                    navigation.getParent()?.navigate(OverviewPath.Transactions, {
                                         screen: TransactionPath.TransactionCreate,
                                         params: {
                                             payload: {
@@ -77,7 +77,7 @@ export default memo(function DashboardAccount(props: IDashboardItem<IAccountList
                                 }
                                 break;
                             case ItemType.Income: {
-                                navigation.getParent()?.navigate(OverviewPath.Balances, {
+                                navigation.getParent()?.navigate(OverviewPath.Transactions, {
                                     screen: TransactionPath.TransactionCreate,
                                     params: {
                                         payload: {

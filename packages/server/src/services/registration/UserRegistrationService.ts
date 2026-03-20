@@ -5,7 +5,8 @@ import {
     AccountIcon,
     ErrorCode,
     HttpCode,
-    ICurrency, IncomeIcon,
+    ICurrency,
+    IncomeIcon,
     LanguageType,
     RoleType,
     SpendIcon,
@@ -250,18 +251,18 @@ export default class UserRegistrationService extends LoggerBase {
             const incomesIcons = [IncomeIcon.BNB, IncomeIcon.P2P];
             const accountIcons = [AccountIcon.Cash, AccountIcon.BankCard];
             const categoryIcons = [
-                SpendIcon.ShoppingCart,      // Food
-                SpendIcon.Store,             // Housing
-                SpendIcon.ShoppingBag,       // Transport
-                SpendIcon.ShoppingBag2,      // Health and Medicine
-                SpendIcon.ShoppingBag3,      // Education
-                SpendIcon.ShoppingBag4,      // Entertainment
-                SpendIcon.ShoppingBasket,    // Leisure and Travel
-                SpendIcon.PriceTag,          // Clothing and Accessories
-                SpendIcon.PriceTag2,         // Communication and Internet
-                SpendIcon.Gift,              // Gifts and Charity
-                SpendIcon.Coupon,            // Personal Expenses
-                SpendIcon.Store2,            // Savings and Investments
+                SpendIcon.ShoppingCart, // Food
+                SpendIcon.Store, // Housing
+                SpendIcon.ShoppingBag, // Transport
+                SpendIcon.ShoppingBag2, // Health and Medicine
+                SpendIcon.ShoppingBag3, // Education
+                SpendIcon.ShoppingBag4, // Entertainment
+                SpendIcon.ShoppingBasket, // Leisure and Travel
+                SpendIcon.PriceTag, // Clothing and Accessories
+                SpendIcon.PriceTag2, // Communication and Internet
+                SpendIcon.Gift, // Gifts and Charity
+                SpendIcon.Coupon, // Personal Expenses
+                SpendIcon.Store2, // Savings and Investments
             ];
             await Promise.all([
                 await this.groupService.createGroup(userId, translatedDefaultData.group, trx),
