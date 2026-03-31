@@ -2,10 +2,12 @@ import { ViewStyle } from 'react-native';
 import { ICategory } from 'tenpercent/shared';
 
 import { Dropdown } from '@/components/Dropdown';
+import { FieldPresets } from '@/components/FieldPresets';
 import { TxKeyPath } from '@/i18n';
 import { fetchCategories } from '@/screens/CategoryScreens/CategoriesScreen';
 
 type CategoryDropdownProps = {
+    preset?: FieldPresets;
     value?: number;
     onChange?: (item: ICategory) => void;
     style?: ViewStyle;
@@ -14,9 +16,18 @@ type CategoryDropdownProps = {
     status?: 'error' | 'disabled';
 };
 
-export const CategoryDropdown: React.FC<CategoryDropdownProps> = ({ value, onChange, style, disabled, helperTx, status }) => {
+export const CategoryDropdown: React.FC<CategoryDropdownProps> = ({
+    preset,
+    value,
+    onChange,
+    style,
+    disabled,
+    helperTx,
+    status,
+}) => {
     return (
         <Dropdown
+            preset={preset}
             helperTx={helperTx}
             status={status}
             style={style}

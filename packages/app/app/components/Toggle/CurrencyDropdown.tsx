@@ -2,6 +2,7 @@ import { StyleProp, TextStyle } from 'react-native';
 import { ICurrency } from 'tenpercent/shared';
 
 import { Dropdown } from '@/components/Dropdown';
+import { TextFieldPresets } from '@/components/TextField';
 import { fetchCurrencies } from '@/context/CurrencyContext';
 import { TxKeyPath } from '@/i18n';
 
@@ -14,6 +15,7 @@ type CurrencyDropdownProps = {
     filter?: (items: ICurrency[] | undefined) => ICurrency[];
     helperTx?: TxKeyPath;
     status?: 'error' | 'disabled';
+    preset?: TextFieldPresets;
 };
 
 export const CurrencyDropdown: React.FC<CurrencyDropdownProps> = ({
@@ -24,6 +26,7 @@ export const CurrencyDropdown: React.FC<CurrencyDropdownProps> = ({
     filter,
     helperTx,
     status,
+    preset,
 }) => {
     return (
         <Dropdown
@@ -37,6 +40,7 @@ export const CurrencyDropdown: React.FC<CurrencyDropdownProps> = ({
             queryKey={'currencies'}
             fetcher={fetchCurrencies}
             filter={filter}
+            preset={preset}
             keyExtractor={(item: ICurrency) => {
                 return String(item.currencyId);
             }}

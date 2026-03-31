@@ -40,9 +40,7 @@ export const AccountCreate: FC = function AccountCreate(_props) {
             iconId: form.iconId ?? AccountIcon.Wallet,
         });
         if (response.kind === GeneralApiProblemKind.Ok) {
-            navigation.getParent()?.navigate(OverviewPath.Balances, {
-                screen: 'accounts',
-            });
+            navigation.getParent()?.navigate(OverviewPath.Dashboard);
         } else {
             ToastService.error({
                 message: 'errorCode:UNKNOWN_ERROR',
@@ -67,10 +65,7 @@ export const AccountCreate: FC = function AccountCreate(_props) {
                 handleChange(key as keyof IAccount, value);
             }}
             cancel={() => {
-                navigation.getParent()?.navigate(OverviewPath.Balances, {
-                    screen: AccountsPath.AccountView,
-                    params: { id: form.accountId, name: form.accountName },
-                });
+                navigation.getParent()?.navigate(OverviewPath.Dashboard);
             }}
             handleSave={handleSave}
         />

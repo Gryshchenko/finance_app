@@ -1,4 +1,4 @@
-import { ComponentType, forwardRef, Ref, useImperativeHandle, useRef, useState } from 'react';
+import { ComponentType, forwardRef, Ref, useEffect, useImperativeHandle, useRef, useState } from 'react';
 import {
     ImageStyle,
     StyleProp,
@@ -13,12 +13,21 @@ import {
 
 import { isRTL } from '@/i18n';
 import { translate } from '@/i18n/translate';
-import { colors } from '@/theme/colors';
 import { useAppTheme } from '@/theme/context';
 import { $styles } from '@/theme/styles';
 import type { ThemedStyle, ThemedStyleArray } from '@/theme/types';
 
-import { Text, TextProps } from './Text';
+import {
+    $labelNotSelectedStyle,
+    $labelSelectedStyle,
+    $borderFocusStyle,
+    $borderNoFocusStyle,
+    $helperStyle,
+} from '../FieldPresets';
+import { Text, TextProps } from '../Text';
+import { TextFieldPresets, $presets } from './TextField.presets';
+
+export type { TextFieldPresets };
 
 export interface TextFieldAccessoryProps {
     style: StyleProp<ViewStyle | TextStyle | ImageStyle>;
@@ -28,6 +37,14 @@ export interface TextFieldAccessoryProps {
 }
 
 export interface TextFieldProps extends Omit<TextInputProps, 'ref'> {
+    /**
+     * One of the different types of text field presets.
+     * - `default` — bordered card-style input with shadow
+     * - `underline` — minimal input with only a bottom border
+     * - `filled` — solid background, no visible border
+     * - `compact` — smaller height for inline / dense layouts
+     */
+    preset?: TextFieldPresets;
     /**
      * A style modifier for different input states.
      */
@@ -92,6 +109,19 @@ export interface TextFieldProps extends Omit<TextInputProps, 'ref'> {
      */
     inputWrapperStyle?: StyleProp<ViewStyle>;
     /**
+     * If `true`, the field will automatically receive focus when mounted.
+     * Uses a `useEffect` + ref-based focus for reliable behaviour across platforms.
+     * An optional small `focusDelay` (ms) can be used to postpone the focus call
+     * (e.g. when the field is inside a modal/sheet animation).
+     * @default false
+     */
+    focusOnMount?: boolean;
+    /**
+     * Delay in milliseconds before the auto-focus fires when `focusOnMount` is true.
+     * @default 0
+     */
+    focusDelay?: number;
+    /**
      * An optional component to render on the right side of the input.
      * Example: `RightAccessory={(props) => <Icon icon="ladybug" containerStyle={props.style} color={props.editable ? colors.textDim : colors.text} />}`
      * Note: It is a good idea to memoize this.
@@ -113,6 +143,7 @@ export interface TextFieldProps extends Omit<TextInputProps, 'ref'> {
  */
 export const TextField = forwardRef(function TextField(props: TextFieldProps, ref: Ref<TextInput>) {
     const {
+        preset = 'default',
         labelTx,
         label,
         labelTxOptions,
@@ -130,6 +161,8 @@ export const TextField = forwardRef(function TextField(props: TextFieldProps, re
         style: $inputStyleOverride,
         containerStyle: $containerStyleOverride,
         inputWrapperStyle: $inputWrapperStyleOverride,
+        focusOnMount = false,
+        focusDelay = 0,
         ...TextInputProps
     } = props;
     const input = useRef<TextInput>(null);
@@ -141,18 +174,29 @@ export const TextField = forwardRef(function TextField(props: TextFieldProps, re
 
     const [focus, setFocus] = useState<boolean>(false);
 
+    useEffect(() => {
+        if (!focusOnMount) return;
+        const timer = setTimeout(() => {
+            input.current?.focus();
+        }, focusDelay);
+        return () => clearTimeout(timer);
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, []);
+
     const disabled = TextInputProps.editable === false || status === 'disabled';
 
     const placeholderContent = placeholderTx ? translate(placeholderTx, placeholderTxOptions) : placeholder;
 
-    const $containerStyles = [themed($containerStyle), $containerStyleOverride];
+    const presetStyles = $presets[preset];
 
-    const $labelStyles = [$labelStyle, focus ? $labelSelectedStyle : $labelNotSelectedStyle, LabelTextProps?.style];
+    const $containerStyles = [...presetStyles.container, $containerStyleOverride];
+
+    const $labelStyles = [...presetStyles.label, focus ? $labelSelectedStyle : $labelNotSelectedStyle, LabelTextProps?.style];
 
     const $inputWrapperStyles = [
         $styles.row,
-        $inputWrapperStyle,
-        focus ? $inputWrapperBorderFocusStyle : $inputWrapperBorderNoFocusStyle,
+        ...presetStyles.inputWrapper,
+        focus ? $borderFocusStyle : $borderNoFocusStyle,
         status === 'error' && { borderColor: colors.error },
         TextInputProps.multiline && { minHeight: 112 },
         LeftAccessory && { paddingStart: 0 },
@@ -161,7 +205,7 @@ export const TextField = forwardRef(function TextField(props: TextFieldProps, re
     ];
 
     const $inputStyles: ThemedStyleArray<TextStyle> = [
-        $inputStyle,
+        ...presetStyles.input,
         disabled && { color: colors.textDim },
         isRTL && { textAlign: 'right' as TextStyle['textAlign'] },
         TextInputProps.multiline && { height: 'auto' },
@@ -170,19 +214,20 @@ export const TextField = forwardRef(function TextField(props: TextFieldProps, re
 
     const $helperStyles = [$helperStyle, status === 'error' && { color: colors.error }, HelperTextProps?.style];
 
-    /**
-     *
-     */
     function focusInput() {
         if (disabled) return;
-
         input.current?.focus();
     }
 
     useImperativeHandle(ref, () => input.current as TextInput);
 
     return (
-        <TouchableOpacity activeOpacity={1} style={$containerStyles} onPress={focusInput} accessibilityState={{ disabled }}>
+        <TouchableOpacity
+            activeOpacity={1}
+            style={themed($containerStyles)}
+            onPress={focusInput}
+            accessibilityState={{ disabled }}
+        >
             {!!(label || labelTx) && (
                 <Text
                     preset="formLabel"
@@ -206,6 +251,7 @@ export const TextField = forwardRef(function TextField(props: TextFieldProps, re
 
                 <TextInput
                     ref={input}
+                    focusable={!disabled}
                     underlineColorAndroid={colors.transparent}
                     textAlignVertical="top"
                     placeholder={placeholderContent}
@@ -241,65 +287,9 @@ export const TextField = forwardRef(function TextField(props: TextFieldProps, re
     );
 });
 
-const $containerStyle: ThemedStyle<TextStyle> = () => ({
-    height: 110,
-});
-
-const $labelStyle: ThemedStyle<TextStyle> = ({ spacing, typography }) => ({
-    fontSize: 10,
-    letterSpacing: 1.5,
-    fontWeight: '700',
-    marginBottom: spacing.xxxs,
-    marginLeft: 4,
-    textTransform: 'uppercase',
-    color: colors.textDim,
-    fontFamily: typography.fonts.funnelSans.semiBold,
-});
-
-const $labelNotSelectedStyle: ThemedStyle<TextStyle> = () => ({
-    color: colors.textDim,
-});
-
-const $labelSelectedStyle: ThemedStyle<TextStyle> = () => ({
-    color: colors.text,
-});
-
-const $inputWrapperBorderFocusStyle: ThemedStyle<ViewStyle> = ({ colors }) => ({
-    borderColor: colors.palette.neutral900,
-});
-const $inputWrapperBorderNoFocusStyle: ThemedStyle<ViewStyle> = ({ colors }) => ({
-    borderColor: colors.border,
-});
-
-const $inputWrapperStyle: ThemedStyle<ViewStyle> = ({ colors, border }) => ({
-    alignItems: 'flex-start',
-    borderWidth: border.borderWidth,
-    backgroundColor: colors.palette.neutral100,
-    borderRadius: border.borderRadius,
-    overflow: 'hidden',
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 1 },
-    shadowOpacity: 0.05,
-    elevation: 1,
-});
-
-const $inputStyle: ThemedStyle<TextStyle> = ({ colors, typography }) => ({
-    flex: 1,
-    alignSelf: 'stretch',
-    fontFamily: typography.primary.normal,
-    fontSize: 14,
-    height: 54,
-    // https://github.com/facebook/react-native/issues/21720#issuecomment-532642093
-    paddingHorizontal: 16,
-    paddingVertical: 14,
-    color: colors.textDim,
-    width: '80%',
-});
-
-const $helperStyle: ThemedStyle<TextStyle> = ({ spacing }) => ({
-    marginTop: spacing.xxxs,
-    fontSize: 10,
-});
+// ---------------------------------------------------------------------------
+// TextField-specific styles (accessory positioning)
+// ---------------------------------------------------------------------------
 
 const $rightAccessoryStyle: ThemedStyle<ViewStyle> = ({ colors }) => ({
     height: 40,

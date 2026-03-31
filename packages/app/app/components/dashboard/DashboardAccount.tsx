@@ -84,6 +84,7 @@ export default memo(function DashboardAccount(props: IDashboardItem<IAccountList
                                             transactionTypeId: TransactionType.Income,
                                             accountId: item.accountId,
                                             incomeId: inWorkDropItem.id,
+                                            sourceCurrencyId: inWorkDropItem.id,
                                         },
                                     },
                                 });

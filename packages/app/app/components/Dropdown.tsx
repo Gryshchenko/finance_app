@@ -10,7 +10,10 @@ import { translate } from '@/i18n/translate';
 import { useAppTheme } from '@/theme/context';
 import { ThemedStyle } from '@/theme/types';
 
+import { FieldPresets, $fieldPresets } from './FieldPresets';
+
 type DropdownProps<T> = {
+    preset?: FieldPresets;
     queryKey: string;
     fetcher: () => Promise<T[] | undefined>;
     value?: string | number;
@@ -29,6 +32,7 @@ type DropdownProps<T> = {
 };
 
 export function Dropdown<T>({
+    preset = 'default',
     queryKey,
     fetcher,
     value,
@@ -67,8 +71,11 @@ export function Dropdown<T>({
         },
     ];
 
+    const presetStyles = $fieldPresets[preset];
+
     return (
         <FieldModal
+            preset={preset}
             labelTx={labelTx}
             style={style}
             disabled={disabled || isPending || isError}
@@ -79,11 +86,11 @@ export function Dropdown<T>({
             HelperTextProps={HelperTextProps}
             renderTrigger={() => {
                 const $triggersText = [
-                    themed($triggerText),
-                    selected && !isError ? themed($triggerTextSelected) : themed($triggerTextNonSelected),
-                    isError && themed($errorText),
+                    ...presetStyles.input,
+                    selected && !isError ? $triggerTextSelected : $triggerTextNonSelected,
+                    isError && $errorText,
                 ];
-                return <Text style={$triggersText}>{displayText}</Text>;
+                return <Text style={themed($triggersText)}>{displayText}</Text>;
             }}
             renderContent={(close) => {
                 const handleSelect = (item: T) => {
@@ -121,16 +128,6 @@ export function Dropdown<T>({
 }
 
 /* ── Dropdown-specific styles ── */
-
-const $triggerText: ThemedStyle<TextStyle> = ({ typography }) => ({
-    flex: 1,
-    alignSelf: 'stretch',
-    fontFamily: typography.primary.normal,
-    fontSize: 14,
-    height: 54,
-    paddingHorizontal: 16,
-    paddingVertical: 14,
-});
 
 const $triggerTextNonSelected: ThemedStyle<TextStyle> = ({ colors }) => ({
     color: colors.textDim,

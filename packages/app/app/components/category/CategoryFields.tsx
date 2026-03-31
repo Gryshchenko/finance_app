@@ -48,9 +48,9 @@ export const CategoryFields: FC<IProps> = function CategoryFields(_props) {
                     }}
                 />
                 <TextField
-                    focusable={true}
+                    focusOnMount={true}
                     inputWrapperStyle={themed($inputWrapperStyle)}
-                    labelTx={'common:name'}
+                    labelTx={'common:categoryName'}
                     value={String(form.categoryName)}
                     helperTx={errors?.categoryName}
                     status={errors?.categoryName ? 'error' : undefined}

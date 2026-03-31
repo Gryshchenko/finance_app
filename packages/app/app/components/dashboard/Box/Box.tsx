@@ -20,7 +20,7 @@ export interface IBoxDragAndDrop<T> {
     isDroppable: boolean;
 }
 
-export type IDrag = { id: string; type: ItemType; element?: JSX.Element };
+export type IDrag = { id: string; type: ItemType; element?: JSX.Element; currencyId?: number };
 
 export interface IBoxProps<T = unknown> extends IBoxDragAndDrop<T> {
     id: string;

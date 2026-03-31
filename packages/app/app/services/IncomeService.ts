@@ -51,7 +51,7 @@ export class IncomeService extends ApiAbstract {
             };
         }
     }
-    public async doGetIncome(incometId: number): Promise<
+    public async doGetIncome(incomeId: number): Promise<
         | {
               kind: GeneralApiProblemKind.Ok;
               data: IIncome | undefined;
@@ -61,7 +61,7 @@ export class IncomeService extends ApiAbstract {
         try {
             this._logger.info('Start fetching incomes');
             const userId = this._authService.userId;
-            const response = await this.authGet(`/user/${userId}/income/${incometId}`);
+            const response = await this.authGet(`/user/${userId}/income/${incomeId}`);
             if (response.kind === GeneralApiProblemKind.Ok) {
                 this._logger.info(`Fetching income successfully: ${(response.data as IIncome)?.incomeId}`);
             } else {

@@ -1,5 +1,5 @@
 import { ReactNode, useState } from 'react';
-import { Modal, Pressable, StyleProp, TextStyle, View, ViewStyle } from 'react-native';
+import { Modal, Pressable, StyleProp, View, ViewStyle } from 'react-native';
 
 import { Text, TextProps } from '@/components/Text';
 import { TxKeyPath } from '@/i18n';
@@ -7,7 +7,19 @@ import { colors } from '@/theme/colors';
 import { useAppTheme } from '@/theme/context';
 import { ThemedStyle } from '@/theme/types';
 
+import {
+    FieldPresets,
+    $fieldPresets,
+    $labelNotSelectedStyle,
+    $labelSelectedStyle,
+    $borderFocusStyle,
+    $borderNoFocusStyle,
+    $helperStyle,
+} from './FieldPresets';
+
 export type FieldModalProps = {
+    /** Visual preset — must match the TextField presets for consistency. */
+    preset?: FieldPresets;
     /** Whether the modal is open (controlled). If omitted the component manages its own state. */
     isOpen?: boolean;
     /** Called when the modal should open. */
@@ -42,6 +54,7 @@ export type FieldModalProps = {
 };
 
 export function FieldModal({
+    preset = 'default',
     isOpen: isOpenProp,
     onOpen,
     onClose,
@@ -76,28 +89,31 @@ export function FieldModal({
         onClose?.();
     };
 
+    const presetStyles = $fieldPresets[preset];
+
     const $helperStyles = [$helperStyle, status === 'error' && { color: colors.error }, HelperTextProps?.style];
 
     const $triggers = [
-        themed($trigger),
+        ...presetStyles.inputWrapper,
+        { justifyContent: 'center' as const, height: 44 },
         triggerStyle,
         status === 'error' && { borderColor: colors.error },
-        status !== 'error' && (isOpen ? themed($triggerBorderFocus) : themed($triggerBorderNoFocus)),
+        status !== 'error' && (isOpen ? $borderFocusStyle : $borderNoFocusStyle),
     ];
 
     return (
-        <View style={[themed($container), style]}>
+        <View style={themed([...presetStyles.container, style])}>
             {!!(label || labelTx) && (
                 <Text
                     size={'xs'}
-                    style={themed([$labelStyle, isOpen ? $labelSelected : $labelNotSelected])}
+                    style={themed([...presetStyles.label, isOpen ? $labelSelectedStyle : $labelNotSelectedStyle])}
                     preset="formLabel"
                     tx={labelTx}
                     text={label}
                 />
             )}
 
-            <Pressable disabled={disabled || status === 'disabled'} style={$triggers} onPress={open}>
+            <Pressable disabled={disabled || status === 'disabled'} style={themed($triggers)} onPress={open}>
                 {renderTrigger(isOpen)}
             </Pressable>
 
@@ -123,59 +139,7 @@ export function FieldModal({
     );
 }
 
-/* ── Styles ── */
-
-const $container: ThemedStyle<ViewStyle> = () => ({
-    height: 110,
-});
-
-const $labelStyle: ThemedStyle<TextStyle> = ({ spacing, typography }) => ({
-    fontSize: 10,
-    letterSpacing: 1.5,
-    fontWeight: '700',
-    marginBottom: spacing.xxxs,
-    marginLeft: 4,
-    textTransform: 'uppercase',
-    fontFamily: typography.fonts.funnelSans.semiBold,
-});
-
-const $labelNotSelected: ThemedStyle<TextStyle> = () => ({
-    color: colors.textDim,
-});
-
-const $labelSelected: ThemedStyle<TextStyle> = () => ({
-    color: colors.text,
-});
-
-const $trigger: ThemedStyle<ViewStyle> = ({ colors }) => ({
-    alignItems: 'flex-start',
-    justifyContent: 'center',
-    borderWidth: 1,
-    borderRadius: 0,
-    backgroundColor: colors.palette.neutral100,
-    overflow: 'hidden',
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 1 },
-    shadowOpacity: 0.05,
-    shadowRadius: 2,
-    elevation: 1,
-    height: 54,
-});
-
-const $triggerBorderFocus: ThemedStyle<ViewStyle> = ({ colors }) => ({
-    borderColor: colors.palette.neutral900,
-});
-
-const $triggerBorderNoFocus: ThemedStyle<ViewStyle> = ({ colors }) => ({
-    borderColor: colors.border,
-});
-
-const $helperStyle: ThemedStyle<TextStyle> = ({ typography, spacing, colors }) => ({
-    fontFamily: typography.primary.normal,
-    color: colors.textDim,
-    marginTop: spacing.xxxs,
-    fontSize: 10,
-});
+/* ── Modal-specific styles (not part of field presets) ── */
 
 const $overlay: ThemedStyle<ViewStyle> = () => ({
     flex: 1,

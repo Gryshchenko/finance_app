@@ -51,9 +51,10 @@ export const AccountFields: FC<IProps> = function AccountFields(_props) {
                     }}
                 />
                 <TextField
-                    focusable={true}
+                    preset={'underlineBig'}
+                    focusOnMount={true}
                     inputWrapperStyle={themed($inputWrapperStyle)}
-                    labelTx={'common:name'}
+                    labelTx={'common:accountName'}
                     value={String(form.accountName)}
                     helperTx={errors?.accountName}
                     status={errors?.accountName ? 'error' : undefined}
@@ -70,6 +71,7 @@ export const AccountFields: FC<IProps> = function AccountFields(_props) {
                     }}
                 />
                 <CurrencyField
+                    preset={'underline'}
                     labelTx={'common:amount'}
                     value={String(form.amount)}
                     helperTx={errors?.amount}
@@ -83,6 +85,7 @@ export const AccountFields: FC<IProps> = function AccountFields(_props) {
                     }}
                 />
                 <CurrencyDropdown
+                    preset={'underline'}
                     style={$fieldCurrency}
                     disabled={isView || isEdit}
                     helperTx={errors?.currencyId}

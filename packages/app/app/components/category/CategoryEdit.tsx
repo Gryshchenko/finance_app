@@ -69,10 +69,7 @@ export const CategoryEdit: FC<ICategoryPros> = function CategoryEdit(_props) {
                 handleChange(key as keyof ICategory, value);
             }}
             cancel={() => {
-                navigation.getParent()?.navigate(OverviewPath.Categories, {
-                    screen: CategoriesPath.CategoryView,
-                    params: { id: form.categoryId, name: form.categoryName },
-                });
+                navigation.getParent()?.navigate(OverviewPath.Dashboard);
             }}
             handleSave={handleSave}
         />

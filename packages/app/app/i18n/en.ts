@@ -86,8 +86,11 @@ const en = {
         success: 'Your email has been successfully confirmed.',
     },
     common: {
-        icon: 'icon',
         selectIcon: 'Select icon',
+        accountName: 'Account Name',
+        categoryName: 'Category Name',
+        incomeName: 'Income Income',
+        icon: 'icon',
         saveChanges: 'Save changes',
         edit: 'Edit',
         delete: 'Delete',

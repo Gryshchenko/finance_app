@@ -9,6 +9,7 @@ import { incomeCreateSchema } from '@/schems/validationSchemas';
 import { GeneralApiProblemKind } from '@/services/api/apiProblem';
 import { IncomeService } from '@/services/IncomeService';
 import ToastService from '@/services/ToastService';
+import { OverviewPath } from '@/types/OverviewPath';
 
 export const IncomeCreate: FC = function IncomeCreate(_props) {
     const navigation = useNavigation();
@@ -23,7 +24,6 @@ export const IncomeCreate: FC = function IncomeCreate(_props) {
 
     const handleCreate = async () => {
         const incomeService = IncomeService.instance();
-        console.log(form);
         if (Utils.isEmpty(form.incomeName) || Utils.isNull(form.currencyId) || Utils.isNull(form.iconId)) {
             ToastService.error({
                 message: 'errorCode:UNKNOWN_ERROR',
@@ -38,9 +38,7 @@ export const IncomeCreate: FC = function IncomeCreate(_props) {
             iconId: form.iconId!,
         });
         if (response.kind === GeneralApiProblemKind.Ok) {
-            navigation.getParent()?.navigate('incomes', {
-                screen: 'accounts',
-            });
+            navigation.getParent()?.navigate(OverviewPath.Dashboard);
         } else {
             ToastService.error({
                 message: 'errorCode:UNKNOWN_ERROR',
@@ -65,10 +63,7 @@ export const IncomeCreate: FC = function IncomeCreate(_props) {
                 handleChange(key as keyof IIncome, value);
             }}
             cancel={() => {
-                navigation.getParent()?.navigate('incomes', {
-                    screen: 'view',
-                    params: { id: form.incomeId, name: form.incomeName },
-                });
+                navigation.getParent()?.navigate(OverviewPath.Dashboard);
             }}
             handleSave={handleSave}
         />

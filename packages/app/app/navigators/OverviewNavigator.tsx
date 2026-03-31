@@ -2,7 +2,6 @@ import { TextStyle, ViewStyle } from 'react-native';
 import { BottomTabScreenProps, createBottomTabNavigator } from '@react-navigation/bottom-tabs';
 import { CompositeScreenProps, NavigatorScreenParams, ParamListBase } from '@react-navigation/native';
 
-import { Icon } from '@/components/Icon';
 import { CurrencyProvider } from '@/context/CurrencyContext';
 import { AccountsPath, AccountsStackNavigator, AccountsStackParamList } from '@/navigators/AccountsStackNavigator';
 import { CategoriesPath, CategoriesStackNavigator, CategoriesStackParamList } from '@/navigators/CategoriesStackNavigator';

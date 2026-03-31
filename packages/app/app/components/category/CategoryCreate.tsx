@@ -4,7 +4,6 @@ import { ICategory, SpendIcon, Utils } from 'tenpercent/shared';
 
 import { CategoryFields } from '@/components/category/CategoryFields';
 import { useEditView } from '@/hooks/useEditView';
-import { CategoriesPath } from '@/navigators/CategoriesStackNavigator';
 import { categoryCreateSchema } from '@/schems/validationSchemas';
 import { GeneralApiProblemKind } from '@/services/api/apiProblem';
 import { CategoryService } from '@/services/CategoryService';
@@ -38,9 +37,7 @@ export const CategoryCreate: FC = function CategoryCreate(_props) {
             iconId: form.iconId ?? SpendIcon.ShoppingBag,
         });
         if (response.kind === GeneralApiProblemKind.Ok) {
-            navigation.getParent()?.navigate(OverviewPath.Categories, {
-                screen: 'categories',
-            });
+            navigation.getParent()?.navigate(OverviewPath.Dashboard);
         } else {
             ToastService.error({
                 message: 'errorCode:UNKNOWN_ERROR',
@@ -65,10 +62,7 @@ export const CategoryCreate: FC = function CategoryCreate(_props) {
                 handleChange(key as keyof ICategory, value);
             }}
             cancel={() => {
-                navigation.getParent()?.navigate(OverviewPath.Categories, {
-                    screen: CategoriesPath.CategoryView,
-                    params: { id: form.categoryId, name: form.categoryName },
-                });
+                navigation.getParent()?.navigate(OverviewPath.Dashboard);
             }}
             handleSave={handleSave}
         />

@@ -2,10 +2,12 @@ import { ViewStyle } from 'react-native';
 import { IAccountListItem } from 'tenpercent/shared';
 
 import { Dropdown } from '@/components/Dropdown';
+import { FieldPresets } from '@/components/FieldPresets';
 import { TxKeyPath } from '@/i18n';
 import { fetchAccounts } from '@/screens/AccountScreens/AccountsScreen';
 
 type AccountDropdownProps = {
+    preset?: FieldPresets;
     value?: number; // accountId
     onChange?: (item: IAccountListItem) => void;
     style?: ViewStyle;
@@ -16,6 +18,7 @@ type AccountDropdownProps = {
 };
 
 export const AccountDropdown: React.FC<AccountDropdownProps> = ({
+    preset,
     value,
     onChange,
     style,
@@ -26,6 +29,7 @@ export const AccountDropdown: React.FC<AccountDropdownProps> = ({
 }) => {
     return (
         <Dropdown
+            preset={preset}
             helperTx={helperTx}
             status={status}
             style={style}

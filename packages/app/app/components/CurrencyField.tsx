@@ -10,7 +10,11 @@ export interface ICurrencyField extends TextFieldProps {
 }
 
 export const CurrencyField: FC<ICurrencyField> = ({ value, onChangeCleaned, editable, currency, ...props }) => {
-    const [display, setDisplay] = useState(value ? String(value) : '');
+    const [display, setDisplay] = useState(() => {
+        if (!value) return '';
+        const num = Number(value);
+        return isNaN(num) ? String(value) : CurrencyUtils.formatWithDelimiter(num, currency);
+    });
     const isFocused = useRef(false);
     const displayRef = useRef(display);
 
@@ -22,12 +26,29 @@ export const CurrencyField: FC<ICurrencyField> = ({ value, onChangeCleaned, edit
 
         const num = Number(raw);
         if (!isNaN(num)) {
+            console.log(currency);
             setDisplay(CurrencyUtils.formatWithDelimiter(num, currency));
         }
     }, [currency]);
 
+    // Sync with external value changes (only when not focused to avoid fighting the user)
+    useEffect(() => {
+        if (isFocused.current) return;
+
+        if (!value) {
+            setDisplay('');
+            return;
+        }
+
+        const num = Number(value);
+        setDisplay(isNaN(num) ? String(value) : CurrencyUtils.formatWithDelimiter(num, currency));
+    }, [value, currency]);
+
     const onChangeText = (text: string) => {
-        const cleaned: string = text.replace(/[^0-9.]/g, '');
+        const stripped = text.replace(/[^0-9.]/g, '');
+        // Keep only the first dot
+        const dot = stripped.indexOf('.');
+        const cleaned = dot === -1 ? stripped : stripped.slice(0, dot + 1) + stripped.slice(dot + 1).replace(/\./g, '');
 
         setDisplay(cleaned);
         onChangeCleaned?.(cleaned);
@@ -54,6 +75,14 @@ export const CurrencyField: FC<ICurrencyField> = ({ value, onChangeCleaned, edit
     }, [formatDisplay]);
 
     return (
-        <TextField {...props} editable={editable} value={display} onChangeText={onChangeText} onFocus={onFocus} onBlur={onBlur} />
+        <TextField
+            keyboardType="decimal-pad"
+            {...props}
+            editable={editable}
+            value={display}
+            onChangeText={onChangeText}
+            onFocus={onFocus}
+            onBlur={onBlur}
+        />
     );
 };

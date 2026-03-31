@@ -1,5 +1,8 @@
 {
-    "ios": {
-        "bundleIdentifier": "com.tenpercent.tenpercen"
-    }
+  "ios": {
+    "bundleIdentifier": "com.tenpercent.tenpercen"
+  },
+  "android": {
+    "package": "com.tenpercent.tenpercen"
+  }
 }

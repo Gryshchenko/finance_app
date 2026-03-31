@@ -3,8 +3,10 @@ services:
         build:
             context: ../../
             dockerfile: docker/tests/Dockerfile
-        image: node:20-alpine
         container_name: ten-percent
+        depends_on:
+            postgres:
+                condition: service_healthy
         environment:
             # ====================
             # App
@@ -36,8 +38,6 @@ services:
             - DB_HOST=postgres
         ports:
             - '3000:3000'
-        volumes:
-            - ./../../:/app
         networks:
             - app-tier
     redis-master:

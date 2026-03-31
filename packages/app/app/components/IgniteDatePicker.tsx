@@ -10,6 +10,8 @@ import { translate } from '@/i18n/translate';
 import { useAppTheme } from '@/theme/context';
 import { ThemedStyle } from '@/theme/types';
 
+import { FieldPresets, $fieldPresets } from './FieldPresets';
+
 type IOSMode = 'date' | 'time' | 'datetime' | 'countdown';
 
 export enum DatePickerType {
@@ -19,6 +21,7 @@ export enum DatePickerType {
 }
 
 type IgniteDatePickerProps = {
+    preset?: FieldPresets;
     value: string | null;
     onChange: (date: Date) => void;
     placeholder?: string;
@@ -41,6 +44,7 @@ const iosModeMap: Record<DatePickerType, IOSMode> = {
 };
 
 export const IgniteDatePicker: React.FC<IgniteDatePickerProps> = ({
+    preset = 'default',
     value,
     onChange,
     placeholder = 'Select date',
@@ -61,6 +65,9 @@ export const IgniteDatePicker: React.FC<IgniteDatePickerProps> = ({
     const currentDate = Time.toJSDate(value || Time.getISODateNow());
     const formattedDate = value ? Time.formatDate(value, DateFormat.DATE_WITH_TIME_SECONDS) : placeholder;
 
+    const presetStyles = $fieldPresets[preset];
+    const $inputText = [...presetStyles.input];
+
     // Android: native dialog, auto-closes on select
     const handleAndroidChange = (_event: DateTimePickerEvent, selectedDate?: Date) => {
         if (_event.type === 'set' && selectedDate) {
@@ -76,6 +83,7 @@ export const IgniteDatePicker: React.FC<IgniteDatePickerProps> = ({
     if (Platform.OS === 'android') {
         return (
             <FieldModal
+                preset={preset}
                 labelTx={'common:date'}
                 style={style}
                 disabled={disabled}
@@ -106,6 +114,7 @@ export const IgniteDatePicker: React.FC<IgniteDatePickerProps> = ({
     // iOS — spinner inside FieldModal with Done/Cancel header
     return (
         <FieldModal
+            preset={preset}
             labelTx={'common:date'}
             style={style}
             disabled={disabled}
@@ -149,16 +158,6 @@ export const IgniteDatePicker: React.FC<IgniteDatePickerProps> = ({
 };
 
 /* ── DatePicker-specific styles ── */
-
-const $inputText: ThemedStyle<TextStyle> = ({ colors, typography }) => ({
-    flex: 1,
-    fontFamily: typography.primary.normal,
-    fontSize: 14,
-    height: 54,
-    lineHeight: 54,
-    paddingHorizontal: 16,
-    color: colors.textDim,
-});
 
 const $modalHeader: ThemedStyle<ViewStyle> = () => ({
     flexDirection: 'row',

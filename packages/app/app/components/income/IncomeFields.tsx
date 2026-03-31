@@ -39,6 +39,7 @@ export const IncomeFields: FC<IProps> = function IncomeFields(_props) {
         >
             <View style={$fieldWrapper as undefined}>
                 <IconField
+                    labelTx={'common:selectIcon'}
                     value={form.iconId}
                     disabled={isView}
                     onChange={(newIcon) => {
@@ -48,7 +49,8 @@ export const IncomeFields: FC<IProps> = function IncomeFields(_props) {
                     }}
                 />
                 <TextField
-                    focusable={true}
+                    preset={'underlineBig'}
+                    focusOnMount={true}
                     inputWrapperStyle={themed($inputWrapperStyle)}
                     labelTx={'incomeScreen:incomeName'}
                     value={String(form.incomeName)}
@@ -67,6 +69,7 @@ export const IncomeFields: FC<IProps> = function IncomeFields(_props) {
                     }}
                 />
                 <CurrencyDropdown
+                    preset={'underline'}
                     style={$fieldCurrency}
                     disabled={isView}
                     helperTx={errors?.currencyId}
