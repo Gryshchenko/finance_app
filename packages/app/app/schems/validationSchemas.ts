@@ -77,11 +77,17 @@ const buildTransactionCreateSchema = () => {
         amount: Yup.number()
             .min(Number.MIN_VALUE, translationsKeys.valueTooShort)
             .max(Number.MAX_VALUE, translationsKeys.valueTooLong),
+        amountInCurrency: Yup.number()
+            .min(Number.MIN_VALUE, translationsKeys.valueTooShort)
+            .max(Number.MAX_VALUE, translationsKeys.valueTooLong),
         description: Yup.string()
             .required(translationsKeys.valueRequired)
             .min(3, translationsKeys.valueTooShort)
             .max(150, translationsKeys.valueTooLong),
         currencyId: Yup.number()
+            .min(Number.MIN_VALUE, translationsKeys.valueTooShort)
+            .max(Number.MAX_VALUE, translationsKeys.valueTooLong),
+        sourceCurrencyId: Yup.number()
             .min(Number.MIN_VALUE, translationsKeys.valueTooShort)
             .max(Number.MAX_VALUE, translationsKeys.valueTooLong),
         createdAt: Yup.date().min(twentyYearsAgo, translationsKeys.valueTooShort).max(now, translationsKeys.valueTooLong),

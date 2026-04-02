@@ -50,6 +50,7 @@ export function AccountBox({
                 styles: {
                     container: BoxProps?.styles?.container,
                 },
+                payload: BoxProps?.payload,
             }}
         />
     );

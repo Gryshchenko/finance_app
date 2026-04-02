@@ -1,6 +1,7 @@
 import { FC, FunctionComponent } from 'react';
 import { StyleProp, View, ViewStyle } from 'react-native';
-import { TransactionType } from 'tenpercent/shared';
+import { TransactionType, Utils } from 'tenpercent/shared';
+import { IRate } from 'tenpercent/shared/dist/interfaces/IRate';
 
 import { AccountDropdown } from '@/components/account/AccountDropdown';
 import { CategoryDropdown } from '@/components/category/CateogryDropdown';
@@ -16,6 +17,7 @@ import { ITransactionClient } from '@/interfaces/ITransactionClient';
 
 interface IProps {
     form: Partial<ITransactionClient>;
+    rates?: IRate | undefined;
     errors?: Partial<Record<keyof ITransactionClient, TxKeyPath>>;
     handleChange?: (key: string, value: string | number) => void;
     isView: boolean;
@@ -28,10 +30,11 @@ interface IProps {
 }
 
 export const TransactionFields: FC<IProps> = function TransactionFields(_props) {
-    const { isView, form, handleChange, handleSave, edit, cancel, onDelete, errors, isEdit, isCreate } = _props;
+    const { isView, form, handleChange, handleSave, edit, cancel, onDelete, errors, isEdit, isCreate, rates } = _props;
     const { getCurrencySymbol } = useCurrency();
+    const { sourceCurrencyId, currencyId } = form;
 
-    const renderInputs = () => {
+    const renderDropdownInputs = () => {
         switch (form.transactionTypeId) {
             case TransactionType.Transafer:
                 return (
@@ -105,31 +108,16 @@ export const TransactionFields: FC<IProps> = function TransactionFields(_props) 
         }
     };
 
-    return (
-        <GeneralDetailView
-            isCreate={isCreate}
-            isEdit={isEdit}
-            isView={isView}
-            onEdit={edit}
-            onCancel={cancel}
-            onSave={handleSave}
-            onDelete={onDelete}
-        >
-            <View style={$fieldWrapper as undefined}>
-                {/*<Field*/}
-                {/*    Component={CurrencyField as FunctionComponent<unknown>}*/}
-                {/*    componentProps={{*/}
-                {/*        preset: 'underlineBig',*/}
-                {/*        focusOnMount: true,*/}
-                {/*        onChangeCleaned: (v: string) => handleChange?.('amount', v),*/}
-                {/*        currency: getCurrencySymbol(form.currencyId!),*/}
-                {/*        value: String(form.amount!),*/}
-                {/*        editable: !isView,*/}
-                {/*        helperTx: errors?.amount,*/}
-                {/*        labelTx: 'common:amount',*/}
-                {/*        status: errors?.amount ? 'error' : undefined,*/}
-                {/*    }}*/}
-                {/*/>*/}
+    const renderAmountInputs = () => {
+        const showDualCurrency =
+            !!sourceCurrencyId &&
+            !!currencyId &&
+            !isNaN(sourceCurrencyId) &&
+            !isNaN(currencyId) &&
+            sourceCurrencyId !== currencyId;
+
+        if (showDualCurrency) {
+            return (
                 <View style={$twoAmountFieldWrapper}>
                     <View style={$twoAmountField}>
                         <Field
@@ -137,13 +125,18 @@ export const TransactionFields: FC<IProps> = function TransactionFields(_props) 
                             componentProps={{
                                 preset: 'underline',
                                 focusOnMount: true,
-                                onChangeCleaned: (v: string) => handleChange?.('amount', v),
-                                currency: getCurrencySymbol(form.currencyId!),
-                                value: String(form.amount!),
+                                onChangeCleaned: (v: string) => {
+                                    handleChange?.('amountInCurrency', v);
+                                    if (rates && rates.rate > 0 && !isNaN(Number(v))) {
+                                        handleChange?.('amount', Utils.roundNumber(Number(v) * rates.rate));
+                                    }
+                                },
+                                currency: getCurrencySymbol(form.sourceCurrencyId!),
+                                value: String(form.amountInCurrency!),
                                 editable: !isView,
-                                helperTx: errors?.amount,
+                                helperTx: errors?.amountInCurrency,
                                 labelTx: 'common:amount',
-                                status: errors?.amount ? 'error' : undefined,
+                                status: errors?.amountInCurrency ? 'error' : undefined,
                             }}
                         />
                     </View>
@@ -164,8 +157,40 @@ export const TransactionFields: FC<IProps> = function TransactionFields(_props) 
                         />
                     </View>
                 </View>
+            );
+        } else {
+            return (
+                <Field
+                    Component={CurrencyField as FunctionComponent<unknown>}
+                    componentProps={{
+                        preset: 'underlineBig',
+                        focusOnMount: true,
+                        onChangeCleaned: (v: string) => handleChange?.('amount', v),
+                        currency: getCurrencySymbol(form.currencyId!),
+                        value: String(form.amount!),
+                        editable: !isView,
+                        helperTx: errors?.amount,
+                        labelTx: 'common:amount',
+                        status: errors?.amount ? 'error' : undefined,
+                    }}
+                />
+            );
+        }
+    };
 
-                {renderInputs()}
+    return (
+        <GeneralDetailView
+            isCreate={isCreate}
+            isEdit={isEdit}
+            isView={isView}
+            onEdit={edit}
+            onCancel={cancel}
+            onSave={handleSave}
+            onDelete={onDelete}
+        >
+            <View style={$fieldWrapper as undefined}>
+                {renderAmountInputs()}
+                {renderDropdownInputs()}
 
                 <IgniteDatePicker
                     preset={'underline'}

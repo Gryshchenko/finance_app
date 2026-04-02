@@ -28,6 +28,7 @@ export interface ItemBoxProps extends Omit<IBoxProps, 'children' | 'styles' | 'o
     BoxProps?: {
         BoxDraggableItemProps?: IBoxDraggableItem;
         text?: string;
+        payload?: Record<string, unknown>;
         styles?: {
             container?: ViewStyle;
         };
@@ -64,6 +65,7 @@ export default memo(function ItemBox({
             type={type}
             BoxDraggableItemProps={BoxProps?.BoxDraggableItemProps}
             styles={BoxProps?.styles}
+            payload={BoxProps?.payload}
         >
             <View style={themed($textContainer)}>
                 <Text numberOfLines={1} ellipsizeMode="tail" style={[themed($title), styles?.title]}>

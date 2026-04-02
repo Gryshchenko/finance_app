@@ -1,9 +1,10 @@
 import { useNavigation } from '@react-navigation/native';
 import { NativeStackScreenProps } from '@react-navigation/native-stack';
-import { ITransaction, TransactionType } from 'tenpercent/shared';
+import { TransactionType } from 'tenpercent/shared';
 
 import { TransactionCreate } from '@/components/transaction/TransactionCreate';
 import { translate } from '@/i18n/translate';
+import { ITransactionClient } from '@/interfaces/ITransactionClient';
 import { OverviewTabParamList } from '@/navigators/OverviewNavigator';
 import { GenericListScreen } from '@/screens/GenericListScreen';
 import { OverviewPath } from '@/types/OverviewPath';
@@ -26,7 +27,7 @@ const getScreenTitle = (typeId?: number): string => {
 
 export const HistoryTransactionCreateScreen = function TransactionCreateScreen(_props: Props) {
     const navigation = useNavigation();
-    const params = _props?.route?.params as { payload?: Partial<ITransaction> } | undefined;
+    const params = _props?.route?.params as { payload?: Partial<ITransactionClient> } | undefined;
     const payload = params?.payload;
 
     return (

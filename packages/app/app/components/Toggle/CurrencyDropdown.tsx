@@ -11,18 +11,18 @@ type CurrencyDropdownProps = {
     value?: number;
     onChange?: (item: ICurrency) => void;
     style?: StyleProp<TextStyle>;
-    disabled?: boolean;
     filter?: (items: ICurrency[] | undefined) => ICurrency[];
     helperTx?: TxKeyPath;
     status?: 'error' | 'disabled';
     preset?: TextFieldPresets;
+    editable?: boolean;
 };
 
 export const CurrencyDropdown: React.FC<CurrencyDropdownProps> = ({
     value,
     onChange,
     style,
-    disabled,
+    editable,
     filter,
     helperTx,
     status,
@@ -36,7 +36,7 @@ export const CurrencyDropdown: React.FC<CurrencyDropdownProps> = ({
             onChange={onChange}
             value={value}
             labelTx={'common:currency'}
-            disabled={disabled}
+            editable={editable}
             queryKey={'currencies'}
             fetcher={fetchCurrencies}
             filter={filter}

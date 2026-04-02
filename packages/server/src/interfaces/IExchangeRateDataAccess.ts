@@ -1,4 +1,4 @@
-import { IRate } from 'interfaces/IRate';
+import { IRate } from '../../../shared/src/interfaces/IRate';
 
 export interface IExchangeRateDataAccess {
     post(baseCurrency: string, targetCurrencies: Record<string, number>): Promise<boolean>;

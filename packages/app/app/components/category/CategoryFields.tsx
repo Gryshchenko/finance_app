@@ -48,6 +48,7 @@ export const CategoryFields: FC<IProps> = function CategoryFields(_props) {
                     }}
                 />
                 <TextField
+                    preset={'underlineBig'}
                     focusOnMount={true}
                     inputWrapperStyle={themed($inputWrapperStyle)}
                     labelTx={'common:categoryName'}
@@ -67,8 +68,9 @@ export const CategoryFields: FC<IProps> = function CategoryFields(_props) {
                     }}
                 />
                 <CurrencyDropdown
+                    preset={'underline'}
                     style={$fieldCurrency}
-                    disabled={isView || isEdit}
+                    editable={!isView}
                     helperTx={errors?.currencyId}
                     status={errors?.currencyId ? 'error' : undefined}
                     value={form.currencyId}

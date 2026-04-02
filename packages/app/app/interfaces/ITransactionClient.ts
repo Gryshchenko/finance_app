@@ -1,6 +1,8 @@
 import { ITransaction } from 'tenpercent/shared';
+import { IRate } from 'tenpercent/shared/dist/interfaces/IRate';
 
 export interface ITransactionClient extends ITransaction {
-    destinationCurrencyId?: number;
-    amountConverter?: number;
+    sourceCurrencyId?: number;
+    amountInCurrency?: number;
+    rates: IRate | undefined;
 }

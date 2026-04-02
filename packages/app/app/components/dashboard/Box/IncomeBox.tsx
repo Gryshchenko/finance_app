@@ -39,6 +39,7 @@ export function IncomeBox({ title, value, icon, id, onDragStart, onDragEnd, isDr
                 styles: {
                     container: BoxProps?.styles?.container,
                 },
+                payload: BoxProps?.payload,
             }}
         />
     );

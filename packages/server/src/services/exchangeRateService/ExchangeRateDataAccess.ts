@@ -5,7 +5,7 @@ import { DBError } from 'src/utils/errors/DBError';
 import { BaseError } from 'src/utils/errors/BaseError';
 import { NotFoundError } from 'src/utils/errors/NotFoundError';
 import { isBaseError } from 'src/utils/errors/isBaseError';
-import { IRate } from 'interfaces/IRate';
+import { IRate } from '../../../../shared/src/interfaces/IRate';
 
 export default class ExchangeRateDataAccess extends LoggerBase implements IExchangeRateDataAccess {
     private readonly _db: IDatabaseConnection;

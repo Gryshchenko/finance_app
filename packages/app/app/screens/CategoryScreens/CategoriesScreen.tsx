@@ -1,5 +1,6 @@
 import { FC } from 'react';
 import { useNavigation } from '@react-navigation/native';
+import { NativeStackScreenProps } from '@react-navigation/native-stack';
 import { ICategory } from 'tenpercent/shared';
 import { TransactionFieldType } from 'tenpercent/shared';
 import { TransactionType } from 'tenpercent/shared';
@@ -8,7 +9,8 @@ import { AddButton } from '@/components/buttons/AddButton';
 import { Categories } from '@/components/category/Categories';
 import { useAppQuery } from '@/hooks/useAppQuery';
 import { translate } from '@/i18n/translate';
-import { MainTabScreenProps } from '@/navigators/OverviewNavigator';
+import { CategoriesPath } from '@/navigators/CategoriesStackNavigator';
+import { MainTabScreenProps, OverviewTabParamList } from '@/navigators/OverviewNavigator';
 import { GenericListScreen } from '@/screens/GenericListScreen';
 import { GeneralApiProblemKind } from '@/services/api/apiProblem';
 import { CategoryService } from '@/services/CategoryService';
@@ -34,7 +36,9 @@ export async function fetchCategories(): Promise<ICategory[]> {
     }
 }
 
-export const CategoriesScreen: FC<MainTabScreenProps<'categories'>> = function ExpensesScreen(_props) {
+type Props = NativeStackScreenProps<OverviewTabParamList, CategoriesPath.Categories>;
+
+export const CategoriesScreen = function ExpensesScreen(_props: Props) {
     const navigation = useNavigation();
     const { isError, data, isPending } = useAppQuery<ICategory[] | undefined>(['categories'], async () => fetchCategories());
 

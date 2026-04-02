@@ -5,7 +5,7 @@ type QueryFn<T> = () => Promise<T>;
 export function useAppQuery<TData>(
     key: string | any[],
     queryFn: QueryFn<TData>,
-    options?: UseQueryOptions<TData>,
+    options?: Omit<UseQueryOptions<TData>, 'queryKey' | 'queryFn'>,
 ): UseQueryResult<TData> {
     return useQuery<TData>({
         queryKey: Array.isArray(key) ? key : [key],

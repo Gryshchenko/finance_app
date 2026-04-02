@@ -5,7 +5,7 @@ import { IBalance } from '../../../../shared/src/interfaces/IBalance';
 import { IDBTransaction } from 'interfaces/IDatabaseConnection';
 import { IProfileService } from 'interfaces/IProfileService';
 import { Utils } from 'tenpercent/shared';
-import { IRate } from 'interfaces/IRate';
+import { IRate } from '../../../../shared/src/interfaces/IRate';
 import { CustomError } from 'src/utils/errors/CustomError';
 import { HttpCode } from 'tenpercent/shared';
 import { ErrorCode } from 'tenpercent/shared';

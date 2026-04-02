@@ -38,6 +38,7 @@ export default memo(function DashboardAccount(props: IDashboardItem<IAccountList
                     }}
                     BoxProps={{
                         styles: BoxProps?.styles,
+                        payload: { currencyId: item.currencyId },
                     }}
                     id={String(item.accountId)}
                     key={item.accountName}
@@ -71,6 +72,8 @@ export default memo(function DashboardAccount(props: IDashboardItem<IAccountList
                                                 transactionTypeId: TransactionType.Transafer,
                                                 accountId: item.accountId,
                                                 targetAccountId: inWorkDropItem.id,
+                                                currencyId: item.currencyId,
+                                                sourceCurrencyId: inWorkDropItem.payload?.currencyId,
                                             },
                                         },
                                     });
@@ -84,7 +87,8 @@ export default memo(function DashboardAccount(props: IDashboardItem<IAccountList
                                             transactionTypeId: TransactionType.Income,
                                             accountId: item.accountId,
                                             incomeId: inWorkDropItem.id,
-                                            sourceCurrencyId: inWorkDropItem.id,
+                                            currencyId: item.currencyId,
+                                            sourceCurrencyId: inWorkDropItem.payload?.currencyId,
                                         },
                                     },
                                 });

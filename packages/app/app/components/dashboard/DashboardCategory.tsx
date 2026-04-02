@@ -38,6 +38,7 @@ export default memo(function DashboardCategory(props: IDashboardItem<ICategory>)
                     }}
                     BoxProps={{
                         styles: BoxProps?.styles,
+                        payload: { currencyId: item.currencyId },
                     }}
                     id={String(item.categoryId)}
                     title={item.categoryName}
@@ -61,6 +62,8 @@ export default memo(function DashboardCategory(props: IDashboardItem<ICategory>)
                                         transactionTypeId: TransactionType.Expense,
                                         categoryId: item.categoryId,
                                         accountId: inWorkDropItem.id,
+                                        currencyId: item.currencyId,
+                                        sourceCurrencyId: inWorkDropItem.payload?.currencyId,
                                     },
                                 },
                             });

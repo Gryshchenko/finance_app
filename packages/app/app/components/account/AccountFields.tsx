@@ -87,10 +87,10 @@ export const AccountFields: FC<IProps> = function AccountFields(_props) {
                 <CurrencyDropdown
                     preset={'underline'}
                     style={$fieldCurrency}
-                    disabled={isView || isEdit}
                     helperTx={errors?.currencyId}
                     status={errors?.currencyId ? 'error' : undefined}
                     value={form.currencyId}
+                    editable={!isView}
                     onChange={(item: ICurrency) => {
                         if (handleChange) {
                             handleChange('currencyId', item.currencyId);

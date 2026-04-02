@@ -5,7 +5,7 @@ import { LoggerBase } from 'helper/logger/LoggerBase';
 import { IExchangeRateService } from 'interfaces/IExchangeRateService';
 import { IExchangeRateDataAccess } from 'interfaces/IExchangeRateDataAccess';
 import { ICurrencyService } from 'interfaces/ICurrencyService';
-import { IRate } from 'interfaces/IRate';
+import { IRate } from '../../../../shared/src/interfaces/IRate';
 
 export default class ExchangeRateService extends LoggerBase implements IExchangeRateService {
     private readonly _rateProvider: IRateProvider;

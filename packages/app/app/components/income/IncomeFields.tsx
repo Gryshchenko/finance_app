@@ -71,7 +71,7 @@ export const IncomeFields: FC<IProps> = function IncomeFields(_props) {
                 <CurrencyDropdown
                     preset={'underline'}
                     style={$fieldCurrency}
-                    disabled={isView}
+                    editable={!isView}
                     helperTx={errors?.currencyId}
                     status={errors?.currencyId ? 'error' : undefined}
                     value={form.currencyId}

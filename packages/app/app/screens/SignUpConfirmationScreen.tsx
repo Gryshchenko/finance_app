@@ -1,11 +1,14 @@
-import { FC, useEffect, useState } from 'react';
+import { FC, useCallback, useEffect, useState } from 'react';
 import { TextStyle, View, ViewStyle } from 'react-native';
 import { KeyboardAwareScrollView } from 'react-native-keyboard-controller';
-import { IEmailConfirmationResponse, Utils } from 'tenpercent/shared';
-import { IEmailResendResponse } from 'tenpercent/shared';
-import { EmailConfirmationStatusType } from 'tenpercent/shared';
-import { ErrorCode } from 'tenpercent/shared';
-import { Time } from 'tenpercent/shared';
+import {
+    EmailConfirmationStatusType,
+    ErrorCode,
+    IEmailConfirmationResponse,
+    IEmailResendResponse,
+    Time,
+    Utils,
+} from 'tenpercent/shared';
 
 import { Button } from '@/components/buttons/Button';
 import { TextButton } from '@/components/buttons/TextButton';
@@ -34,16 +37,15 @@ interface SignUpConfirmationScreenProps extends AppStackScreenProps<'SignUpConfi
 const _logger: Logger = Logger.Of('SignUpConfirmationScreen');
 
 export const SignUpConfirmationScreen: FC<SignUpConfirmationScreenProps> = () => {
-    const { form, handleChange, save, errors, setErrors } = useEditView<{ confirmationCode: string | null }>(
+    const { form, handleChange, errors, setErrors } = useEditView<{ confirmationCode: string | null }>(
         { confirmationCode: null },
         signUpConfirmationShema,
     );
     const [isResendDisabled, setIsResendDisabled] = useState(false);
     const [resendTimer, setResendTimer] = useState(0);
-    const { doSetUserConfirmed } = useAuth();
+    const { doSetUserConfirmed, doLogout } = useAuth();
 
     const { themed } = useAppTheme();
-    const { doLogout } = useAuth();
 
     function setTimer(expiresAt: string) {
         const seconds = Time.getSecondsLeft(expiresAt);
@@ -52,6 +54,49 @@ export const SignUpConfirmationScreen: FC<SignUpConfirmationScreenProps> = () =>
             setIsResendDisabled(true);
         }
     }
+
+    const resend = useCallback(async () => {
+        const userId = AuthService.instance().userId;
+        if (!userId) {
+            _logger.error(`userId missed on resend action`);
+            ToastService.info({ message: 'errorCode:UNEXPECTED_PROPERTY' });
+            return;
+        }
+        try {
+            const response = await SignupService.instance().doSignUpEmailResend({ userId });
+            switch (response.kind) {
+                case GeneralApiProblemKind.Ok: {
+                    const { expiresAt, status } = response.data as IEmailResendResponse;
+                    if (status === EmailConfirmationStatusType.Confirmed) {
+                        doSetUserConfirmed();
+                    } else {
+                        ToastService.info({ message: 'signUpConfirmation:codeSent' });
+                        setTimer(expiresAt);
+                        handleChange('confirmationCode', '');
+                    }
+                    break;
+                }
+                case GeneralApiProblemKind.BadData: {
+                    const responseErrors = response?.errors ?? [];
+                    for (const error of responseErrors) {
+                        const errorCode = error?.errorCode;
+                        if (errorCode === ErrorCode.EMAIL_VERIFICATION_CODE_EXPIRED_ERROR) {
+                            ToastService.error({ message: 'errorCode:EMAIL_VERIFICATION_CODE_EXPIRED_ERROR' });
+                        } else if (errorCode === ErrorCode.EMAIL_VERIFICATION_CODE_STILL_ACTIVE_ERROR) {
+                            ToastService.error({ message: 'errorCode:EMAIL_VERIFICATION_CODE_STILL_ACTIVE_ERROR' });
+                        }
+                    }
+                    break;
+                }
+                default: {
+                    buildGeneralApiBaseHandler(response);
+                }
+            }
+        } catch (e) {
+            _logger.error(`Resend failed due reason: ${(e as { message: string }).message}`);
+            AlertService.error(translate('common:error'), translate('errorCode:UNEXPECTED_PROPERTY' as TxKeyPath));
+        }
+    }, [doSetUserConfirmed, handleChange]);
 
     useEffect(() => {
         const handler = async () => {
@@ -74,23 +119,20 @@ export const SignUpConfirmationScreen: FC<SignUpConfirmationScreenProps> = () =>
             }
         };
         void handler();
-    }, []);
+    }, [resend]);
 
     useEffect(() => {
-        let timer: unknown;
-        if (isResendDisabled && resendTimer > 0) {
-            timer = setTimeout(() => setResendTimer(resendTimer - 1), 1000) as unknown;
-        } else if (resendTimer === 0) {
-            setIsResendDisabled(false);
-            setResendTimer(0);
-            clearTimeout(timer as number);
+        if (!isResendDisabled || resendTimer <= 0) {
+            if (resendTimer <= 0) setIsResendDisabled(false);
+            return;
         }
-        return () => clearTimeout(timer as number);
+        const timer: ReturnType<typeof setTimeout> = setTimeout(() => setResendTimer((prev) => prev - 1), 1000);
+        return () => clearTimeout(timer);
     }, [isResendDisabled, resendTimer]);
 
-    async function verify() {
+    async function verify(codeOverride?: string) {
         try {
-            const { confirmationCode } = form;
+            const confirmationCode = codeOverride ?? form.confirmationCode;
             if (resendTimer <= 0) {
                 ToastService.error({ message: 'signUpConfirmation:expiredCode' });
                 return;
@@ -117,8 +159,8 @@ export const SignUpConfirmationScreen: FC<SignUpConfirmationScreenProps> = () =>
                     break;
                 }
                 case GeneralApiProblemKind.BadData: {
-                    const errors = response.errors ?? [];
-                    for (const error of errors) {
+                    const responseErrors = response.errors ?? [];
+                    for (const error of responseErrors) {
                         const payload = error?.payload;
                         const errorCode = error?.errorCode;
                         if (payload?.field === 'confirmationCode') {
@@ -139,49 +181,6 @@ export const SignUpConfirmationScreen: FC<SignUpConfirmationScreenProps> = () =>
         }
     }
 
-    async function resend() {
-        const userId = AuthService.instance().userId;
-        if (!userId) {
-            _logger.error(`userId missed on verify action`);
-            ToastService.info({ message: 'errorCode:UNEXPECTED_PROPERTY' });
-            return;
-        }
-        try {
-            const response = await SignupService.instance().doSignUpEmailResend({ userId });
-            switch (response.kind) {
-                case GeneralApiProblemKind.Ok: {
-                    const { expiresAt, status } = response.data as IEmailResendResponse;
-                    if (status === EmailConfirmationStatusType.Confirmed) {
-                        doSetUserConfirmed();
-                    } else {
-                        ToastService.info({ message: 'signUpConfirmation:codeSent' });
-                        setTimer(expiresAt);
-                        handleChange('confirmationCode', '');
-                    }
-                    break;
-                }
-                case GeneralApiProblemKind.BadData: {
-                    const errors = response?.errors ?? [];
-                    for (const error of errors) {
-                        const errorCode = error?.errorCode;
-                        if (errorCode === ErrorCode.EMAIL_VERIFICATION_CODE_EXPIRED_ERROR) {
-                            ToastService.error({ message: 'errorCode:EMAIL_VERIFICATION_CODE_EXPIRED_ERROR' });
-                        } else if (errorCode === ErrorCode.EMAIL_VERIFICATION_CODE_STILL_ACTIVE_ERROR) {
-                            ToastService.error({ message: 'errorCode:EMAIL_VERIFICATION_CODE_STILL_ACTIVE_ERROR' });
-                        }
-                    }
-                    break;
-                }
-                default: {
-                    buildGeneralApiBaseHandler(response);
-                }
-            }
-        } catch (e) {
-            _logger.error(`Resend failed due reason: ${(e as { message: string }).message}`);
-            AlertService.error(translate('common:error'), translate('errorCode:UNEXPECTED_PROPERTY' as TxKeyPath));
-        }
-    }
-
     return (
         <Screen preset="auto" contentContainerStyle={themed($screenContentContainer)} safeAreaEdges={['top', 'bottom']}>
             <HeaderTitle subLogoText={'loginScreen:authorization'} />
@@ -197,12 +196,7 @@ export const SignUpConfirmationScreen: FC<SignUpConfirmationScreenProps> = () =>
                         status={errors?.confirmationCode ? 'error' : undefined}
                         onFinish={async (code: string) => {
                             handleChange('confirmationCode', code);
-                            await save();
-                            if (resendTimer > 0) {
-                                await verify();
-                            } else {
-                                ToastService.error({ message: 'signUpConfirmation:expiredCode' });
-                            }
+                            await verify(code);
                         }}
                     />
                 </KeyboardAwareScrollView>
@@ -220,7 +214,7 @@ export const SignUpConfirmationScreen: FC<SignUpConfirmationScreenProps> = () =>
                             !Utils.isEmpty(errors?.confirmationCode as string) ||
                             Utils.isEmpty(form?.confirmationCode as string)
                         }
-                        onPress={verify}
+                        onPress={() => verify()}
                     />
                     <TextButton
                         tx={'signUpConfirmation:resendButton'}

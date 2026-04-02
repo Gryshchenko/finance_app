@@ -12,7 +12,10 @@ export interface CurrencyContextType {
     getCurrency: (currencyId: number) => ICurrency | undefined;
     getCurrencySymbol: (currencyId: number) => string;
     defaultCurrency: string;
+    defaultCurrencyId: number;
     currencies: Map<number, ICurrency>;
+    isLoading: boolean;
+    isError: boolean;
 }
 
 export const fetchCurrencies = async (): Promise<ICurrency[] | undefined> => {
@@ -48,7 +51,7 @@ export interface CurrencyProviderProps {}
 const _logger = Logger.Of('CurrencyContext');
 
 export const CurrencyProvider: FC<PropsWithChildren<CurrencyProviderProps>> = ({ children }) => {
-    const { data } = useAppQuery<ICurrency[] | undefined>('currencies', fetchCurrencies);
+    const { data, isLoading, isError } = useAppQuery<ICurrency[] | undefined>('currencies', fetchCurrencies);
     const [currencies, setCurrencies] = useState<Map<number, ICurrency>>(new Map());
     const getDefaultCurrency = (): ICurrency => {
         return {
@@ -73,6 +76,9 @@ export const CurrencyProvider: FC<PropsWithChildren<CurrencyProviderProps>> = ({
         getCurrencySymbol,
         currencies,
         defaultCurrency: '$',
+        defaultCurrencyId: 1,
+        isLoading,
+        isError,
     };
 
     useEffect(() => {

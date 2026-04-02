@@ -39,6 +39,7 @@ export function CategoryBox({ title, value, icon, id, isDroppable, onDrop, BoxPr
                 styles: {
                     container: BoxProps?.styles?.container,
                 },
+                payload: BoxProps?.payload,
             }}
         />
     );

@@ -20,10 +20,11 @@ export interface IBoxDragAndDrop<T> {
     isDroppable: boolean;
 }
 
-export type IDrag = { id: string; type: ItemType; element?: JSX.Element; currencyId?: number };
+export type IDrag = { id: string; type: ItemType; element?: JSX.Element; payload?: Record<string, unknown> };
 
 export interface IBoxProps<T = unknown> extends IBoxDragAndDrop<T> {
     id: string;
+    payload?: Record<string, unknown>;
     droppableId: string;
     children: ReactNode;
     type: ItemType;
@@ -49,6 +50,7 @@ export function Box(props: IBoxProps) {
         styles,
         droppableId,
         BoxDraggableItemProps = {},
+        payload,
     } = props;
     const viewRef = useRef<View>(null);
     const tapTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
@@ -102,6 +104,7 @@ export function Box(props: IBoxProps) {
                         wasDragged.current = false;
                         tapTimerRef.current = setTimeout(() => {
                             if (!wasDragged.current) {
+                                console.log('tap');
                                 onTap?.();
                             }
                             tapTimerRef.current = null;
@@ -143,7 +146,7 @@ export function Box(props: IBoxProps) {
                     }}
                     draggableId={droppableId}
                     dragDisabled={!isDraggable}
-                    data={{ id, type }}
+                    data={{ id, type, payload }}
                 >
                     <BoxDraggableItem
                         ref={viewRef}

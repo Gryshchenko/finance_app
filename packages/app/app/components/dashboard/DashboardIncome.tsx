@@ -36,6 +36,7 @@ export default memo(function DashboardIncome(props: IDashboardItem<IIncome>) {
                     }}
                     BoxProps={{
                         styles: BoxProps?.styles,
+                        payload: { currencyId: item.currencyId },
                     }}
                     icon={item.iconId as CategoryIconType}
                     id={String(item.incomeId)}

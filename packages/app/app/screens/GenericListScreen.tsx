@@ -52,7 +52,7 @@ export function GenericListScreen<T, B>({
 
 const $rightAlignTitle: TextStyle = {
     textAlign: 'center',
-    textTransform: 'capitalize',
+    textTransform: 'uppercase',
 };
 
 const $topAlignScreen: TextStyle = {

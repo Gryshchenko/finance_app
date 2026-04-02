@@ -16,6 +16,6 @@ currenciesRouter.use(tokenVerify, userStatusVerify(UserStatus.ACTIVE));
 
 currencyRouter.get('/', validateQuery({ currency: 'string' }), routesInputValidation([]), CurrencyController.get);
 
-currenciesRouter.get('/', routesInputValidation([]), CurrencyController.gets);
+currenciesRouter.get('/', validateQuery({}), routesInputValidation([]), CurrencyController.gets);
 
 export { currencyRouter, currenciesRouter };

@@ -1,4 +1,5 @@
 import { ComponentType, FC, useEffect, useMemo, useRef, useState } from 'react';
+// eslint-disable-next-line no-restricted-imports
 import { TextInput, TextStyle, ViewStyle } from 'react-native';
 import { ErrorCode, Utils } from 'tenpercent/shared';
 
@@ -222,7 +223,6 @@ export const SignUpScreen: FC<SignUpScreenProps> = (_props) => {
             />
             <CurrencyDropdown
                 value={currency}
-                disabled={false}
                 helperTx={currencyError}
                 status={Utils.isNotNull(currencyError) ? 'error' : undefined}
                 onChange={(v) => setCurrency(v.currencyCode)}

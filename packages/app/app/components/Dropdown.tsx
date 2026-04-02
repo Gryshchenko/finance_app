@@ -8,7 +8,7 @@ import { useAppQuery } from '@/hooks/useAppQuery';
 import { TxKeyPath } from '@/i18n';
 import { translate } from '@/i18n/translate';
 import { useAppTheme } from '@/theme/context';
-import { ThemedStyle } from '@/theme/types';
+import { ThemedStyle, type ThemedStyleArray } from '@/theme/types';
 
 import { FieldPresets, $fieldPresets } from './FieldPresets';
 
@@ -22,7 +22,7 @@ type DropdownProps<T> = {
     labelExtractor: (item: T) => string;
     labelTx?: TxKeyPath;
     style?: StyleProp<TextStyle>;
-    disabled?: boolean;
+    editable?: boolean;
     filter?: (items: T[] | undefined) => T[];
     helperTx?: TxKeyPath;
     helper?: string;
@@ -41,7 +41,7 @@ export function Dropdown<T>({
     labelExtractor,
     labelTx,
     style,
-    disabled,
+    editable,
     filter,
     HelperTextProps,
     status,
@@ -50,11 +50,16 @@ export function Dropdown<T>({
     helperTxOptions,
 }: DropdownProps<T>) {
     const { isError, data, isPending } = useAppQuery<T[] | undefined>(queryKey, fetcher);
-    const { themed } = useAppTheme();
+    const {
+        themed,
+        theme: { colors },
+    } = useAppTheme();
 
     const selected = data?.find((item) => keyExtractor(item) === String(value));
     const filteredData = filter ? filter(data) : data;
 
+    const disabled = editable === false || status === 'disabled';
+    const $inputStyles: ThemedStyleArray<TextStyle> = [themed($optionText)];
     const displayText = isPending
         ? `${translate('common:loading')}...`
         : isError
@@ -87,7 +92,8 @@ export function Dropdown<T>({
             renderTrigger={() => {
                 const $triggersText = [
                     ...presetStyles.input,
-                    selected && !isError ? $triggerTextSelected : $triggerTextNonSelected,
+                    disabled && $triggerTextNonSelected,
+                    !disabled && selected && !isError ? $triggerTextSelected : $triggerTextNonSelected,
                     isError && $errorText,
                 ];
                 return <Text style={themed($triggersText)}>{displayText}</Text>;
@@ -108,7 +114,7 @@ export function Dropdown<T>({
                             onPress={() => handleSelect(transaction)}
                         >
                             <View style={themed($option)}>
-                                <Text style={themed($optionText)}>{labelExtractor(transaction)}</Text>
+                                <Text style={themed($inputStyles)}>{labelExtractor(transaction)}</Text>
                             </View>
                         </ListItem>
                     );

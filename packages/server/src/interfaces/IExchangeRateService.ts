@@ -1,4 +1,4 @@
-import { IRate } from 'interfaces/IRate';
+import { IRate } from '../../../shared/src/interfaces/IRate';
 
 export interface IExchangeRateService {
     updateCurrencyRates(): Promise<void>;
