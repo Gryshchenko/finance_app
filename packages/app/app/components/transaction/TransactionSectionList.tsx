@@ -273,7 +273,7 @@ const $card: ThemedStyle<ViewStyle> = ({ colors }) => ({
     backgroundColor: '#ffffff',
     borderWidth: 1,
     borderColor: colors.separator,
-    padding: 20,
+    padding: 15,
     marginBottom: 8,
 });
 
@@ -301,9 +301,9 @@ const $labelContainer: ViewStyle = {
     flexDirection: 'column',
 };
 
-const $transactionName: ThemedStyle<TextStyle> = ({ colors }) => ({
+const $transactionName: ThemedStyle<TextStyle> = ({ colors, typography }) => ({
     fontSize: 16,
-    fontWeight: '500',
+    fontFamily: typography.fonts.funnelSans.bold,
     color: colors.text,
 });
 
@@ -335,9 +335,9 @@ const $amountContainer: ViewStyle = {
     marginLeft: 8,
 };
 
-const $amountText: ThemedStyle<TextStyle> = ({ colors }) => ({
+const $amountText: ThemedStyle<TextStyle> = ({ colors, typography }) => ({
     fontSize: 18,
-    fontWeight: '500',
+    fontFamily: typography.fonts.funnelSans.bold,
     color: colors.text,
 });
 

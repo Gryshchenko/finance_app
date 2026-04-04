@@ -75,7 +75,7 @@ export const CurrencyProvider: FC<PropsWithChildren<CurrencyProviderProps>> = ({
         getCurrency,
         getCurrencySymbol,
         currencies,
-        defaultCurrency: '$',
+        defaultCurrency: 'USD',
         defaultCurrencyId: 1,
         isLoading,
         isError,

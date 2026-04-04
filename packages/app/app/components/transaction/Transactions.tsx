@@ -39,7 +39,7 @@ export const Transactions: FC<ITransactionsPros> = function Transactions(_props)
 
 const $container: ThemedStyle<ViewStyle> = () => ({
     flex: 1,
-    paddingHorizontal: 24,
+    paddingHorizontal: 0,
 });
 
 const $containerStyleOverride: ThemedStyle<ViewStyle> = () => ({

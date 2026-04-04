@@ -7,6 +7,7 @@ import { TransactionFieldType } from 'tenpercent/shared';
 
 import { Transactions } from '@/components/transaction/Transactions';
 import { useAppQuery } from '@/hooks/useAppQuery';
+import { translate } from '@/i18n/translate';
 import { GenericListScreen } from '@/screens/GenericListScreen';
 import { GeneralApiProblemKind } from '@/services/api/apiProblem';
 import { TransactionService } from '@/services/TransactionService';
@@ -60,7 +61,7 @@ export const TransactionsScreen = function TransactionsScreen(_props: Props) {
 
     return (
         <GenericListScreen
-            name={name}
+            name={translate('transactionScreen:title', { name })}
             isError={isError}
             isPending={isPending}
             props={{

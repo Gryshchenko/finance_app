@@ -10,15 +10,15 @@ export class CurrencyUtils {
     ): string {
         const num = Number(value);
 
-        const mask = fractionDigits > 0 ? `${currency} 0,0.${'0'.repeat(fractionDigits)}` : `${currency} 0,0`;
+        const mask = fractionDigits > 0 ? `$0,0.${'0'.repeat(fractionDigits)}` : `$0,0`;
 
         if (!Number.isFinite(num) || num === 0) {
             return format(0, mask, { locale: en, rounding: 'truncate', currency });
         }
         if (String(value).length > 6 && useShort) {
-            return format(value, `${currency} 0a`, { locale: en, rounding: 'truncate', currency });
+            return format(value, `$0a`, { locale: en, rounding: 'truncate', currency });
         }
 
-        return format(num, mask, { locale: en, rounding: 'truncate' });
+        return format(num, mask, { locale: en, rounding: 'truncate', currency });
     }
 }

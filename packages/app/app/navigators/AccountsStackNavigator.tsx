@@ -5,7 +5,10 @@ import { AccountCreateScreen } from '@/screens/AccountScreens/AccountCreateScree
 import { AccountEditScreen } from '@/screens/AccountScreens/AccountEditScreen';
 import { AccountsScreen } from '@/screens/AccountScreens/AccountsScreen';
 import { AccountViewScreen } from '@/screens/AccountScreens/AccountViewScreen';
+import { TransactionCreateScreen } from '@/screens/TransactionsScreen/TransactionCreateScreen';
+import { TransactionEditScreen } from '@/screens/TransactionsScreen/TransactionEditScreen';
 import { TransactionsScreen } from '@/screens/TransactionsScreen/TransactionsScreen';
+import { TransactionViewScreen } from '@/screens/TransactionsScreen/TransactionViewScreen';
 import { TransactionPath } from '@/types/TransactionPath';
 
 const AccountsStack = createNativeStackNavigator();
@@ -33,6 +36,9 @@ function AccountsStackNavigator() {
             <AccountsStack.Screen name={AccountsPath.AccountView} component={AccountViewScreen} />
             <AccountsStack.Screen name={AccountsPath.AccountsCreate} component={AccountCreateScreen} />
             <AccountsStack.Screen name={AccountsPath.AccountEdit} component={AccountEditScreen} />
+            <AccountsStack.Screen name={TransactionPath.TransactionEdit} component={TransactionEditScreen} />
+            <AccountsStack.Screen name={TransactionPath.TransactionView} component={TransactionViewScreen} />
+            <AccountsStack.Screen name={TransactionPath.TransactionCreate} component={TransactionCreateScreen} />
         </AccountsStack.Navigator>
     );
 }

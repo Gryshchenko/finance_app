@@ -33,7 +33,7 @@ export default memo(function DashboardAccount(props: IDashboardItem<IAccountList
                             params: {
                                 id: item.accountId,
                                 name: item.accountName,
-                                path: OverviewPath.Dashboard,
+                                path: OverviewPath.Balances,
                                 type: TransactionFieldType.Account,
                             },
                         });
