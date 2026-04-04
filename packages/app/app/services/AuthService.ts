@@ -25,8 +25,6 @@ export class AuthService {
         return AuthService._instance || (AuthService._instance = new AuthService());
     }
 
-    constructor() {}
-
     protected _token: string | null = null;
 
     protected _userId: number | null = null;

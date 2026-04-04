@@ -4,7 +4,6 @@ import { AccountIcon, IAccount, Utils } from 'tenpercent/shared';
 
 import { AccountFields } from '@/components/account/AccountFields';
 import { useEditView } from '@/hooks/useEditView';
-import { AccountsPath } from '@/navigators/AccountsStackNavigator';
 import { accountCreateSchema } from '@/schems/validationSchemas';
 import { AccountService } from '@/services/AccountService';
 import { GeneralApiProblemKind } from '@/services/api/apiProblem';

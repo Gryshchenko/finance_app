@@ -17,11 +17,11 @@ import { TransactionPath } from '@/types/TransactionPath';
 import { AppStackParamList, AppStackScreenProps } from './AppNavigator';
 
 export type OverviewTabParamList = {
-    dashboard: NavigatorScreenParams<IncomesStackParamList> | {};
-    incomes: NavigatorScreenParams<IncomesStackParamList> | {};
-    balances: NavigatorScreenParams<AccountsStackParamList> | {};
-    categories: NavigatorScreenParams<CategoriesStackParamList> | {};
-    transactions: NavigatorScreenParams<HistoryStackParamList> | {};
+    dashboard: NavigatorScreenParams<IncomesStackParamList> | undefined;
+    incomes: NavigatorScreenParams<IncomesStackParamList> | undefined;
+    balances: NavigatorScreenParams<AccountsStackParamList> | undefined;
+    categories: NavigatorScreenParams<CategoriesStackParamList> | undefined;
+    transactions: NavigatorScreenParams<HistoryStackParamList> | undefined;
     settings: undefined;
     demo: undefined;
 } & ParamListBase;

@@ -1,4 +1,3 @@
-import { useNavigation } from '@react-navigation/native';
 import { NativeStackScreenProps } from '@react-navigation/native-stack';
 import { IIncome } from 'tenpercent/shared';
 import { Utils } from 'tenpercent/shared';

@@ -12,6 +12,7 @@
  */
 
 import { useEffect, useState } from 'react';
+// eslint-disable-next-line import/order
 import { Platform } from 'react-native';
 
 if (__DEV__ && Platform.OS !== 'web') {

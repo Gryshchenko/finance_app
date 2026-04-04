@@ -14,10 +14,6 @@ export class ClientConfigService extends ApiAbstract {
         return ClientConfigService._instance || (ClientConfigService._instance = new ClientConfigService());
     }
 
-    constructor() {
-        super();
-    }
-
     public async doGetConfig(): Promise<
         | {
               kind: GeneralApiProblemKind.Ok;

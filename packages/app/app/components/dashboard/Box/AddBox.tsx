@@ -1,7 +1,6 @@
 import { Pressable, ViewStyle } from 'react-native';
 
 import ItemBox, { ItemType } from '@/components/dashboard/Box/ItemBox';
-import { iconRegistry } from '@/components/Icon';
 import { translate } from '@/i18n/translate';
 import { useAppTheme } from '@/theme/context';
 import { ThemedStyle } from '@/theme/types';

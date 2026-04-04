@@ -9,7 +9,6 @@ import { AddButton } from '@/components/buttons/AddButton';
 import { Incomes } from '@/components/income/Incomes';
 import { useAppQuery } from '@/hooks/useAppQuery';
 import { translate } from '@/i18n/translate';
-import { IncomePath } from '@/navigators/IncomesStackNavigator';
 import { GenericListScreen } from '@/screens/GenericListScreen';
 import { GeneralApiProblemKind } from '@/services/api/apiProblem';
 import { IncomeService } from '@/services/IncomeService';

@@ -5,7 +5,6 @@ import { IPagination } from 'tenpercent/shared';
 import { ITransactionListItem } from 'tenpercent/shared';
 import { TransactionFieldType } from 'tenpercent/shared';
 
-import { AddButton } from '@/components/buttons/AddButton';
 import { Transactions } from '@/components/transaction/Transactions';
 import { useAppQuery } from '@/hooks/useAppQuery';
 import { GenericListScreen } from '@/screens/GenericListScreen';

@@ -1,5 +1,6 @@
 import { NavigationState, PartialState } from '@react-navigation/native';
 
+// eslint-disable-next-line import/no-unresolved
 import * as storage from '@/utils/storage';
 
 import type { AppStackParamList } from './AppNavigator';

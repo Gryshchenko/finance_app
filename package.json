@@ -41,8 +41,8 @@
         "postinstall": "husky install",
         "prettier:write": "prettier \"**/*\" --write --ignore-unknown",
         "prettier:check": "prettier \"**/*\" --check --ignore-unknown",
-        "eslint": "pnpm --filter './packages/server' run lint && pnpm --filter './packages/app' run lint",
-        "eslint:check": "eslint --ext .js,.ts packages/",
+        "eslint": "pnpm --filter './packages/server' run eslint && pnpm --filter './packages/app' run eslint",
+        "eslint:check": "pnpm --filter './packages/server' run eslint:check && pnpm --filter './packages/app' run eslint:check",
         "prepare": "husky install",
         "android": "expo run:android",
         "ios": "expo run:ios"

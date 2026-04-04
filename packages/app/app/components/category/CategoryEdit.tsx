@@ -8,7 +8,6 @@ import { CategoryFields } from '@/components/category/CategoryFields';
 import { EmptyState } from '@/components/EmptyState';
 import { useInvalidateQuery } from '@/hooks/useAppQuery';
 import { useEditView } from '@/hooks/useEditView';
-import { CategoriesPath } from '@/navigators/CategoriesStackNavigator';
 import { categoryEditSchema } from '@/schems/validationSchemas';
 import { GeneralApiProblemKind } from '@/services/api/apiProblem';
 import { CategoryService } from '@/services/CategoryService';

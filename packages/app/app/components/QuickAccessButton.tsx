@@ -4,7 +4,6 @@ import { AuthenticationType } from 'expo-local-authentication';
 import { MaterialIcons } from '@expo/vector-icons';
 
 import { Text } from '@/components/Text';
-import { AuthContext } from '@/context/AuthContext';
 import { AuthService } from '@/services/AuthService';
 import { SecureBiometricStorage } from '@/services/SecureBiometricStorage';
 import { useAppTheme } from '@/theme/context';

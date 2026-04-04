@@ -52,10 +52,7 @@ export function Dropdown<T>({
     helperTxOptions,
 }: DropdownProps<T>) {
     const { isError, data, isPending } = useAppQuery<T[] | undefined>(queryKey, fetcher);
-    const {
-        themed,
-        theme: { colors },
-    } = useAppTheme();
+    const { themed } = useAppTheme();
 
     const selected = data?.find((item) => keyExtractor(item) === String(value));
     const filteredData = filter ? filter(data) : data;

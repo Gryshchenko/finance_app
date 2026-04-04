@@ -51,9 +51,8 @@ export async function fetchBalance(): Promise<IBalance | undefined> {
         return undefined;
     }
 }
-type Props = {};
 
-export const BalanceSummary: React.FC<Props> = () => {
+export const BalanceSummary: React.FC = () => {
     const { data: statsData } = useAppQuery<ISummary | undefined>('stats', fetchStats);
     const { data: balanceData } = useAppQuery<IBalance | undefined>('balance', fetchBalance);
     const { themed } = useAppTheme();

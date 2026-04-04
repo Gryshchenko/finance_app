@@ -106,7 +106,7 @@ export const OtpCodeInput: React.FC<Props> = ({
     );
 };
 
-export const $container: ThemedStyle<ViewStyle> = ({ spacing }) => ({
+export const $container: ThemedStyle<ViewStyle> = () => ({
     display: 'flex',
     flexDirection: 'column',
     height: 74,
@@ -137,7 +137,7 @@ const $input: ThemedStyle<TextStyle> = ({ colors, typography }) => ({
 const $inputFocus: ThemedStyle<TextStyle> = ({ colors }) => ({
     borderColor: colors.textDim,
 });
-const $helperStyle: ThemedStyle<TextStyle> = ({ spacing }) => ({
+const $helperStyle: ThemedStyle<TextStyle> = () => ({
     marginTop: -60,
     fontSize: 10,
 });

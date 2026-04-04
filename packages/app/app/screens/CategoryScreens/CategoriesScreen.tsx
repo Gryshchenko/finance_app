@@ -9,7 +9,6 @@ import { AddButton } from '@/components/buttons/AddButton';
 import { Categories } from '@/components/category/Categories';
 import { useAppQuery } from '@/hooks/useAppQuery';
 import { translate } from '@/i18n/translate';
-import { CategoriesPath } from '@/navigators/CategoriesStackNavigator';
 import { GenericListScreen } from '@/screens/GenericListScreen';
 import { GeneralApiProblemKind } from '@/services/api/apiProblem';
 import { CategoryService } from '@/services/CategoryService';

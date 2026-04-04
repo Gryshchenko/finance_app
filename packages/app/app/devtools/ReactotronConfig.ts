@@ -10,7 +10,6 @@ import { ReactotronReactNative } from 'reactotron-react-native';
 import mmkvPlugin from 'reactotron-react-native-mmkv';
 
 import { goBack, resetRoot, navigate } from '@/navigators/navigationUtilities';
-import { SecureBiometricStorage } from '@/services/SecureBiometricStorage';
 
 import { Reactotron } from './ReactotronClient';
 
