@@ -10,5 +10,11 @@ type IgniteSwitcherProps = {
     onChange?: (item: SwitcherOption) => void;
     style?: Record<string, unknown>;
 };
-export default function IgniteSwitcher({ options, value, onChange, style, disabled, }: IgniteSwitcherProps): import("react").JSX.Element;
+export default function IgniteSwitcher({
+    options,
+    value,
+    onChange,
+    style,
+    disabled,
+}: IgniteSwitcherProps): import('react').JSX.Element;
 export {};

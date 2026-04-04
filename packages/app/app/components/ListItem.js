@@ -1,7 +1,9 @@
 import { forwardRef } from 'react';
 import { TouchableOpacity, View } from 'react-native';
+
 import { useAppTheme } from '@/theme/context';
 import { $styles } from '@/theme/styles';
+
 import { Icon } from './Icon';
 import { Text } from './Text';
 /**

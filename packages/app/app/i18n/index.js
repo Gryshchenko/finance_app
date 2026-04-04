@@ -2,6 +2,7 @@ import { I18nManager } from 'react-native';
 import * as Localization from 'expo-localization';
 import i18n from 'i18next';
 import { initReactI18next } from 'react-i18next';
+
 import 'intl-pluralrules';
 // if English isn't your default language, move Translations to the appropriate language file.
 import ar from './ar';
@@ -10,6 +11,7 @@ import es from './es';
 import hi from './hi';
 import ja from './ja';
 import ko from './ko';
+
 const fallbackLocale = 'en-US';
 const systemLocales = Localization.getLocales();
 const resources = { ar, en, ko, es, ja, hi };

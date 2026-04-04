@@ -1,5 +1,6 @@
 import { useEffect, useRef } from 'react';
 import { View, Animated, StyleSheet } from 'react-native';
+
 export default function PendingDots({ size = 12, color = '#333', gap = 8, dotScale = 1.5, speed = 400 }) {
     const a1 = useRef(new Animated.Value(0)).current;
     const a2 = useRef(new Animated.Value(0)).current;

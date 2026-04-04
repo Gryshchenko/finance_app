@@ -21,43 +21,13 @@ export class LoginService extends ApiAbstract {
           }
         | GeneralApiProblem
     > {
-        try {
-            return await this.authGet(`/auth/${body.userId}/verify`);
-        } catch (e) {
-            if (__DEV__ && e instanceof Error) {
-                console.error(`Bad data: ${e.message}\n}`, e.stack);
-            }
-            return {
-                kind: GeneralApiProblemKind.BadData,
-                status: undefined,
-                data: undefined,
-                errors: [
-                    {
-                        errorCode: ErrorCode.AUTH_ERROR,
-                    },
-                ],
-            };
-        }
+        return this.withErrorHandler(async () => this.authGet(`/auth/${body.userId}/verify`), ErrorCode.AUTH_ERROR);
     }
+
     public async doLogout(): Promise<{ kind: GeneralApiProblemKind.Ok } | GeneralApiProblem> {
-        try {
-            return await this.authPost(`/auth/logout`);
-        } catch (e) {
-            if (__DEV__ && e instanceof Error) {
-                console.error(`Bad data: ${e.message}`, e.stack);
-            }
-            return {
-                kind: GeneralApiProblemKind.BadData,
-                status: undefined,
-                data: undefined,
-                errors: [
-                    {
-                        errorCode: ErrorCode.CLIENT_UNKNOWN_ERROR,
-                    },
-                ],
-            };
-        }
+        return this.withErrorHandler(async () => this.authPost(`/auth/logout`));
     }
+
     public async doLogin(body: { password: string; email: string }): Promise<
         | {
               kind: GeneralApiProblemKind.Ok;
@@ -65,22 +35,6 @@ export class LoginService extends ApiAbstract {
           }
         | GeneralApiProblem
     > {
-        try {
-            return await this.publicPost(`/auth/login`, body);
-        } catch (e) {
-            if (__DEV__ && e instanceof Error) {
-                console.error(`Bad data: ${e.message}`, e.stack);
-            }
-            return {
-                kind: GeneralApiProblemKind.BadData,
-                status: undefined,
-                data: undefined,
-                errors: [
-                    {
-                        errorCode: ErrorCode.CLIENT_UNKNOWN_ERROR,
-                    },
-                ],
-            };
-        }
+        return this.withErrorHandler(async () => this.publicPost(`/auth/login`, body));
     }
 }

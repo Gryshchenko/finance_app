@@ -1,11 +1,12 @@
 import React from 'react';
 import { View, Pressable, ViewStyle, TextStyle } from 'react-native';
 import { MaterialIcons } from '@expo/vector-icons';
+
 import { Text } from '@/components/Text';
-import { useAppTheme } from '@/theme/context';
-import { ThemedStyle } from '@/theme/types';
 import { TxKeyPath } from '@/i18n';
 import { ToastType } from '@/services/ToastService';
+import { useAppTheme } from '@/theme/context';
+import { ThemedStyle } from '@/theme/types';
 
 interface InfoToastProps {
     title: TxKeyPath;

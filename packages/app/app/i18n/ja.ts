@@ -1,7 +1,6 @@
 import demoJa from './demo-ja';
-import { Translations } from './en';
 
-const ja: Translations = {
+const ja = {
     common: {
         ok: 'OK',
         cancel: 'キャンセル',

@@ -118,6 +118,13 @@ export const colors = {
             textDim: '#991B1B',
             icon: '#DC2626',
         },
+        custom: {
+            background: '#E5E7EB',
+            border: '#D1D5DB',
+            text: '#111827',
+            textDim: '#4B5563',
+            icon: '#1F2937',
+        },
         close: '#9CA3AF',
     },
 } as const;

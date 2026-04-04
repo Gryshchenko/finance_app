@@ -1,3 +1,4 @@
+import { ParamListBase } from '@react-navigation/native';
 import { useNavigation } from '@react-navigation/native';
 import { NativeStackScreenProps } from '@react-navigation/native-stack';
 import { IIncome } from 'tenpercent/shared';
@@ -9,7 +10,6 @@ import { Incomes } from '@/components/income/Incomes';
 import { useAppQuery } from '@/hooks/useAppQuery';
 import { translate } from '@/i18n/translate';
 import { IncomePath } from '@/navigators/IncomesStackNavigator';
-import { OverviewTabParamList } from '@/navigators/OverviewNavigator';
 import { GenericListScreen } from '@/screens/GenericListScreen';
 import { GeneralApiProblemKind } from '@/services/api/apiProblem';
 import { IncomeService } from '@/services/IncomeService';
@@ -35,7 +35,7 @@ export async function fetchIncomes(): Promise<IIncome[]> {
     }
 }
 
-type Props = NativeStackScreenProps<OverviewTabParamList, IncomePath.Incomes>;
+type Props = NativeStackScreenProps<ParamListBase, string>;
 
 export const IncomesScreen = function IncomesScreen(_props: Props) {
     const navigation = useNavigation();

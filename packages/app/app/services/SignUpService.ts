@@ -1,7 +1,6 @@
 import { IEmailConfirmationResponse } from 'tenpercent/shared';
 import { IEmailResendResponse } from 'tenpercent/shared';
 import { IEmailVerifyResponse } from 'tenpercent/shared';
-import { ErrorCode } from 'tenpercent/shared';
 
 import { ApiAbstract } from '@/services/api/apiAbstract';
 import { GeneralApiProblem, GeneralApiProblemKind } from '@/services/api/apiProblem';
@@ -23,23 +22,7 @@ export class SignupService extends ApiAbstract {
           }
         | GeneralApiProblem
     > {
-        try {
-            return await this.authGet(`/register/signup/${userId}/email-confirmation/`);
-        } catch (e) {
-            if (__DEV__ && e instanceof Error) {
-                console.error(`Bad data: ${e.message}\n`, e.stack);
-            }
-            return {
-                kind: GeneralApiProblemKind.BadData,
-                status: undefined,
-                data: undefined,
-                errors: [
-                    {
-                        errorCode: ErrorCode.CLIENT_UNKNOWN_ERROR,
-                    },
-                ],
-            };
-        }
+        return this.withErrorHandler(async () => this.authGet(`/register/signup/${userId}/email-confirmation/`));
     }
 
     public async doSignUpEmailResend(body: { userId: number }): Promise<
@@ -49,24 +32,9 @@ export class SignupService extends ApiAbstract {
           }
         | GeneralApiProblem
     > {
-        try {
-            return await this.authPost(`/register/signup/${body.userId}/email-confirmation/resend`);
-        } catch (e) {
-            if (__DEV__ && e instanceof Error) {
-                console.error(`Bad data: ${e.message}\n`, e.stack);
-            }
-            return {
-                kind: GeneralApiProblemKind.BadData,
-                status: undefined,
-                data: undefined,
-                errors: [
-                    {
-                        errorCode: ErrorCode.CLIENT_UNKNOWN_ERROR,
-                    },
-                ],
-            };
-        }
+        return this.withErrorHandler(async () => this.authPost(`/register/signup/${body.userId}/email-confirmation/resend`));
     }
+
     public async doSignUpEmailVerify(body: { confirmationCode: string; userId: number }): Promise<
         | {
               kind: GeneralApiProblemKind.Ok;
@@ -74,26 +42,13 @@ export class SignupService extends ApiAbstract {
           }
         | GeneralApiProblem
     > {
-        try {
-            return await this.authPost(`/register/signup/${body.userId}/email-confirmation/verify`, {
+        return this.withErrorHandler(async () =>
+            this.authPost(`/register/signup/${body.userId}/email-confirmation/verify`, {
                 confirmationCode: body.confirmationCode,
-            });
-        } catch (e) {
-            if (__DEV__ && e instanceof Error) {
-                console.error(`Bad data: ${e.message}\n`, e.stack);
-            }
-            return {
-                kind: GeneralApiProblemKind.BadData,
-                status: undefined,
-                data: undefined,
-                errors: [
-                    {
-                        errorCode: ErrorCode.CLIENT_UNKNOWN_ERROR,
-                    },
-                ],
-            };
-        }
+            }),
+        );
     }
+
     public async doSignUp(body: {
         password: string;
         email: string;
@@ -107,22 +62,6 @@ export class SignupService extends ApiAbstract {
           }
         | GeneralApiProblem
     > {
-        try {
-            return await this.publicPost(`/register/signup`, body);
-        } catch (e) {
-            if (__DEV__ && e instanceof Error) {
-                console.error(`Bad data: ${e.message}\n`, e.stack);
-            }
-            return {
-                kind: GeneralApiProblemKind.BadData,
-                status: undefined,
-                data: undefined,
-                errors: [
-                    {
-                        errorCode: ErrorCode.CLIENT_UNKNOWN_ERROR,
-                    },
-                ],
-            };
-        }
+        return this.withErrorHandler(async () => this.publicPost(`/register/signup`, body));
     }
 }

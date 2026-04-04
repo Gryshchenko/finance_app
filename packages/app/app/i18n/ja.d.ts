@@ -1,3 +1,4 @@
-import { Translations } from "./en";
+import { Translations } from './en';
+
 declare const ja: Translations;
 export default ja;

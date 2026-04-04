@@ -1,1 +1,1 @@
-import "@expo/metro-runtime";
+import '@expo/metro-runtime';

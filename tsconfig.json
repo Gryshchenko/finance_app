@@ -2,13 +2,17 @@
     "compilerOptions": {
         "target": "ESNext",
         "module": "ESNext",
-        "moduleResolution": "Node",
+        "moduleResolution": "bundler",
         "strict": true,
         "composite": true,
+        "baseUrl": ".",
         "paths": {
             "tenpercent/shared": ["packages/shared/src"]
         },
-        "allowSyntheticDefaultImports": true
+        "allowSyntheticDefaultImports": true,
+        "skipLibCheck": true,
+        "types": []
     },
-    "extends": "expo/tsconfig.base"
+    "extends": "expo/tsconfig.base",
+    "exclude": ["packages", "node_modules"]
 }

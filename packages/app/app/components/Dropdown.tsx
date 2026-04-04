@@ -22,6 +22,7 @@ type DropdownProps<T> = {
     labelExtractor: (item: T) => string;
     labelTx?: TxKeyPath;
     style?: StyleProp<TextStyle>;
+    disabled?: boolean;
     editable?: boolean;
     filter?: (items: T[] | undefined) => T[];
     helperTx?: TxKeyPath;
@@ -41,6 +42,7 @@ export function Dropdown<T>({
     labelExtractor,
     labelTx,
     style,
+    disabled: disabledProp,
     editable,
     filter,
     HelperTextProps,
@@ -58,7 +60,7 @@ export function Dropdown<T>({
     const selected = data?.find((item) => keyExtractor(item) === String(value));
     const filteredData = filter ? filter(data) : data;
 
-    const disabled = editable === false || status === 'disabled';
+    const disabled = disabledProp || editable === false || status === 'disabled';
     const $inputStyles: ThemedStyleArray<TextStyle> = [themed($optionText)];
     const displayText = isPending
         ? `${translate('common:loading')}...`

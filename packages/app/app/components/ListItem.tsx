@@ -134,7 +134,7 @@ export const ListItem = forwardRef<View, ListItemProps>(function ListItem(props:
 
     const $touchableStyles = [$styles.row, $touchableStyle, { minHeight: height }, style];
 
-    const Wrapper: ComponentType<TouchableOpacityProps> = isTouchable ? TouchableOpacity : View;
+    const Wrapper = (isTouchable ? TouchableOpacity : View) as ComponentType<TouchableOpacityProps>;
 
     return (
         <View ref={ref} style={themed($containerStyles)}>

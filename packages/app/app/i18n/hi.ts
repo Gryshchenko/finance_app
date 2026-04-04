@@ -1,7 +1,6 @@
 import demoHi from './demo-hi';
-import { Translations } from './en';
 
-const hi: Translations = {
+const hi = {
     common: {
         ok: 'ठीक है!',
         cancel: 'रद्द करें',

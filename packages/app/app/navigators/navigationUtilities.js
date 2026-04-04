@@ -1,6 +1,7 @@
 import { useState, useEffect, useRef } from 'react';
 import { BackHandler, Linking, Platform } from 'react-native';
 import { createNavigationContainerRef } from '@react-navigation/native';
+
 import Config from '@/config';
 import { useIsMounted } from '@/utils/useIsMounted';
 /**

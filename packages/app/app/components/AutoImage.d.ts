@@ -1,4 +1,5 @@
-import { ImageProps } from "react-native";
+import { ImageProps } from 'react-native';
+
 export interface AutoImageProps extends ImageProps {
     /**
      * How wide should the image be?
@@ -22,11 +23,15 @@ export interface AutoImageProps extends ImageProps {
  * @param {number} dimensions - The desired dimensions of the image. If not provided, the original dimensions will be returned.
  * @returns {[number, number]} - The scaled dimensions of the image.
  */
-export declare function useAutoImage(remoteUri: string, headers?: Record<string, string>, dimensions?: [maxWidth?: number, maxHeight?: number]): [width: number, height: number];
+export declare function useAutoImage(
+    remoteUri: string,
+    headers?: Record<string, string>,
+    dimensions?: [maxWidth?: number, maxHeight?: number],
+): [width: number, height: number];
 /**
  * An Image component that automatically sizes a remote or data-uri image.
  * @see [Documentation and Examples]{@link https://docs.infinite.red/ignite-cli/boilerplate/app/components/AutoImage/}
  * @param {AutoImageProps} props - The props for the `AutoImage` component.
  * @returns {JSX.Element} The rendered `AutoImage` component.
  */
-export declare function AutoImage(props: AutoImageProps): import("react").JSX.Element;
+export declare function AutoImage(props: AutoImageProps): import('react').JSX.Element;

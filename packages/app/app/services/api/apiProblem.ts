@@ -4,8 +4,8 @@ import { HttpCode } from 'tenpercent/shared';
 import { ResponseStatusType } from 'tenpercent/shared';
 
 import { TxKeyPath } from '@/i18n';
-import { BaseError } from '@/utils/errors/BaseError';
 import ToastService from '@/services/ToastService';
+import { BaseError } from '@/utils/errors/BaseError';
 
 /**
  * Enum representing the possible types of general API problems.

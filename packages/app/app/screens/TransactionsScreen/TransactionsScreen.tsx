@@ -1,3 +1,4 @@
+import { ParamListBase } from '@react-navigation/native';
 import { useNavigation } from '@react-navigation/native';
 import { NativeStackScreenProps } from '@react-navigation/native-stack';
 import { IPagination } from 'tenpercent/shared';
@@ -7,7 +8,6 @@ import { TransactionFieldType } from 'tenpercent/shared';
 import { AddButton } from '@/components/buttons/AddButton';
 import { Transactions } from '@/components/transaction/Transactions';
 import { useAppQuery } from '@/hooks/useAppQuery';
-import { OverviewTabParamList } from '@/navigators/OverviewNavigator';
 import { GenericListScreen } from '@/screens/GenericListScreen';
 import { GeneralApiProblemKind } from '@/services/api/apiProblem';
 import { TransactionService } from '@/services/TransactionService';
@@ -43,7 +43,7 @@ export async function fetchTransactions(
     }
 }
 
-type Props = NativeStackScreenProps<OverviewTabParamList, TransactionPath.Transactions>;
+type Props = NativeStackScreenProps<ParamListBase, string>;
 
 export const TransactionsScreen = function TransactionsScreen(_props: Props) {
     const params = _props?.route?.params as {

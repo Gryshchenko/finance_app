@@ -1,5 +1,6 @@
-import { TxKeyPath } from '@/i18n';
 import { Utils } from 'tenpercent/shared';
+
+import { TxKeyPath } from '@/i18n';
 import { IClientConfigLanguage } from '@/interfaces/IClientConfigLanguages';
 
 export enum ValidationTypes {

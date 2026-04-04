@@ -1,5 +1,4 @@
 import { IGetStatsProperties, IIncome, IIncomeStats, IStatsResponse } from 'tenpercent/shared';
-import { ErrorCode } from 'tenpercent/shared';
 
 import { ApiAbstract } from '@/services/api/apiAbstract';
 import { GeneralApiProblem, GeneralApiProblemKind } from '@/services/api/apiProblem';
@@ -15,10 +14,6 @@ export class IncomeService extends ApiAbstract {
         return IncomeService._instance || (IncomeService._instance = new IncomeService());
     }
 
-    constructor() {
-        super();
-    }
-
     public async doDeleteIncome(incomeId: number): Promise<
         | {
               kind: GeneralApiProblemKind.Ok;
@@ -26,7 +21,7 @@ export class IncomeService extends ApiAbstract {
           }
         | GeneralApiProblem
     > {
-        try {
+        return this.withErrorHandler(async () => {
             this._logger.info(`Start deleting income ${incomeId}`);
             const userId = this._authService.userId;
             const response = await this.authDelete(`/user/${userId}/income/${incomeId}`);
@@ -36,22 +31,9 @@ export class IncomeService extends ApiAbstract {
                 this._logger.info(`Delete income failed: ${response.kind}`);
             }
             return response;
-        } catch (e) {
-            if (__DEV__ && e instanceof Error) {
-                this._logger.error(`Bad data: ${e.message}\n}`, e.stack);
-            }
-            return {
-                kind: GeneralApiProblemKind.BadData,
-                status: undefined,
-                data: undefined,
-                errors: [
-                    {
-                        errorCode: ErrorCode.CLIENT_UNKNOWN_ERROR,
-                    },
-                ],
-            };
-        }
+        });
     }
+
     public async doGetIncome(incomeId: number): Promise<
         | {
               kind: GeneralApiProblemKind.Ok;
@@ -59,7 +41,7 @@ export class IncomeService extends ApiAbstract {
           }
         | GeneralApiProblem
     > {
-        try {
+        return this.withErrorHandler(async () => {
             this._logger.info('Start fetching incomes');
             const userId = this._authService.userId;
             const response = await this.authGet(`/user/${userId}/income/${incomeId}`);
@@ -69,21 +51,7 @@ export class IncomeService extends ApiAbstract {
                 this._logger.info(`Fetching income failed: ${response.kind}`);
             }
             return response;
-        } catch (e) {
-            if (__DEV__ && e instanceof Error) {
-                this._logger.error(`Bad data: ${e.message}\n}`, e.stack);
-            }
-            return {
-                kind: GeneralApiProblemKind.BadData,
-                status: undefined,
-                data: undefined,
-                errors: [
-                    {
-                        errorCode: ErrorCode.CLIENT_UNKNOWN_ERROR,
-                    },
-                ],
-            };
-        }
+        });
     }
 
     public async doGetIncomeWithStats({ from, to, period }: IGetStatsProperties): Promise<
@@ -93,7 +61,7 @@ export class IncomeService extends ApiAbstract {
           }
         | GeneralApiProblem
     > {
-        try {
+        return this.withErrorHandler(async () => {
             if (!from || !to || !period) {
                 throw new ValidationError({ message: `Invalid params: from: ${from}, to: ${to}, period: ${period}` });
             }
@@ -108,21 +76,7 @@ export class IncomeService extends ApiAbstract {
                 this._logger.info(`Fetching incomes with statss failed: ${response.kind}`);
             }
             return response;
-        } catch (e) {
-            if (__DEV__ && e instanceof Error) {
-                this._logger.error(`Bad data: ${e.message}\n}`, e.stack);
-            }
-            return {
-                kind: GeneralApiProblemKind.BadData,
-                status: undefined,
-                data: undefined,
-                errors: [
-                    {
-                        errorCode: ErrorCode.CLIENT_UNKNOWN_ERROR,
-                    },
-                ],
-            };
-        }
+        });
     }
 
     public async doGetIncomes(): Promise<
@@ -132,7 +86,7 @@ export class IncomeService extends ApiAbstract {
           }
         | GeneralApiProblem
     > {
-        try {
+        return this.withErrorHandler(async () => {
             this._logger.info('Start fetching incomes');
             const userId = this._authService.userId;
             const response = await this.authGet(`/user/${userId}/incomes`);
@@ -142,21 +96,7 @@ export class IncomeService extends ApiAbstract {
                 this._logger.info(`Fetching incomes failed: ${response.kind}`);
             }
             return response;
-        } catch (e) {
-            if (__DEV__ && e instanceof Error) {
-                this._logger.error(`Bad data: ${e.message}\n}`, e.stack);
-            }
-            return {
-                kind: GeneralApiProblemKind.BadData,
-                status: undefined,
-                data: undefined,
-                errors: [
-                    {
-                        errorCode: ErrorCode.CLIENT_UNKNOWN_ERROR,
-                    },
-                ],
-            };
-        }
+        });
     }
 
     public async doPatchIncome(
@@ -169,7 +109,7 @@ export class IncomeService extends ApiAbstract {
           }
         | GeneralApiProblem
     > {
-        try {
+        return this.withErrorHandler(async () => {
             this._logger.info('Start patch income');
             const userId = this._authService.userId;
             const response = await this.authPatch(`/user/${userId}/income/${id}`, {
@@ -181,21 +121,7 @@ export class IncomeService extends ApiAbstract {
                 this._logger.info(`Patch income failed: ${response.kind}`);
             }
             return response;
-        } catch (e) {
-            if (__DEV__ && e instanceof Error) {
-                this._logger.error(`Bad data: ${e.message}\n}`, e.stack);
-            }
-            return {
-                kind: GeneralApiProblemKind.BadData,
-                status: undefined,
-                data: undefined,
-                errors: [
-                    {
-                        errorCode: ErrorCode.CLIENT_UNKNOWN_ERROR,
-                    },
-                ],
-            };
-        }
+        });
     }
 
     public async doCreateIncome(body: { incomeName: string; currencyId: number; iconId: string }): Promise<
@@ -205,7 +131,7 @@ export class IncomeService extends ApiAbstract {
           }
         | GeneralApiProblem
     > {
-        try {
+        return this.withErrorHandler(async () => {
             this._logger.info('Start create income');
             const userId = this._authService.userId;
             const response = await this.authPost(`/user/${userId}/income`, {
@@ -219,20 +145,6 @@ export class IncomeService extends ApiAbstract {
                 this._logger.info(`Create income failed: ${response.kind}`);
             }
             return response;
-        } catch (e) {
-            if (__DEV__ && e instanceof Error) {
-                this._logger.error(`Bad data: ${e.message}\n}`, e.stack);
-            }
-            return {
-                kind: GeneralApiProblemKind.BadData,
-                status: undefined,
-                data: undefined,
-                errors: [
-                    {
-                        errorCode: ErrorCode.CLIENT_UNKNOWN_ERROR,
-                    },
-                ],
-            };
-        }
+        });
     }
 }

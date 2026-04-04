@@ -82,5 +82,13 @@ export const colors = {
             textDim: '#991B1B',
             icon: '#DC2626',
         },
+        custom: {
+            background: '#374151',
+            border: '#4B5563',
+            text: '#F9FAFB',
+            textDim: '#D1D5DB',
+            icon: '#E5E7EB',
+        },
+        close: '#6B7280',
     },
 } as const;

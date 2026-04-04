@@ -1,4 +1,5 @@
 import demoEs from './demo-es';
+
 const es = {
     common: {
         ok: 'OK',

@@ -1,9 +1,7 @@
 import { ICategory, ICategoryStats, IGetStatsProperties, IStatsResponse } from 'tenpercent/shared';
-import { ErrorCode } from 'tenpercent/shared';
 
 import { ApiAbstract } from '@/services/api/apiAbstract';
 import { GeneralApiProblem, GeneralApiProblemKind } from '@/services/api/apiProblem';
-import { AuthService } from '@/services/AuthService';
 import { ValidationError } from '@/utils/errors/ValidationError';
 import { Logger } from '@/utils/logger/Logger';
 
@@ -23,7 +21,7 @@ export class CategoryService extends ApiAbstract {
           }
         | GeneralApiProblem
     > {
-        try {
+        return this.withErrorHandler(async () => {
             this._logger.info('Start fetching categorys');
             const userId = this._authService.userId;
             const response = await this.authGet(`/user/${userId}/category/${categoryId}`);
@@ -33,22 +31,9 @@ export class CategoryService extends ApiAbstract {
                 this._logger.info(`Fetching account failed: ${response.kind}`);
             }
             return response;
-        } catch (e) {
-            if (__DEV__ && e instanceof Error) {
-                this._logger.error(`Bad data: ${e.message}\n}`, e.stack);
-            }
-            return {
-                kind: GeneralApiProblemKind.BadData,
-                status: undefined,
-                data: undefined,
-                errors: [
-                    {
-                        errorCode: ErrorCode.CLIENT_UNKNOWN_ERROR,
-                    },
-                ],
-            };
-        }
+        });
     }
+
     public async doGetCategoriesWithStats({ from, to, period }: IGetStatsProperties): Promise<
         | {
               kind: GeneralApiProblemKind.Ok;
@@ -56,7 +41,7 @@ export class CategoryService extends ApiAbstract {
           }
         | GeneralApiProblem
     > {
-        try {
+        return this.withErrorHandler(async () => {
             if (!from || !to || !period) {
                 throw new ValidationError({ message: `Invalid params: from: ${from}, to: ${to}, period: ${period}` });
             }
@@ -69,21 +54,7 @@ export class CategoryService extends ApiAbstract {
                 this._logger.info(`Fetching categories with stats failed: ${response.kind}`);
             }
             return response;
-        } catch (e) {
-            if (__DEV__ && e instanceof Error) {
-                this._logger.error(`Bad data: ${e.message}\n}`, e.stack);
-            }
-            return {
-                kind: GeneralApiProblemKind.BadData,
-                status: undefined,
-                data: undefined,
-                errors: [
-                    {
-                        errorCode: ErrorCode.CLIENT_UNKNOWN_ERROR,
-                    },
-                ],
-            };
-        }
+        });
     }
 
     public async doGetCategories(): Promise<
@@ -93,7 +64,7 @@ export class CategoryService extends ApiAbstract {
           }
         | GeneralApiProblem
     > {
-        try {
+        return this.withErrorHandler(async () => {
             this._logger.info(`Start fetching categories from`);
             const userId = this._authService.userId;
             const response = await this.authGet(`/user/${userId}/categories`);
@@ -103,21 +74,7 @@ export class CategoryService extends ApiAbstract {
                 this._logger.info(`Fetching categories failed: ${response.kind}`);
             }
             return response;
-        } catch (e) {
-            if (__DEV__ && e instanceof Error) {
-                this._logger.error(`Bad data: ${e.message}\n}`, e.stack);
-            }
-            return {
-                kind: GeneralApiProblemKind.BadData,
-                status: undefined,
-                data: undefined,
-                errors: [
-                    {
-                        errorCode: ErrorCode.CLIENT_UNKNOWN_ERROR,
-                    },
-                ],
-            };
-        }
+        });
     }
 
     public async doPatchCategory(
@@ -130,7 +87,7 @@ export class CategoryService extends ApiAbstract {
           }
         | GeneralApiProblem
     > {
-        try {
+        return this.withErrorHandler(async () => {
             this._logger.info('Start patch category');
             const userId = this._authService.userId;
             const response = await this.authPatch(`/user/${userId}/category/${id}`, {
@@ -143,21 +100,7 @@ export class CategoryService extends ApiAbstract {
                 this._logger.info(`Patch category failed: ${response.kind}`);
             }
             return response;
-        } catch (e) {
-            if (__DEV__ && e instanceof Error) {
-                this._logger.error(`Bad data: ${e.message}\n}`, e.stack);
-            }
-            return {
-                kind: GeneralApiProblemKind.BadData,
-                status: undefined,
-                data: undefined,
-                errors: [
-                    {
-                        errorCode: ErrorCode.CLIENT_UNKNOWN_ERROR,
-                    },
-                ],
-            };
-        }
+        });
     }
 
     public async doCreateCategory(body: { categoryName: string; currencyId: number; iconId: string }): Promise<
@@ -167,7 +110,7 @@ export class CategoryService extends ApiAbstract {
           }
         | GeneralApiProblem
     > {
-        try {
+        return this.withErrorHandler(async () => {
             this._logger.info('Start create category');
             const userId = this._authService.userId;
             const response = await this.authPost(`/user/${userId}/category`, {
@@ -181,21 +124,7 @@ export class CategoryService extends ApiAbstract {
                 this._logger.info(`Create category failed: ${response.kind}`);
             }
             return response;
-        } catch (e) {
-            if (__DEV__ && e instanceof Error) {
-                this._logger.error(`Bad data: ${e.message}\n}`, e.stack);
-            }
-            return {
-                kind: GeneralApiProblemKind.BadData,
-                status: undefined,
-                data: undefined,
-                errors: [
-                    {
-                        errorCode: ErrorCode.CLIENT_UNKNOWN_ERROR,
-                    },
-                ],
-            };
-        }
+        });
     }
 
     public async doDeleteCategory(categoryId: number): Promise<
@@ -205,7 +134,7 @@ export class CategoryService extends ApiAbstract {
           }
         | GeneralApiProblem
     > {
-        try {
+        return this.withErrorHandler(async () => {
             this._logger.info(`Start deleting category ${categoryId}`);
             const userId = this._authService.userId;
             const response = await this.authDelete(`/user/${userId}/category/${categoryId}`);
@@ -215,20 +144,6 @@ export class CategoryService extends ApiAbstract {
                 this._logger.info(`Delete category failed: ${response.kind}`);
             }
             return response;
-        } catch (e) {
-            if (__DEV__ && e instanceof Error) {
-                this._logger.error(`Bad data: ${e.message}\n}`, e.stack);
-            }
-            return {
-                kind: GeneralApiProblemKind.BadData,
-                status: undefined,
-                data: undefined,
-                errors: [
-                    {
-                        errorCode: ErrorCode.CLIENT_UNKNOWN_ERROR,
-                    },
-                ],
-            };
-        }
+        });
     }
 }

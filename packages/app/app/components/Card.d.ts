@@ -1,7 +1,9 @@
-import { ReactElement } from "react";
-import { StyleProp, TextStyle, TouchableOpacityProps } from "react-native";
-import { TextProps } from "./Text";
-type Presets = "default" | "reversed";
+import { ReactElement } from 'react';
+import { StyleProp, TextStyle, TouchableOpacityProps } from 'react-native';
+
+import { TextProps } from './Text';
+
+type Presets = 'default' | 'reversed';
 interface CardProps extends TouchableOpacityProps {
     /**
      * One of the different types of text presets.
@@ -16,7 +18,7 @@ interface CardProps extends TouchableOpacityProps {
      * `space-between` - spreads out the content evenly.
      * `force-footer-bottom` - aligns all content to the top, but forces the footer to the bottom.
      */
-    verticalAlignment?: "top" | "center" | "space-between" | "force-footer-bottom";
+    verticalAlignment?: 'top' | 'center' | 'space-between' | 'force-footer-bottom';
     /**
      * Custom component added to the left of the card body.
      */
@@ -28,16 +30,16 @@ interface CardProps extends TouchableOpacityProps {
     /**
      * The heading text to display if not using `headingTx`.
      */
-    heading?: TextProps["text"];
+    heading?: TextProps['text'];
     /**
      * Heading text which is looked up via i18n.
      */
-    headingTx?: TextProps["tx"];
+    headingTx?: TextProps['tx'];
     /**
      * Optional heading options to pass to i18n. Useful for interpolation
      * as well as explicitly setting locale or translation fallbacks.
      */
-    headingTxOptions?: TextProps["txOptions"];
+    headingTxOptions?: TextProps['txOptions'];
     /**
      * Style overrides for heading text.
      */
@@ -54,16 +56,16 @@ interface CardProps extends TouchableOpacityProps {
     /**
      * The content text to display if not using `contentTx`.
      */
-    content?: TextProps["text"];
+    content?: TextProps['text'];
     /**
      * Content text which is looked up via i18n.
      */
-    contentTx?: TextProps["tx"];
+    contentTx?: TextProps['tx'];
     /**
      * Optional content options to pass to i18n. Useful for interpolation
      * as well as explicitly setting locale or translation fallbacks.
      */
-    contentTxOptions?: TextProps["txOptions"];
+    contentTxOptions?: TextProps['txOptions'];
     /**
      * Style overrides for content text.
      */
@@ -80,16 +82,16 @@ interface CardProps extends TouchableOpacityProps {
     /**
      * The footer text to display if not using `footerTx`.
      */
-    footer?: TextProps["text"];
+    footer?: TextProps['text'];
     /**
      * Footer text which is looked up via i18n.
      */
-    footerTx?: TextProps["tx"];
+    footerTx?: TextProps['tx'];
     /**
      * Optional footer options to pass to i18n. Useful for interpolation
      * as well as explicitly setting locale or translation fallbacks.
      */
-    footerTxOptions?: TextProps["txOptions"];
+    footerTxOptions?: TextProps['txOptions'];
     /**
      * Style overrides for footer text.
      */
@@ -111,5 +113,5 @@ interface CardProps extends TouchableOpacityProps {
  * @param {CardProps} props - The props for the `Card` component.
  * @returns {JSX.Element} The rendered `Card` component.
  */
-export declare function Card(props: CardProps): import("react").JSX.Element;
+export declare function Card(props: CardProps): import('react').JSX.Element;
 export {};

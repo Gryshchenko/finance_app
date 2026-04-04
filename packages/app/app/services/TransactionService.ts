@@ -1,7 +1,6 @@
 import { IPagination } from 'tenpercent/shared';
 import { ITransaction } from 'tenpercent/shared';
 import { ITransactionListItem } from 'tenpercent/shared';
-import { ErrorCode } from 'tenpercent/shared';
 import { TransactionFieldType } from 'tenpercent/shared';
 
 import { ApiAbstract } from '@/services/api/apiAbstract';
@@ -36,7 +35,7 @@ export class TransactionService extends ApiAbstract {
           }
         | GeneralApiProblem
     > {
-        try {
+        return this.withErrorHandler(async () => {
             const field = this.validateTransactionFieldName(type);
             this._logger.info(`Start fetching transactions from ${field ?? 'all'}: ${id}`);
             const userId = this._authService.userId;
@@ -54,7 +53,6 @@ export class TransactionService extends ApiAbstract {
                 params.append('orderBy', orderBy);
             }
             const queryString = params.toString();
-
             const response = await this.authGet(`/user/${userId}/transactions${queryString ? `?${queryString}` : ''}`);
             if (response.kind === GeneralApiProblemKind.Ok) {
                 this._logger.info(
@@ -64,22 +62,9 @@ export class TransactionService extends ApiAbstract {
                 this._logger.info(`Fetching transaction failed: ${response.kind}`);
             }
             return response;
-        } catch (e) {
-            if (__DEV__ && e instanceof Error) {
-                this._logger.error(`Bad data: ${e.message}\n}`, e.stack);
-            }
-            return {
-                kind: GeneralApiProblemKind.BadData,
-                status: undefined,
-                data: undefined,
-                errors: [
-                    {
-                        errorCode: ErrorCode.CLIENT_UNKNOWN_ERROR,
-                    },
-                ],
-            };
-        }
+        });
     }
+
     public async doGetTransaction({ id }: { id: number | string }): Promise<
         | {
               kind: GeneralApiProblemKind.Ok;
@@ -87,7 +72,7 @@ export class TransactionService extends ApiAbstract {
           }
         | GeneralApiProblem
     > {
-        try {
+        return this.withErrorHandler(async () => {
             this._logger.info(`Start fetching transaction id: ${id}`);
             const userId = this._authService.userId;
             const response = await this.authGet(`/user/${userId}/transaction/${id}`);
@@ -97,21 +82,7 @@ export class TransactionService extends ApiAbstract {
                 this._logger.info(`Fetching transaction failed: ${response.kind}`);
             }
             return response;
-        } catch (e) {
-            if (__DEV__ && e instanceof Error) {
-                this._logger.error(`Bad data: ${e.message}\n}`, e.stack);
-            }
-            return {
-                kind: GeneralApiProblemKind.BadData,
-                status: undefined,
-                data: undefined,
-                errors: [
-                    {
-                        errorCode: ErrorCode.CLIENT_UNKNOWN_ERROR,
-                    },
-                ],
-            };
-        }
+        });
     }
 
     public async doDeleteTransaction(id: number): Promise<
@@ -121,7 +92,7 @@ export class TransactionService extends ApiAbstract {
           }
         | GeneralApiProblem
     > {
-        try {
+        return this.withErrorHandler(async () => {
             this._logger.info(`Start deleting transaction id: ${id}`);
             const userId = this._authService.userId;
             const response = await this.authDelete(`/user/${userId}/transaction/${id}`);
@@ -131,22 +102,9 @@ export class TransactionService extends ApiAbstract {
                 this._logger.info(`Delete transaction failed: ${response.kind}`);
             }
             return response;
-        } catch (e) {
-            if (__DEV__ && e instanceof Error) {
-                this._logger.error(`Bad data: ${e.message}\n}`, e.stack);
-            }
-            return {
-                kind: GeneralApiProblemKind.BadData,
-                status: undefined,
-                data: undefined,
-                errors: [
-                    {
-                        errorCode: ErrorCode.CLIENT_UNKNOWN_ERROR,
-                    },
-                ],
-            };
-        }
+        });
     }
+
     public async doCreateTransaction(body: {
         accountId: number | undefined;
         incomeId: number | undefined;
@@ -164,7 +122,7 @@ export class TransactionService extends ApiAbstract {
           }
         | GeneralApiProblem
     > {
-        try {
+        return this.withErrorHandler(async () => {
             this._logger.info('Start create transaction');
             const userId = this._authService.userId;
             const response = await this.authPost(`/user/${userId}/transaction`, {
@@ -184,22 +142,9 @@ export class TransactionService extends ApiAbstract {
                 this._logger.info(`Create transaction failed: ${response.kind}`);
             }
             return response;
-        } catch (e) {
-            if (__DEV__ && e instanceof Error) {
-                this._logger.error(`Bad data: ${e.message}\n}`, e.stack);
-            }
-            return {
-                kind: GeneralApiProblemKind.BadData,
-                status: undefined,
-                data: undefined,
-                errors: [
-                    {
-                        errorCode: ErrorCode.CLIENT_UNKNOWN_ERROR,
-                    },
-                ],
-            };
-        }
+        });
     }
+
     public async doPatchTransaction(
         id: number,
         body: {
@@ -219,7 +164,7 @@ export class TransactionService extends ApiAbstract {
           }
         | GeneralApiProblem
     > {
-        try {
+        return this.withErrorHandler(async () => {
             this._logger.info('Start patch transaction');
             const userId = this._authService.userId;
             const response = await this.authPatch(`/user/${userId}/transaction/${id}`, {
@@ -238,21 +183,7 @@ export class TransactionService extends ApiAbstract {
                 this._logger.info(`Patch transaction failed: ${response.kind}`);
             }
             return response;
-        } catch (e) {
-            if (__DEV__ && e instanceof Error) {
-                this._logger.error(`Bad data: ${e.message}\n}`, e.stack);
-            }
-            return {
-                kind: GeneralApiProblemKind.BadData,
-                status: undefined,
-                data: undefined,
-                errors: [
-                    {
-                        errorCode: ErrorCode.CLIENT_UNKNOWN_ERROR,
-                    },
-                ],
-            };
-        }
+        });
     }
 
     protected validateTransactionFieldName(type: TransactionFieldType | undefined): TransactionFieldType | undefined {

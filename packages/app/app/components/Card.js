@@ -1,7 +1,9 @@
 import { Fragment } from 'react';
 import { TouchableOpacity, View } from 'react-native';
+
 import { useAppTheme } from '@/theme/context';
 import { $styles } from '@/theme/styles';
+
 import { Text } from './Text';
 /**
  * Cards are useful for displaying related information in a contained way.

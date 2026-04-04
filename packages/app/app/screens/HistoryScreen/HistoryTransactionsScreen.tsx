@@ -1,5 +1,6 @@
-import { BottomTabScreenProps } from '@react-navigation/bottom-tabs';
+import { ParamListBase } from '@react-navigation/native';
 import { useNavigation } from '@react-navigation/native';
+import { NativeStackScreenProps } from '@react-navigation/native-stack';
 import { IPagination } from 'tenpercent/shared';
 import { ITransactionListItem } from 'tenpercent/shared';
 import { TransactionType } from 'tenpercent/shared';
@@ -8,13 +9,12 @@ import { AddButton } from '@/components/buttons/AddButton';
 import { Transactions } from '@/components/transaction/Transactions';
 import { useAppQuery } from '@/hooks/useAppQuery';
 import { translate } from '@/i18n/translate';
-import { OverviewTabParamList } from '@/navigators/OverviewNavigator';
 import { GenericListScreen } from '@/screens/GenericListScreen';
 import { fetchTransactions } from '@/screens/TransactionsScreen/TransactionsScreen';
 import { OverviewPath } from '@/types/OverviewPath';
 import { TransactionPath } from '@/types/TransactionPath';
 
-type Props = BottomTabScreenProps<OverviewTabParamList, TransactionPath.Transactions>;
+type Props = NativeStackScreenProps<ParamListBase, string>;
 
 export const HistoryTransactionsScreen = function HistoryScreen(_props: Props) {
     const navigation = useNavigation();

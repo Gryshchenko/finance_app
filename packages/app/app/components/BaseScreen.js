@@ -1,8 +1,10 @@
 import { View } from 'react-native';
+
 import { Header } from '@/components/Header';
 import { Icon } from '@/components/Icon';
 import { useAppTheme } from '@/theme/context';
 import { $styles } from '@/theme/styles';
+
 export const BaseScreen = ({ titleTx, children }) => {
     const { themed, theme } = useAppTheme();
     return (

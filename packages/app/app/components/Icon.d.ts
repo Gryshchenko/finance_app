@@ -1,4 +1,5 @@
-import { ImageStyle, StyleProp, TouchableOpacityProps, ViewProps, ViewStyle } from "react-native";
+import { ImageStyle, StyleProp, TouchableOpacityProps, ViewProps, ViewStyle } from 'react-native';
+
 export type IconTypes = keyof typeof iconRegistry;
 interface BaseIconProps {
     /**
@@ -22,8 +23,8 @@ interface BaseIconProps {
      */
     containerStyle?: StyleProp<ViewStyle>;
 }
-type PressableIconProps = Omit<TouchableOpacityProps, "style"> & BaseIconProps;
-type IconProps = Omit<ViewProps, "style"> & BaseIconProps;
+type PressableIconProps = Omit<TouchableOpacityProps, 'style'> & BaseIconProps;
+type IconProps = Omit<ViewProps, 'style'> & BaseIconProps;
 /**
  * A component to render a registered icon.
  * It is wrapped in a <TouchableOpacity />
@@ -31,7 +32,7 @@ type IconProps = Omit<ViewProps, "style"> & BaseIconProps;
  * @param {PressableIconProps} props - The props for the `PressableIcon` component.
  * @returns {JSX.Element} The rendered `PressableIcon` component.
  */
-export declare function PressableIcon(props: PressableIconProps): import("react").JSX.Element;
+export declare function PressableIcon(props: PressableIconProps): import('react').JSX.Element;
 /**
  * A component to render a registered icon.
  * It is wrapped in a <View />, use `PressableIcon` if you want to react to input
@@ -39,7 +40,7 @@ export declare function PressableIcon(props: PressableIconProps): import("react"
  * @param {IconProps} props - The props for the `Icon` component.
  * @returns {JSX.Element} The rendered `Icon` component.
  */
-export declare function Icon(props: IconProps): import("react").JSX.Element;
+export declare function Icon(props: IconProps): import('react').JSX.Element;
 export declare const iconRegistry: {
     add: any;
     back: any;

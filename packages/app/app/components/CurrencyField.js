@@ -1,6 +1,8 @@
 import { useState } from 'react';
+
 import { TextField } from '@/components/TextField';
 import { CurrencyUtils } from '@/utils/CurrencyUtils';
+
 export const CurrencyField = ({ value, onChangeCleaned, editable, currency, ...props }) => {
     const [display, setDisplay] = useState(value ? String(value) : '');
     const [_, setFocused] = useState(false);

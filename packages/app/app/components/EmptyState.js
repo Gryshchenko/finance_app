@@ -1,8 +1,11 @@
 import { Image, View } from 'react-native';
+
 import { translate } from '@/i18n/translate';
 import { useAppTheme } from '@/theme/context';
+
 import { Button } from './buttons/Button';
 import { Text } from './Text';
+
 const sadFace = require('@assets/images/sad-face.png');
 /**
  * A component to use when there is no data to display. It can be utilized to direct the user what to do next.

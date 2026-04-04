@@ -1,6 +1,8 @@
 import { View, StyleSheet } from 'react-native';
+
 import PendingDots from '@/components/PendingDots';
 import { useAppTheme } from '@/theme/context';
+
 export const PendingState = () => {
     const { theme } = useAppTheme();
     return (

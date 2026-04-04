@@ -1,7 +1,6 @@
 import demoEs from './demo-es';
-import { Translations } from './en';
 
-const es: Translations = {
+const es = {
     common: {
         ok: 'OK',
         cancel: 'Cancelar',

@@ -1,7 +1,9 @@
-import { ReactElement } from "react";
-import { StyleProp, TextStyle, TouchableOpacityProps, View, ViewStyle } from "react-native";
-import { IconTypes } from "./Icon";
-import { TextProps } from "./Text";
+import { ReactElement } from 'react';
+import { StyleProp, TextStyle, TouchableOpacityProps, View, ViewStyle } from 'react-native';
+
+import { IconTypes } from './Icon';
+import { TextProps } from './Text';
+
 export interface ListItemProps extends TouchableOpacityProps {
     /**
      * How tall the list item should be.
@@ -21,20 +23,20 @@ export interface ListItemProps extends TouchableOpacityProps {
     /**
      * Text to display if not using `tx` or nested components.
      */
-    text?: TextProps["text"];
+    text?: TextProps['text'];
     /**
      * Text which is looked up via i18n.
      */
-    tx?: TextProps["tx"];
+    tx?: TextProps['tx'];
     /**
      * Children components.
      */
-    children?: TextProps["children"];
+    children?: TextProps['children'];
     /**
      * Optional options to pass to i18n. Useful for interpolation
      * as well as explicitly setting locale or translation fallbacks.
      */
-    txOptions?: TextProps["txOptions"];
+    txOptions?: TextProps['txOptions'];
     /**
      * Optional text style override.
      */
@@ -84,4 +86,4 @@ export interface ListItemProps extends TouchableOpacityProps {
  * @param {ListItemProps} props - The props for the `ListItem` component.
  * @returns {JSX.Element} The rendered `ListItem` component.
  */
-export declare const ListItem: import("react").ForwardRefExoticComponent<ListItemProps & import("react").RefAttributes<View>>;
+export declare const ListItem: import('react').ForwardRefExoticComponent<ListItemProps & import('react').RefAttributes<View>>;

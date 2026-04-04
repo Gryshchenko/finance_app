@@ -5,6 +5,7 @@
 import { format } from 'date-fns/format';
 import { parseISO } from 'date-fns/parseISO';
 import i18n from 'i18next';
+
 let dateFnsLocale;
 export const loadDateFnsLocale = () => {
     const primaryTag = i18n.language.split('-')[0];

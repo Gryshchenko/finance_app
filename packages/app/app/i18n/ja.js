@@ -1,4 +1,5 @@
 import demoJa from './demo-ja';
+
 const ja = {
     common: {
         ok: 'OK',

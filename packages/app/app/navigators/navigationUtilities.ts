@@ -4,10 +4,10 @@ import { NavigationState, PartialState, createNavigationContainerRef } from '@re
 
 import Config from '@/config';
 import type { PersistNavigationConfig } from '@/config/config.base';
+import { SecureBiometricStorage } from '@/services/SecureBiometricStorage';
 import { useIsMounted } from '@/utils/useIsMounted';
 
 import type { AppStackParamList, NavigationProps } from './AppNavigator';
-import { SecureBiometricStorage } from '@/services/SecureBiometricStorage';
 
 type Storage = typeof SecureBiometricStorage;
 

@@ -1,3 +1,4 @@
-import { Translations } from "./en";
+import { Translations } from './en';
+
 declare const ar: Translations;
 export default ar;

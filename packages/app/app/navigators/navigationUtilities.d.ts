@@ -1,6 +1,9 @@
-import { NavigationState, PartialState } from "@react-navigation/native";
-import * as storage from "@/utils/storage";
-import type { AppStackParamList } from "./AppNavigator";
+import { NavigationState, PartialState } from '@react-navigation/native';
+
+import * as storage from '@/utils/storage';
+
+import type { AppStackParamList } from './AppNavigator';
+
 type Storage = typeof storage;
 /**
  * Reference to the root App Navigator.
@@ -12,7 +15,7 @@ type Storage = typeof storage;
  * The types on this reference will only let you reference top level navigators. If you have
  * nested navigators, you'll need to use the `useNavigation` with the stack navigator's ParamList type.
  */
-export declare const navigationRef: import("@react-navigation/native").NavigationContainerRefWithCurrent<AppStackParamList>;
+export declare const navigationRef: import('@react-navigation/native').NavigationContainerRefWithCurrent<AppStackParamList>;
 /**
  * Gets the current screen from any navigation state.
  * @param {NavigationState | PartialState<NavigationState>} state - The navigation state to traverse.
@@ -33,23 +36,38 @@ export declare function useBackButtonHandler(canExit: (routeName: string) => boo
  * @param {string} persistenceKey - The key to use for storing the navigation state.
  * @returns {object} - The navigation state and persistence functions.
  */
-export declare function useNavigationPersistence(storage: Storage, persistenceKey: string): {
+export declare function useNavigationPersistence(
+    storage: Storage,
+    persistenceKey: string,
+): {
     onNavigationStateChange: (state: NavigationState | undefined) => void;
     restoreState: () => Promise<void>;
     isRestored: boolean;
-    initialNavigationState: Readonly<Partial<Omit<Readonly<{
-        key: string;
-        index: number;
-        routeNames: string[];
-        history?: unknown[];
-        routes: import("@react-navigation/native").NavigationRoute<import("@react-navigation/native").ParamListBase, string>[];
-        type: string;
-        stale: false;
-    }>, "stale" | "routes">> & {
-        routes: (Omit<import("@react-navigation/native").Route<string>, "key"> & {
-            state?: import("@react-navigation/native").InitialState;
-        })[];
-    }> | undefined;
+    initialNavigationState:
+        | Readonly<
+              Partial<
+                  Omit<
+                      Readonly<{
+                          key: string;
+                          index: number;
+                          routeNames: string[];
+                          history?: unknown[];
+                          routes: import('@react-navigation/native').NavigationRoute<
+                              import('@react-navigation/native').ParamListBase,
+                              string
+                          >[];
+                          type: string;
+                          stale: false;
+                      }>,
+                      'stale' | 'routes'
+                  >
+              > & {
+                  routes: (Omit<import('@react-navigation/native').Route<string>, 'key'> & {
+                      state?: import('@react-navigation/native').InitialState;
+                  })[];
+              }
+          >
+        | undefined;
 };
 /**
  * use this to navigate without the navigation

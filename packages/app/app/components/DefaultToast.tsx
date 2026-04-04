@@ -1,8 +1,9 @@
 import { View } from 'react-native';
+
+import { TxKeyPath } from '@/i18n/index';
+import { InfoToast } from '@/screens/Toaster/InfoToast';
 import { ToastType } from '@/services/ToastService';
 import { useSafeAreaInsetsStyle } from '@/utils/useSafeAreaInsetsStyle';
-import { InfoToast } from '@/screens/Toaster/InfoToast';
-import { TxKeyPath } from '@/i18n/index';
 
 export const DefaultToast: React.FC<{
     title: TxKeyPath;

@@ -6,11 +6,11 @@ import { ICategory } from 'tenpercent/shared';
 import { Utils } from 'tenpercent/shared';
 
 import { EmptyState } from '@/components/EmptyState';
+import SectionListWithKeyboardAwareScrollView from '@/components/SectionListWithKeyboardAwareScrollView';
 import { Text } from '@/components/Text';
 import { ViewButton } from '@/components/ViewButton';
 import { useCurrency } from '@/context/CurrencyContext';
 import { CategoriesPath } from '@/navigators/CategoriesStackNavigator';
-import SectionListWithKeyboardAwareScrollView from '@/components/SectionListWithKeyboardAwareScrollView';
 import { useAppTheme } from '@/theme/context';
 import { ThemedStyle } from '@/theme/types';
 import { OverviewPath } from '@/types/OverviewPath';

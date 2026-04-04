@@ -1,7 +1,9 @@
 import { useState, useEffect, useCallback } from 'react';
 import { View, Pressable, Animated } from 'react-native';
+
 import { Text } from '@/components/Text';
 import { useAppTheme } from '@/theme/context';
+
 export default function IgniteSwitcher({ options, value, onChange, style, disabled }) {
     const [selected, setSelected] = useState(options.find((opt) => opt.value === value) || options[0]);
     const [width, setWidth] = useState(0);

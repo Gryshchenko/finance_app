@@ -1,5 +1,7 @@
-import { FC } from "react";
-import { TxKeyPath } from "@/i18n";
+import { FC } from 'react';
+
+import { TxKeyPath } from '@/i18n';
+
 interface BaseScreenProps {
     titleTx?: TxKeyPath | undefined;
     children: React.ReactNode;

@@ -1,7 +1,6 @@
 import demoKo from './demo-ko';
-import { Translations } from './en';
 
-const ko: Translations = {
+const ko = {
     common: {
         ok: '확인!',
         cancel: '취소',

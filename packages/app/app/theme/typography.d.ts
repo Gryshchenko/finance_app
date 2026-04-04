@@ -49,16 +49,20 @@ export declare const typography: {
     /**
      * An alternate font used for perhaps titles and stuff.
      */
-    secondary: {
-        thin: string;
-        light: string;
-        normal: string;
-        medium: string;
-    } | undefined;
+    secondary:
+        | {
+              thin: string;
+              light: string;
+              normal: string;
+              medium: string;
+          }
+        | undefined;
     /**
      * Lets get fancy with a monospace font!
      */
-    code: {
-        normal: string;
-    } | undefined;
+    code:
+        | {
+              normal: string;
+          }
+        | undefined;
 };

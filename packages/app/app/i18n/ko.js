@@ -1,4 +1,5 @@
 import demoKo from './demo-ko';
+
 const ko = {
     common: {
         ok: '확인!',

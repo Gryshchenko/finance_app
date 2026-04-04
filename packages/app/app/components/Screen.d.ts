@@ -1,7 +1,9 @@
-import { ReactNode } from "react";
-import { KeyboardAvoidingViewProps, ScrollViewProps, StyleProp, ViewStyle } from "react-native";
-import { SystemBarsProps, SystemBarStyle } from "react-native-edge-to-edge";
-import { ExtendedEdge } from "@/utils/useSafeAreaInsetsStyle";
+import { ReactNode } from 'react';
+import { KeyboardAvoidingViewProps, ScrollViewProps, StyleProp, ViewStyle } from 'react-native';
+import { SystemBarsProps, SystemBarStyle } from 'react-native-edge-to-edge';
+
+import { ExtendedEdge } from '@/utils/useSafeAreaInsetsStyle';
+
 export declare const DEFAULT_BOTTOM_OFFSET = 50;
 interface BaseScreenProps {
     /**
@@ -46,22 +48,22 @@ interface BaseScreenProps {
     KeyboardAvoidingViewProps?: KeyboardAvoidingViewProps;
 }
 interface FixedScreenProps extends BaseScreenProps {
-    preset?: "fixed";
+    preset?: 'fixed';
 }
 interface ScrollScreenProps extends BaseScreenProps {
-    preset?: "scroll";
+    preset?: 'scroll';
     /**
      * Should keyboard persist on screen tap. Defaults to handled.
      * Only applies to scroll preset.
      */
-    keyboardShouldPersistTaps?: "handled" | "always" | "never";
+    keyboardShouldPersistTaps?: 'handled' | 'always' | 'never';
     /**
      * Pass any additional props directly to the ScrollView component.
      */
     ScrollViewProps?: ScrollViewProps;
 }
-interface AutoScreenProps extends Omit<ScrollScreenProps, "preset"> {
-    preset?: "auto";
+interface AutoScreenProps extends Omit<ScrollScreenProps, 'preset'> {
+    preset?: 'auto';
     /**
      * Threshold to trigger the automatic disabling/enabling of scroll ability.
      * Defaults to `{ percent: 0.92 }`.
@@ -80,5 +82,5 @@ export type ScreenProps = ScrollScreenProps | FixedScreenProps | AutoScreenProps
  * @param {ScreenProps} props - The props for the `Screen` component.
  * @returns {JSX.Element} The rendered `Screen` component.
  */
-export declare function Screen(props: ScreenProps): import("react").JSX.Element;
+export declare function Screen(props: ScreenProps): import('react').JSX.Element;
 export {};

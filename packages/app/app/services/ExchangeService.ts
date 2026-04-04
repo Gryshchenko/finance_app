@@ -1,4 +1,3 @@
-import { ErrorCode } from 'tenpercent/shared';
 import { IRate } from 'tenpercent/shared/dist/interfaces/IRate';
 
 import { ApiAbstract } from '@/services/api/apiAbstract';
@@ -24,7 +23,7 @@ export class ExchangeService extends ApiAbstract {
           }
         | GeneralApiProblem
     > {
-        try {
+        return this.withErrorHandler(async () => {
             this._logger.info(`Start fetching rate for currency ${sourceCurrency}`);
             const response = await this.authGet(`/exchange-rates?currency=${sourceCurrency}&targetCurrency=${targetCurrency}`);
             if (response.kind === GeneralApiProblemKind.Ok) {
@@ -33,20 +32,6 @@ export class ExchangeService extends ApiAbstract {
                 this._logger.info(`Fetching currencies failed: ${response.kind}`);
             }
             return response;
-        } catch (e) {
-            if (__DEV__ && e instanceof Error) {
-                this._logger.error(`Bad data: ${e.message}\n}`, e.stack);
-            }
-            return {
-                kind: GeneralApiProblemKind.BadData,
-                status: undefined,
-                data: undefined,
-                errors: [
-                    {
-                        errorCode: ErrorCode.CLIENT_UNKNOWN_ERROR,
-                    },
-                ],
-            };
-        }
+        });
     }
 }

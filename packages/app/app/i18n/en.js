@@ -1,4 +1,5 @@
 import demoEn from './demo-en';
+
 const en = {
     errorCode: {
         FORBIDDEN_ERROR: 'Access is forbidden.',

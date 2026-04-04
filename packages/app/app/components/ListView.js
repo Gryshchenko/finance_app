@@ -1,6 +1,7 @@
 import { forwardRef } from 'react';
 import { FlatList } from 'react-native';
 import { FlashList } from '@shopify/flash-list';
+
 import { isRTL } from '@/i18n';
 /**
  * This is a Higher Order Component meant to ease the pain of using @shopify/flash-list

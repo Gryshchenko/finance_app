@@ -12,7 +12,7 @@ export const SettingsScreen: FC<MainTabScreenProps<'settings'>> = function Setti
     const { themed } = useAppTheme();
     return (
         <Screen preset="scroll" contentContainerStyle={$styles.container} safeAreaEdges={['top']}>
-            <Text preset="heading" tx="demoCommunityScreen:title" style={themed($title)} />
+            <Text preset="heading" tx="common:settings" style={themed($title)} />
         </Screen>
     );
 };

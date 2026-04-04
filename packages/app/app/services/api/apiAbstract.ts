@@ -34,8 +34,12 @@ export abstract class ApiAbstract {
             },
         });
         this._authService = authService;
-        createAuthRefreshInterceptor(this.apisauce.axiosInstance, this.refresh);
-        axiosRetry(this.apisauce.axiosInstance, { retries: 5, retryDelay: axiosRetry.exponentialDelay });
+        createAuthRefreshInterceptor(this.apisauce.axiosInstance, this.refresh.bind(this));
+        axiosRetry(this.apisauce.axiosInstance, {
+            retries: 3,
+            retryDelay: axiosRetry.exponentialDelay,
+            retryCondition: (error) => axiosRetry.isNetworkOrIdempotentRequestError(error),
+        });
     }
 
     private async refresh(): Promise<boolean> {
@@ -53,7 +57,7 @@ export abstract class ApiAbstract {
             }
             const newToken = response.data?.data?.token;
             if (!newToken) throw new Error('refresh failed token empty');
-            AuthService.instance().token = newToken;
+            this._authService.token = newToken;
             this._logger.info('Token updated on refresh');
             return true;
         } catch (e) {
@@ -83,22 +87,13 @@ export abstract class ApiAbstract {
             data: undefined,
         };
     }
-    private isAuthTokenExist(token: string = AuthService.instance().token as string): boolean {
-        return token !== undefined && token !== null;
+    private isAuthTokenExist(token: string = this._authService.token as string): boolean {
+        return !!token;
     }
 
     protected async publicPost<T>(url: string, body?: Record<string, unknown>): Promise<GeneralApiProblem<T>> {
         try {
-            const response: ApiResponse<IResponse<T>> = await this.apisauce.post(url, body);
-            if (response.ok) {
-                return {
-                    kind: GeneralApiProblemKind.Ok,
-                    data: response.data?.data as T,
-                    errors: response.data?.errors,
-                    status: response.data?.status,
-                };
-            }
-            return getGeneralApiProblem(response) as GeneralApiProblem<T>;
+            return await this.buildResponse(async () => this.apisauce.post(url, body));
         } catch (e) {
             this._logger.error('publicPost failed due reason', (e as { message: string }).message);
             return {
@@ -115,7 +110,7 @@ export abstract class ApiAbstract {
         options: {
             token: string;
         } = {
-            token: AuthService.instance().token as string,
+            token: this._authService.token as string,
         },
     ): Promise<GeneralApiProblem<T>> {
         const { token } = options;
@@ -160,23 +155,14 @@ export abstract class ApiAbstract {
         options: {
             token: string;
         } = {
-            token: AuthService.instance().token as string,
+            token: this._authService.token as string,
         },
     ): Promise<GeneralApiProblem<T>> {
         const { token } = options;
         if (!this.isAuthTokenExist(token)) return this.getAuthError('Token not exist');
-        return await this.buildResponse(async () => {
-            const response: ApiResponse<IResponse<T>> = await this.apisauce.get(
-                url,
-                {},
-                {
-                    headers: {
-                        Authorization: `Bearer ${token}`,
-                    },
-                },
-            );
-            return response;
-        });
+        return await this.buildResponse(async () =>
+            this.apisauce.get(url, {}, { headers: { Authorization: `Bearer ${token}` } }),
+        );
     }
     protected async authPatch<T>(
         url: string,
@@ -184,41 +170,46 @@ export abstract class ApiAbstract {
         options: {
             token: string;
         } = {
-            token: AuthService.instance().token as string,
+            token: this._authService.token as string,
         },
     ): Promise<GeneralApiProblem<T>> {
         const { token } = options;
         if (!this.isAuthTokenExist(token)) return this.getAuthError('Token not exist');
-        return await this.buildResponse(async () => {
-            const response: ApiResponse<IResponse<T>> = await this.apisauce.patch(url, body, {
-                headers: {
-                    Authorization: `Bearer ${token}`,
-                },
-            });
-            return response;
-        });
+        return await this.buildResponse(async () =>
+            this.apisauce.patch(url, body, { headers: { Authorization: `Bearer ${token}` } }),
+        );
     }
+    protected async withErrorHandler<T>(
+        fn: () => Promise<GeneralApiProblem<T>>,
+        errorCode: ErrorCode = ErrorCode.CLIENT_UNKNOWN_ERROR,
+    ): Promise<GeneralApiProblem<T>> {
+        try {
+            return await fn();
+        } catch (e) {
+            if (__DEV__ && e instanceof Error) {
+                this._logger.error(`Bad data: ${e.message}`, e.stack);
+            }
+            return {
+                kind: GeneralApiProblemKind.BadData,
+                status: undefined,
+                data: undefined,
+                errors: [{ errorCode }],
+            };
+        }
+    }
+
     protected async authDelete<T>(
         url: string,
         options: {
             token: string;
         } = {
-            token: AuthService.instance().token as string,
+            token: this._authService.token as string,
         },
     ): Promise<GeneralApiProblem<T>> {
         const { token } = options;
         if (!this.isAuthTokenExist(token)) return this.getAuthError('Token not exist');
-        return await this.buildResponse(async () => {
-            const response: ApiResponse<IResponse<T>> = await this.apisauce.delete(
-                url,
-                {},
-                {
-                    headers: {
-                        Authorization: `Bearer ${token}`,
-                    },
-                },
-            );
-            return response;
-        });
+        return await this.buildResponse(async () =>
+            this.apisauce.delete(url, {}, { headers: { Authorization: `Bearer ${token}` } }),
+        );
     }
 }

@@ -1,6 +1,8 @@
 import { ScrollView, View } from 'react-native';
+
 import { EditButtons } from '@/components/buttons/EditButtons';
 import { spacing } from '@/theme/spacing';
+
 export const GeneralDetailView = ({ children, isView, onEdit, onCancel, onSave, onDelete }) => {
     return (
         <>

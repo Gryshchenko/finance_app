@@ -1,10 +1,12 @@
 import { Pressable } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
+
 import { Icon } from '@/components/Icon';
 import { Text } from '@/components/Text';
 import { translate } from '@/i18n/translate';
 import { useAppTheme } from '@/theme/context';
 import { $styles } from '@/theme/styles';
+
 export const BackButton = ({ size = 20, onPress }) => {
     const navigation = useNavigation();
     const { themed, theme } = useAppTheme();

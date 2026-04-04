@@ -1,4 +1,5 @@
 import { Image, TouchableOpacity, View } from 'react-native';
+
 import { useAppTheme } from '@/theme/context';
 /**
  * A component to render a registered icon.

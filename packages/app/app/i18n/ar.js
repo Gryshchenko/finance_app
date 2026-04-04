@@ -1,4 +1,5 @@
 import demoAr from './demo-ar';
+
 const ar = {
     common: {
         ok: 'نعم',

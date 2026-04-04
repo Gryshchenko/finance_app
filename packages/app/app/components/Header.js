@@ -1,9 +1,11 @@
 import { TouchableOpacity, View } from 'react-native';
+
 import { isRTL } from '@/i18n';
 import { translate } from '@/i18n/translate';
 import { useAppTheme } from '@/theme/context';
 import { $styles } from '@/theme/styles';
 import { useSafeAreaInsetsStyle } from '@/utils/useSafeAreaInsetsStyle';
+
 import { PressableIcon } from './Icon';
 import { Text } from './Text';
 /**

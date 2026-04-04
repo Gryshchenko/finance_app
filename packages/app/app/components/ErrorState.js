@@ -1,7 +1,9 @@
 import { View } from 'react-native';
+
 import { EmptyState } from '@/components/EmptyState';
 import { useAppTheme } from '@/theme/context';
 import { $styles } from '@/theme/styles';
+
 export const ErrorState = ({
     headingTx = 'common:error',
     contentTx = 'errorScreen:title',
