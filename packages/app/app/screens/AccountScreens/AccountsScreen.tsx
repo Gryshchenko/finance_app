@@ -17,7 +17,7 @@ import { OverviewPath } from '@/types/OverviewPath';
 import { TransactionPath } from '@/types/TransactionPath';
 import { Logger } from '@/utils/logger/Logger';
 
-export async function fetchAccounts(): Promise<IAccountListItem[] | undefined> {
+export async function fetchAccounts(): Promise<IAccountListItem[] | []> {
     try {
         const accountService = AccountService.instance();
         const response = await accountService.doGetAccounts();

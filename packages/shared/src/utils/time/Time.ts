@@ -110,6 +110,34 @@ class Time {
         }
         return dt.toFormat(format);
     }
+
+    /**
+     * Parse a UTC ISO string and format it in the device's local timezone.
+     * Use this for any date/time displayed on the UI.
+     */
+    public static formatLocalDate(isoString: string, format: DateFormat): string {
+        const dt = DateTime.fromISO(isoString, { zone: 'utc' }).toLocal();
+        if (!dt.isValid) {
+            throw new Error(`Invalid ISO date: ${isoString}, explanation: ${dt.invalidExplanation}`);
+        }
+        return dt.toFormat(format);
+    }
+
+    /**
+     * Convert a JS Date chosen by the user (local time) to a UTC ISO string.
+     * Use this inside onChange handlers before storing/sending the date.
+     */
+    public static localDateToUTC(date: Date): string {
+        return DateTime.fromJSDate(date).toUTC().toISO();
+    }
+
+    /**
+     * Convert a UTC ISO string to a JS Date in local time.
+     * Use this to seed date pickers so they display the correct local time.
+     */
+    public static utcToLocalDate(isoString: string): Date {
+        return DateTime.fromISO(isoString, { zone: 'utc' }).toLocal().toJSDate();
+    }
     private static parseISO(dateISO: string): DateTime {
         const dt = DateTime.fromISO(dateISO, { zone: 'utc' });
         if (!dt.isValid) {

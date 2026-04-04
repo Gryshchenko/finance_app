@@ -76,20 +76,6 @@ export const TransactionsScreen = function TransactionsScreen(_props: Props) {
             }}
             onBack={() => navigation.goBack()}
             RenderComponent={Transactions}
-            RightActionComponent={
-                <AddButton
-                    onPress={() => {
-                        navigation.getParent()?.navigate(path, {
-                            screen: TransactionPath.TransactionCreate,
-                            params: {
-                                payload: {
-                                    transactionTypeId: type,
-                                },
-                            },
-                        });
-                    }}
-                />
-            }
         />
     );
 };

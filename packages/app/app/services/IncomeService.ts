@@ -1,8 +1,9 @@
-import { IIncome } from 'tenpercent/shared';
+import { IGetStatsProperties, IIncome, IIncomeStats, IStatsResponse } from 'tenpercent/shared';
 import { ErrorCode } from 'tenpercent/shared';
 
 import { ApiAbstract } from '@/services/api/apiAbstract';
 import { GeneralApiProblem, GeneralApiProblemKind } from '@/services/api/apiProblem';
+import { ValidationError } from '@/utils/errors/ValidationError';
 import { Logger } from '@/utils/logger/Logger';
 
 export class IncomeService extends ApiAbstract {
@@ -66,6 +67,45 @@ export class IncomeService extends ApiAbstract {
                 this._logger.info(`Fetching income successfully: ${(response.data as IIncome)?.incomeId}`);
             } else {
                 this._logger.info(`Fetching income failed: ${response.kind}`);
+            }
+            return response;
+        } catch (e) {
+            if (__DEV__ && e instanceof Error) {
+                this._logger.error(`Bad data: ${e.message}\n}`, e.stack);
+            }
+            return {
+                kind: GeneralApiProblemKind.BadData,
+                status: undefined,
+                data: undefined,
+                errors: [
+                    {
+                        errorCode: ErrorCode.CLIENT_UNKNOWN_ERROR,
+                    },
+                ],
+            };
+        }
+    }
+
+    public async doGetIncomeWithStats({ from, to, period }: IGetStatsProperties): Promise<
+        | {
+              kind: GeneralApiProblemKind.Ok;
+              data: IStatsResponse<IIncomeStats> | undefined;
+          }
+        | GeneralApiProblem
+    > {
+        try {
+            if (!from || !to || !period) {
+                throw new ValidationError({ message: `Invalid params: from: ${from}, to: ${to}, period: ${period}` });
+            }
+            this._logger.info('Start fetching incomes with stats');
+            const userId = this._authService.userId;
+            const response = await this.authGet<IStatsResponse<IIncomeStats>>(
+                `/user/${userId}/incomes/stats?from=${from}&to=${to}&period=${period}`,
+            );
+            if (response.kind === GeneralApiProblemKind.Ok) {
+                this._logger.info(`Fetching incomes with stats successfully: ${(response.data?.items as [])?.length}`);
+            } else {
+                this._logger.info(`Fetching incomes with statss failed: ${response.kind}`);
             }
             return response;
         } catch (e) {

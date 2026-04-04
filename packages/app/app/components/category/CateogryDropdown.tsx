@@ -34,7 +34,7 @@ export const CategoryDropdown: React.FC<CategoryDropdownProps> = ({
             onChange={onChange}
             value={value}
             labelTx={'common:expenses'}
-            disabled={disabled}
+            editable={!disabled}
             queryKey={'categories'}
             fetcher={fetchCategories}
             keyExtractor={(item: ICategory) => {

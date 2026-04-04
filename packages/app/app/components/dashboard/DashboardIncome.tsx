@@ -1,6 +1,6 @@
 import { memo } from 'react';
 import { useNavigation } from '@react-navigation/native';
-import { CategoryIconType, IIncome } from 'tenpercent/shared';
+import { CategoryIconType, IIncomeStats, TransactionFieldType } from 'tenpercent/shared';
 
 import { AddBox } from '@/components/dashboard/Box/AddBox';
 import { useDragOverlay } from '@/components/dashboard/Box/DragOverlayContext';
@@ -11,9 +11,10 @@ import { useCurrency } from '@/context/CurrencyContext';
 import { IncomePath } from '@/navigators/IncomesStackNavigator';
 import { BoxDataItemType } from '@/types/BoxDataItemType';
 import { OverviewPath } from '@/types/OverviewPath';
+import { TransactionPath } from '@/types/TransactionPath';
 import { CurrencyUtils } from '@/utils/CurrencyUtils';
 
-export default memo(function DashboardIncome(props: IDashboardItem<IIncome>) {
+export default memo(function DashboardIncome(props: IDashboardItem<IIncomeStats>) {
     const { getCurrencySymbol } = useCurrency();
     const { setDraggingItemType } = useDragOverlay();
     const { BoxProps } = props;
@@ -21,16 +22,17 @@ export default memo(function DashboardIncome(props: IDashboardItem<IIncome>) {
     const navigation = useNavigation();
     switch (container.type) {
         case BoxDataItemType.Default: {
-            const item = container.data as IIncome;
+            const item = container.data as IIncomeStats;
             return (
                 <IncomeBox
                     onTap={() => {
                         navigation.getParent()?.navigate(OverviewPath.Incomes, {
-                            screen: IncomePath.IncomeView,
+                            screen: TransactionPath.Transactions,
                             params: {
                                 id: item.incomeId,
                                 name: item.incomeName,
-                                payload: JSON.stringify(item),
+                                path: OverviewPath.Dashboard,
+                                type: TransactionFieldType.Income,
                             },
                         });
                     }}
@@ -42,7 +44,7 @@ export default memo(function DashboardIncome(props: IDashboardItem<IIncome>) {
                     id={String(item.incomeId)}
                     key={item.incomeName}
                     title={item.incomeName}
-                    value={CurrencyUtils.formatWithDelimiter(0, getCurrencySymbol(item.currencyId), 2, true)}
+                    value={CurrencyUtils.formatWithDelimiter(item.amount, getCurrencySymbol(item.currencyId), 2, true)}
                     isDraggable={true}
                     onDragStart={() => {
                         setDraggingItemType(ItemType.Income);

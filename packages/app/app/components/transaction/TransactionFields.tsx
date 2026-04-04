@@ -199,7 +199,7 @@ export const TransactionFields: FC<IProps> = function TransactionFields(_props) 
                     value={form.createdAt!}
                     helperTx={errors?.createdAt}
                     status={errors?.createdAt ? 'error' : undefined}
-                    onChange={() => null}
+                    onChange={(v) => handleChange?.('createdAt', v)}
                 />
 
                 <TextField

@@ -14,13 +14,6 @@ import { validateFromToDateQuery } from 'src/utils/validation/validateFromToDate
 const incomeRouter = express.Router({ mergeParams: true });
 const incomesRouter = express.Router({ mergeParams: true });
 
-incomesRouter.get(
-    '/stats',
-    validateQuery({ from: 'date', to: 'date', period: 'string' }),
-    validateFromToDateQuery({ from: 'date', to: 'date' }),
-    IncomeController.getStats,
-);
-
 incomeRouter.post(
     '/',
     validateQuery({}),
@@ -53,5 +46,12 @@ incomeRouter.patch(
 );
 
 incomesRouter.get('/', validateQuery({}), IncomeController.gets);
+
+incomesRouter.get(
+    '/stats',
+    validateQuery({ from: 'date', to: 'date', period: 'string' }),
+    validateFromToDateQuery({ from: 'date', to: 'date' }),
+    IncomeController.getStats,
+);
 
 export { incomesRouter, incomeRouter };

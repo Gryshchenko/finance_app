@@ -6,22 +6,15 @@ import { TransactionFieldType } from 'tenpercent/shared';
 
 import { ApiAbstract } from '@/services/api/apiAbstract';
 import { GeneralApiProblem, GeneralApiProblemKind } from '@/services/api/apiProblem';
-import { AuthService } from '@/services/AuthService';
 import { Logger } from '@/utils/logger/Logger';
 
 export class TransactionService extends ApiAbstract {
     protected readonly _logger: Logger = Logger.Of('TransactionService');
-    private readonly _authService: AuthService;
 
     private static _instance: TransactionService;
 
     public static instance(): TransactionService {
-        return TransactionService._instance || (TransactionService._instance = new TransactionService(AuthService.instance()));
-    }
-
-    constructor(authService: AuthService) {
-        super();
-        this._authService = authService;
+        return TransactionService._instance || (TransactionService._instance = new TransactionService());
     }
 
     public async doGetTransactions({

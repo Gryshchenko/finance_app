@@ -11,6 +11,7 @@ import { BaseError } from 'src/utils/errors/BaseError';
 const validateFromToDateQuery = (schema: Record<string, string>) => {
     return (req: Request, res: Response, next: NextFunction) => {
         try {
+            console.log(req.query?.from, req.query?.to);
             let from: DateTime | null = null;
             let to: DateTime | null = null;
             const now = Time.utc();
@@ -42,7 +43,7 @@ const validateFromToDateQuery = (schema: Record<string, string>) => {
             }
         } catch (e) {
             const error = e as BaseError;
-            Logger.Of('validateQuery').error(`Validate query failed due reason`, JSON.stringify(error.message));
+            Logger.Of('validateQuery').error(`Validate query failed due reason`, error.message);
             return res.status(HttpCode.BAD_REQUEST).json(
                 new ResponseBuilder()
                     .setStatus(ResponseStatusType.INTERNAL)

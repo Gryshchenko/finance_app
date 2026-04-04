@@ -22,8 +22,8 @@ export enum DatePickerType {
 
 type IgniteDatePickerProps = {
     preset?: FieldPresets;
-    value: string | null;
-    onChange: (date: Date) => void;
+    value: string | null; // UTC ISO string
+    onChange: (utcISO: string) => void; // always returns UTC ISO string
     placeholder?: string;
     mode?: DatePickerType;
     minimumDate?: Date;
@@ -60,10 +60,15 @@ export const IgniteDatePicker: React.FC<IgniteDatePickerProps> = ({
     helperTxOptions,
 }) => {
     const { themed } = useAppTheme();
-    const [tempDate, setTempDate] = useState<Date>(Time.toJSDate(value || Time.getISODateNow()));
 
-    const currentDate = Time.toJSDate(value || Time.getISODateNow());
-    const formattedDate = value ? Time.formatDate(value, DateFormat.DATE_WITH_TIME_SECONDS) : placeholder;
+    // Seed the picker with local-time Date so the spinner shows the right clock value
+    const nowUTC = Time.getISODateNowUTC();
+    const [tempDate, setTempDate] = useState<Date>(value ? Time.utcToLocalDate(value) : Time.utcToLocalDate(nowUTC));
+
+    // currentDate: local-time Date used by the native picker
+    const currentDate = value ? Time.utcToLocalDate(value) : Time.utcToLocalDate(nowUTC);
+    // formattedDate: shown on the trigger button — always in device local timezone
+    const formattedDate = value ? Time.formatLocalDate(value, DateFormat.DATE_WITH_TIME_SECONDS) : placeholder;
 
     const presetStyles = $fieldPresets[preset];
     const $inputText = [...presetStyles.input];
@@ -71,7 +76,8 @@ export const IgniteDatePicker: React.FC<IgniteDatePickerProps> = ({
     // Android: native dialog, auto-closes on select
     const handleAndroidChange = (_event: DateTimePickerEvent, selectedDate?: Date) => {
         if (_event.type === 'set' && selectedDate) {
-            onChange(selectedDate);
+            // Convert local Date back to UTC ISO before notifying the caller
+            onChange(Time.localDateToUTC(selectedDate));
         }
     };
 
@@ -128,7 +134,8 @@ export const IgniteDatePicker: React.FC<IgniteDatePickerProps> = ({
             renderContent={(close) => {
                 const handleConfirm = () => {
                     close();
-                    onChange(tempDate);
+                    // Convert local Date chosen in the spinner back to UTC ISO
+                    onChange(Time.localDateToUTC(tempDate));
                 };
 
                 return (

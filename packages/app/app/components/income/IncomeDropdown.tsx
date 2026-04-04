@@ -26,7 +26,7 @@ export const IncomeDropdown: React.FC<IncomeDropdownProps> = ({ preset, value, o
             onChange={onChange}
             value={value}
             labelTx={'common:incomes'}
-            disabled={disabled}
+            editable={!disabled}
             queryKey={'incomes'}
             fetcher={fetchIncomes}
             keyExtractor={(item: IIncome) => {

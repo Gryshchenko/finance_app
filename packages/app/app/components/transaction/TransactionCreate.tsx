@@ -53,7 +53,7 @@ export const TransactionCreate: FC<IProps> = function TransactionCreate(_props: 
             amount: 0,
             amountInCurrency: 0,
             currencyId: defaultCurrencyId,
-            createdAt: Time.getISODateNow(),
+            createdAt: Time.getISODateNowUTC(),
             ...data,
         },
         buildTransactionCreateSchema(),

@@ -249,7 +249,7 @@ const $sectionHeader: ThemedStyle<ViewStyle> = ({ colors }) => ({
     alignItems: 'center',
     gap: 8,
     paddingTop: 16,
-    paddingBottom: 8,
+    paddingBottom: 12,
     backgroundColor: colors.background,
 });
 
@@ -264,7 +264,7 @@ const $sectionHeaderText: ThemedStyle<TextStyle> = ({ colors }) => ({
     fontWeight: '500',
     color: colors.textDim,
     textTransform: 'uppercase',
-    letterSpacing: 2,
+    letterSpacing: 1.5,
 });
 
 /* ── Transaction card ── */
@@ -273,7 +273,7 @@ const $card: ThemedStyle<ViewStyle> = ({ colors }) => ({
     backgroundColor: '#ffffff',
     borderWidth: 1,
     borderColor: colors.separator,
-    padding: 16,
+    padding: 20,
     marginBottom: 8,
 });
 
@@ -289,11 +289,11 @@ const $iconCircle: ThemedStyle<ViewStyle> = ({ colors }) => ({
     backgroundColor: colors.background,
     alignItems: 'center',
     justifyContent: 'center',
-    marginRight: 12,
+    marginRight: 16,
 });
 
-const $iconCircleIncome: ThemedStyle<ViewStyle> = () => ({
-    backgroundColor: 'rgba(39, 174, 96, 0.1)',
+const $iconCircleIncome: ThemedStyle<ViewStyle> = ({ colors }) => ({
+    backgroundColor: colors.background,
 });
 
 const $labelContainer: ViewStyle = {
@@ -302,7 +302,7 @@ const $labelContainer: ViewStyle = {
 };
 
 const $transactionName: ThemedStyle<TextStyle> = ({ colors }) => ({
-    fontSize: 15,
+    fontSize: 16,
     fontWeight: '500',
     color: colors.text,
 });
@@ -336,7 +336,7 @@ const $amountContainer: ViewStyle = {
 };
 
 const $amountText: ThemedStyle<TextStyle> = ({ colors }) => ({
-    fontSize: 16,
+    fontSize: 18,
     fontWeight: '500',
     color: colors.text,
 });

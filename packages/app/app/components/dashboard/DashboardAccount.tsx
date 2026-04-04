@@ -1,6 +1,6 @@
 import { memo } from 'react';
 import { useNavigation } from '@react-navigation/native';
-import { CategoryIconType, IAccountListItem, TransactionType, Utils } from 'tenpercent/shared';
+import { CategoryIconType, IAccountListItem, TransactionFieldType, TransactionType, Utils } from 'tenpercent/shared';
 
 import { AccountBox } from '@/components/dashboard/Box/AccountBox';
 import { AddBox } from '@/components/dashboard/Box/AddBox';
@@ -29,10 +29,12 @@ export default memo(function DashboardAccount(props: IDashboardItem<IAccountList
                 <AccountBox
                     onTap={() => {
                         navigation.getParent()?.navigate(OverviewPath.Balances, {
-                            screen: AccountsPath.AccountView,
+                            screen: TransactionPath.Transactions,
                             params: {
                                 id: item.accountId,
                                 name: item.accountName,
+                                path: OverviewPath.Dashboard,
+                                type: TransactionFieldType.Account,
                             },
                         });
                     }}

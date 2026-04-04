@@ -1,4 +1,3 @@
-import { FC } from 'react';
 import { useNavigation } from '@react-navigation/native';
 import { NativeStackScreenProps } from '@react-navigation/native-stack';
 import { ICategory } from 'tenpercent/shared';
@@ -10,7 +9,7 @@ import { Categories } from '@/components/category/Categories';
 import { useAppQuery } from '@/hooks/useAppQuery';
 import { translate } from '@/i18n/translate';
 import { CategoriesPath } from '@/navigators/CategoriesStackNavigator';
-import { MainTabScreenProps, OverviewTabParamList } from '@/navigators/OverviewNavigator';
+import { OverviewTabParamList } from '@/navigators/OverviewNavigator';
 import { GenericListScreen } from '@/screens/GenericListScreen';
 import { GeneralApiProblemKind } from '@/services/api/apiProblem';
 import { CategoryService } from '@/services/CategoryService';

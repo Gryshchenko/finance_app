@@ -1,7 +1,7 @@
 import { ComponentType } from 'react';
 import Animated from 'react-native-reanimated';
 import { DropProvider } from 'react-native-reanimated-dnd';
-import { IAccountListItem, ICategory, IIncome } from 'tenpercent/shared';
+import { IAccountListItem, ICategoryStats, IIncomeStats, IStatsResponse, StatsPeriod, Time } from 'tenpercent/shared';
 
 import { boxDataItemAdapter } from '@/components/dashboard/Box/boxDataItemAdapter';
 import { useDragOverlay } from '@/components/dashboard/Box/DragOverlayContext';
@@ -13,16 +13,92 @@ import DashboardItem, { IDashboardItem } from '@/components/dashboard/DashboardI
 import { useAppQuery } from '@/hooks/useAppQuery';
 import { IBoxDataItem } from '@/interfaces/IBoxDataItem';
 import { fetchAccounts } from '@/screens/AccountScreens/AccountsScreen';
-import { fetchCategories } from '@/screens/CategoryScreens/CategoriesScreen';
-import { fetchIncomes } from '@/screens/IncomeScreens/IncomesScreen';
+import { GeneralApiProblemKind } from '@/services/api/apiProblem';
+import { CategoryService } from '@/services/CategoryService';
+import { IncomeService } from '@/services/IncomeService';
 import { spacing } from '@/theme/spacing';
 import { BoxDataItemType } from '@/types/BoxDataItemType';
+import { Logger } from '@/utils/logger/Logger';
+
+export async function fetchIncomes(): Promise<IStatsResponse<IIncomeStats>> {
+    try {
+        const incomeService = IncomeService.instance();
+        const from = Time.toMonthStart(Time.getISODateNowUTC());
+        const to = Time.getISODateNowUTC();
+        if (!from || !to) {
+            throw new Error(`Invalid date range for fetching income stats: from ${from}, to ${to}`); // This should never happen, but we want to be safe
+        }
+        const response = await incomeService.doGetIncomeWithStats({
+            from,
+            to,
+            period: StatsPeriod.Month,
+        });
+        switch (response.kind) {
+            case GeneralApiProblemKind.Ok: {
+                return response.data as IStatsResponse<IIncomeStats>;
+            }
+            default: {
+                return {
+                    from,
+                    to,
+                    items: [],
+                    total: 0,
+                };
+            }
+        }
+    } catch (e) {
+        Logger.Of('FetchIncomes').error(`Fetch income failed due reason: ${(e as { message: string }).message}`);
+        return {
+            from: '',
+            to: '',
+            items: [],
+            total: 0,
+        };
+    }
+}
+
+export async function fetchCategories(): Promise<IStatsResponse<ICategoryStats>> {
+    try {
+        const from = Time.toMonthStart(Time.getISODateNowUTC());
+        const to = Time.getISODateNowUTC();
+        if (!from || !to) {
+            throw new Error(`Invalid date range for fetching income stats: from ${from}, to ${to}`); // This should never happen, but we want to be safe
+        }
+        const categoriesService = CategoryService.instance();
+        const response = await categoriesService.doGetCategoriesWithStats({
+            from,
+            to,
+            period: StatsPeriod.Month,
+        });
+        switch (response.kind) {
+            case GeneralApiProblemKind.Ok: {
+                return response.data as IStatsResponse<ICategoryStats>;
+            }
+            default: {
+                return {
+                    from: '',
+                    to: '',
+                    items: [],
+                    total: 0,
+                };
+            }
+        }
+    } catch (e) {
+        Logger.Of('FetchCategories').error(`Fetch categories failed due reason: ${(e as { message: string }).message}`);
+        return {
+            from: '',
+            to: '',
+            items: [],
+            total: 0,
+        };
+    }
+}
 
 export default function DashboardItems() {
     const { scrollHandler, scrollRef, onOverlayLayout, dragSessionId } = useDragOverlay();
-    const incomes = useAppQuery<IIncome[] | undefined>('incomes', fetchIncomes);
-    const accounts = useAppQuery<IAccountListItem[] | undefined>('accounts', fetchAccounts);
-    const categories = useAppQuery<ICategory[] | undefined>(['categories'], async () => fetchCategories());
+    const incomes = useAppQuery<IStatsResponse<IIncomeStats>>('incomesStats', fetchIncomes);
+    const accounts = useAppQuery<IAccountListItem[]>('accounts', fetchAccounts);
+    const categories = useAppQuery<IStatsResponse<ICategoryStats>>(['categoriesStats'], fetchCategories);
     return (
         <DropProvider key={dragSessionId}>
             <DashboardDraggableItem />
@@ -40,12 +116,12 @@ export default function DashboardItems() {
                     isExpanded={true}
                     keyGetter={(item: IBoxDataItem<unknown>): string => {
                         if (item.type === BoxDataItemType.Default) {
-                            return String((item.data as IIncome)?.incomeId);
+                            return String((item.data as IIncomeStats)?.incomeId);
                         }
                         return 'new';
                     }}
                     Item={DashboardIncome as ComponentType<IDashboardItem<unknown>>}
-                    items={boxDataItemAdapter<IIncome>(incomes.data ?? [])}
+                    items={boxDataItemAdapter<IIncomeStats>(incomes.data?.items ?? [])}
                 />
                 <DashboardItem
                     id={'accounts'}
@@ -63,12 +139,12 @@ export default function DashboardItems() {
                     id={'categories'}
                     keyGetter={(item: IBoxDataItem<unknown>): string => {
                         if (item.type === BoxDataItemType.Default) {
-                            return String((item.data as ICategory)?.categoryId);
+                            return String((item.data as ICategoryStats)?.categoryId);
                         }
                         return 'new';
                     }}
                     Item={DashboardCategory as ComponentType<IDashboardItem<unknown>>}
-                    items={boxDataItemAdapter<ICategory>(categories.data ?? [])}
+                    items={boxDataItemAdapter<ICategoryStats>(categories.data?.items ?? [])}
                 />
             </Animated.ScrollView>
         </DropProvider>

@@ -1,9 +1,10 @@
-import { ICategory } from 'tenpercent/shared';
+import { ICategory, ICategoryStats, IGetStatsProperties, IStatsResponse } from 'tenpercent/shared';
 import { ErrorCode } from 'tenpercent/shared';
 
 import { ApiAbstract } from '@/services/api/apiAbstract';
 import { GeneralApiProblem, GeneralApiProblemKind } from '@/services/api/apiProblem';
 import { AuthService } from '@/services/AuthService';
+import { ValidationError } from '@/utils/errors/ValidationError';
 import { Logger } from '@/utils/logger/Logger';
 
 export class CategoryService extends ApiAbstract {
@@ -30,6 +31,42 @@ export class CategoryService extends ApiAbstract {
                 this._logger.info(`Fetching account successfully: ${(response.data as ICategory)?.categoryId}`);
             } else {
                 this._logger.info(`Fetching account failed: ${response.kind}`);
+            }
+            return response;
+        } catch (e) {
+            if (__DEV__ && e instanceof Error) {
+                this._logger.error(`Bad data: ${e.message}\n}`, e.stack);
+            }
+            return {
+                kind: GeneralApiProblemKind.BadData,
+                status: undefined,
+                data: undefined,
+                errors: [
+                    {
+                        errorCode: ErrorCode.CLIENT_UNKNOWN_ERROR,
+                    },
+                ],
+            };
+        }
+    }
+    public async doGetCategoriesWithStats({ from, to, period }: IGetStatsProperties): Promise<
+        | {
+              kind: GeneralApiProblemKind.Ok;
+              data: IStatsResponse<ICategoryStats>;
+          }
+        | GeneralApiProblem
+    > {
+        try {
+            if (!from || !to || !period) {
+                throw new ValidationError({ message: `Invalid params: from: ${from}, to: ${to}, period: ${period}` });
+            }
+            this._logger.info(`Start fetching categories with stats from`);
+            const userId = this._authService.userId;
+            const response = await this.authGet(`/user/${userId}/categories/stats?from=${from}&to=${to}&period=${period}`);
+            if (response.kind === GeneralApiProblemKind.Ok) {
+                this._logger.info(`Fetching categories with stats successfully: ${(response.data as ICategory[])?.length}`);
+            } else {
+                this._logger.info(`Fetching categories with stats failed: ${response.kind}`);
             }
             return response;
         } catch (e) {

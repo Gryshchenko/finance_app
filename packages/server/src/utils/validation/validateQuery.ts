@@ -43,6 +43,7 @@ const validateQuery = (schema: Record<string, string>) => {
                 errors.push(`Invalid type for ${key}: expected string`);
             }
             if (expectedType === 'date') {
+                console.log(value, 1212);
                 try {
                     Time.parseUTC(String(value));
                 } catch {

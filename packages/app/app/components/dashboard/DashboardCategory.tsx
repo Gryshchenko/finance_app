@@ -1,6 +1,6 @@
 import { memo } from 'react';
 import { useNavigation } from '@react-navigation/native';
-import { CategoryIconType, ICategory, TransactionType, Utils } from 'tenpercent/shared';
+import { CategoryIconType, ICategoryStats, TransactionFieldType, TransactionType, Utils } from 'tenpercent/shared';
 
 import { AddBox } from '@/components/dashboard/Box/AddBox';
 import { IDrag } from '@/components/dashboard/Box/Box';
@@ -16,7 +16,7 @@ import { OverviewPath } from '@/types/OverviewPath';
 import { TransactionPath } from '@/types/TransactionPath';
 import { CurrencyUtils } from '@/utils/CurrencyUtils';
 
-export default memo(function DashboardCategory(props: IDashboardItem<ICategory>) {
+export default memo(function DashboardCategory(props: IDashboardItem<ICategoryStats>) {
     const { getCurrencySymbol } = useCurrency();
     const { draggingItemType } = useDragOverlay();
     const { BoxProps } = props;
@@ -24,15 +24,17 @@ export default memo(function DashboardCategory(props: IDashboardItem<ICategory>)
     const container = props.item;
     switch (container.type) {
         case BoxDataItemType.Default:
-            const item = container.data as ICategory;
+            const item = container.data as ICategoryStats;
             return (
                 <CategoryBox
                     onTap={() => {
                         navigation.getParent()?.navigate(OverviewPath.Categories, {
-                            screen: CategoriesPath.CategoryView,
+                            screen: TransactionPath.Transactions,
                             params: {
                                 id: item.categoryId,
                                 name: item.categoryName,
+                                path: OverviewPath.Dashboard,
+                                type: TransactionFieldType.Category,
                             },
                         });
                     }}
@@ -43,7 +45,7 @@ export default memo(function DashboardCategory(props: IDashboardItem<ICategory>)
                     id={String(item.categoryId)}
                     title={item.categoryName}
                     icon={item.iconId as CategoryIconType}
-                    value={CurrencyUtils.formatWithDelimiter(0, getCurrencySymbol(item.currencyId), 2, true)}
+                    value={CurrencyUtils.formatWithDelimiter(item.amount, getCurrencySymbol(item.currencyId), 2, true)}
                     isDroppable={draggingItemType === ItemType.Account}
                     onDrop={(dropItem: unknown) => {
                         const inWorkDropItem: IDrag = dropItem as unknown as IDrag;
