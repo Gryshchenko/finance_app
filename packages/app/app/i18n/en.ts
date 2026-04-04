@@ -232,6 +232,10 @@ const en = {
         repeatPasswordFieldPlaceholder: 'Confirm your password here',
         title: 'Almost there!',
         subTitle: 'Just a few details.',
+        biometricTitle: 'Enable quick access',
+        biometricSubtitleFace: 'Use Face ID to sign in faster next time',
+        biometricSubtitleFingerprint: 'Use your fingerprint to sign in faster next time',
+        biometricEnrollFailed: 'Biometric setup failed. You can enable it later in settings.',
     },
     dashboardScreen: {
         dashboard: 'Dashboard',

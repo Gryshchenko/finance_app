@@ -1,6 +1,7 @@
 import { ComponentType, FC, useEffect, useMemo, useRef, useState } from 'react';
 // eslint-disable-next-line no-restricted-imports
-import { TextInput, TextStyle, ViewStyle } from 'react-native';
+import { Switch, TextInput, TextStyle, View, ViewStyle } from 'react-native';
+import { MaterialIcons } from '@expo/vector-icons';
 import { ErrorCode, Utils } from 'tenpercent/shared';
 
 import { Button } from '@/components/buttons/Button';
@@ -13,6 +14,7 @@ import { Screen } from '@/components/Screen';
 import { Text } from '@/components/Text';
 import { TextField, type TextFieldAccessoryProps } from '@/components/TextField';
 import { useAuth } from '@/context/AuthContext';
+import { useBiometricSetup } from '@/hooks/useBiometricSetup';
 import { TxKeyPath } from '@/i18n';
 import { IClientConfigLanguage } from '@/interfaces/IClientConfigLanguages';
 import type { AppStackScreenProps } from '@/navigators/AppNavigator';
@@ -46,7 +48,9 @@ export const SignUpScreen: FC<SignUpScreenProps> = (_props) => {
     const [passwordError, setPasswordError] = useState<TxKeyPath | undefined>();
     const [languageError, setLanguageError] = useState<TxKeyPath | undefined>();
     const [currencyError, setCurrencyError] = useState<TxKeyPath | undefined>();
+    const [enableBiometric, setEnableBiometric] = useState(false);
     const { doSignUp } = useAuth();
+    const { isAvailable: isBiometricAvailable, biometricType, enroll } = useBiometricSetup();
 
     useEffect(() => {
         const setDefault = () => {
@@ -116,6 +120,12 @@ export const SignUpScreen: FC<SignUpScreenProps> = (_props) => {
                 setPublicName('');
                 setAuthEmail('');
                 setAuthPassword('');
+                // Biometric enrollment: triggers the native Face ID / fingerprint
+                // dialog. On iOS this also requests the NSFaceIDUsageDescription
+                // permission. We fire-and-forget — a failure is non-fatal.
+                if (enableBiometric && isBiometricAvailable) {
+                    await enroll();
+                }
                 break;
             }
             case GeneralApiProblemKind.BadData: {
@@ -227,6 +237,37 @@ export const SignUpScreen: FC<SignUpScreenProps> = (_props) => {
                 status={Utils.isNotNull(currencyError) ? 'error' : undefined}
                 onChange={(v) => setCurrency(v.currencyCode)}
             />
+
+            {isBiometricAvailable && (
+                <View style={themed($biometricRow)}>
+                    <View style={$biometricInfo}>
+                        <MaterialIcons name={biometricType === 'face' ? 'face' : 'fingerprint'} size={28} color={colors.text} />
+                        <View style={$biometricTextBlock}>
+                            <Text tx="signUpScreen:biometricTitle" style={themed($biometricTitle)} />
+                            <Text
+                                tx={
+                                    biometricType === 'face'
+                                        ? 'signUpScreen:biometricSubtitleFace'
+                                        : 'signUpScreen:biometricSubtitleFingerprint'
+                                }
+                                style={themed($biometricSubtitle)}
+                            />
+                        </View>
+                    </View>
+                    <Switch
+                        value={enableBiometric}
+                        onValueChange={setEnableBiometric}
+                        trackColor={{
+                            false: colors.palette.neutral300,
+                            true: colors.palette.primary500,
+                        }}
+                        thumbColor={colors.palette.neutral100}
+                        // iOS: renders the system switch; Android: Material switch
+                        accessibilityLabel="Enable biometric authentication"
+                    />
+                </View>
+            )}
+
             <Button testID="signUp-button" tx="common:continue" style={themed($tapButton)} preset="reversed" onPress={signUp} />
             <TextButton testID="back-button" tx="common:back" style={themed($tapButton)} onPress={goBack} />
         </Screen>
@@ -264,4 +305,44 @@ const $subTitle: ThemedStyle<TextStyle> = ({ colors, typography, spacing }) => (
     letterSpacing: 2,
     marginTop: spacing.xs,
     marginBottom: spacing.xxl,
+});
+
+const $biometricRow: ThemedStyle<ViewStyle> = ({ spacing, colors }) => ({
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    marginTop: spacing.md,
+    marginBottom: spacing.xs,
+    paddingVertical: spacing.sm,
+    paddingHorizontal: spacing.md,
+    borderRadius: 12,
+    backgroundColor: colors.background,
+    borderWidth: 1,
+    borderColor: colors.separator,
+});
+
+// Static styles (no theme dependency)
+const $biometricInfo: ViewStyle = {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 12,
+    flex: 1,
+};
+
+const $biometricTextBlock: ViewStyle = {
+    flex: 1,
+};
+
+const $biometricTitle: ThemedStyle<TextStyle> = ({ colors, typography }) => ({
+    fontSize: 14,
+    fontWeight: '600',
+    color: colors.text,
+    fontFamily: typography.fonts.funnelSans.semiBold,
+});
+
+const $biometricSubtitle: ThemedStyle<TextStyle> = ({ colors, typography }) => ({
+    fontSize: 12,
+    color: colors.textDim,
+    fontFamily: typography.fonts.funnelSans.light,
+    marginTop: 2,
 });

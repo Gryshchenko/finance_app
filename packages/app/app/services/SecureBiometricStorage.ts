@@ -27,7 +27,7 @@ export class SecureBiometricStorage implements ISecureBiometricStorage {
 
     async get(key: SecureKey, requireBiometric = false): Promise<string | null> {
         if (requireBiometric) {
-            const success = await this.authenticateBiometric();
+            const success = await this.authenticate();
             if (!success) {
                 this._logger.warn('Biometric authentication failed');
                 return null;
@@ -52,7 +52,9 @@ export class SecureBiometricStorage implements ISecureBiometricStorage {
 
     async isBiometricAvailable(): Promise<boolean> {
         try {
-            return await LocalAuthentication.hasHardwareAsync();
+            const hasHardware = await LocalAuthentication.hasHardwareAsync();
+            if (!hasHardware) return false;
+            return await LocalAuthentication.isEnrolledAsync();
         } catch (e) {
             this._logger.error('Biometric hardware check failed:', e);
             return false;
@@ -68,13 +70,14 @@ export class SecureBiometricStorage implements ISecureBiometricStorage {
         }
     }
 
-    private async authenticateBiometric(): Promise<boolean> {
+    async authenticate(options?: LocalAuthentication.LocalAuthenticationOptions): Promise<boolean> {
         try {
             const result = await LocalAuthentication.authenticateAsync({
                 promptMessage: 'Authenticate to access secure data',
                 cancelLabel: 'Cancel',
                 fallbackLabel: 'Use Passcode',
                 disableDeviceFallback: false,
+                ...options,
             });
             return result.success;
         } catch (e) {
