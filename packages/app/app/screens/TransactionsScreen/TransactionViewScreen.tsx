@@ -8,6 +8,7 @@ import { DashboardPath } from '@/navigators/DashboardStackNavigator';
 import { OverviewTabParamList } from '@/navigators/OverviewNavigator';
 import { GenericListScreen } from '@/screens/GenericListScreen';
 import { GeneralApiProblemKind } from '@/services/api/apiProblem';
+import { QueryKeys, QueryStaleTimes } from '@/services/QueryCacheService';
 import { TransactionService } from '@/services/TransactionService';
 import { TransactionPath } from '@/types/TransactionPath';
 import { Logger } from '@/utils/logger/Logger';
@@ -38,8 +39,10 @@ export const TransactionViewScreen = function TransactionsScreen(_props: Props) 
     const params = _props?.route?.params as { id: number; name: string; path: DashboardPath };
     const navigation = useNavigation();
     const { id, name, path } = params;
-    const { isError, data, isPending } = useAppQuery<ITransaction | undefined>(['transaction', id], async () =>
-        fetchTransaction(id),
+    const { isError, data, isPending } = useAppQuery<ITransaction | undefined>(
+        QueryKeys.transaction(id),
+        async () => fetchTransaction(id),
+        { staleTime: QueryStaleTimes.detail },
     );
 
     return (

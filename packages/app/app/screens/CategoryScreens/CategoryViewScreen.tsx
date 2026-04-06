@@ -10,6 +10,7 @@ import { OverviewTabParamList } from '@/navigators/OverviewNavigator';
 import { GenericListScreen } from '@/screens/GenericListScreen';
 import { GeneralApiProblemKind } from '@/services/api/apiProblem';
 import { CategoryService } from '@/services/CategoryService';
+import { QueryKeys, QueryStaleTimes } from '@/services/QueryCacheService';
 import { OverviewPath } from '@/types/OverviewPath';
 import { ValidationError } from '@/utils/errors/ValidationError';
 import { Logger } from '@/utils/logger/Logger';
@@ -42,8 +43,10 @@ type Props = NativeStackScreenProps<OverviewTabParamList, CategoriesPath.Categor
 export const CategoryViewScreen = function CategoryViewScreen(_props: Props) {
     const params = _props?.route?.params as { id: number; name: string };
     const navigation = useNavigation();
-    const { isError, data, isPending } = useAppQuery<ICategory | undefined>(['category', params?.id], () =>
-        fetchCategory(params?.id),
+    const { isError, data, isPending } = useAppQuery<ICategory | undefined>(
+        QueryKeys.category(params?.id),
+        () => fetchCategory(params?.id),
+        { staleTime: QueryStaleTimes.detail },
     );
 
     return (

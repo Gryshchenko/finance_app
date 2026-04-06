@@ -12,6 +12,7 @@ import { translate } from '@/i18n/translate';
 import { GenericListScreen } from '@/screens/GenericListScreen';
 import { GeneralApiProblemKind } from '@/services/api/apiProblem';
 import { CategoryService } from '@/services/CategoryService';
+import { QueryKeys, QueryStaleTimes } from '@/services/QueryCacheService';
 import { OverviewPath } from '@/types/OverviewPath';
 import { TransactionPath } from '@/types/TransactionPath';
 import { Logger } from '@/utils/logger/Logger';
@@ -38,7 +39,9 @@ type Props = NativeStackScreenProps<ParamListBase, string>;
 
 export const CategoriesScreen = function ExpensesScreen(_props: Props) {
     const navigation = useNavigation();
-    const { isError, data, isPending } = useAppQuery<ICategory[] | undefined>(['categories'], async () => fetchCategories());
+    const { isError, data, isPending } = useAppQuery<ICategory[] | undefined>(QueryKeys.categories(), fetchCategories, {
+        staleTime: QueryStaleTimes.list,
+    });
 
     return (
         <GenericListScreen

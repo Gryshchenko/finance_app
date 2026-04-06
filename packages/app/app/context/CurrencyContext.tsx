@@ -5,6 +5,7 @@ import { Utils } from 'tenpercent/shared';
 import { useAppQuery } from '@/hooks/useAppQuery';
 import { buildGeneralApiBaseHandler, GeneralApiProblemKind } from '@/services/api/apiProblem';
 import { CurrencyService } from '@/services/CurrencyService';
+import { QueryKeys, QueryStaleTimes } from '@/services/QueryCacheService';
 import { ValidationError } from '@/utils/errors/ValidationError';
 import { Logger } from '@/utils/logger/Logger';
 
@@ -51,7 +52,9 @@ export interface CurrencyProviderProps {}
 const _logger = Logger.Of('CurrencyContext');
 
 export const CurrencyProvider: FC<PropsWithChildren<CurrencyProviderProps>> = ({ children }) => {
-    const { data, isLoading, isError } = useAppQuery<ICurrency[] | undefined>('currencies', fetchCurrencies);
+    const { data, isLoading, isError } = useAppQuery<ICurrency[] | undefined>(QueryKeys.currencies(), fetchCurrencies, {
+        staleTime: QueryStaleTimes.static,
+    });
     const [currencies, setCurrencies] = useState<Map<number, ICurrency>>(new Map());
     const getDefaultCurrency = (): ICurrency => {
         return {

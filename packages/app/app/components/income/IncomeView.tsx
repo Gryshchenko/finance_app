@@ -13,6 +13,7 @@ import { IncomePath } from '@/navigators/IncomesStackNavigator';
 import AlertService from '@/services/AlertService';
 import { GeneralApiProblemKind } from '@/services/api/apiProblem';
 import { IncomeService } from '@/services/IncomeService';
+import { InvalidationGroups } from '@/services/QueryCacheService';
 import ToastService from '@/services/ToastService';
 import { OverviewPath } from '@/types/OverviewPath';
 
@@ -36,8 +37,7 @@ export const IncomeView: FC<IIncomePros> = function IncomeView(_props) {
                 title: 'common:info',
                 message: 'common:deleteAccountSuccess',
             });
-            await invalidateQuery([['income_accounts']]);
-            await invalidateQuery([['income_account', form.incomeId]]);
+            await invalidateQuery(InvalidationGroups.income(form.incomeId));
             navigation.getParent()?.navigate(OverviewPath.Dashboard);
         } else {
             ToastService.error({

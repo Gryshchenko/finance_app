@@ -12,6 +12,7 @@ import { translate } from '@/i18n/translate';
 import { GenericListScreen } from '@/screens/GenericListScreen';
 import { GeneralApiProblemKind } from '@/services/api/apiProblem';
 import { IncomeService } from '@/services/IncomeService';
+import { QueryKeys, QueryStaleTimes } from '@/services/QueryCacheService';
 import { OverviewPath } from '@/types/OverviewPath';
 import { TransactionPath } from '@/types/TransactionPath';
 import { Logger } from '@/utils/logger/Logger';
@@ -38,7 +39,9 @@ type Props = NativeStackScreenProps<ParamListBase, string>;
 
 export const IncomesScreen = function IncomesScreen(_props: Props) {
     const navigation = useNavigation();
-    const { isError, data, isPending } = useAppQuery<IIncome[] | undefined>('incomes', fetchIncomes);
+    const { isError, data, isPending } = useAppQuery<IIncome[] | undefined>(QueryKeys.incomes(), fetchIncomes, {
+        staleTime: QueryStaleTimes.list,
+    });
 
     return (
         <GenericListScreen

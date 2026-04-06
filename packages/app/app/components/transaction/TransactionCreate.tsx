@@ -6,12 +6,13 @@ import { IRate } from 'tenpercent/shared/dist/interfaces/IRate';
 
 import { TransactionFields } from '@/components/transaction/TransactionFields';
 import { useCurrency } from '@/context/CurrencyContext';
-import { useAppQuery } from '@/hooks/useAppQuery';
+import { useAppQuery, useInvalidateQuery } from '@/hooks/useAppQuery';
 import { useEditView } from '@/hooks/useEditView';
 import { ITransactionClient } from '@/interfaces/ITransactionClient';
 import { buildTransactionCreateSchema } from '@/schems/validationSchemas';
 import { GeneralApiProblemKind } from '@/services/api/apiProblem';
 import { ExchangeService } from '@/services/ExchangeService';
+import { InvalidationGroups, QueryKeys, QueryStaleTimes } from '@/services/QueryCacheService';
 import ToastService from '@/services/ToastService';
 import { TransactionService } from '@/services/TransactionService';
 import { OverviewPath } from '@/types/OverviewPath';
@@ -47,6 +48,7 @@ export const TransactionCreate: FC<IProps> = function TransactionCreate(_props: 
     const { data } = _props;
     const { getCurrency, defaultCurrencyId } = useCurrency();
     const navigation = useNavigation();
+    const invalidateQuery = useInvalidateQuery();
 
     const { form, handleChange, save, errors } = useEditView<Partial<ITransactionClient>>(
         {
@@ -70,9 +72,9 @@ export const TransactionCreate: FC<IProps> = function TransactionCreate(_props: 
     const targetCurrencySymbol = hasDifferentCurrencies ? getCurrency(form.currencyId as number)?.currencyCode : undefined;
 
     const { data: rateData } = useAppQuery<IRate | undefined>(
-        ['rates', form.currencyId, form.sourceCurrencyId],
+        QueryKeys.rates(form.currencyId, form.sourceCurrencyId),
         () => fetchRates(sourceCurrencySymbol, targetCurrencySymbol),
-        { enabled: hasDifferentCurrencies },
+        { enabled: hasDifferentCurrencies, staleTime: QueryStaleTimes.rates },
     );
 
     const handleCreate = async () => {
@@ -89,6 +91,7 @@ export const TransactionCreate: FC<IProps> = function TransactionCreate(_props: 
             description: form.description,
         });
         if (response.kind === GeneralApiProblemKind.Ok) {
+            await invalidateQuery(InvalidationGroups.transaction());
             navigation.getParent()?.navigate(OverviewPath.Dashboard);
         } else {
             ToastService.error({

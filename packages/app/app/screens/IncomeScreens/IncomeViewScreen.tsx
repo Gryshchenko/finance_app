@@ -10,6 +10,7 @@ import { OverviewTabParamList } from '@/navigators/OverviewNavigator';
 import { GenericListScreen } from '@/screens/GenericListScreen';
 import { GeneralApiProblemKind } from '@/services/api/apiProblem';
 import { IncomeService } from '@/services/IncomeService';
+import { QueryKeys, QueryStaleTimes } from '@/services/QueryCacheService';
 import { OverviewPath } from '@/types/OverviewPath';
 import { ValidationError } from '@/utils/errors/ValidationError';
 import { Logger } from '@/utils/logger/Logger';
@@ -42,7 +43,11 @@ type Props = NativeStackScreenProps<OverviewTabParamList, IncomePath.IncomeView>
 export const IncomeViewScreen = function IncomeViewScreen(_props: Props) {
     const params = _props?.route?.params as { id: number; name: string };
     const navigation = useNavigation();
-    const { isError, data, isPending } = useAppQuery<IIncome | undefined>(['income', params?.id], () => fetchIncome(params?.id));
+    const { isError, data, isPending } = useAppQuery<IIncome | undefined>(
+        QueryKeys.income(params?.id),
+        () => fetchIncome(params?.id),
+        { staleTime: QueryStaleTimes.detail },
+    );
 
     return (
         <GenericListScreen

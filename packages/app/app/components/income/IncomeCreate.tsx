@@ -4,15 +4,18 @@ import { IIncome, IncomeIcon } from 'tenpercent/shared';
 import { Utils } from 'tenpercent/shared';
 
 import { IncomeFields } from '@/components/income/IncomeFields';
+import { useInvalidateQuery } from '@/hooks/useAppQuery';
 import { useEditView } from '@/hooks/useEditView';
 import { incomeCreateSchema } from '@/schems/validationSchemas';
 import { GeneralApiProblemKind } from '@/services/api/apiProblem';
 import { IncomeService } from '@/services/IncomeService';
+import { InvalidationGroups } from '@/services/QueryCacheService';
 import ToastService from '@/services/ToastService';
 import { OverviewPath } from '@/types/OverviewPath';
 
 export const IncomeCreate: FC = function IncomeCreate(_props) {
     const navigation = useNavigation();
+    const invalidateQuery = useInvalidateQuery();
     const { form, handleChange, save, errors } = useEditView<Partial<IIncome>>(
         {
             incomeName: '',
@@ -38,6 +41,7 @@ export const IncomeCreate: FC = function IncomeCreate(_props) {
             iconId: form.iconId!,
         });
         if (response.kind === GeneralApiProblemKind.Ok) {
+            await invalidateQuery(InvalidationGroups.income());
             navigation.getParent()?.navigate(OverviewPath.Dashboard);
         } else {
             ToastService.error({

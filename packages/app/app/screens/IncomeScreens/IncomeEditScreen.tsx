@@ -8,12 +8,17 @@ import { IncomePath } from '@/navigators/IncomesStackNavigator';
 import { OverviewTabParamList } from '@/navigators/OverviewNavigator';
 import { GenericListScreen } from '@/screens/GenericListScreen';
 import { fetchIncome } from '@/screens/IncomeScreens/IncomeViewScreen';
+import { QueryKeys, QueryStaleTimes } from '@/services/QueryCacheService';
 
 type Props = NativeStackScreenProps<OverviewTabParamList, IncomePath.IncomeEdit>;
 
 export const IncomeEditScreen = function IncomeEditScreen(_props: Props) {
     const params = _props?.route?.params as { id: number; name: string; payload: string };
-    const { isError, data, isPending } = useAppQuery<IIncome | undefined>(['income', params?.id], () => fetchIncome(params?.id));
+    const { isError, data, isPending } = useAppQuery<IIncome | undefined>(
+        QueryKeys.income(params?.id),
+        () => fetchIncome(params?.id),
+        { staleTime: QueryStaleTimes.detail },
+    );
     return (
         <GenericListScreen
             name={data?.incomeName ?? translate('incomeScreen:editTitle')}

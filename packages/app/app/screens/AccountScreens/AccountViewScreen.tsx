@@ -8,6 +8,7 @@ import { useAppQuery } from '@/hooks/useAppQuery';
 import { AccountsPath, AccountsStackParamList } from '@/navigators/AccountsStackNavigator';
 import { GenericListScreen } from '@/screens/GenericListScreen';
 import { AccountService } from '@/services/AccountService';
+import { QueryKeys, QueryStaleTimes } from '@/services/QueryCacheService';
 import { GeneralApiProblemKind } from '@/services/api/apiProblem';
 import { OverviewPath } from '@/types/OverviewPath';
 import { ValidationError } from '@/utils/errors/ValidationError';
@@ -41,8 +42,10 @@ type Props = NativeStackScreenProps<AccountsStackParamList, AccountsPath.Account
 export const AccountViewScreen = function AccountViewScreen(_props: Props) {
     const params = _props?.route?.params as { id: number; name: string };
     const navigation = useNavigation();
-    const { isError, data, isPending } = useAppQuery<IAccount | undefined>(['account', params?.id], () =>
-        fetchAccount(params?.id),
+    const { isError, data, isPending } = useAppQuery<IAccount | undefined>(
+        QueryKeys.account(params?.id),
+        () => fetchAccount(params?.id),
+        { staleTime: QueryStaleTimes.detail },
     );
 
     return (

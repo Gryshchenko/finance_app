@@ -11,6 +11,7 @@ import { useEditView } from '@/hooks/useEditView';
 import { accountEditSchema } from '@/schems/validationSchemas';
 import { AccountService } from '@/services/AccountService';
 import { GeneralApiProblemKind } from '@/services/api/apiProblem';
+import { InvalidationGroups } from '@/services/QueryCacheService';
 import ToastService from '@/services/ToastService';
 import { OverviewPath } from '@/types/OverviewPath';
 
@@ -39,8 +40,7 @@ export const AccountEdit: FC<IAccountPros> = function AccountEdit(_props) {
                 title: 'common:info',
                 message: 'common:updateAccountSuccess',
             });
-            await invalidateQuery([['accounts']]);
-            await invalidateQuery([['account', form.accountId]]);
+            await invalidateQuery(InvalidationGroups.account(form.accountId));
             navigation.goBack();
         } else {
             ToastService.error({

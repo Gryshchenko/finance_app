@@ -3,15 +3,18 @@ import { useNavigation } from '@react-navigation/native';
 import { ICategory, SpendIcon, Utils } from 'tenpercent/shared';
 
 import { CategoryFields } from '@/components/category/CategoryFields';
+import { useInvalidateQuery } from '@/hooks/useAppQuery';
 import { useEditView } from '@/hooks/useEditView';
 import { categoryCreateSchema } from '@/schems/validationSchemas';
 import { GeneralApiProblemKind } from '@/services/api/apiProblem';
 import { CategoryService } from '@/services/CategoryService';
+import { InvalidationGroups } from '@/services/QueryCacheService';
 import ToastService from '@/services/ToastService';
 import { OverviewPath } from '@/types/OverviewPath';
 
 export const CategoryCreate: FC = function CategoryCreate(_props) {
     const navigation = useNavigation();
+    const invalidateQuery = useInvalidateQuery();
     const { form, handleChange, save, errors } = useEditView<Partial<ICategory>>(
         {
             categoryName: '',
@@ -37,6 +40,7 @@ export const CategoryCreate: FC = function CategoryCreate(_props) {
             iconId: form.iconId ?? SpendIcon.ShoppingBag,
         });
         if (response.kind === GeneralApiProblemKind.Ok) {
+            await invalidateQuery(InvalidationGroups.category());
             navigation.getParent()?.navigate(OverviewPath.Dashboard);
         } else {
             ToastService.error({

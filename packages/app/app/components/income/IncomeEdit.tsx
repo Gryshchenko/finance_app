@@ -11,6 +11,7 @@ import { useEditView } from '@/hooks/useEditView';
 import { incomeEditSchema } from '@/schems/validationSchemas';
 import { GeneralApiProblemKind } from '@/services/api/apiProblem';
 import { IncomeService } from '@/services/IncomeService';
+import { InvalidationGroups } from '@/services/QueryCacheService';
 import ToastService from '@/services/ToastService';
 import { OverviewPath } from '@/types/OverviewPath';
 
@@ -37,8 +38,7 @@ export const IncomeEdit: FC<IIncomePros> = function IncomeEdit(_props) {
                 title: 'common:info',
                 message: 'common:updateAccountSuccess',
             });
-            await invalidateQuery([['incomes']]);
-            await invalidateQuery([['income', form.incomeId]]);
+            await invalidateQuery(InvalidationGroups.income(form.incomeId));
             navigation.goBack();
         } else {
             ToastService.error({

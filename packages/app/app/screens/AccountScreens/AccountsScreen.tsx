@@ -12,6 +12,7 @@ import { translate } from '@/i18n/translate';
 import { AccountsPath, AccountsStackParamList } from '@/navigators/AccountsStackNavigator';
 import { GenericListScreen } from '@/screens/GenericListScreen';
 import { AccountService } from '@/services/AccountService';
+import { QueryKeys, QueryStaleTimes } from '@/services/QueryCacheService';
 import { GeneralApiProblemKind } from '@/services/api/apiProblem';
 import { OverviewPath } from '@/types/OverviewPath';
 import { TransactionPath } from '@/types/TransactionPath';
@@ -38,7 +39,9 @@ export async function fetchAccounts(): Promise<IAccountListItem[] | []> {
 type Props = NativeStackScreenProps<AccountsStackParamList, AccountsPath.Accounts>;
 
 export const AccountsScreen = function AccountsScreen(_props: Props) {
-    const { isError, data, isPending } = useAppQuery<IAccountListItem[] | undefined>('accounts', fetchAccounts);
+    const { isError, data, isPending } = useAppQuery<IAccountListItem[] | undefined>(QueryKeys.accounts(), fetchAccounts, {
+        staleTime: QueryStaleTimes.list,
+    });
     const navigation = useNavigation();
 
     return (

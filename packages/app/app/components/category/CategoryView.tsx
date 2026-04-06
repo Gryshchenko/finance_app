@@ -13,6 +13,7 @@ import { CategoriesPath } from '@/navigators/CategoriesStackNavigator';
 import AlertService from '@/services/AlertService';
 import { GeneralApiProblemKind } from '@/services/api/apiProblem';
 import { CategoryService } from '@/services/CategoryService';
+import { InvalidationGroups } from '@/services/QueryCacheService';
 import ToastService from '@/services/ToastService';
 import { OverviewPath } from '@/types/OverviewPath';
 
@@ -36,8 +37,7 @@ export const CategoryView: FC<ICategoryPros> = function CategoryView(_props) {
                 title: 'common:info',
                 message: 'categoryScreen:deleteCategorySuccess',
             });
-            await invalidateQuery([['categories']]);
-            await invalidateQuery([['category', form.categoryId]]);
+            await invalidateQuery(InvalidationGroups.category(form.categoryId));
             navigation.getParent()?.navigate(OverviewPath.Dashboard);
         } else {
             ToastService.error({

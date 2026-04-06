@@ -13,6 +13,7 @@ import { AccountsPath } from '@/navigators/AccountsStackNavigator';
 import { AccountService } from '@/services/AccountService';
 import AlertService from '@/services/AlertService';
 import { GeneralApiProblemKind } from '@/services/api/apiProblem';
+import { InvalidationGroups } from '@/services/QueryCacheService';
 import ToastService from '@/services/ToastService';
 import { OverviewPath } from '@/types/OverviewPath';
 
@@ -36,8 +37,7 @@ export const AccountView: FC<IAccountPros> = function AccountView(_props) {
                 title: 'common:info',
                 message: 'common:deleteAccountSuccess',
             });
-            await invalidateQuery([['accounts']]);
-            await invalidateQuery([['account', form.accountId]]);
+            await invalidateQuery(InvalidationGroups.account(form.accountId));
             navigation.getParent()?.navigate(OverviewPath.Dashboard);
         } else {
             ToastService.error({

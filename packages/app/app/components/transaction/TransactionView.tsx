@@ -11,6 +11,7 @@ import { translate } from '@/i18n/translate';
 import { DashboardPath } from '@/navigators/DashboardStackNavigator';
 import AlertService from '@/services/AlertService';
 import { GeneralApiProblemKind } from '@/services/api/apiProblem';
+import { InvalidationGroups } from '@/services/QueryCacheService';
 import ToastService from '@/services/ToastService';
 import { TransactionService } from '@/services/TransactionService';
 import { OverviewPath } from '@/types/OverviewPath';
@@ -41,8 +42,7 @@ export const TransactionView: FC<ITransactionPros> = function TransactionView(_p
                 title: 'common:info',
                 message: 'transactionScreen:deleteSuccess',
             });
-            await invalidateQuery([['transactions']]);
-            await invalidateQuery([['transaction', form.transactionId]]);
+            await invalidateQuery(InvalidationGroups.transaction(form.transactionId));
             navigation.getParent()?.navigate(OverviewPath.Dashboard);
         } else {
             ToastService.error({

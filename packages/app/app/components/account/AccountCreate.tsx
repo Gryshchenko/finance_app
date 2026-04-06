@@ -3,15 +3,18 @@ import { useNavigation } from '@react-navigation/native';
 import { AccountIcon, IAccount, Utils } from 'tenpercent/shared';
 
 import { AccountFields } from '@/components/account/AccountFields';
+import { useInvalidateQuery } from '@/hooks/useAppQuery';
 import { useEditView } from '@/hooks/useEditView';
 import { accountCreateSchema } from '@/schems/validationSchemas';
 import { AccountService } from '@/services/AccountService';
 import { GeneralApiProblemKind } from '@/services/api/apiProblem';
+import { InvalidationGroups } from '@/services/QueryCacheService';
 import ToastService from '@/services/ToastService';
 import { OverviewPath } from '@/types/OverviewPath';
 
 export const AccountCreate: FC = function AccountCreate(_props) {
     const navigation = useNavigation();
+    const invalidateQuery = useInvalidateQuery();
     const { form, handleChange, save, errors } = useEditView<Partial<IAccount>>(
         {
             accountName: '',
@@ -39,6 +42,7 @@ export const AccountCreate: FC = function AccountCreate(_props) {
             iconId: form.iconId ?? AccountIcon.Wallet,
         });
         if (response.kind === GeneralApiProblemKind.Ok) {
+            await invalidateQuery(InvalidationGroups.account());
             navigation.getParent()?.navigate(OverviewPath.Dashboard);
         } else {
             ToastService.error({

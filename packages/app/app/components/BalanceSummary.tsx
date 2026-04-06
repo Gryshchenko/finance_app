@@ -6,6 +6,7 @@ import { useCurrency } from '@/context/CurrencyContext';
 import { useAppQuery } from '@/hooks/useAppQuery';
 import { GeneralApiProblemKind } from '@/services/api/apiProblem';
 import { BalanceService } from '@/services/BalanceService';
+import { QueryKeys, QueryStaleTimes } from '@/services/QueryCacheService';
 import { StatsService } from '@/services/StatsService';
 import { useAppTheme } from '@/theme/context';
 import { ThemedStyle } from '@/theme/types';
@@ -53,8 +54,12 @@ export async function fetchBalance(): Promise<IBalance | undefined> {
 }
 
 export const BalanceSummary: React.FC = () => {
-    const { data: statsData } = useAppQuery<ISummary | undefined>('stats', fetchStats);
-    const { data: balanceData } = useAppQuery<IBalance | undefined>('balance', fetchBalance);
+    const { data: statsData } = useAppQuery<ISummary | undefined>(QueryKeys.stats(), fetchStats, {
+        staleTime: QueryStaleTimes.dashboard,
+    });
+    const { data: balanceData } = useAppQuery<IBalance | undefined>(QueryKeys.balance(), fetchBalance, {
+        staleTime: QueryStaleTimes.dashboard,
+    });
     const { themed } = useAppTheme();
     const { defaultCurrency } = useCurrency();
     const total = Number(balanceData?.balance) ?? 0;

@@ -14,6 +14,7 @@ import { CategoriesPath } from '@/navigators/CategoriesStackNavigator';
 import { IncomePath } from '@/navigators/IncomesStackNavigator';
 import { GenericListScreen } from '@/screens/GenericListScreen';
 import { GeneralApiProblemKind } from '@/services/api/apiProblem';
+import { QueryKeys, QueryStaleTimes } from '@/services/QueryCacheService';
 import ToastService from '@/services/ToastService';
 import { TransactionService } from '@/services/TransactionService';
 import { OverviewPath } from '@/types/OverviewPath';
@@ -60,8 +61,9 @@ export const TransactionsScreen = function TransactionsScreen(_props: Props) {
     const navigation = useNavigation();
     const { id, type, name, path } = params;
     const { isError, data, isPending } = useAppQuery<IPagination<ITransactionListItem> | undefined>(
-        ['transactions', id, type],
+        QueryKeys.transactions(id, type),
         async () => fetchTransactions(id, type, 0, 10),
+        { staleTime: QueryStaleTimes.transactions },
     );
     const getScreenForEditPath = (path: OverviewPath) => {
         console.log(`Get screen for edit path: ${path}`);

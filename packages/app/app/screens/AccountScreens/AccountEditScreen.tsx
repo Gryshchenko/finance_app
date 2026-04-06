@@ -7,13 +7,16 @@ import { translate } from '@/i18n/translate';
 import { AccountsPath, AccountsStackParamList } from '@/navigators/AccountsStackNavigator';
 import { fetchAccount } from '@/screens/AccountScreens/AccountViewScreen';
 import { GenericListScreen } from '@/screens/GenericListScreen';
+import { QueryKeys, QueryStaleTimes } from '@/services/QueryCacheService';
 
 type Props = NativeStackScreenProps<AccountsStackParamList, AccountsPath.AccountEdit>;
 
 export const AccountEditScreen = function AccountEditScreen(_props: Props) {
     const params = _props?.route?.params as { id: number; name: string; payload: string };
-    const { isError, data, isPending } = useAppQuery<IAccount | undefined>(['account', params?.id], () =>
-        fetchAccount(params?.id),
+    const { isError, data, isPending } = useAppQuery<IAccount | undefined>(
+        QueryKeys.account(params?.id),
+        () => fetchAccount(params?.id),
+        { staleTime: QueryStaleTimes.detail },
     );
     return (
         <GenericListScreen

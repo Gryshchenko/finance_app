@@ -11,6 +11,7 @@ import { useEditView } from '@/hooks/useEditView';
 import { categoryEditSchema } from '@/schems/validationSchemas';
 import { GeneralApiProblemKind } from '@/services/api/apiProblem';
 import { CategoryService } from '@/services/CategoryService';
+import { InvalidationGroups } from '@/services/QueryCacheService';
 import ToastService from '@/services/ToastService';
 import { OverviewPath } from '@/types/OverviewPath';
 
@@ -38,8 +39,7 @@ export const CategoryEdit: FC<ICategoryPros> = function CategoryEdit(_props) {
                 title: 'common:info',
                 message: 'categoryScreen:updateCategorySuccess',
             });
-            await invalidateQuery([['categories']]);
-            await invalidateQuery([['category', form.categoryId]]);
+            await invalidateQuery(InvalidationGroups.category(form.categoryId));
             navigation.goBack();
         } else {
             ToastService.error({

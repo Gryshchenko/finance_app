@@ -6,6 +6,7 @@ import { IAccountListItem, ICategoryStats, IIncomeStats, IStatsResponse, StatsPe
 import { boxDataItemAdapter } from '@/components/dashboard/Box/boxDataItemAdapter';
 import { useDragOverlay } from '@/components/dashboard/Box/DragOverlayContext';
 import { ItemType } from '@/components/dashboard/Box/ItemBox';
+import { QueryKeys, QueryStaleTimes } from '@/services/QueryCacheService';
 import DashboardAccount from '@/components/dashboard/DashboardAccount';
 import DashboardCategory from '@/components/dashboard/DashboardCategory';
 import DashboardDraggableItem from '@/components/dashboard/DashboardDraggableItem';
@@ -97,9 +98,13 @@ export async function fetchCategories(): Promise<IStatsResponse<ICategoryStats>>
 
 export default function DashboardItems() {
     const { scrollHandler, scrollRef, onOverlayLayout, dragSessionId } = useDragOverlay();
-    const incomes = useAppQuery<IStatsResponse<IIncomeStats>>('incomesStats', fetchIncomes);
-    const accounts = useAppQuery<IAccountListItem[]>('accounts', fetchAccounts);
-    const categories = useAppQuery<IStatsResponse<ICategoryStats>>(['categoriesStats'], fetchCategories);
+    const incomes = useAppQuery<IStatsResponse<IIncomeStats>>(QueryKeys.incomesStats(), fetchIncomes, {
+        staleTime: QueryStaleTimes.dashboard,
+    });
+    const accounts = useAppQuery<IAccountListItem[]>(QueryKeys.accounts(), fetchAccounts, { staleTime: QueryStaleTimes.list });
+    const categories = useAppQuery<IStatsResponse<ICategoryStats>>(QueryKeys.categoriesStats(), fetchCategories, {
+        staleTime: QueryStaleTimes.dashboard,
+    });
     return (
         <DropProvider key={dragSessionId}>
             <DashboardDraggableItem />
