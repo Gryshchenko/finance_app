@@ -6,7 +6,6 @@ import { IAccountListItem, ICategoryStats, IIncomeStats, IStatsResponse, StatsPe
 import { boxDataItemAdapter } from '@/components/dashboard/Box/boxDataItemAdapter';
 import { useDragOverlay } from '@/components/dashboard/Box/DragOverlayContext';
 import { ItemType } from '@/components/dashboard/Box/ItemBox';
-import { QueryKeys, QueryStaleTimes } from '@/services/QueryCacheService';
 import DashboardAccount from '@/components/dashboard/DashboardAccount';
 import DashboardCategory from '@/components/dashboard/DashboardCategory';
 import DashboardDraggableItem from '@/components/dashboard/DashboardDraggableItem';
@@ -18,6 +17,7 @@ import { fetchAccounts } from '@/screens/AccountScreens/AccountsScreen';
 import { GeneralApiProblemKind } from '@/services/api/apiProblem';
 import { CategoryService } from '@/services/CategoryService';
 import { IncomeService } from '@/services/IncomeService';
+import { QueryKeys, QueryStaleTimes } from '@/services/QueryCacheService';
 import { spacing } from '@/theme/spacing';
 import { BoxDataItemType } from '@/types/BoxDataItemType';
 import { Logger } from '@/utils/logger/Logger';
