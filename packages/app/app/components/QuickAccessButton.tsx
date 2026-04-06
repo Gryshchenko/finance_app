@@ -12,11 +12,7 @@ import { Logger } from '@/utils/logger/Logger';
 
 type QuickAccessType = 'fingerprint' | 'face' | null;
 
-type Props = {
-    onPress?: (type: QuickAccessType) => void;
-};
-
-export const QuickAccessButton = ({}: Props) => {
+export const QuickAccessButton = () => {
     const {
         themed,
         theme: { colors },

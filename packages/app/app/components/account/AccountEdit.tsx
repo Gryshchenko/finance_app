@@ -8,7 +8,6 @@ import { AccountFields } from '@/components/account/AccountFields';
 import { EmptyState } from '@/components/EmptyState';
 import { useInvalidateQuery } from '@/hooks/useAppQuery';
 import { useEditView } from '@/hooks/useEditView';
-import { AccountsPath } from '@/navigators/AccountsStackNavigator';
 import { accountEditSchema } from '@/schems/validationSchemas';
 import { AccountService } from '@/services/AccountService';
 import { GeneralApiProblemKind } from '@/services/api/apiProblem';
@@ -42,7 +41,7 @@ export const AccountEdit: FC<IAccountPros> = function AccountEdit(_props) {
             });
             await invalidateQuery([['accounts']]);
             await invalidateQuery([['account', form.accountId]]);
-            navigation.getParent()?.navigate(OverviewPath.Dashboard);
+            navigation.goBack();
         } else {
             ToastService.error({
                 title: 'common:error',
@@ -56,7 +55,12 @@ export const AccountEdit: FC<IAccountPros> = function AccountEdit(_props) {
         await handlePatch();
     };
     if (!data) {
-        return <EmptyState style={$containerStyleOverride} buttonOnPress={() => navigation.goBack()} />;
+        return (
+            <EmptyState
+                style={$containerStyleOverride}
+                buttonOnPress={() => navigation.getParent()?.navigate(OverviewPath.Dashboard)}
+            />
+        );
     }
 
     return (
@@ -70,10 +74,7 @@ export const AccountEdit: FC<IAccountPros> = function AccountEdit(_props) {
                 handleChange(key as keyof IAccount, value);
             }}
             cancel={() => {
-                navigation.getParent()?.navigate(OverviewPath.Accounts, {
-                    screen: AccountsPath.AccountEdit,
-                    params: { id: form.accountId, name: form.accountName },
-                });
+                navigation.goBack();
             }}
             handleSave={handleSave}
         />

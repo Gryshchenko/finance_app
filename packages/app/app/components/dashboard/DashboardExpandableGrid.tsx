@@ -45,6 +45,10 @@ export default function DashboardExpandableGrid({ rowHeight, rows, children, id,
     const isOpened = useRef(false);
     const height = useSharedValue(MIN_HEIGHT);
 
+    // Tracks whether the grid was opened by drag-hover (not by manual pan gesture).
+    // We only auto-close grids that were auto-opened — never touch manually opened ones.
+    const wasAutoOpenedByDragRef = useRef(false);
+
     // Timer that fires after HOVER_OPEN_DELAY_MS to auto-open during a drag.
     const hoverTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
@@ -61,9 +65,16 @@ export default function DashboardExpandableGrid({ rowHeight, rows, children, id,
         height.value = withSpring(MAX_HEIGHT, { damping: 15, stiffness: 150 });
     }, [MAX_HEIGHT, height]);
 
+    // Opens the grid and marks it as drag-triggered so it can be auto-closed later.
+    const openGridByDrag = useCallback(() => {
+        wasAutoOpenedByDragRef.current = true;
+        openGrid();
+    }, [openGrid]);
+
     const closeGrid = useCallback(() => {
         if (!isOpened.current) return;
         isOpened.current = false;
+        wasAutoOpenedByDragRef.current = false;
         height.value = withSpring(MIN_HEIGHT, { damping: 15, stiffness: 150 });
     }, [MIN_HEIGHT, height]);
 
@@ -82,23 +93,25 @@ export default function DashboardExpandableGrid({ rowHeight, rows, children, id,
         const isHovered = activeZones === `${id}-view`;
 
         if (isHovered) {
-            // Only start the hover timer if:
-            // 1. There is an active drag.
+            // Start the hover timer only when:
+            // 1. A drag is actually in progress (draggingItemType is set).
             // 2. The dragged type is accepted by this section.
-            // 3. The grid is not already open (no point re-triggering).
-            if (!isOpened.current && isDragTypeAccepted()) {
+            // 3. The grid is not already open.
+            // 4. No timer is already running (clearHoverTimer before scheduling).
+            if (draggingItemType && !isOpened.current && isDragTypeAccepted()) {
                 clearHoverTimer();
                 hoverTimerRef.current = setTimeout(() => {
                     hoverTimerRef.current = null;
-                    openGrid();
+                    openGridByDrag();
                 }, HOVER_OPEN_DELAY_MS);
             }
         } else {
-            // Drag left the zone — cancel the pending timer and close if open.
+            // Drag left the zone OR drag ended (draggingItemType → undefined).
+            // Cancel any pending hover timer either way.
             clearHoverTimer();
-            // Only auto-close when a drag is in progress (draggingItemType set).
-            // Manual pan-gesture close is handled separately below.
-            if (draggingItemType) {
+            // Auto-close only if this grid was expanded by a drag-hover.
+            // Never forcibly close a grid the user opened manually via pan gesture.
+            if (wasAutoOpenedByDragRef.current) {
                 closeGrid();
             }
         }
@@ -106,7 +119,7 @@ export default function DashboardExpandableGrid({ rowHeight, rows, children, id,
         return () => {
             clearHoverTimer();
         };
-    }, [activeZones, id, isDragTypeAccepted, openGrid, closeGrid, clearHoverTimer, draggingItemType]);
+    }, [activeZones, id, isDragTypeAccepted, openGridByDrag, closeGrid, clearHoverTimer, draggingItemType]);
 
     // Re-measure both zones whenever layout changes so drag detection stays
     // accurate after scroll or container resize.

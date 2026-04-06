@@ -22,7 +22,7 @@ export const EditButton: FC<EditButtonProps> = ({ size = 20, onPress, style }) =
 
     return (
         <Pressable onPress={handlePress} style={themed([$styles.row, $customLeftAction, style])} hitSlop={10}>
-            <Icon icon="edit" color={theme.colors.text} size={size} />
+            <Icon icon="more" color={theme.colors.text} size={size} />
         </Pressable>
     );
 };

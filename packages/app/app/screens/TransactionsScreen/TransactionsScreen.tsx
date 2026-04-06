@@ -5,11 +5,16 @@ import { IPagination } from 'tenpercent/shared';
 import { ITransactionListItem } from 'tenpercent/shared';
 import { TransactionFieldType } from 'tenpercent/shared';
 
+import { EditButton } from '@/components/buttons/EditButton';
 import { Transactions } from '@/components/transaction/Transactions';
 import { useAppQuery } from '@/hooks/useAppQuery';
 import { translate } from '@/i18n/translate';
+import { AccountsPath } from '@/navigators/AccountsStackNavigator';
+import { CategoriesPath } from '@/navigators/CategoriesStackNavigator';
+import { IncomePath } from '@/navigators/IncomesStackNavigator';
 import { GenericListScreen } from '@/screens/GenericListScreen';
 import { GeneralApiProblemKind } from '@/services/api/apiProblem';
+import ToastService from '@/services/ToastService';
 import { TransactionService } from '@/services/TransactionService';
 import { OverviewPath } from '@/types/OverviewPath';
 import { TransactionPath } from '@/types/TransactionPath';
@@ -58,6 +63,20 @@ export const TransactionsScreen = function TransactionsScreen(_props: Props) {
         ['transactions', id, type],
         async () => fetchTransactions(id, type, 0, 10),
     );
+    const getScreenForEditPath = (path: OverviewPath) => {
+        console.log(`Get screen for edit path: ${path}`);
+        switch (path) {
+            case OverviewPath.Accounts:
+                return AccountsPath.AccountEdit;
+            case OverviewPath.Categories:
+                return CategoriesPath.CategoryEdit;
+            case OverviewPath.Incomes:
+                return IncomePath.IncomeEdit;
+            default:
+                ToastService.error({ message: 'errorCode:UNKNOWN_ERROR', systemMessage: 'Unknown path for edit transaction' });
+                return undefined;
+        }
+    };
 
     return (
         <GenericListScreen
@@ -74,8 +93,28 @@ export const TransactionsScreen = function TransactionsScreen(_props: Props) {
                 data,
                 fetch: async ({ cursor, limit }) => await fetchTransactions(id, type, cursor, limit),
             }}
-            onBack={() => navigation.goBack()}
+            onBack={() => {
+                navigation.getParent()?.navigate(OverviewPath.Dashboard);
+            }}
             RenderComponent={Transactions}
+            RightActionComponent={
+                <EditButton
+                    onPress={() => {
+                        const screen = getScreenForEditPath(path);
+                        console.log(screen, params);
+                        if (!screen) return;
+                        navigation.getParent()?.navigate(path, {
+                            screen: screen,
+                            params: {
+                                id,
+                                name,
+                                type,
+                                path,
+                            },
+                        });
+                    }}
+                />
+            }
         />
     );
 };

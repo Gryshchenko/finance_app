@@ -40,7 +40,7 @@ export const CategoryEdit: FC<ICategoryPros> = function CategoryEdit(_props) {
             });
             await invalidateQuery([['categories']]);
             await invalidateQuery([['category', form.categoryId]]);
-            navigation.getParent()?.navigate(OverviewPath.Dashboard);
+            navigation.goBack();
         } else {
             ToastService.error({
                 title: 'common:error',
@@ -54,7 +54,14 @@ export const CategoryEdit: FC<ICategoryPros> = function CategoryEdit(_props) {
         await handlePatch();
     };
     if (!data) {
-        return <EmptyState style={$containerStyleOverride} buttonOnPress={() => navigation.goBack()} />;
+        return (
+            <EmptyState
+                style={$containerStyleOverride}
+                buttonOnPress={() => {
+                    navigation.getParent()?.navigate(OverviewPath.Dashboard);
+                }}
+            />
+        );
     }
 
     return (
@@ -68,7 +75,7 @@ export const CategoryEdit: FC<ICategoryPros> = function CategoryEdit(_props) {
                 handleChange(key as keyof ICategory, value);
             }}
             cancel={() => {
-                navigation.getParent()?.navigate(OverviewPath.Dashboard);
+                navigation.goBack();
             }}
             handleSave={handleSave}
         />

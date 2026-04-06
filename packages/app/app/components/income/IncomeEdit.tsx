@@ -8,7 +8,6 @@ import { EmptyState } from '@/components/EmptyState';
 import { IncomeFields } from '@/components/income/IncomeFields';
 import { useInvalidateQuery } from '@/hooks/useAppQuery';
 import { useEditView } from '@/hooks/useEditView';
-import { IncomePath } from '@/navigators/IncomesStackNavigator';
 import { incomeEditSchema } from '@/schems/validationSchemas';
 import { GeneralApiProblemKind } from '@/services/api/apiProblem';
 import { IncomeService } from '@/services/IncomeService';
@@ -40,7 +39,7 @@ export const IncomeEdit: FC<IIncomePros> = function IncomeEdit(_props) {
             });
             await invalidateQuery([['incomes']]);
             await invalidateQuery([['income', form.incomeId]]);
-            navigation.getParent()?.navigate(OverviewPath.Dashboard);
+            navigation.goBack();
         } else {
             ToastService.error({
                 title: 'common:error',
@@ -54,7 +53,12 @@ export const IncomeEdit: FC<IIncomePros> = function IncomeEdit(_props) {
         await handlePatch();
     };
     if (!data) {
-        return <EmptyState style={$containerStyleOverride} buttonOnPress={() => navigation.goBack()} />;
+        return (
+            <EmptyState
+                style={$containerStyleOverride}
+                buttonOnPress={() => navigation.getParent()?.navigate(OverviewPath.Dashboard)}
+            />
+        );
     }
 
     return (
@@ -68,10 +72,7 @@ export const IncomeEdit: FC<IIncomePros> = function IncomeEdit(_props) {
                 handleChange(key as keyof IIncome, value);
             }}
             cancel={() => {
-                navigation.getParent()?.navigate(OverviewPath.Incomes, {
-                    screen: IncomePath.IncomeEdit,
-                    params: { id: form.incomeId, name: form.incomeName },
-                });
+                navigation.goBack();
             }}
             handleSave={handleSave}
         />

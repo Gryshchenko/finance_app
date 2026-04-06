@@ -70,6 +70,7 @@ export function Box(props: IBoxProps) {
         draggedElementId,
         setDraggedElementId,
         setInitialDragPosition,
+        setDraggingItemType,
     } = useDragOverlay();
 
     const [isDragOver, setIsDragOver] = useState(false);
@@ -107,6 +108,9 @@ export function Box(props: IBoxProps) {
                     collisionAlgorithm={'intersect'}
                     onDragStart={(data) => {
                         wasDragged.current = false;
+                        // Notify context which item type is being dragged so that
+                        // DashboardExpandableGrid can validate acceptedDragTypes.
+                        setDraggingItemType(type);
                         // Start a short timer — if the drag ends before it fires
                         // and nothing moved, we treat the gesture as a tap.
                         tapTimerRef.current = setTimeout(() => {
@@ -130,6 +134,9 @@ export function Box(props: IBoxProps) {
                             onTap?.();
                         }
                         wasDragged.current = false;
+                        // Clear the dragging type so DashboardExpandableGrid can
+                        // close any grids that were auto-opened during this drag.
+                        setDraggingItemType(undefined);
                         onDragEnd?.(data);
                         setInitialDragPosition(initialOffset.current.x, initialOffset.current.y - DASH_BOARD_BOX_SIZE);
                     }}

@@ -5,6 +5,7 @@ import { ICategory } from 'tenpercent/shared';
 
 import CategorySectionList from '@/components/category/CategoriesSectionList';
 import { EmptyState } from '@/components/EmptyState';
+import { OverviewPath } from '@/types/OverviewPath';
 
 interface ICategoriesPros {
     data: ICategory[] | undefined;
@@ -16,7 +17,12 @@ export const Categories: FC<ICategoriesPros> = function Categories(_props) {
     const navigation = useNavigation();
 
     if (!data || data?.length <= 0) {
-        return <EmptyState style={$styles.containerStyleOverride} buttonOnPress={() => navigation.goBack()} />;
+        return (
+            <EmptyState
+                style={$styles.containerStyleOverride}
+                buttonOnPress={() => navigation.getParent()?.navigate(OverviewPath.Dashboard)}
+            />
+        );
     }
 
     return <CategorySectionList categories={data} onPress={onPress} />;

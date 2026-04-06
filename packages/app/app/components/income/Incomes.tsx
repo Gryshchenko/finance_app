@@ -28,7 +28,12 @@ export const Incomes: FC<IIncomesPros> = function Incomes(_props) {
     const { getCurrencySymbol } = useCurrency();
 
     if (!data || data?.length <= 0) {
-        return <EmptyState style={$containerStyleOverride} buttonOnPress={() => navigation.goBack()} />;
+        return (
+            <EmptyState
+                style={$containerStyleOverride}
+                buttonOnPress={() => navigation.getParent()?.navigate(OverviewPath.Dashboard)}
+            />
+        );
     }
 
     return (
