@@ -49,7 +49,7 @@ export const Incomes: FC<IIncomesPros> = function Incomes(_props) {
                                         style={$button}
                                         onPress={() => {
                                             navigation.getParent()?.navigate(OverviewPath.Incomes, {
-                                                screen: IncomePath.IncomeView,
+                                                screen: IncomePath.IncomeEdit,
                                                 params: { id: incomeId, name: incomeName },
                                             });
                                         }}

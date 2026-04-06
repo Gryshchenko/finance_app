@@ -28,12 +28,12 @@ export default memo(function DashboardAccount(props: IDashboardItem<IAccountList
             return (
                 <AccountBox
                     onTap={() => {
-                        navigation.getParent()?.navigate(OverviewPath.Balances, {
+                        navigation.getParent()?.navigate(OverviewPath.Accounts, {
                             screen: TransactionPath.Transactions,
                             params: {
                                 id: item.accountId,
                                 name: item.accountName,
-                                path: OverviewPath.Balances,
+                                path: OverviewPath.Accounts,
                                 type: TransactionFieldType.Account,
                             },
                         });
@@ -111,7 +111,7 @@ export default memo(function DashboardAccount(props: IDashboardItem<IAccountList
             return (
                 <AddBox
                     onPress={() => {
-                        navigation.getParent()?.navigate(OverviewPath.Balances, {
+                        navigation.getParent()?.navigate(OverviewPath.Accounts, {
                             screen: AccountsPath.AccountsCreate,
                         });
                     }}

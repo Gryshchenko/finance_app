@@ -1,25 +1,32 @@
 import { FC } from 'react';
 import { StyleProp, ViewStyle } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
-import { ITransaction } from 'tenpercent/shared';
+import { ITransaction, Utils } from 'tenpercent/shared';
 
 import { EmptyState } from '@/components/EmptyState';
 import { TransactionFields } from '@/components/transaction/TransactionFields';
 import { useInvalidateQuery } from '@/hooks/useAppQuery';
 import { useEditView } from '@/hooks/useEditView';
 import { translate } from '@/i18n/translate';
+import { DashboardPath } from '@/navigators/DashboardStackNavigator';
 import AlertService from '@/services/AlertService';
 import { GeneralApiProblemKind } from '@/services/api/apiProblem';
 import ToastService from '@/services/ToastService';
 import { TransactionService } from '@/services/TransactionService';
 import { OverviewPath } from '@/types/OverviewPath';
+import { TransactionPath } from '@/types/TransactionPath';
 
 interface ITransactionPros {
-    data: ITransaction | undefined;
+    data: {
+        data: ITransaction | undefined;
+        path: DashboardPath;
+    };
 }
 
 export const TransactionView: FC<ITransactionPros> = function TransactionView(_props) {
-    const { data } = _props;
+    const {
+        data: { data, path },
+    } = _props;
     const navigation = useNavigation();
     const invalidateQuery = useInvalidateQuery();
     const { form } = useEditView<ITransaction>(data!);
@@ -53,11 +60,21 @@ export const TransactionView: FC<ITransactionPros> = function TransactionView(_p
         );
     };
 
+    const onEdit = () => {
+        navigation.getParent()?.navigate(path, {
+            screen: TransactionPath.TransactionEdit,
+            params: {
+                id: form.transactionId,
+                payload: Utils.objectToString(form),
+            },
+        });
+    };
+
     if (!data) {
         return <EmptyState style={$containerStyleOverride} buttonOnPress={() => navigation.goBack()} />;
     }
 
-    return <TransactionFields form={form} isCreate={false} isView={true} isEdit={false} onDelete={onDelete} />;
+    return <TransactionFields edit={onEdit} form={form} isCreate={false} isView={true} isEdit={false} onDelete={onDelete} />;
 };
 const $containerStyleOverride: StyleProp<ViewStyle> = {
     margin: 'auto',

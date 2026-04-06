@@ -62,7 +62,7 @@ export const AccountView: FC<IAccountPros> = function AccountView(_props) {
             form={form}
             isView={true}
             edit={() => {
-                navigation.getParent()?.navigate(OverviewPath.Balances, {
+                navigation.getParent()?.navigate(OverviewPath.Accounts, {
                     screen: AccountsPath.AccountEdit,
                     params: {
                         id: form.accountId,

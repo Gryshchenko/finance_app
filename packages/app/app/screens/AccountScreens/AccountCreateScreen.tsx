@@ -3,12 +3,11 @@ import { NativeStackScreenProps } from '@react-navigation/native-stack';
 
 import { AccountCreate } from '@/components/account/AccountCreate';
 import { translate } from '@/i18n/translate';
-import { AccountsPath } from '@/navigators/AccountsStackNavigator';
-import { OverviewTabParamList } from '@/navigators/OverviewNavigator';
+import { AccountsPath, AccountsStackParamList } from '@/navigators/AccountsStackNavigator';
 import { GenericListScreen } from '@/screens/GenericListScreen';
 import { OverviewPath } from '@/types/OverviewPath';
 
-type Props = NativeStackScreenProps<OverviewTabParamList, AccountsPath.AccountsCreate>;
+type Props = NativeStackScreenProps<AccountsStackParamList, AccountsPath.AccountsCreate>;
 
 export const AccountCreateScreen = function AccountCreateScreen(_props: Props) {
     const navigation = useNavigation();

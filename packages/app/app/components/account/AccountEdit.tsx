@@ -70,8 +70,8 @@ export const AccountEdit: FC<IAccountPros> = function AccountEdit(_props) {
                 handleChange(key as keyof IAccount, value);
             }}
             cancel={() => {
-                navigation.getParent()?.navigate(OverviewPath.Balances, {
-                    screen: AccountsPath.AccountView,
+                navigation.getParent()?.navigate(OverviewPath.Accounts, {
+                    screen: AccountsPath.AccountEdit,
                     params: { id: form.accountId, name: form.accountName },
                 });
             }}

@@ -69,7 +69,7 @@ export const IncomeEdit: FC<IIncomePros> = function IncomeEdit(_props) {
             }}
             cancel={() => {
                 navigation.getParent()?.navigate(OverviewPath.Incomes, {
-                    screen: IncomePath.IncomeView,
+                    screen: IncomePath.IncomeEdit,
                     params: { id: form.incomeId, name: form.incomeName },
                 });
             }}

@@ -13,6 +13,7 @@ import {
     useState,
 } from 'react';
 import { Dimensions, type ViewStyle } from 'react-native';
+import Animated from 'react-native-reanimated';
 import {
     ScrollHandlerProcessed,
     useAnimatedScrollHandler,
@@ -20,11 +21,14 @@ import {
     useSharedValue,
     withTiming,
 } from 'react-native-reanimated';
-import { AnimatedScrollView } from 'react-native-reanimated/lib/typescript/component/ScrollView';
 import { scheduleOnRN } from 'react-native-worklets';
 
 import { IDrag } from '@/components/dashboard/Box/Box';
 import { ItemType } from '@/components/dashboard/Box/ItemBox';
+import { Logger } from '@/utils/logger/Logger';
+
+// Use the public Animated.ScrollView type instead of an internal import path.
+type AnimatedScrollView = InstanceType<typeof Animated.ScrollView>;
 
 export interface IDragOverlayLayout {
     width: number | null;
@@ -50,6 +54,10 @@ const { height: SCREEN_HEIGHT } = Dimensions.get('window');
 const AUTO_SCROLL_EDGE_THRESHOLD = 300;
 const AUTO_SCROLL_SPEED = 12;
 const ANIMATION_TIMEOUT_MS = 600;
+// Minimum pixel overlap to consider the drag point "inside" a zone.
+const ZONE_HIT_SLOP = 10;
+
+const _logger = Logger.Of('DragOverlayContext');
 
 type ContextType = {
     scrollRef: Ref<AnimatedScrollView | null> | null;
@@ -69,6 +77,7 @@ type ContextType = {
     addZone: (zone: IDragOverlayZone) => void;
     activeZones?: string;
 };
+
 const isPointInside = (
     draggableX: number,
     draggableY: number,
@@ -76,9 +85,9 @@ const isPointInside = (
 ) => {
     return (
         draggableX < rect.pageX + rect.width &&
-        draggableX + 10 > rect.pageX &&
+        draggableX + ZONE_HIT_SLOP > rect.pageX &&
         draggableY < rect.pageY + rect.height &&
-        draggableY + 10 > rect.pageY
+        draggableY + ZONE_HIT_SLOP > rect.pageY
     );
 };
 
@@ -88,33 +97,16 @@ export const DragOverlayProvider: FC<PropsWithChildren> = ({ children }) => {
     const overlayLayout = useSharedValue<IDragOverlayLayout>({ width: null, height: null, x: null, y: null });
 
     const zonesRef = useRef<Map<string, IDragOverlayZone>>(new Map());
-
     const activeZoneMapRef = useRef<Map<string, boolean>>(new Map());
+    const animationTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
     const [activeZones, setActiveZones] = useState<string | undefined>(undefined);
-
-    const addZone = useCallback((zone: IDragOverlayZone) => {
-        if (!zonesRef.current?.has(zone.id)) {
-            zonesRef.current?.set(zone.id, zone);
-        }
-    }, []);
-
-    useEffect(() => {
-        return () => {
-            zonesRef.current?.clear();
-            cleanupDragSessionWithWatchdog();
-            activeZoneMapRef.current?.clear();
-        };
-    }, []);
-
     const scrollY = useSharedValue(0);
     const [dragSessionId, setDragSessionId] = useState<number>(1);
     const [draggedElementId, setDraggedElementId] = useState<string | undefined>(undefined);
     const scrollRef = useRef<AnimatedScrollView>(null);
-    const animationTimeoutRef = useRef<number | null>(null);
 
     const [draggingItemType, setDraggingItemType] = useState<ItemType | undefined>(undefined);
-
     const [draggedElement, setDraggedElement] = useState<JSX.Element | undefined>(undefined);
 
     const dragTranslateX = useSharedValue(0);
@@ -127,23 +119,30 @@ export const DragOverlayProvider: FC<PropsWithChildren> = ({ children }) => {
         }
     };
 
-    const cleanupDragSessionWithWatchdog = () => {
+    // Stable reference so the cleanup useEffect and withTiming callbacks
+    // always call the same function instance.
+    const cleanupDragSessionWithWatchdog = useCallback(() => {
         clearAnimationTimeout();
         setDraggedElementId(undefined);
         setDraggedElement(undefined);
-    };
+    }, []);
 
-    const cleanupDragSessionWithTimeout = () => {
-        clearAnimationTimeout();
-        // Set watchdog timeout as fallback
-        animationTimeoutRef.current = setTimeout(() => {
+    useEffect(() => {
+        // Capture ref values so the cleanup closure holds a stable snapshot
+        // (satisfies react-hooks/exhaustive-deps for .current access).
+        const zones = zonesRef;
+        const activeZoneMap = activeZoneMapRef;
+        return () => {
+            zones.current?.clear();
             cleanupDragSessionWithWatchdog();
-        }, ANIMATION_TIMEOUT_MS);
-    };
+            activeZoneMap.current?.clear();
+        };
+    }, [cleanupDragSessionWithWatchdog]);
 
-    const resetDragState = () => {
-        setDragSessionId((prev) => prev + 1);
-    };
+    // addZone always overwrites to keep coordinates fresh after re-layouts.
+    const addZone = useCallback((zone: IDragOverlayZone) => {
+        zonesRef.current?.set(zone.id, zone);
+    }, []);
 
     const onOverlayLayout = useCallback(
         (data: IDragOverlayLayout) => {
@@ -156,6 +155,7 @@ export const DragOverlayProvider: FC<PropsWithChildren> = ({ children }) => {
         },
         [overlayLayout],
     );
+
     const draggedElementStyle = useAnimatedStyle(() => ({
         transform: [{ translateX: dragTranslateX.value }, { translateY: dragTranslateY.value }],
     }));
@@ -179,38 +179,51 @@ export const DragOverlayProvider: FC<PropsWithChildren> = ({ children }) => {
         const newX = x;
         const newY = y + scrollY.value;
         const duration = 500;
-        cleanupDragSessionWithTimeout();
-        dragTranslateY.value = withTiming(newY, { duration }, (finished) => {
-            if (finished) {
+
+        // Watchdog: if animations are interrupted, clean up after the timeout.
+        clearAnimationTimeout();
+        animationTimeoutRef.current = setTimeout(() => {
+            cleanupDragSessionWithWatchdog();
+        }, ANIMATION_TIMEOUT_MS);
+
+        // Both X and Y animations run concurrently. Use a counter so cleanup
+        // fires exactly once when BOTH complete, not once per animation.
+        let completedCount = 0;
+        const onBothDone = (finished: boolean | undefined) => {
+            if (!finished) return;
+            completedCount += 1;
+            if (completedCount >= 2) {
+                // Both done — cancel watchdog and clean up.
+                clearAnimationTimeout();
                 scheduleOnRN(cleanupDragSessionWithWatchdog);
             }
-        });
-        dragTranslateX.value = withTiming(newX, { duration }, (finished) => {
-            if (finished) {
-                scheduleOnRN(cleanupDragSessionWithWatchdog);
-            }
-        });
+        };
+
+        dragTranslateY.value = withTiming(newY, { duration }, onBothDone);
+        dragTranslateX.value = withTiming(newX, { duration }, onBothDone);
         activeZoneMapRef.current?.clear();
     };
 
     const updateDragPosition = (x: number, y: number) => {
         const newX = x;
         const newY = y + scrollY.value;
+
         for (const zone of zonesRef.current?.values()) {
             const layout = zone.measure;
             const withOffSetX = x;
             const withOffSetY = y - (overlayLayout.value.y ?? 0);
             const isInside = isPointInside(withOffSetX, withOffSetY, layout);
+
             if (isInside) {
                 if (!activeZoneMapRef.current.get(zone.id)) {
                     activeZoneMapRef.current.set(zone.id, true);
-                    console.log('Entering zone', zone.id);
+                    _logger.debug(`Entering zone ${zone.id}`);
                     setActiveZones(zone.id);
                 }
             } else {
                 if (activeZoneMapRef.current.get(zone.id)) {
                     activeZoneMapRef.current.set(zone.id, false);
-                    console.log('Leave zone', zone.id);
+                    _logger.debug(`Left zone ${zone.id}`);
                     setActiveZones(undefined);
                 }
             }
@@ -236,6 +249,10 @@ export const DragOverlayProvider: FC<PropsWithChildren> = ({ children }) => {
         }
     };
 
+    const resetDragState = () => {
+        setDragSessionId((prev) => prev + 1);
+    };
+
     const value = {
         draggedElement,
         updateDragPosition,
@@ -254,6 +271,7 @@ export const DragOverlayProvider: FC<PropsWithChildren> = ({ children }) => {
         addZone,
         activeZones,
     };
+
     return <DragOverlayContext.Provider value={value}>{children}</DragOverlayContext.Provider>;
 };
 

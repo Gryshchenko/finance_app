@@ -5,11 +5,11 @@ import { DashboardScreen } from '@/screens/DashboardScreen/DashboardScreen';
 const DashboardStack = createNativeStackNavigator();
 
 export enum DashboardPath {
-    Overview = '/',
+    Overview = 'overview',
 }
 
 export interface DashboardStackParamList {
-    Overview: undefined;
+    overview: undefined;
 }
 
 function DashboardStackNavigator() {

@@ -96,7 +96,7 @@ const $title: ThemedStyle<TextStyle> = ({ colors, typography }) => ({
     lineHeight: 15,
 });
 
-const $value: ThemedStyle<any> = ({ colors, typography }) => ({
+const $value: ThemedStyle<TextStyle> = ({ colors, typography }) => ({
     marginTop: 2,
     fontSize: 10,
     fontWeight: '500',

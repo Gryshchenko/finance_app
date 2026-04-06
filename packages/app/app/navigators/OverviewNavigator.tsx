@@ -5,7 +5,7 @@ import { CompositeScreenProps, NavigatorScreenParams, ParamListBase } from '@rea
 import { CurrencyProvider } from '@/context/CurrencyContext';
 import { AccountsPath, AccountsStackNavigator, AccountsStackParamList } from '@/navigators/AccountsStackNavigator';
 import { CategoriesPath, CategoriesStackNavigator, CategoriesStackParamList } from '@/navigators/CategoriesStackNavigator';
-import { DashboardPath, DashboardStackNavigator } from '@/navigators/DashboardStackNavigator';
+import { DashboardPath, DashboardStackNavigator, DashboardStackParamList } from '@/navigators/DashboardStackNavigator';
 import { HistoryStackNavigator, HistoryStackParamList } from '@/navigators/HistoryStackNavigator';
 import { IncomePath, IncomesStackNavigator, IncomesStackParamList } from '@/navigators/IncomesStackNavigator';
 import { SettingsScreen } from '@/screens/SettingsScreen';
@@ -17,13 +17,12 @@ import { TransactionPath } from '@/types/TransactionPath';
 import { AppStackParamList, AppStackScreenProps } from './AppNavigator';
 
 export type OverviewTabParamList = {
-    dashboard: NavigatorScreenParams<IncomesStackParamList> | undefined;
+    dashboard: NavigatorScreenParams<DashboardStackParamList> | undefined;
     incomes: NavigatorScreenParams<IncomesStackParamList> | undefined;
-    balances: NavigatorScreenParams<AccountsStackParamList> | undefined;
+    accounts: NavigatorScreenParams<AccountsStackParamList> | undefined;
     categories: NavigatorScreenParams<CategoriesStackParamList> | undefined;
     transactions: NavigatorScreenParams<HistoryStackParamList> | undefined;
     settings: undefined;
-    demo: undefined;
 } & ParamListBase;
 
 /**
@@ -101,12 +100,12 @@ export function OverviewNavigator() {
                 />
 
                 <Tab.Screen
-                    name="balances"
+                    name="accounts"
                     component={AccountsStackNavigator}
                     listeners={({ navigation }) => ({
                         tabPress: (event) => {
                             event.preventDefault();
-                            navigation.navigate(OverviewPath.Balances, { screen: AccountsPath.Accounts });
+                            navigation.navigate(OverviewPath.Accounts, { screen: AccountsPath.Accounts });
                         },
                     })}
                 />

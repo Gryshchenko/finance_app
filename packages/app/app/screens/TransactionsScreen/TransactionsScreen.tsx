@@ -67,8 +67,8 @@ export const TransactionsScreen = function TransactionsScreen(_props: Props) {
             props={{
                 onPress: (id: number, name: string) => {
                     navigation.getParent()?.navigate(path, {
-                        screen: TransactionPath.TransactionView,
-                        params: { id, name, type },
+                        screen: TransactionPath.TransactionEdit,
+                        params: { id, name, type, path },
                     });
                 },
                 data,

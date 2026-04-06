@@ -7,7 +7,9 @@ import { EmptyState } from '@/components/EmptyState';
 import { TransactionFields } from '@/components/transaction/TransactionFields';
 import { useInvalidateQuery } from '@/hooks/useAppQuery';
 import { useEditView } from '@/hooks/useEditView';
+import { translate } from '@/i18n/translate';
 import { buildTransactionEditSchema } from '@/schems/validationSchemas';
+import AlertService from '@/services/AlertService';
 import { GeneralApiProblemKind } from '@/services/api/apiProblem';
 import ToastService from '@/services/ToastService';
 import { TransactionService } from '@/services/TransactionService';
@@ -52,6 +54,34 @@ export const TransactionEdit: FC<ITransactionPros> = function TransactionEdit(_p
         }
     };
 
+    const handleDelete = async () => {
+        const transactionService = TransactionService.instance();
+        if (!form.transactionId) return;
+
+        const response = await transactionService.doDeleteTransaction(form.transactionId);
+        if (response.kind === GeneralApiProblemKind.Ok) {
+            ToastService.info({
+                title: 'common:info',
+                message: 'transactionScreen:deleteSuccess',
+            });
+            await invalidateQuery([['transactions']]);
+            await invalidateQuery([['transaction', form.transactionId]]);
+            navigation.getParent()?.navigate(OverviewPath.Dashboard);
+        } else {
+            ToastService.error({
+                title: 'common:error',
+                message: 'transactionScreen:deleteFailed',
+            });
+        }
+    };
+
+    const onDelete = () => {
+        AlertService.confirm(
+            translate('transactionScreen:deleteTitle'),
+            translate('transactionScreen:deleteMessage'),
+            handleDelete,
+        );
+    };
     const handleSave = async () => {
         await save();
         await handlePatch();
@@ -67,6 +97,7 @@ export const TransactionEdit: FC<ITransactionPros> = function TransactionEdit(_p
             isEdit={true}
             errors={errors}
             isView={false}
+            onDelete={onDelete}
             handleChange={(key: string, value: string | number) => {
                 handleChange(key as keyof ITransaction, value);
             }}

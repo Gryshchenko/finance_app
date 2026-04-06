@@ -5,8 +5,7 @@ import { Utils } from 'tenpercent/shared';
 
 import { AccountView } from '@/components/account/AccountView';
 import { useAppQuery } from '@/hooks/useAppQuery';
-import { AccountsPath } from '@/navigators/AccountsStackNavigator';
-import { OverviewTabParamList } from '@/navigators/OverviewNavigator';
+import { AccountsPath, AccountsStackParamList } from '@/navigators/AccountsStackNavigator';
 import { GenericListScreen } from '@/screens/GenericListScreen';
 import { AccountService } from '@/services/AccountService';
 import { GeneralApiProblemKind } from '@/services/api/apiProblem';
@@ -37,7 +36,7 @@ export async function fetchAccount(id: number): Promise<IAccount | undefined> {
     }
 }
 
-type Props = NativeStackScreenProps<OverviewTabParamList, AccountsPath.AccountView>;
+type Props = NativeStackScreenProps<AccountsStackParamList, AccountsPath.AccountView>;
 
 export const AccountViewScreen = function AccountViewScreen(_props: Props) {
     const params = _props?.route?.params as { id: number; name: string };

@@ -4,6 +4,7 @@ import { ITransaction } from 'tenpercent/shared';
 
 import { TransactionView } from '@/components/transaction/TransactionView';
 import { useAppQuery } from '@/hooks/useAppQuery';
+import { DashboardPath } from '@/navigators/DashboardStackNavigator';
 import { OverviewTabParamList } from '@/navigators/OverviewNavigator';
 import { GenericListScreen } from '@/screens/GenericListScreen';
 import { GeneralApiProblemKind } from '@/services/api/apiProblem';
@@ -34,9 +35,9 @@ export async function fetchTransaction(id: number | string): Promise<ITransactio
 type Props = NativeStackScreenProps<OverviewTabParamList, TransactionPath.TransactionView>;
 
 export const TransactionViewScreen = function TransactionsScreen(_props: Props) {
-    const params = _props?.route?.params as { id: number; name: string };
+    const params = _props?.route?.params as { id: number; name: string; path: DashboardPath };
     const navigation = useNavigation();
-    const { id, name } = params;
+    const { id, name, path } = params;
     const { isError, data, isPending } = useAppQuery<ITransaction | undefined>(['transaction', id], async () =>
         fetchTransaction(id),
     );
@@ -47,7 +48,10 @@ export const TransactionViewScreen = function TransactionsScreen(_props: Props) 
             isError={isError}
             isPending={isPending}
             props={{
-                data,
+                data: {
+                    data,
+                    path,
+                },
             }}
             onBack={() => navigation.goBack()}
             RenderComponent={TransactionView}

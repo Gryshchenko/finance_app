@@ -17,6 +17,7 @@ interface EditButtonsProps {
 
 export const EditButtons: React.FC<EditButtonsProps> = ({ isView, onEdit, onDelete, onCancel, onSave, isCreate }) => {
     const { themed } = useAppTheme();
+
     if (isCreate) {
         return (
             <View style={$buttons}>
@@ -35,6 +36,9 @@ export const EditButtons: React.FC<EditButtonsProps> = ({ isView, onEdit, onDele
     ) : (
         <View style={$buttons}>
             {onSave && <Button preset={'reversed'} tx="common:saveChanges" onPress={onSave} />}
+            {onDelete && (
+                <TextButton textStyle={themed($deleteText)} preset={'reversed'} tx={'common:delete'} onPress={onDelete} />
+            )}
             {onCancel && <TextButton preset={'reversed'} tx="common:cancel" onPress={onCancel} />}
         </View>
     );

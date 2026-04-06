@@ -1,6 +1,7 @@
 import { useState, ComponentType, memo } from 'react';
 import { View, ViewStyle } from 'react-native';
 
+import { ItemType } from '@/components/dashboard/Box/ItemBox';
 import DashboardExpandableGrid from '@/components/dashboard/DashboardExpandableGrid';
 import { IBoxDataItem } from '@/interfaces/IBoxDataItem';
 import { useAppTheme } from '@/theme/context';
@@ -24,12 +25,14 @@ interface IProps<T = unknown> {
     keyGetter?: (item: IBoxDataItem<T>) => string;
     isExpanded?: boolean;
     id: string;
+    /** Passed through to DashboardExpandableGrid — controls which drag types trigger auto-expand. */
+    acceptedDragTypes?: ItemType[];
 }
 
 export const DASH_BOARD_ITEM_WIDTH: number = 80;
 
 export default memo(function DashboardItem(props: IProps) {
-    const { Item, items, keyGetter, isExpanded, id } = props;
+    const { Item, items, keyGetter, isExpanded, id, acceptedDragTypes } = props;
     const { themed } = useAppTheme();
     const [containerWidth, setContainerWidth] = useState(0);
 
@@ -66,7 +69,7 @@ export default memo(function DashboardItem(props: IProps) {
     );
     if (!isExpanded) return content;
     return (
-        <DashboardExpandableGrid rowHeight={110} id={id} rows={matrix?.length}>
+        <DashboardExpandableGrid rowHeight={110} id={id} rows={matrix?.length} acceptedDragTypes={acceptedDragTypes}>
             {content}
         </DashboardExpandableGrid>
     );

@@ -55,8 +55,8 @@ export const Accounts: FC<IAccountsPros> = function Accounts(_props) {
                                     <ViewButton
                                         style={$button}
                                         onPress={() => {
-                                            navigation.getParent()?.navigate(OverviewPath.Balances, {
-                                                screen: AccountsPath.AccountView,
+                                            navigation.getParent()?.navigate(OverviewPath.Accounts, {
+                                                screen: AccountsPath.AccountEdit,
                                                 params: { id: accountId, name: accountName },
                                             });
                                         }}

@@ -1,6 +1,5 @@
 import { JSX, useEffect, useRef, useState, ReactNode } from 'react';
 import { View, ViewStyle } from 'react-native';
-import { useSharedValue } from 'react-native-reanimated';
 import { Draggable, Droppable } from 'react-native-reanimated-dnd';
 
 import { BoxDraggableItem, IBoxDraggableItem } from '@/components/dashboard/Box/BoxDraggableItem';
@@ -52,9 +51,17 @@ export function Box(props: IBoxProps) {
         BoxDraggableItemProps = {},
         payload,
     } = props;
+
     const viewRef = useRef<View>(null);
+    // Tap vs drag discrimination: timer fires if drag ends before 300 ms and
+    // the item never actually moved (wasDragged stays false).
     const tapTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
     const wasDragged = useRef(false);
+
+    // Tracks the last known drag position so the cleanup animation targets
+    // the correct screen coordinate instead of always (0, 0).
+    const initialOffset = useRef({ x: 0, y: 0 });
+
     const { themed } = useAppTheme();
     const {
         initiateItemDrag,
@@ -64,26 +71,24 @@ export function Box(props: IBoxProps) {
         setDraggedElementId,
         setInitialDragPosition,
     } = useDragOverlay();
+
     const [isDragOver, setIsDragOver] = useState(false);
-
-    const initialOffset = { x: 0, y: 0 };
-
-    const offset = useSharedValue<{ x: number; y: number; width: number; height: number }>({ x: 0, y: 0, width: 0, height: 0 });
-
     const isDragging = id === draggedElementId;
 
+    // Restore overlay to origin and clear dragged ID when the Box unmounts
+    // (e.g. when DropProvider re-keys after resetDragState).
+    // Capture the ref value inside the effect so the cleanup closure holds
+    // a stable snapshot at mount time (satisfies react-hooks/exhaustive-deps).
     useEffect(() => {
-        viewRef?.current?.measureInWindow((x, y, width: number, height: number) => {
-            offset.value = { x, y, width, height };
-        });
-    }, [offset]);
-
-    useEffect(() => {
+        const offset = initialOffset;
         return () => {
             setDraggedElementId(undefined);
-            setInitialDragPosition(initialOffset.x, initialOffset.y - DASH_BOARD_BOX_SIZE);
+            setInitialDragPosition(offset.current.x, offset.current.y - DASH_BOARD_BOX_SIZE);
         };
-    }, [initialOffset.x, initialOffset.y]);
+        // setDraggedElementId and setInitialDragPosition are stable dispatcher
+        // references from context — safe to omit from the deps array.
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, []);
 
     return (
         <View style={[themed($base), styles?.container]}>
@@ -102,28 +107,34 @@ export function Box(props: IBoxProps) {
                     collisionAlgorithm={'intersect'}
                     onDragStart={(data) => {
                         wasDragged.current = false;
+                        // Start a short timer — if the drag ends before it fires
+                        // and nothing moved, we treat the gesture as a tap.
                         tapTimerRef.current = setTimeout(() => {
+                            tapTimerRef.current = null;
                             if (!wasDragged.current) {
-                                console.log('tap');
                                 onTap?.();
                             }
-                            tapTimerRef.current = null;
                         }, 300);
                         onDragStart?.(data);
                     }}
                     onDragEnd={(data) => {
+                        // If the timer is still pending the drag ended in < 300 ms.
+                        // We cancel the timer and handle the tap here so it only
+                        // fires once (not once in the timer + once here).
+                        const timerWasPending = !!tapTimerRef.current;
                         if (tapTimerRef.current) {
                             clearTimeout(tapTimerRef.current);
                             tapTimerRef.current = null;
                         }
-                        if (!wasDragged.current) {
+                        if (!wasDragged.current && timerWasPending) {
                             onTap?.();
                         }
                         wasDragged.current = false;
                         onDragEnd?.(data);
-                        setInitialDragPosition(initialOffset.x, initialOffset.y - DASH_BOARD_BOX_SIZE);
+                        setInitialDragPosition(initialOffset.current.x, initialOffset.current.y - DASH_BOARD_BOX_SIZE);
                     }}
                     onDragging={(data) => {
+                        // First movement cancels tap detection.
                         if (!wasDragged.current) {
                             wasDragged.current = true;
                             if (tapTimerRef.current) {
@@ -133,8 +144,8 @@ export function Box(props: IBoxProps) {
                         }
 
                         setDraggedElementId(data.itemData.id);
-                        initialOffset.x = data.x;
-                        initialOffset.y = data.y;
+                        initialOffset.current.x = data.x;
+                        initialOffset.current.y = data.y;
 
                         initiateItemDrag({
                             element: <BoxDraggableItem {...BoxDraggableItemProps} />,
@@ -175,12 +186,14 @@ export function Box(props: IBoxProps) {
         </View>
     );
 }
+
 const $base: ThemedStyle<ViewStyle> = () => ({
     width: 80,
     height: 97,
     alignItems: 'center',
     gap: 8,
 });
+
 const $opacity: ThemedStyle<ViewStyle> = () => ({
     opacity: 0,
     position: 'absolute',

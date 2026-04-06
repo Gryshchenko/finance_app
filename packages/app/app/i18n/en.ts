@@ -176,6 +176,7 @@ const en = {
     transactionScreen: {
         recentActivity: 'Recent Activity',
         title: '{{name}} transactions',
+        name: '{{name}} transaction',
         from: 'from',
         to: 'to',
         description: 'Description',

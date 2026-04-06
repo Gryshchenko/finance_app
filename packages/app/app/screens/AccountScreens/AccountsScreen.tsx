@@ -1,5 +1,5 @@
-import { BottomTabScreenProps } from '@react-navigation/bottom-tabs';
 import { useNavigation } from '@react-navigation/native';
+import { NativeStackScreenProps } from '@react-navigation/native-stack';
 import { IAccount } from 'tenpercent/shared';
 import { IAccountListItem } from 'tenpercent/shared';
 import { TransactionFieldType } from 'tenpercent/shared';
@@ -9,7 +9,7 @@ import { Accounts } from '@/components/account/Accounts';
 import { AddButton } from '@/components/buttons/AddButton';
 import { useAppQuery } from '@/hooks/useAppQuery';
 import { translate } from '@/i18n/translate';
-import { OverviewTabParamList } from '@/navigators/OverviewNavigator';
+import { AccountsPath, AccountsStackParamList } from '@/navigators/AccountsStackNavigator';
 import { GenericListScreen } from '@/screens/GenericListScreen';
 import { AccountService } from '@/services/AccountService';
 import { GeneralApiProblemKind } from '@/services/api/apiProblem';
@@ -35,7 +35,7 @@ export async function fetchAccounts(): Promise<IAccountListItem[] | []> {
     }
 }
 
-type Props = BottomTabScreenProps<OverviewTabParamList, 'accounts'>;
+type Props = NativeStackScreenProps<AccountsStackParamList, AccountsPath.Accounts>;
 
 export const AccountsScreen = function AccountsScreen(_props: Props) {
     const { isError, data, isPending } = useAppQuery<IAccountListItem[] | undefined>('accounts', fetchAccounts);
@@ -50,16 +50,16 @@ export const AccountsScreen = function AccountsScreen(_props: Props) {
                 data,
                 fetch: fetchAccounts,
                 onPress: (id: number, name: string) => {
-                    navigation.getParent()?.navigate(OverviewPath.Balances, {
+                    navigation.getParent()?.navigate(OverviewPath.Accounts, {
                         screen: TransactionPath.Transactions,
-                        params: { id, name, type: TransactionFieldType.Account, path: OverviewPath.Balances },
+                        params: { id, name, type: TransactionFieldType.Account, path: OverviewPath.Accounts },
                     });
                 },
             }}
             RightActionComponent={
                 <AddButton
                     onPress={() => {
-                        navigation.getParent()?.navigate(OverviewPath.Balances, {
+                        navigation.getParent()?.navigate(OverviewPath.Accounts, {
                             screen: TransactionPath.TransactionCreate,
                             params: {
                                 payload: {

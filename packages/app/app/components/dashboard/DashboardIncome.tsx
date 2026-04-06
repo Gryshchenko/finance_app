@@ -31,7 +31,7 @@ export default memo(function DashboardIncome(props: IDashboardItem<IIncomeStats>
                             params: {
                                 id: item.incomeId,
                                 name: item.incomeName,
-                                path: OverviewPath.Dashboard,
+                                path: OverviewPath.Categories,
                                 type: TransactionFieldType.Income,
                             },
                         });

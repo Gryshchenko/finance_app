@@ -5,6 +5,7 @@ import { IAccountListItem, ICategoryStats, IIncomeStats, IStatsResponse, StatsPe
 
 import { boxDataItemAdapter } from '@/components/dashboard/Box/boxDataItemAdapter';
 import { useDragOverlay } from '@/components/dashboard/Box/DragOverlayContext';
+import { ItemType } from '@/components/dashboard/Box/ItemBox';
 import DashboardAccount from '@/components/dashboard/DashboardAccount';
 import DashboardCategory from '@/components/dashboard/DashboardCategory';
 import DashboardDraggableItem from '@/components/dashboard/DashboardDraggableItem';
@@ -111,37 +112,53 @@ export default function DashboardItems() {
                 }}
                 contentContainerStyle={{ gap: spacing.md, marginTop: spacing.lg }}
             >
+                {/*
+                 * Incomes section — IncomeBox items are draggable sources only;
+                 * nothing can be dropped onto them.  No drag type should auto-expand
+                 * this grid, so acceptedDragTypes is an empty array.
+                 */}
                 <DashboardItem
                     id={'incomes'}
                     isExpanded={true}
+                    acceptedDragTypes={[]}
                     keyGetter={(item: IBoxDataItem<unknown>): string => {
                         if (item.type === BoxDataItemType.Default) {
                             return String((item.data as IIncomeStats)?.incomeId);
                         }
-                        return 'new';
+                        return 'new-incomes';
                     }}
                     Item={DashboardIncome as ComponentType<IDashboardItem<unknown>>}
                     items={boxDataItemAdapter<IIncomeStats>(incomes.data?.items ?? [])}
                 />
+                {/*
+                 * Accounts section — AccountBox accepts Account drops (transfer)
+                 * and Income drops (income transaction).  Both types may auto-expand.
+                 */}
                 <DashboardItem
                     id={'accounts'}
                     isExpanded={true}
+                    acceptedDragTypes={[ItemType.Account, ItemType.Income]}
                     keyGetter={(item: IBoxDataItem<unknown>): string => {
                         if (item.type === BoxDataItemType.Default) {
                             return String((item.data as IAccountListItem)?.accountId);
                         }
-                        return 'new';
+                        return 'new-accounts';
                     }}
                     Item={DashboardAccount as ComponentType<IDashboardItem<unknown>>}
                     items={boxDataItemAdapter<IAccountListItem>(accounts.data ?? [])}
                 />
+                {/*
+                 * Categories section — CategoryBox accepts only Account drops (expense).
+                 * Only an Account drag should trigger auto-expand here.
+                 */}
                 <DashboardItem
                     id={'categories'}
+                    acceptedDragTypes={[ItemType.Account]}
                     keyGetter={(item: IBoxDataItem<unknown>): string => {
                         if (item.type === BoxDataItemType.Default) {
                             return String((item.data as ICategoryStats)?.categoryId);
                         }
-                        return 'new';
+                        return 'new-categories';
                     }}
                     Item={DashboardCategory as ComponentType<IDashboardItem<unknown>>}
                     items={boxDataItemAdapter<ICategoryStats>(categories.data?.items ?? [])}

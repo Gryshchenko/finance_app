@@ -6,19 +6,35 @@ import Animated, { useSharedValue, useAnimatedStyle, withSpring, clamp } from 'r
 import { scheduleOnRN } from 'react-native-worklets';
 
 import { useDragOverlay } from '@/components/dashboard/Box/DragOverlayContext';
+import { ItemType } from '@/components/dashboard/Box/ItemBox';
 import { useAppTheme } from '@/theme/context';
 import { ThemedStyle } from '@/theme/types';
+
+/**
+ * How long (ms) the user must hover a draggable item over this grid
+ * before it auto-expands to reveal hidden rows.
+ */
+const HOVER_OPEN_DELAY_MS = 500;
 
 type Props = {
     rowHeight: number;
     rows: number;
     children: React.ReactNode;
     id: string;
+    /**
+     * Which draggable item types are allowed to auto-expand this grid on hover.
+     * If the currently dragged type is NOT in this list the grid stays closed —
+     * prevents meaningless auto-opens (e.g. dragging an Income over the Incomes
+     * section where no item is droppable).
+     *
+     * Leave undefined to allow any type (original behaviour, no validation).
+     */
+    acceptedDragTypes?: ItemType[];
 };
 
-export default function DashboardExpandableGrid({ rowHeight, rows, children, id }: Props) {
+export default function DashboardExpandableGrid({ rowHeight, rows, children, id, acceptedDragTypes }: Props) {
     const { themed } = useAppTheme();
-    const { addZone, activeZones } = useDragOverlay();
+    const { addZone, activeZones, draggingItemType } = useDragOverlay();
 
     const MIN_HEIGHT = rowHeight;
     const MAX_HEIGHT = rowHeight * rows;
@@ -29,78 +45,105 @@ export default function DashboardExpandableGrid({ rowHeight, rows, children, id 
     const isOpened = useRef(false);
     const height = useSharedValue(MIN_HEIGHT);
 
+    // Timer that fires after HOVER_OPEN_DELAY_MS to auto-open during a drag.
+    const hoverTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+
+    const clearHoverTimer = useCallback(() => {
+        if (hoverTimerRef.current) {
+            clearTimeout(hoverTimerRef.current);
+            hoverTimerRef.current = null;
+        }
+    }, []);
+
     const openGrid = useCallback(() => {
         if (isOpened.current) return;
         isOpened.current = true;
-        height.value = withSpring(MAX_HEIGHT, {
-            damping: 15,
-            stiffness: 150,
-        });
+        height.value = withSpring(MAX_HEIGHT, { damping: 15, stiffness: 150 });
     }, [MAX_HEIGHT, height]);
 
     const closeGrid = useCallback(() => {
         if (!isOpened.current) return;
         isOpened.current = false;
-        height.value = withSpring(MIN_HEIGHT, {
-            damping: 15,
-            stiffness: 150,
-        });
+        height.value = withSpring(MIN_HEIGHT, { damping: 15, stiffness: 150 });
     }, [MIN_HEIGHT, height]);
 
+    /**
+     * Returns true if the currently dragged item type is allowed to trigger
+     * auto-expand on this grid.  When acceptedDragTypes is not provided every
+     * type is accepted (backward-compatible).
+     */
+    const isDragTypeAccepted = useCallback((): boolean => {
+        if (!draggingItemType) return false;
+        if (!acceptedDragTypes) return true;
+        return acceptedDragTypes.includes(draggingItemType);
+    }, [draggingItemType, acceptedDragTypes]);
+
     useEffect(() => {
-        if (activeZones === `${id}-view`) {
-            openGrid();
+        const isHovered = activeZones === `${id}-view`;
+
+        if (isHovered) {
+            // Only start the hover timer if:
+            // 1. There is an active drag.
+            // 2. The dragged type is accepted by this section.
+            // 3. The grid is not already open (no point re-triggering).
+            if (!isOpened.current && isDragTypeAccepted()) {
+                clearHoverTimer();
+                hoverTimerRef.current = setTimeout(() => {
+                    hoverTimerRef.current = null;
+                    openGrid();
+                }, HOVER_OPEN_DELAY_MS);
+            }
         } else {
-            closeGrid();
+            // Drag left the zone — cancel the pending timer and close if open.
+            clearHoverTimer();
+            // Only auto-close when a drag is in progress (draggingItemType set).
+            // Manual pan-gesture close is handled separately below.
+            if (draggingItemType) {
+                closeGrid();
+            }
         }
-    }, [activeZones, id, openGrid, closeGrid]);
 
-    useEffect(() => {
-        const measureZones = () => {
-            viewRef.current?.measureInWindow((x, y, width, heightElement) => {
-                addZone({
-                    id: `${id}-view`,
-                    measure: {
-                        pageX: x,
-                        pageY: y,
-                        width,
-                        height: heightElement,
-                    },
-                });
-            });
-            handleRef.current?.measureInWindow((x, y, width, heightElement) => {
-                addZone({
-                    id: `${id}-handle`,
-                    measure: {
-                        pageX: x,
-                        pageY: y,
-                        width: width || 100,
-                        height: heightElement || 50,
-                    },
-                });
-            });
+        return () => {
+            clearHoverTimer();
         };
+    }, [activeZones, id, isDragTypeAccepted, openGrid, closeGrid, clearHoverTimer, draggingItemType]);
 
-        // let layout finish
-        setTimeout(measureZones, 0);
+    // Re-measure both zones whenever layout changes so drag detection stays
+    // accurate after scroll or container resize.
+    const measureZones = useCallback(() => {
+        viewRef.current?.measureInWindow((x, y, width, heightElement) => {
+            addZone({
+                id: `${id}-view`,
+                measure: { pageX: x, pageY: y, width, height: heightElement },
+            });
+        });
+        handleRef.current?.measureInWindow((x, y, width, heightElement) => {
+            addZone({
+                id: `${id}-handle`,
+                measure: { pageX: x, pageY: y, width: width || 100, height: heightElement || 50 },
+            });
+        });
     }, [addZone, id]);
 
+    // Initial measurement — wait one frame so the layout pass has finished.
+    useEffect(() => {
+        setTimeout(measureZones, 0);
+    }, [measureZones]);
+
+    // Manual pan gesture: allows the user to swipe open / close the grid
+    // without relying on the drag-and-drop hover path.
     const gesture = Gesture.Pan()
         .onUpdate((e) => {
             if (!showHandle) return;
-            // When opened, only allow swipe up (negative translationY) to close
             if (isOpened.current && e.translationY > 0) return;
-            // When closed, only allow swipe down (positive translationY) to open
             if (!isOpened.current && e.translationY < 0) return;
 
             const newHeight = (isOpened.current ? MAX_HEIGHT : MIN_HEIGHT) + e.translationY;
-
             height.value = clamp(newHeight, MIN_HEIGHT, MAX_HEIGHT);
         })
         .onEnd((e) => {
             if (!showHandle) return;
             const mid = (MIN_HEIGHT + MAX_HEIGHT) / 2;
-
             if (height.value > mid || e.velocityY > 300) {
                 scheduleOnRN(openGrid);
             } else {
@@ -111,12 +154,13 @@ export default function DashboardExpandableGrid({ rowHeight, rows, children, id 
     const animatedStyle = useAnimatedStyle(() => ({
         height: height.value,
     }));
+
     return (
-        <View ref={viewRef} style={themed($wrapper)}>
+        <View ref={viewRef} style={themed($wrapper)} onLayout={measureZones}>
             <GestureDetector gesture={gesture}>
                 <Animated.View style={[themed($container), animatedStyle]}>
                     <View style={themed($content)}>{children}</View>
-                    {showHandle && <View ref={handleRef} style={themed($handle)} />}
+                    {showHandle && <View ref={handleRef} style={themed($handle)} onLayout={measureZones} />}
                 </Animated.View>
             </GestureDetector>
         </View>
@@ -134,7 +178,7 @@ export const $container: ThemedStyle<ViewStyle> = ({ border, colors }) => ({
     borderRadius: border.borderRadius,
     borderColor: colors.border,
     borderWidth: border.borderWidth,
-    backgroundColor: '#fff',
+    backgroundColor: colors.background,
     overflow: 'hidden',
 });
 

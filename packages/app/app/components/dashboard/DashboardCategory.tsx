@@ -33,7 +33,7 @@ export default memo(function DashboardCategory(props: IDashboardItem<ICategorySt
                             params: {
                                 id: item.categoryId,
                                 name: item.categoryName,
-                                path: OverviewPath.Dashboard,
+                                path: OverviewPath.Categories,
                                 type: TransactionFieldType.Category,
                             },
                         });
