@@ -173,6 +173,14 @@ const en = {
         deleteTitle: 'Delete income',
         incomeName: 'Income name',
     },
+    transactionStatsBar: {
+        spentMtd: 'Spent (MTD)',
+        deltaLabel: 'Δ vs Last Month',
+        forecastEom: 'Forecast (EOM)',
+        budgetPercent: '% of Budget',
+        noData: '—',
+        overBudget: 'Over budget',
+    },
     transactionScreen: {
         recentActivity: 'Recent Activity',
         title: '{{name}} transactions',

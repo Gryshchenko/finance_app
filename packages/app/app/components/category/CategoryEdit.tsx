@@ -9,7 +9,7 @@ import { EmptyState } from '@/components/EmptyState';
 import { useInvalidateQuery } from '@/hooks/useAppQuery';
 import { useEditView } from '@/hooks/useEditView';
 import { categoryEditSchema } from '@/schems/validationSchemas';
-import { GeneralApiProblemKind } from '@/services/api/apiProblem';
+import { buildGeneralApiBaseHandler, GeneralApiProblemKind, parseServerErrors } from '@/services/api/apiProblem';
 import { CategoryService } from '@/services/CategoryService';
 import { InvalidationGroups } from '@/services/QueryCacheService';
 import ToastService from '@/services/ToastService';
@@ -23,7 +23,7 @@ export const CategoryEdit: FC<ICategoryPros> = function CategoryEdit(_props) {
     const { data } = _props;
     const navigation = useNavigation();
     const invalidateQuery = useInvalidateQuery();
-    const { form, handleChange, save, errors } = useEditView<Partial<ICategory>>(data!, categoryEditSchema);
+    const { form, handleChange, save, errors, setErrors } = useEditView<Partial<ICategory>>(data!, categoryEditSchema);
 
     const handlePatch = async () => {
         const categoryService = CategoryService.instance();
@@ -41,16 +41,22 @@ export const CategoryEdit: FC<ICategoryPros> = function CategoryEdit(_props) {
             });
             await invalidateQuery(InvalidationGroups.category(form.categoryId));
             navigation.goBack();
+        } else if (response.kind === GeneralApiProblemKind.BadData) {
+            const { fieldErrors, hasNonFieldErrors } = parseServerErrors(response.errors);
+            if (Object.keys(fieldErrors).length > 0) {
+                setErrors(fieldErrors as any);
+            }
+            if (hasNonFieldErrors) {
+                ToastService.error({ title: 'common:error', message: 'categoryScreen:updateCategoryFailed' });
+            }
         } else {
-            ToastService.error({
-                title: 'common:error',
-                message: 'categoryScreen:updateCategoryFailed',
-            });
+            buildGeneralApiBaseHandler(response);
         }
     };
 
     const handleSave = async () => {
-        await save();
+        const isValid = await save();
+        if (!isValid) return;
         await handlePatch();
     };
     if (!data) {

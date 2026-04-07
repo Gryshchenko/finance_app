@@ -142,6 +142,7 @@ export const SignUpScreen: FC<SignUpScreenProps> = (_props) => {
                         setPasswordError(ValidationTypes.REQUIRED);
                     }
                     if (payload?.field === 'locale') {
+                        setLanguageError(ValidationTypes.REQUIRED);
                     }
                     if (payload?.field === 'publicName') {
                         setPublicNameError(ValidationTypes.REQUIRED);

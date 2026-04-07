@@ -1,10 +1,17 @@
-import { FC, useCallback, useEffect, useRef, useState } from 'react';
-import { InputAccessoryView, Keyboard, Platform, StyleSheet, TouchableOpacity, View } from 'react-native';
+import { FC, useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import { InputAccessoryView, Keyboard, Platform, StyleSheet, TextStyle, TouchableOpacity, View, ViewStyle } from 'react-native';
 
+import { FieldPresets } from '@/components/FieldPresets';
 import { Text } from '@/components/Text';
-import { TextField, TextFieldProps } from '@/components/TextField';
+import { TextField, TextFieldAccessoryProps, TextFieldProps } from '@/components/TextField';
+import { useAppTheme } from '@/theme/context';
+import type { ThemedStyle, ThemedStyleArray } from '@/theme/types';
 import { CurrencyUtils } from '@/utils/CurrencyUtils';
 
+export interface FieldPresetStyleMap {
+    currencySymbol: ThemedStyleArray<TextStyle>;
+    leftAccessoryStyle: ThemedStyleArray<ViewStyle>;
+}
 export interface ICurrencyField extends TextFieldProps {
     currency: string;
     onChangeCleaned: (str: string) => void;
@@ -112,9 +119,10 @@ export const CurrencyField: FC<ICurrencyField> = ({ value, onChangeCleaned, edit
     const [display, setDisplay] = useState(() => {
         if (!value) return '';
         const num = Number(value);
-        return isNaN(num) ? String(value) : CurrencyUtils.formatWithDelimiter(num, currency);
+        return isNaN(num) ? String(value) : CurrencyUtils.formatWithDelimiter(num, undefined);
     });
 
+    const { themed } = useAppTheme();
     const [exprLabel, setExprLabel] = useState('');
     const [showBar, setShowBar] = useState(false);
 
@@ -130,9 +138,9 @@ export const CurrencyField: FC<ICurrencyField> = ({ value, onChangeCleaned, edit
         if (!raw) return;
         const num = Number(raw);
         if (!isNaN(num)) {
-            setDisplay(CurrencyUtils.formatWithDelimiter(num, currency));
+            setDisplay(CurrencyUtils.formatWithDelimiter(num, undefined));
         }
-    }, [currency]);
+    }, []);
 
     useEffect(() => {
         if (isFocused.current) return;
@@ -141,8 +149,21 @@ export const CurrencyField: FC<ICurrencyField> = ({ value, onChangeCleaned, edit
             return;
         }
         const num = Number(value);
-        setDisplay(isNaN(num) ? String(value) : CurrencyUtils.formatWithDelimiter(num, currency));
+        setDisplay(isNaN(num) ? String(value) : CurrencyUtils.formatWithDelimiter(num, undefined));
     }, [value, currency]);
+
+    const CurrencySymbol = useMemo(
+        () =>
+            // eslint-disable-next-line react/display-name
+            ({ style }: TextFieldAccessoryProps) => (
+                <View style={style}>
+                    <Text style={themed($fieldPresets[props.preset ?? 'default'].currencySymbol)}>
+                        {CurrencyUtils.getSymbol(currency)}
+                    </Text>
+                </View>
+            ),
+        [currency],
+    );
 
     const onChangeText = (text: string) => {
         const stripped = text.replace(/[^0-9.]/g, '');
@@ -267,6 +288,8 @@ export const CurrencyField: FC<ICurrencyField> = ({ value, onChangeCleaned, edit
                 onChangeText={onChangeText}
                 onFocus={onFocus}
                 onBlur={onBlur}
+                LeftAccessory={CurrencySymbol}
+                leftAccessoryStyle={themed($fieldPresets[props.preset ?? 'default'].leftAccessoryStyle)}
             />
 
             {/* iOS: bar floats above the keyboard via InputAccessoryView */}
@@ -330,3 +353,49 @@ const styles = StyleSheet.create({
         flexDirection: 'row',
     },
 });
+
+const $currencySymbol: ThemedStyle<TextStyle> = ({ colors }) => ({
+    alignItems: 'center',
+    color: colors.text,
+    display: 'flex',
+    fontSize: 12,
+    justifyContent: 'center',
+});
+const $leftAccessoryStyle: ThemedStyle<TextStyle> = () => ({
+    height: 40,
+});
+
+const $currencySymbolUnderlineBig: ThemedStyle<TextStyle> = ({ colors }) => ({
+    alignItems: 'center',
+    color: colors.text,
+    display: 'flex',
+    fontSize: 34,
+    lineHeight: 0,
+    justifyContent: 'center',
+});
+const $leftAccessoryStyleUnderlineBig: ThemedStyle<TextStyle> = () => ({
+    height: '100%',
+});
+
+export const $fieldPresets: Record<FieldPresets, FieldPresetStyleMap> = {
+    default: {
+        currencySymbol: [$currencySymbol],
+        leftAccessoryStyle: [$leftAccessoryStyle],
+    },
+    underline: {
+        currencySymbol: [$currencySymbol],
+        leftAccessoryStyle: [$leftAccessoryStyle],
+    },
+    underlineBig: {
+        currencySymbol: [$currencySymbolUnderlineBig],
+        leftAccessoryStyle: [$leftAccessoryStyleUnderlineBig],
+    },
+    filled: {
+        currencySymbol: [$currencySymbol],
+        leftAccessoryStyle: [$leftAccessoryStyle],
+    },
+    compact: {
+        currencySymbol: [$currencySymbol],
+        leftAccessoryStyle: [$leftAccessoryStyle],
+    },
+};

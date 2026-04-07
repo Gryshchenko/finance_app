@@ -9,7 +9,7 @@ import { IncomeFields } from '@/components/income/IncomeFields';
 import { useInvalidateQuery } from '@/hooks/useAppQuery';
 import { useEditView } from '@/hooks/useEditView';
 import { incomeEditSchema } from '@/schems/validationSchemas';
-import { GeneralApiProblemKind } from '@/services/api/apiProblem';
+import { buildGeneralApiBaseHandler, GeneralApiProblemKind, parseServerErrors } from '@/services/api/apiProblem';
 import { IncomeService } from '@/services/IncomeService';
 import { InvalidationGroups } from '@/services/QueryCacheService';
 import ToastService from '@/services/ToastService';
@@ -23,7 +23,7 @@ export const IncomeEdit: FC<IIncomePros> = function IncomeEdit(_props) {
     const { data } = _props;
     const navigation = useNavigation();
     const invalidateQuery = useInvalidateQuery();
-    const { form, handleChange, save, errors } = useEditView<Partial<IIncome>>(data!, incomeEditSchema);
+    const { form, handleChange, save, errors, setErrors } = useEditView<Partial<IIncome>>(data!, incomeEditSchema);
 
     const handlePatch = async () => {
         const incomeService = IncomeService.instance();
@@ -40,16 +40,22 @@ export const IncomeEdit: FC<IIncomePros> = function IncomeEdit(_props) {
             });
             await invalidateQuery(InvalidationGroups.income(form.incomeId));
             navigation.goBack();
+        } else if (response.kind === GeneralApiProblemKind.BadData) {
+            const { fieldErrors, hasNonFieldErrors } = parseServerErrors(response.errors);
+            if (Object.keys(fieldErrors).length > 0) {
+                setErrors(fieldErrors as any);
+            }
+            if (hasNonFieldErrors) {
+                ToastService.error({ title: 'common:error', message: 'common:updateAccountFailed' });
+            }
         } else {
-            ToastService.error({
-                title: 'common:error',
-                message: 'common:updateAccountFailed',
-            });
+            buildGeneralApiBaseHandler(response);
         }
     };
 
     const handleSave = async () => {
-        await save();
+        const isValid = await save();
+        if (!isValid) return;
         await handlePatch();
     };
     if (!data) {

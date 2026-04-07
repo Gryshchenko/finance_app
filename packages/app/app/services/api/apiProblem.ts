@@ -1,5 +1,5 @@
 import { ApiResponse } from 'apisauce';
-import { IResponse } from 'tenpercent/shared';
+import { IResponse, IResponseError } from 'tenpercent/shared';
 import { HttpCode } from 'tenpercent/shared';
 import { ResponseStatusType } from 'tenpercent/shared';
 
@@ -108,6 +108,32 @@ export function buildGeneralApiBadData(error: BaseError): GeneralApiProblem {
         status: ResponseStatusType.APP,
         errors: [error.build()],
     };
+}
+
+/**
+ * Splits a server error array into field-level errors (mapped to form keys)
+ * and non-field errors (to be shown as a toast).
+ *
+ * Field errors use the generic `validation:required` i18n key as a placeholder.
+ * Callers may override the key by inspecting `IResponseError.errorCode` themselves.
+ */
+export function parseServerErrors(errors: IResponseError[] | undefined): {
+    fieldErrors: Record<string, TxKeyPath>;
+    hasNonFieldErrors: boolean;
+} {
+    const fieldErrors: Record<string, TxKeyPath> = {};
+    let hasNonFieldErrors = !errors || errors.length === 0;
+
+    for (const error of errors ?? []) {
+        const field = error.payload?.field as string | undefined;
+        if (field) {
+            fieldErrors[field] = 'validation:required' as TxKeyPath;
+        } else {
+            hasNonFieldErrors = true;
+        }
+    }
+
+    return { fieldErrors, hasNonFieldErrors };
 }
 
 export function buildGeneralApiBaseHandler(

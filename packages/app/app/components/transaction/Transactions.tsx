@@ -7,6 +7,7 @@ import { ITransactionListItem } from 'tenpercent/shared';
 import { EmptyState } from '@/components/EmptyState';
 import { Text } from '@/components/Text';
 import TransactionSectionList, { fetchTransactionType } from '@/components/transaction/TransactionSectionList';
+import { TransactionStatsBar } from '@/components/transaction/TransactionStatsBar';
 import { translate } from '@/i18n/translate';
 import { useAppTheme } from '@/theme/context';
 import { ThemedStyle } from '@/theme/types';
@@ -28,6 +29,10 @@ export const Transactions: FC<ITransactionsPros> = function Transactions(_props)
 
     return (
         <View style={themed([$container])}>
+            <View style={$statsBarWrapper}>
+                <TransactionStatsBar />
+            </View>
+
             <View style={themed([$header])}>
                 <Text style={themed([$headerLabel])} text={translate('transactionScreen:recentActivity' as const)} />
             </View>
@@ -45,6 +50,10 @@ const $container: ThemedStyle<ViewStyle> = () => ({
 const $containerStyleOverride: ThemedStyle<ViewStyle> = () => ({
     margin: 'auto',
 });
+
+const $statsBarWrapper: ViewStyle = {
+    marginBottom: 24,
+};
 
 const $header: ThemedStyle<ViewStyle> = ({ colors }) => ({
     alignItems: 'flex-end',

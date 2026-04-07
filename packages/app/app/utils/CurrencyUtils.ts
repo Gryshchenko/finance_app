@@ -2,9 +2,18 @@ import { format } from 'numerable';
 import { en } from 'numerable/locale';
 
 export class CurrencyUtils {
+    public static getSymbol(currency: string): string {
+        try {
+            const parts = new Intl.NumberFormat(undefined, { style: 'currency', currency }).formatToParts(0);
+            return parts.find((p) => p.type === 'currency')?.value ?? currency;
+        } catch {
+            return currency;
+        }
+    }
+
     public static formatWithDelimiter(
         value: string | number,
-        currency: string,
+        currency: string | undefined,
         fractionDigits = 2,
         useShort: boolean = false,
     ): string {

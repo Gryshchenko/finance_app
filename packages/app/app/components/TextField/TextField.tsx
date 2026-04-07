@@ -109,6 +109,10 @@ export interface TextFieldProps extends Omit<TextInputProps, 'ref'> {
      */
     inputWrapperStyle?: StyleProp<ViewStyle>;
     /**
+     * Style overrides for the left accessory
+     */
+    leftAccessoryStyle?: StyleProp<ViewStyle>;
+    /**
      * If `true`, the field will automatically receive focus when mounted.
      * Uses a `useEffect` + ref-based focus for reliable behaviour across platforms.
      * An optional small `focusDelay` (ms) can be used to postpone the focus call
@@ -161,6 +165,7 @@ export const TextField = forwardRef(function TextField(props: TextFieldProps, re
         style: $inputStyleOverride,
         containerStyle: $containerStyleOverride,
         inputWrapperStyle: $inputWrapperStyleOverride,
+        leftAccessoryStyle: $leftAccessoryStyleOverride,
         focusOnMount = false,
         focusDelay = 0,
         ...TextInputProps
@@ -203,6 +208,7 @@ export const TextField = forwardRef(function TextField(props: TextFieldProps, re
         RightAccessory && { paddingEnd: 0 },
         $inputWrapperStyleOverride,
     ];
+    const $leftAccessoryStyle = [$leftAccessoryDefaultStyle, $leftAccessoryStyleOverride];
 
     const $inputStyles: ThemedStyleArray<TextStyle> = [
         ...presetStyles.input,
@@ -300,7 +306,7 @@ const $rightAccessoryStyle: ThemedStyle<ViewStyle> = ({ colors }) => ({
     marginHorizontal: 10,
 });
 
-const $leftAccessoryStyle: ThemedStyle<ViewStyle> = ({ spacing }) => ({
+const $leftAccessoryDefaultStyle: ThemedStyle<ViewStyle> = ({ spacing }) => ({
     marginStart: spacing.xs,
     height: 40,
     justifyContent: 'center',

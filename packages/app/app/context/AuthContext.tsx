@@ -14,7 +14,7 @@ export interface AuthContextType {
     isUserConfirmed: boolean;
     doSetUserConfirmed: () => void;
     doLogout: () => Promise<boolean>;
-    doLogin: ({ email, password }: { email: string; password: string }) => Promise<boolean>;
+    doLogin: ({ email, password }: { email: string; password: string }) => Promise<GeneralApiProblem>;
     doSignUp: ({
         password,
         email,
@@ -126,29 +126,33 @@ export const AuthProvider: FC<PropsWithChildren<AuthProviderProps>> = ({ childre
         [],
     );
 
-    const doLogin = useCallback(async ({ password, email }: { password: string; email: string }) => {
+    const doLogin = useCallback(async ({ password, email }: { password: string; email: string }): Promise<GeneralApiProblem> => {
         const response = await AuthService.instance().login({
             password,
             email,
         });
         switch (response.kind) {
             case GeneralApiProblemKind.Ok: {
-                const { userId, token, tokenLong, status, email } = response.data as IUserClient;
+                const { userId, token, tokenLong, status, email: userEmail } = response.data as IUserClient;
                 const result = await doAuthorize({
                     userId,
                     token,
                     tokenLong,
-                    email,
+                    email: userEmail,
                     status,
                 });
-                return result;
+                if (!result) {
+                    return { kind: GeneralApiProblemKind.Unknown, temporary: true };
+                }
+                return { ...response, data: null, status: ResponseStatusType.OK, errors: undefined };
             }
             case GeneralApiProblemKind.BadData: {
-                return false;
+                // Return as-is — LoginScreen maps payload.field → field error highlight
+                return response;
             }
             default: {
                 buildGeneralApiBaseHandler(response);
-                return false;
+                return response;
             }
         }
     }, []);

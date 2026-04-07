@@ -32,10 +32,11 @@ export function useEditView<T extends object>(initialData: T, schema?: Yup.Objec
         }
     };
 
-    const save = async (cb?: (data: Partial<T>) => Promise<void> | void) => {
+    const save = async (cb?: (data: Partial<T>) => Promise<void> | void): Promise<boolean> => {
         const isValid = await validate();
-        if (!isValid) return;
+        if (!isValid) return false;
         cb?.(form);
+        return true;
     };
 
     return {

@@ -13,6 +13,8 @@ import { TextField, type TextFieldAccessoryProps } from '@/components/TextField'
 import { useAuth } from '@/context/AuthContext';
 import { TxKeyPath } from '@/i18n';
 import type { AppStackScreenProps } from '@/navigators/AppNavigator';
+import { GeneralApiProblemKind, parseServerErrors } from '@/services/api/apiProblem';
+import ToastService from '@/services/ToastService';
 import { useAppTheme } from '@/theme/context';
 import type { ThemedStyle } from '@/theme/types';
 import { validateEmail, validatePassword } from '@/utils/validation';
@@ -47,14 +49,24 @@ export const LoginScreen: FC<LoginScreenProps> = (_props) => {
         if (emailErr || passwordErr) {
             return;
         }
-        const result = await doLogin({
+
+        const response = await doLogin({
             password: authPassword as string,
             email: authEmail as string,
         });
-        if (result) {
+
+        if (response.kind === GeneralApiProblemKind.Ok) {
             setAuthEmail('');
             setAuthPassword('');
+        } else if (response.kind === GeneralApiProblemKind.BadData) {
+            const { fieldErrors, hasNonFieldErrors } = parseServerErrors(response.errors);
+            if (fieldErrors.email) setEmailError(fieldErrors.email as TxKeyPath);
+            if (fieldErrors.password) setPasswordError(fieldErrors.password as TxKeyPath);
+            if (hasNonFieldErrors) {
+                ToastService.error({ message: 'errorCode:UNKNOWN_ERROR' });
+            }
         }
+        // Server / Timeout / etc. — toast already shown by buildGeneralApiBaseHandler in AuthContext
     }
 
     const PasswordRightAccessory: ComponentType<TextFieldAccessoryProps> = useMemo(

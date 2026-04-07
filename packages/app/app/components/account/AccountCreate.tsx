@@ -7,7 +7,7 @@ import { useInvalidateQuery } from '@/hooks/useAppQuery';
 import { useEditView } from '@/hooks/useEditView';
 import { accountCreateSchema } from '@/schems/validationSchemas';
 import { AccountService } from '@/services/AccountService';
-import { GeneralApiProblemKind } from '@/services/api/apiProblem';
+import { buildGeneralApiBaseHandler, GeneralApiProblemKind, parseServerErrors } from '@/services/api/apiProblem';
 import { InvalidationGroups } from '@/services/QueryCacheService';
 import ToastService from '@/services/ToastService';
 import { OverviewPath } from '@/types/OverviewPath';
@@ -15,7 +15,7 @@ import { OverviewPath } from '@/types/OverviewPath';
 export const AccountCreate: FC = function AccountCreate(_props) {
     const navigation = useNavigation();
     const invalidateQuery = useInvalidateQuery();
-    const { form, handleChange, save, errors } = useEditView<Partial<IAccount>>(
+    const { form, handleChange, save, errors, setErrors } = useEditView<Partial<IAccount>>(
         {
             accountName: '',
             currencyId: 1,
@@ -44,16 +44,22 @@ export const AccountCreate: FC = function AccountCreate(_props) {
         if (response.kind === GeneralApiProblemKind.Ok) {
             await invalidateQuery(InvalidationGroups.account());
             navigation.getParent()?.navigate(OverviewPath.Dashboard);
+        } else if (response.kind === GeneralApiProblemKind.BadData) {
+            const { fieldErrors, hasNonFieldErrors } = parseServerErrors(response.errors);
+            if (Object.keys(fieldErrors).length > 0) {
+                setErrors(fieldErrors as any);
+            }
+            if (hasNonFieldErrors) {
+                ToastService.error({ message: 'errorCode:UNKNOWN_ERROR' });
+            }
         } else {
-            ToastService.error({
-                message: 'errorCode:UNKNOWN_ERROR',
-                systemMessage: `response kind: ${response.kind}, on create account with name: ${form.accountName}, currencyId: ${form.currencyId}, iconId: ${form.iconId}`,
-            });
+            buildGeneralApiBaseHandler(response);
         }
     };
 
     const handleSave = async () => {
-        await save();
+        const isValid = await save();
+        if (!isValid) return;
         await handleCreate();
     };
 

@@ -10,7 +10,7 @@ import { useAppQuery, useInvalidateQuery } from '@/hooks/useAppQuery';
 import { useEditView } from '@/hooks/useEditView';
 import { ITransactionClient } from '@/interfaces/ITransactionClient';
 import { buildTransactionCreateSchema } from '@/schems/validationSchemas';
-import { GeneralApiProblemKind } from '@/services/api/apiProblem';
+import { buildGeneralApiBaseHandler, GeneralApiProblemKind, parseServerErrors } from '@/services/api/apiProblem';
 import { ExchangeService } from '@/services/ExchangeService';
 import { InvalidationGroups, QueryKeys, QueryStaleTimes } from '@/services/QueryCacheService';
 import ToastService from '@/services/ToastService';
@@ -50,7 +50,7 @@ export const TransactionCreate: FC<IProps> = function TransactionCreate(_props: 
     const navigation = useNavigation();
     const invalidateQuery = useInvalidateQuery();
 
-    const { form, handleChange, save, errors } = useEditView<Partial<ITransactionClient>>(
+    const { form, handleChange, save, errors, setErrors } = useEditView<Partial<ITransactionClient>>(
         {
             amount: 0,
             amountInCurrency: 0,
@@ -93,17 +93,23 @@ export const TransactionCreate: FC<IProps> = function TransactionCreate(_props: 
         if (response.kind === GeneralApiProblemKind.Ok) {
             await invalidateQuery(InvalidationGroups.transaction());
             navigation.getParent()?.navigate(OverviewPath.Dashboard);
+        } else if (response.kind === GeneralApiProblemKind.BadData) {
+            const { fieldErrors, hasNonFieldErrors } = parseServerErrors(response.errors);
+            if (Object.keys(fieldErrors).length > 0) {
+                setErrors(fieldErrors as any);
+            }
+            if (hasNonFieldErrors) {
+                ToastService.error({ message: 'errorCode:UNKNOWN_ERROR' });
+            }
         } else {
-            ToastService.error({
-                message: 'errorCode:UNKNOWN_ERROR',
-                systemMessage: `response kind: ${response.kind}, on create transaction`,
-            });
+            buildGeneralApiBaseHandler(response);
         }
     };
 
     const handleSave = async () => {
         try {
-            await save();
+            const isValid = await save();
+            if (!isValid) return;
             await handleCreate();
         } catch {
             Logger.Of('TransactionCreate').info('Validation error');
