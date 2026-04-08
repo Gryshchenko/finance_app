@@ -12,6 +12,7 @@
         "skipLibCheck": true,
         "forceConsistentCasingInFileNames": true,
         "esModuleInterop": true,
+        "types": ["jest"],
         "paths": {
             "translationsKeys/*": ["src/translationsKeys/*"],
             "interfaces/*": ["src/interfaces/*"],
@@ -29,7 +30,7 @@
         "require": ["tsconfig-paths/register"]
     },
     "files": ["./types.d.ts"],
-    "include": ["src/**/*"],
+    "include": ["src/**/*", "**/*.test.ts", "**/*.spec.ts"],
     "exclude": ["node_modules", "dist"],
     "types": ["node"],
     "references": [{ "path": "../shared" }]

@@ -32,7 +32,7 @@ const confirmChangeValidationRules = [
 ];
 
 const refreshConfirmationCodeValidationRules = [
-    ...createSignupValidationRules('confirmationId', 'number', { min: 0, max: Number.MAX_SAFE_INTEGER }),
+    ...createSignupValidationRules('confirmationId', 'number', { min: 1, max: Number.MAX_SAFE_INTEGER }),
 ];
 
 export {

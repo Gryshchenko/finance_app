@@ -71,7 +71,4 @@ userRouter.use('/:userId/stats', userIdVerify, routesInputValidation([validatePa
 
 userRouter.use('/:userId/balance', userIdVerify, routesInputValidation([validatePathQueryProperty('userId')]), balance);
 
-// userRouter.use('/:userId/email-change', userIdVerify, routesInputValidation([validatePathQueryProperty('userId')]), emailConfirmation);
-// userRouter.use('/:userId/email-change/verify', userIdVerify, routesInputValidation([validatePathQueryProperty('userId')]), emailConfirmation);
-
 export default userRouter;

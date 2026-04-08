@@ -1,16 +1,15 @@
 import { IBalanceDataAccess } from 'interfaces/IBalanceDataAccess';
 import { IBalanceService } from 'interfaces/IBalanceService';
 import { LoggerBase } from 'helper/logger/LoggerBase';
-import { IBalance } from '../../../../shared/src/interfaces/IBalance';
 import { IDBTransaction } from 'interfaces/IDatabaseConnection';
-import { IProfileService } from 'interfaces/IProfileService';
-import { Utils } from 'tenpercent/shared';
+import { IBalance, Utils } from 'tenpercent/shared';
 import { IRate } from '../../../../shared/src/interfaces/IRate';
 import { CustomError } from 'src/utils/errors/CustomError';
 import { HttpCode } from 'tenpercent/shared';
 import { ErrorCode } from 'tenpercent/shared';
 import { IExchangeRateService } from 'interfaces/IExchangeRateService';
 import { ICurrencyService } from 'interfaces/ICurrencyService';
+import { IProfileService } from 'services/profile/ProfileService';
 
 export default class BalanceService extends LoggerBase implements IBalanceService {
     private readonly _balanceDataAccess: IBalanceDataAccess;

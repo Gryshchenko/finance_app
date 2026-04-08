@@ -103,7 +103,7 @@ export class ProfileController {
             const userFromSession = req.user as IUser;
             const { confirmationCode } = req.body;
             await ProfileServiceBuilder.build().confirmPasswordChange(userFromSession.userId, Number(confirmationCode));
-            await AuthServiceBuilder.build().logout(token);
+            await AuthServiceBuilder.build().logout(token as string);
             res.status(HttpCode.NO_CONTENT).json(responseBuilder.setStatus(ResponseStatusType.OK).setData({}).build());
         } catch (e: unknown) {
             ProfileController.logger.error(`Confirm password change failed due reason: ${(e as { message: string }).message}`);

@@ -14,14 +14,14 @@ import { getConfig } from 'src/config/config';
 import { CustomError } from 'src/utils/errors/CustomError';
 import { ValidationError } from 'src/utils/errors/ValidationError';
 
-import { randomBytes } from 'crypto';
 import { HttpCode } from 'tenpercent/shared';
+import { ConfirmationHelper } from 'services/confirmation/ConfirmationHelper';
 import { Utils } from 'tenpercent/shared';
 import { UserStatus } from 'tenpercent/shared';
 import { IEmailVerifyResponse } from 'tenpercent/shared';
 import { IUserService } from 'services/user/UserService';
 
-const CONFIRMATION_MAIL_EXPIRED_TIME = [0, 10, 0];
+const CONFIRMATION_MAIL_EXPIRED_TIME: [number, number, number] = [0, 10, 0];
 
 export default class EmailConfirmationService extends LoggerBase implements IEmailConfirmationService {
     protected emailConfirmationDataAccess: IEmailConfirmationDataAccess;
@@ -43,12 +43,6 @@ export default class EmailConfirmationService extends LoggerBase implements IEma
         this.mailService = emailService;
         this.mailTemplateService = mailTemplateService;
         this.userService = userService;
-    }
-
-    private createConfirmationKey(): number {
-        const buffer = randomBytes(4);
-        const number = buffer.readUInt32BE(0);
-        return Number(number.toString().padStart(8, '0').substring(0, 8));
     }
 
     private async sendMail(email: string, confirmationCode: number): Promise<unknown> {
@@ -80,7 +74,7 @@ export default class EmailConfirmationService extends LoggerBase implements IEma
 
     public async createEmailConfirmation(userId: number, email: string, trx?: IDBTransaction): Promise<IEmailConfirmationData> {
         try {
-            const confirmationCode: number = this.createConfirmationKey();
+            const confirmationCode: number = ConfirmationHelper.generateCode();
             const userConfirmationData = await this.emailConfirmationDataAccess.getUserConfirmation(userId, email);
             const userConfirmationDataInWork = userConfirmationData as IEmailConfirmationData;
             if (!Utils.isObjectEmpty(userConfirmationDataInWork as unknown as Record<string, unknown>)) {
@@ -88,9 +82,7 @@ export default class EmailConfirmationService extends LoggerBase implements IEma
                     requirePending: true,
                 });
             }
-            const timeManager = new TimeManagerUTC();
-            timeManager.addTime(...CONFIRMATION_MAIL_EXPIRED_TIME);
-            const expiresAt = timeManager.getCurrentTime();
+            const expiresAt = ConfirmationHelper.createExpiresAt(CONFIRMATION_MAIL_EXPIRED_TIME);
             return await this.emailConfirmationDataAccess.createUserConfirmation(
                 userId,
                 email,
@@ -129,10 +121,8 @@ export default class EmailConfirmationService extends LoggerBase implements IEma
         const userConfirmationDataInWork = userConfirmationData as IEmailConfirmationData;
         await this.validateConfirmation(userConfirmationDataInWork, { requirePending: true, checkIsExpired: false });
 
-        const timeManager = new TimeManagerUTC();
-        timeManager.addTime(...CONFIRMATION_MAIL_EXPIRED_TIME);
-        const newTime = timeManager.getCurrentTime();
-        const confirmationCode: number = this.createConfirmationKey();
+        const newTime = ConfirmationHelper.createExpiresAt(CONFIRMATION_MAIL_EXPIRED_TIME);
+        const confirmationCode: number = ConfirmationHelper.generateCode();
         await this.emailConfirmationDataAccess.patchUserConfirmation(
             userId,
             email,

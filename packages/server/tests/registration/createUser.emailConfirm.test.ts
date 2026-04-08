@@ -8,9 +8,8 @@ import {
 } from '../TestsUtils.';
 import DatabaseConnection from '../../src/repositories/DatabaseConnection';
 import config from '../../src/config/dbConfig';
-import { LanguageType } from 'tenpercent/shared';
+import { ErrorCode, LanguageType } from 'tenpercent/shared';
 import { HttpCode } from 'tenpercent/shared';
-import { ErrorCode } from 'tenpercent/shared';
 import TimeManagerUTC from '../../src/utils/TimeManagerUTC';
 import { EmailConfirmationStatusType } from 'tenpercent/shared';
 

@@ -32,14 +32,14 @@ router.post(
 );
 
 router.post(
-    '/email-change/confirm',
+    '/email-change/verify',
     sanitizeRequestBody(['confirmationCode']),
     validateQuery({}),
     routesInputValidation(confirmChangeValidationRules),
     ProfileController.confirmEmailChange,
 );
 router.post(
-    '/email-change/refresh',
+    '/email-change/resend',
     sanitizeRequestBody(['confirmationId']),
     validateQuery({}),
     routesInputValidation(refreshConfirmationCodeValidationRules),
@@ -55,7 +55,7 @@ router.post(
 );
 
 router.post(
-    '/password-change/confirm',
+    '/password-change/verify',
     sanitizeRequestBody(['confirmationCode']),
     validateQuery({}),
     routesInputValidation(confirmChangeValidationRules),
@@ -63,7 +63,7 @@ router.post(
 );
 
 router.post(
-    '/password-change/refresh',
+    '/password-change/resend',
     sanitizeRequestBody(['confirmationId']),
     validateQuery({}),
     routesInputValidation(refreshConfirmationCodeValidationRules),

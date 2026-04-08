@@ -91,14 +91,16 @@ const createUserBase = async ({
     email = generateRandomEmail(),
     publicName = generateRandomName(),
     locale = LanguageType.US,
+    currencyCode = 'USD',
 }: {
     agent: Agent;
     password?: string;
     email?: string;
     locale?: LanguageType;
     publicName?: string;
+    currencyCode?: string;
 }): Promise<{ userId: number; authorization: string; longToken: string; token: string }> => {
-    const { body, header } = await agent.post('/register/signup').send({ email, password, locale, publicName });
+    const { body, header } = await agent.post('/register/signup').send({ email, password, locale, publicName, currencyCode });
     const {
         data: { userId, token, tokenLong },
     } = body;
@@ -120,6 +122,7 @@ export const createUser = async ({
     publicName = generateRandomName(),
     locale = LanguageType.US,
     databaseConnection = new DatabaseConnection(config),
+    currencyCode = 'USD',
 }: {
     agent: Agent;
     password?: string;
@@ -127,6 +130,7 @@ export const createUser = async ({
     locale?: LanguageType;
     publicName?: string;
     databaseConnection?: IDatabaseConnection;
+    currencyCode?: string;
 }): Promise<{ userId: number; authorization: string; longToken: string }> => {
     const { userId, authorization, longToken } = await createUserBase({
         agent,
@@ -134,6 +138,7 @@ export const createUser = async ({
         email,
         publicName,
         locale,
+        currencyCode,
     });
     expect(userId).toEqual(expect.any(Number));
     const confirm = await databaseConnection.engine()('email_confirmations').select('*').where({ userId, email }).first();

@@ -42,12 +42,14 @@ export function createSignupValidationRules(field: string, type: string, options
     } else if (type === 'password') {
         validatorChain = validatorChain.isStrongPassword().withMessage(`Field ${field} must be a strong password`);
     } else if (type === 'number') {
+        const numMin = options.min ?? Number.MIN_SAFE_INTEGER;
+        const numMax = options.max ?? Number.MAX_SAFE_INTEGER;
         validatorChain = validatorChain
             .isNumeric()
             .withMessage(`Field ${field} must be a numeric value`)
             .bail()
-            .isFloat({ max: Number.MAX_SAFE_INTEGER, min: Number.MIN_SAFE_INTEGER })
-            .withMessage(`Field ${field} must be an integer between ${Number.MIN_SAFE_INTEGER} and ${Number.MAX_SAFE_INTEGER}`);
+            .isFloat({ min: numMin, max: numMax })
+            .withMessage(`Field ${field} must be a number between ${numMin} and ${numMax}`);
     } else if (type === 'string') {
         validatorChain = validatorChain.isString().withMessage(`Field ${field} must be a string`).bail();
         if (field === 'locale') {

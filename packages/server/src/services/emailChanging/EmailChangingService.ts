@@ -2,10 +2,9 @@ import { LoggerBase } from 'src/helper/logger/LoggerBase';
 import { IDBTransaction } from 'interfaces/IDatabaseConnection';
 import { ValidationError } from 'src/utils/errors/ValidationError';
 import { ErrorCode, HttpCode } from 'tenpercent/shared';
-import TimeManagerUTC from 'src/utils/TimeManagerUTC';
-import { randomBytes } from 'crypto';
 import { IEmailChangingDataAccess } from 'services/emailChanging/EmailChangingDataAccess';
 import { IUserService } from 'services/user/UserService';
+import { ConfirmationHelper } from 'services/confirmation/ConfirmationHelper';
 
 const CHANGE_CODE_EXPIRES_IN: [number, number, number] = [0, 10, 0];
 
@@ -25,12 +24,6 @@ export default class EmailChangingService extends LoggerBase implements IEmailCh
         this._userService = userService;
     }
 
-    private createConfirmationCode(): number {
-        const buffer = randomBytes(4);
-        const number = buffer.readUInt32BE(0);
-        return Number(number.toString().padStart(8, '0').substring(0, 8));
-    }
-
     public async request(
         userId: number,
         newEmail: string,
@@ -38,10 +31,8 @@ export default class EmailChangingService extends LoggerBase implements IEmailCh
     ): Promise<{ confirmationCode: number; expiresAt: Date }> {
         this._logger.info(`Email change requested for userId ${userId}`);
         try {
-            const timeManager = new TimeManagerUTC();
-            timeManager.addTime(...CHANGE_CODE_EXPIRES_IN);
-            const expiresAt = timeManager.getCurrentTime();
-            const confirmationCode = this.createConfirmationCode();
+            const expiresAt = ConfirmationHelper.createExpiresAt(CHANGE_CODE_EXPIRES_IN);
+            const confirmationCode = ConfirmationHelper.generateCode();
 
             await this._dataAccess.create(userId, newEmail, confirmationCode, expiresAt, trx);
 
@@ -66,14 +57,7 @@ export default class EmailChangingService extends LoggerBase implements IEmailCh
                 });
             }
 
-            if (record.confirmationCode !== confirmationCode) {
-                throw new ValidationError({
-                    message: 'Invalid confirmation code',
-                    errorCode: ErrorCode.EMAIL_CONFIRMATION_ERROR,
-                    statusCode: HttpCode.BAD_REQUEST,
-                    payload: { field: 'confirmationCode', reason: 'invalid' },
-                });
-            }
+            ConfirmationHelper.validateCode(record.confirmationCode, confirmationCode);
 
             await this._dataAccess.confirm(userId, trx);
             await this._userService.patch(userId, { email: record.email }, trx);
@@ -99,10 +83,8 @@ export default class EmailChangingService extends LoggerBase implements IEmailCh
                     },
                 });
             }
-            const timeManager = new TimeManagerUTC();
-            timeManager.addTime(...CHANGE_CODE_EXPIRES_IN);
-            const expiresAt = timeManager.getCurrentTime();
-            const confirmationCode = this.createConfirmationCode();
+            const expiresAt = ConfirmationHelper.createExpiresAt(CHANGE_CODE_EXPIRES_IN);
+            const confirmationCode = ConfirmationHelper.generateCode();
             await this._dataAccess.refresh(userId, confirmationId, confirmationCode, expiresAt);
             this._logger.info(`Refresh confirmation code email change send for userId ${userId}`);
             return true;

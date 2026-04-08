@@ -2,13 +2,12 @@ import { LoggerBase } from 'src/helper/logger/LoggerBase';
 import { IDatabaseConnection, IDBTransaction } from 'interfaces/IDatabaseConnection';
 import { ValidationError } from 'src/utils/errors/ValidationError';
 import { ErrorCode, HttpCode, Utils } from 'tenpercent/shared';
-import TimeManagerUTC from 'src/utils/TimeManagerUTC';
 import UserServiceUtils from 'src/services/user/UserServiceUtils';
-import { randomBytes } from 'crypto';
 import { IPasswordChangingDataAccess } from 'services/passwordChanging/PasswordChangingDataAccess';
 import { IUserService } from 'services/user/UserService';
 import { UnitOfWork } from 'src/repositories/UnitOfWork';
 import { CustomError } from 'src/utils/errors/CustomError';
+import { ConfirmationHelper } from 'services/confirmation/ConfirmationHelper';
 
 const CHANGE_CODE_EXPIRES_IN: [number, number, number] = [0, 10, 0];
 
@@ -28,12 +27,6 @@ export default class PasswordChangingService extends LoggerBase implements IPass
         this._dataAccess = dataAccess;
         this._userService = userService;
         this._db = db;
-    }
-
-    private createConfirmationCode(): number {
-        const buffer = randomBytes(4);
-        const number = buffer.readUInt32BE(0);
-        return Number(number.toString().padStart(8, '0').substring(0, 8));
     }
 
     public async request(
@@ -84,10 +77,8 @@ export default class PasswordChangingService extends LoggerBase implements IPass
                 });
             }
 
-            const timeManager = new TimeManagerUTC();
-            timeManager.addTime(...CHANGE_CODE_EXPIRES_IN);
-            const expiresAt = timeManager.getCurrentTime();
-            const confirmationCode = this.createConfirmationCode();
+            const expiresAt = ConfirmationHelper.createExpiresAt(CHANGE_CODE_EXPIRES_IN);
+            const confirmationCode = ConfirmationHelper.generateCode();
 
             // Hash the password now so we never store plain text.
             // Store both hash and salt so the same pair is applied to users on confirm.
@@ -131,14 +122,7 @@ export default class PasswordChangingService extends LoggerBase implements IPass
                 });
             }
 
-            if (record.confirmationCode !== confirmationCode) {
-                throw new ValidationError({
-                    message: 'Invalid confirmation code',
-                    errorCode: ErrorCode.AUTH_ERROR,
-                    statusCode: HttpCode.BAD_REQUEST,
-                    payload: { field: 'confirmationCode', reason: 'invalid' },
-                });
-            }
+            ConfirmationHelper.validateCode(record.confirmationCode, confirmationCode);
 
             await this._dataAccess.confirm(userId, record.id, trx);
             // Apply the exact hash+salt pair that was stored during request
@@ -168,10 +152,8 @@ export default class PasswordChangingService extends LoggerBase implements IPass
                     },
                 });
             }
-            const timeManager = new TimeManagerUTC();
-            timeManager.addTime(...CHANGE_CODE_EXPIRES_IN);
-            const expiresAt = timeManager.getCurrentTime();
-            const confirmationCode = this.createConfirmationCode();
+            const expiresAt = ConfirmationHelper.createExpiresAt(CHANGE_CODE_EXPIRES_IN);
+            const confirmationCode = ConfirmationHelper.generateCode();
             await this._dataAccess.refresh(userId, confirmationId, confirmationCode, expiresAt);
             this._logger.info(`Refresh confirmation code send for userId ${userId}`);
             return true;
