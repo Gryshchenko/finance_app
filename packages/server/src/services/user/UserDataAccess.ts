@@ -1,4 +1,3 @@
-import { IUserDataAccess } from 'interfaces/IUserDataAccess';
 import { IDatabaseConnection, IDBTransaction } from 'interfaces/IDatabaseConnection';
 import { IUser } from 'interfaces/IUser';
 import { LoggerBase } from 'src/helper/logger/LoggerBase';
@@ -16,6 +15,16 @@ import { isBaseError } from 'src/utils/errors/isBaseError';
 import { BaseError } from 'src/utils/errors/BaseError';
 import { UserStatus } from 'tenpercent/shared';
 
+export interface IUserDataAccess {
+    getUserAuthenticationData(email: string, trx?: IDBTransaction): Promise<IGetUserAuthenticationData | undefined>;
+    getUserAuthenticationDataById(id: number, trx?: IDBTransaction): Promise<IGetUserAuthenticationData | undefined>;
+    get(userId: number, trx?: IDBTransaction): Promise<IUserServer>;
+    create(email: string, password: string, salt: string, trx?: IDBTransaction): Promise<ICreateUserServer>;
+    patch(userId: number, properties: Partial<{ email: string; status: UserStatus }>, trx?: IDBTransaction): Promise<void>;
+    getUserEmail(userId: number, trx?: IDBTransaction): Promise<{ email: string } | undefined>;
+    updateUserPassword(userId: number, passwordHash: string, salt: string, trx?: IDBTransaction): Promise<boolean>;
+}
+
 export default class UserDataService extends LoggerBase implements IUserDataAccess {
     private readonly _db: IDatabaseConnection;
 
@@ -23,29 +32,34 @@ export default class UserDataService extends LoggerBase implements IUserDataAcce
         super();
         this._db = db;
     }
-    private async fetchUserDetails(userId: number): Promise<IUserServer> {
+    public async getUserAuthenticationDataById(
+        userId: number,
+        trx?: IDBTransaction,
+    ): Promise<IGetUserAuthenticationData | undefined> {
         try {
-            this._logger.info(`Fetching details for userId: ${userId}`);
-            const user = await this._db
-                .engine()<IUser>('users')
-                .select('users.email', 'users.userId', 'users.createdAt', 'users.updatedAt', 'users.status')
-                .where('users.userId', userId)
+            this._logger.info(`Getting authentication data for userId: ${userId}`);
+            const query = trx || this._db.engine();
+            const response = await query<{ userId: number }>('users')
+                .select('userId', 'email', 'salt', 'passwordHash')
+                .where({ userId })
                 .first();
-            this._logger.info(`User details fetched for userId: ${userId}`);
-            return user;
+            this._logger.info(`Authentication data retrieved for userId: ${userId}`);
+            return response || undefined;
         } catch (e) {
-            this._logger.error(`Error fetching details for userId: ${userId} - ${(e as { message: string }).message}`);
+            this._logger.error(
+                `Error retrieving authentication data for userId: ${userId} - ${(e as { message: string }).message}`,
+            );
             throw new DBError({
-                message: `Error fetching details for userId: ${userId} - ${(e as { message: string }).message}`,
+                message: `Error retrieving authentication data for userId: ${userId} - ${(e as { message: string }).message}`,
             });
         }
     }
 
-    public async getUserAuthenticationData(email: string): Promise<IGetUserAuthenticationData | undefined> {
+    public async getUserAuthenticationData(email: string, trx?: IDBTransaction): Promise<IGetUserAuthenticationData | undefined> {
         try {
             this._logger.info(`Getting authentication data for email: ${email}`);
-            const response = await this._db
-                .engine()<{ email: string }>('users')
+            const query = trx || this._db.engine();
+            const response = await query<{ email: string }>('users')
                 .select('userId', 'email', 'salt', 'passwordHash')
                 .where({ email })
                 .first();
@@ -61,9 +75,16 @@ export default class UserDataService extends LoggerBase implements IUserDataAcce
         }
     }
 
-    public async get(userId: number): Promise<IUserServer> {
+    public async get(userId: number, trx?: IDBTransaction): Promise<IUserServer> {
         try {
-            return await this.fetchUserDetails(userId);
+            this._logger.info(`Fetching details for userId: ${userId}`);
+            const query = trx || this._db.engine();
+            const user = await query<IUser>('users')
+                .select('users.email', 'users.userId', 'users.createdAt', 'users.updatedAt', 'users.status')
+                .where('users.userId', userId)
+                .first();
+            this._logger.info(`User details fetched for userId: ${userId}`);
+            return user;
         } catch (e) {
             this._logger.error(`Error fetching user by ID: ${userId} - ${(e as { message: string }).message}`);
             throw new DBError({ message: `Error fetching user by ID: ${userId} - ${(e as { message: string }).message}` });
@@ -91,10 +112,11 @@ export default class UserDataService extends LoggerBase implements IUserDataAcce
         }
     }
 
-    public async getUserEmail(userId: number): Promise<{ email: string } | undefined> {
+    public async getUserEmail(userId: number, trx?: IDBTransaction): Promise<{ email: string } | undefined> {
         try {
             this._logger.info(`Retrieving email for userId: ${userId}`);
-            const response = await this._db.engine()<IUser>('users').select('email').where({ userId }).first();
+            const query = trx || this._db.engine();
+            const response = await query<IUser>('users').select('email').where({ userId }).first();
             this._logger.info(`Email retrieved for userId: ${userId}`);
             return response || undefined;
         } catch (e) {
@@ -111,7 +133,7 @@ export default class UserDataService extends LoggerBase implements IUserDataAcce
             const query = trx || this._db.engine();
             const updatedCount = await query('users').where({ userId }).update({
                 email,
-                updatedAt: new Date(),
+                updatedAt: Time.getISODateNowUTC(),
             });
             if (updatedCount > 0) {
                 this._logger.info(`Email updated for userId: ${userId}`);
@@ -125,6 +147,30 @@ export default class UserDataService extends LoggerBase implements IUserDataAcce
             throw new DBError({ message: `Error updating email for userId: ${userId} - ${(e as { message: string }).message}` });
         }
     }
+    public async updateUserPassword(userId: number, passwordHash: string, salt: string, trx?: IDBTransaction): Promise<boolean> {
+        try {
+            this._logger.info(`Updating password for userId: ${userId}`);
+            const query = trx || this._db.engine();
+            const updatedCount = await query('users').where({ userId }).update({
+                passwordHash,
+                salt,
+                updatedAt: Time.getISODateNowUTC(),
+            });
+            if (updatedCount > 0) {
+                this._logger.info(`Password updated for userId: ${userId}`);
+                return true;
+            } else {
+                this._logger.info(`Password not updated for userId: ${userId}`);
+                return false;
+            }
+        } catch (e) {
+            this._logger.error(`Error updating password for userId: ${userId} - ${(e as { message: string }).message}`);
+            throw new DBError({
+                message: `Error updating password for userId: ${userId} - ${(e as { message: string }).message}`,
+            });
+        }
+    }
+
     public async patch(
         userId: number,
         properties: Partial<{ status: UserStatus; email: string }>,

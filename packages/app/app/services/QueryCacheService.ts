@@ -38,6 +38,12 @@ export const QueryKeys = {
     income: (id: number) => ['income', id] as const,
     category: (id: number) => ['category', id] as const,
     transaction: (id: number) => ['transaction', id] as const,
+
+    // ── User profile ──────────────────────────────────────────────────────
+    profile: () => ['profile'] as const,
+
+    // ── Static client config (public/config.json) ─────────────────────────
+    clientConfig: () => ['clientConfig'] as const,
 } as const;
 
 // ─── Stale Times (milliseconds) ──────────────────────────────────────────────
@@ -138,4 +144,9 @@ export const InvalidationGroups = {
         ];
         return id != null ? [...base, QueryKeys.transaction(id)] : base;
     },
+
+    /**
+     * Invalidate after a profile preference update (currency, language, public name).
+     */
+    profile: (): readonly (readonly unknown[])[] => [QueryKeys.profile()],
 } as const;

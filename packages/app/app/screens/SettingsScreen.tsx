@@ -1,22 +1,45 @@
 import { FC } from 'react';
 import { TextStyle } from 'react-native';
+import { useNavigation } from '@react-navigation/native';
 
+import { BackButton } from '@/components/BackButton';
+import { Header } from '@/components/Header';
 import { Screen } from '@/components/Screen';
-import { Text } from '@/components/Text';
+import { Settings } from '@/components/settings/Settings';
+import { translate } from '@/i18n/translate';
+import { DashboardPath } from '@/navigators/DashboardStackNavigator';
 import { MainTabScreenProps } from '@/navigators/OverviewNavigator';
-import { useAppTheme } from '@/theme/context';
 import { $styles } from '@/theme/styles';
-import type { ThemedStyle } from '@/theme/types';
+import { OverviewPath } from '@/types/OverviewPath';
 
 export const SettingsScreen: FC<MainTabScreenProps<'settings'>> = function SettingsScreen(_props) {
-    const { themed } = useAppTheme();
+    const navigation = useNavigation();
     return (
-        <Screen preset="scroll" contentContainerStyle={$styles.container} safeAreaEdges={['top']}>
-            <Text preset="heading" tx="common:settings" style={themed($title)} />
+        <Screen preset="fixed" contentContainerStyle={[$styles.screen, $topAlignScreen]} safeAreaEdges={['bottom']}>
+            <Header
+                title={translate('settingsScreen:name')}
+                titleMode="flex"
+                titleStyle={$rightAlignTitle}
+                LeftActionComponent={
+                    <BackButton
+                        onPress={() => {
+                            navigation.navigate(OverviewPath.Dashboard, { screen: DashboardPath.Overview });
+                        }}
+                    />
+                }
+                RightActionComponent={undefined}
+            />
+
+            <Settings />
         </Screen>
     );
 };
 
-const $title: ThemedStyle<TextStyle> = ({ spacing }) => ({
-    marginBottom: spacing.sm,
-});
+const $topAlignScreen: TextStyle = {
+    justifyContent: 'flex-start',
+};
+
+const $rightAlignTitle: TextStyle = {
+    textAlign: 'center',
+    textTransform: 'uppercase',
+};

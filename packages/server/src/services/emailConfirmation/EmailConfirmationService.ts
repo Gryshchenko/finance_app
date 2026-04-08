@@ -6,7 +6,6 @@ import { ErrorCode } from 'tenpercent/shared';
 import { IMailService } from 'interfaces/IMailService';
 import { IMailTemplateService } from 'interfaces/IMailTemplateService';
 import { TranslationKey } from 'types/TranslationKey';
-import { IUserService } from 'interfaces/IUserService';
 import { IEmailConfirmationData } from 'interfaces/IEmailConfirmationData';
 import Translations from 'src/services/translations/Translations';
 import TimeManagerUTC from 'src/utils/TimeManagerUTC';
@@ -20,6 +19,7 @@ import { HttpCode } from 'tenpercent/shared';
 import { Utils } from 'tenpercent/shared';
 import { UserStatus } from 'tenpercent/shared';
 import { IEmailVerifyResponse } from 'tenpercent/shared';
+import { IUserService } from 'services/user/UserService';
 
 const CONFIRMATION_MAIL_EXPIRED_TIME = [0, 10, 0];
 
@@ -285,8 +285,4 @@ export default class EmailConfirmationService extends LoggerBase implements IEma
             throw this.createExpiredCodeError();
         }
     }
-    // public async requestEmailChange(userId: number, newEmail: string, trx?: IDBTransaction): Promise<void> {
-    //
-    // }
-    // public async confirmEmailChange(userId: number, newEmail: string, confirmationCode: number, trx?: IDBTransaction): Promise<void> {}
 }

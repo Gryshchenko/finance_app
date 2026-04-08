@@ -1,5 +1,4 @@
 import { RoleType } from 'tenpercent/shared';
-import { IUserService } from 'interfaces/IUserService';
 import { LoggerBase } from 'src/helper/logger/LoggerBase';
 import { IAuthService } from 'interfaces/IAuthService';
 import { IUser } from 'interfaces/IUser';
@@ -16,6 +15,7 @@ import { JwtPayloadCustom } from 'services/auth/passport-setup';
 import TokenBlacklistBuilder from 'services/auth/TokenBlacklistBuilder';
 import { Time } from 'tenpercent/shared';
 import { Utils } from 'tenpercent/shared';
+import { IUserService } from 'services/user/UserService';
 
 export default class AuthService extends LoggerBase implements IAuthService {
     protected userService: IUserService;

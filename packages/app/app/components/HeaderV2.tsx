@@ -1,11 +1,13 @@
 import { View, Image, Pressable } from 'react-native';
 import { ViewStyle, TextStyle, ImageStyle } from 'react-native';
 import { MaterialIcons } from '@expo/vector-icons';
+import { useNavigation } from '@react-navigation/native';
 
 import { Text } from '@/components/Text';
 import { TxKeyPath } from '@/i18n/index';
 import { useAppTheme } from '@/theme/context';
 import { ThemedStyle } from '@/theme/types';
+import { OverviewPath } from '@/types/OverviewPath';
 
 interface Props {
     tx: TxKeyPath;
@@ -13,6 +15,7 @@ interface Props {
 
 export const HeaderV2: React.FC<Props> = ({ tx }) => {
     const { themed } = useAppTheme();
+    const navigation = useNavigation();
     return (
         <View style={themed($container)}>
             <View style={themed($left)}>
@@ -31,7 +34,10 @@ export const HeaderV2: React.FC<Props> = ({ tx }) => {
                 </View>
             </View>
 
-            <Pressable style={themed($notificationButton)}>
+            <Pressable
+                onPress={() => navigation.getParent()?.navigate(OverviewPath.Settings)}
+                style={themed($notificationButton)}
+            >
                 <MaterialIcons name="notifications" size={20} />
             </Pressable>
         </View>

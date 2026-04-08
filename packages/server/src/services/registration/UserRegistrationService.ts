@@ -1,4 +1,3 @@
-import { IUserService } from 'interfaces/IUserService';
 import { LoggerBase } from 'src/helper/logger/LoggerBase';
 import { IGroupService } from 'interfaces/IGroupService';
 import {
@@ -17,7 +16,6 @@ import { IMailService } from 'interfaces/IMailService';
 import { IMailTemplateService } from 'interfaces/IMailTemplateService';
 import { IEmailConfirmationService } from 'interfaces/IEmailConfirmationService';
 import { IUser } from 'interfaces/IUser';
-import { IProfileService } from 'interfaces/IProfileService';
 import TranslationsUtils from 'src/services/translations/TranslationsUtils';
 import Translations from 'src/services/translations/Translations';
 import TranslationLoaderImpl from 'src/services/translations/TranslationLoaderImpl';
@@ -37,6 +35,8 @@ import { getConfig } from 'src/config/config';
 import { IAccountService } from 'services/account/AccountService';
 import { ICategoryService } from 'services/category/CategoryService';
 import { IIncomeService } from 'services/income/IncomeService';
+import { IUserService } from 'services/user/UserService';
+import { IProfileService } from 'services/profile/ProfileService';
 
 interface IDefaultData {
     group: string;

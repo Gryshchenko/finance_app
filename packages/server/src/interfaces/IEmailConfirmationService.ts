@@ -9,6 +9,4 @@ export interface IEmailConfirmationService {
     confirmEmail(userId: number, email: string, confirmationCode: number, trx?: IDBTransaction): Promise<IEmailVerifyResponse>;
     getEmailConfirmation(userId: number, email: string): Promise<IEmailConfirmationData | undefined>;
     deleteEmailConfirmation(userId: number, email: string): Promise<boolean>;
-    // requestEmailChange(userId: number, newEmail: string, trx?: IDBTransaction): Promise<void>;
-    // confirmEmailChange(userId: number, newEmail: string, confirmationCode: number, trx?: IDBTransaction): Promise<void>;
 }

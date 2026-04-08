@@ -1,4 +1,3 @@
-import { IProfileDataAccess } from 'interfaces/IProfileDataAccess';
 import { IDatabaseConnection, IDBTransaction } from 'interfaces/IDatabaseConnection';
 import { LoggerBase } from 'src/helper/logger/LoggerBase';
 import { IProfile } from 'interfaces/IProfile';
@@ -8,6 +7,12 @@ import { DBError } from 'src/utils/errors/DBError';
 import { validateAllowedProperties } from 'src/utils/validation/validateAllowedProperties';
 import { getOnlyNotEmptyProperties } from 'src/utils/validation/getOnlyNotEmptyProperties';
 import { EmailConfirmationStatusType } from 'tenpercent/shared';
+
+export interface IProfileDataAccess {
+    post(data: ICreateProfile, trx?: IDBTransaction): Promise<IProfile | undefined>;
+    get(userId: number, trx?: IDBTransaction): Promise<IProfile | undefined>;
+    patch(userId: number, properties: Partial<IProfilePatchRequest>, trx?: IDBTransaction): Promise<boolean | undefined>;
+}
 
 export default class ProfileDataService extends LoggerBase implements IProfileDataAccess {
     private readonly _db: IDatabaseConnection;
