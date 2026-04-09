@@ -69,12 +69,12 @@ export default class BalanceDataAccess extends LoggerBase implements IBalanceDat
                     message: `Balance not found for userId: ${userId}`,
                 });
             } else {
-                this._logger.info(`Balance for userId: ${userId} patched successful`);
+                this._logger.info(`Balance for userId: ${userId} created successfully`);
             }
 
             return Number(data[0].balanceId);
         } catch (e) {
-            this._logger.error(`Failed to fetch balance for userId: ${userId}. Error: ${(e as { message: string }).message}`);
+            this._logger.error(`Failed to create balance for userId: ${userId}. Error: ${(e as { message: string }).message}`);
             throw new DBError({
                 message: `Post balance failed due to a database error: ${(e as { message: string }).message}`,
                 statusCode: isBaseError(e) ? (e as unknown as BaseError)?.getStatusCode() : undefined,
@@ -112,7 +112,7 @@ export default class BalanceDataAccess extends LoggerBase implements IBalanceDat
 
             return Number(data[0].balance);
         } catch (e) {
-            this._logger.error(`Failed to fetch balance for userId: ${userId}. Error: ${(e as { message: string }).message}`);
+            this._logger.error(`Failed to patch balance for userId: ${userId}. Error: ${(e as { message: string }).message}`);
             throw new DBError({
                 message: `Patch balance failed due to a database error: ${(e as { message: string }).message}`,
                 statusCode: isBaseError(e) ? (e as unknown as BaseError)?.getStatusCode() : undefined,

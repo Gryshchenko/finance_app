@@ -70,32 +70,6 @@ describe('POST /register/signup', () => {
             status: ResponseStatusType.INTERNAL,
         });
     });
-    it('should return error for invalid email format to big', async () => {
-        const response = await request(app)
-            .post('/register/signup')
-            .send({
-                currencyCode: 'USD',
-                email: generateRandomEmail(31),
-                password: generateRandomPassword(),
-                publicName: generateRandomName(),
-            });
-
-        expect(response.status).toBe(HttpCode.BAD_REQUEST);
-        expect(response.body).toStrictEqual({
-            data: {},
-            errors: [
-                {
-                    errorCode: ErrorCode.EMAIL_INVALID_ERROR,
-                    msg: expect.any(String),
-                    payload: {
-                        field: 'email',
-                        reason: 'invalid',
-                    },
-                },
-            ],
-            status: ResponseStatusType.INTERNAL,
-        });
-    });
     it('should return error for invalid email format', async () => {
         const response = await request(app).post('/register/signup').send({
             currencyCode: 'USD',

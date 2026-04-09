@@ -5,7 +5,7 @@ const loginValidationRules = [
         min: 5,
         max: 30,
     }),
-    ...createSignupValidationRules('email', 'email', { max: 30 }),
+    ...createSignupValidationRules('email', 'email', { max: 150 }),
 ];
 
 export default loginValidationRules;

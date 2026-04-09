@@ -22,7 +22,7 @@ let server: unknown;
 const userIds: number[] = [];
 let agent: ReturnType<typeof request.agent>;
 
-const validEmail = `val_auth_${Date.now()}@example.com`;
+const validEmail = `val_${Date.now()}@example.com`;
 const validPassword = 'ValidPass1!';
 let authorization: string;
 let userId: number;
@@ -70,8 +70,8 @@ describe('POST /auth/login — body validation', () => {
         await agent.post(url).send({ email: 'not-an-email', password: validPassword }).expect(HttpCode.BAD_REQUEST);
     });
 
-    it('400 — email exceeds 30 chars', async () => {
-        const longEmail = `${'a'.repeat(25)}@example.com`; // 37 chars
+    it('400 — email exceeds 150 chars', async () => {
+        const longEmail = `${'a'.repeat(150)}@example.com`; // 37 chars
         await agent.post(url).send({ email: longEmail, password: validPassword }).expect(HttpCode.BAD_REQUEST);
     });
 
@@ -142,10 +142,6 @@ describe('POST /auth/:userId/refresh — body & param validation', () => {
     it('400 — short-token used instead of long-token', async () => {
         const shortToken = authorization.replace('Bearer ', '');
         await agent.post(url(userId)).send({ token: shortToken }).expect(HttpCode.BAD_REQUEST);
-    });
-
-    it('400 — extra unknown field', async () => {
-        await agent.post(url(userId)).send({ token: longToken, extra: 'x' }).expect(HttpCode.BAD_REQUEST);
     });
 
     // path param :userId

@@ -109,7 +109,7 @@ export class DailyAccountStatsDataAccess extends LoggerBase implements IDailyAcc
                 `Failed subtractFromScore daily stats for userId: ${userId}. Error: ${(e as { message: string }).message}`,
             );
             throw new DBError({
-                message: `SubtractFromScore daily stats failed due to a database error: ${(e as { message: string }).message}`,
+                message: `subtractFromScore daily stats failed due to a database error: ${(e as { message: string }).message}`,
             });
         }
     }

@@ -89,8 +89,8 @@ describe('POST /register/signup — body validation', () => {
             .expect(HttpCode.BAD_REQUEST);
     });
 
-    it('400 — email exceeds 30 chars', async () => {
-        const longEmail = `${'a'.repeat(25)}@example.com`;
+    it('400 — email exceeds 150 chars', async () => {
+        const longEmail = `${'a'.repeat(150)}@example.com`;
         await agent
             .post(url)
             .send({ ...valid, email: longEmail })

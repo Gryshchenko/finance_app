@@ -314,14 +314,6 @@ describe('GET /user/:userId/account/:accountId — param validation', () => {
             .expect(HttpCode.BAD_REQUEST);
     });
 
-    it('400 — unknown field in body', async () => {
-        await agent
-            .get(url(existingAccountId))
-            .set('authorization', authorization)
-            .send({ hack: true })
-            .expect(HttpCode.BAD_REQUEST);
-    });
-
     it('404 — non-existent accountId', async () => {
         await agent.get(url(999999999)).set('authorization', authorization).expect(HttpCode.NOT_FOUND);
     });

@@ -184,7 +184,7 @@ export default class CategoryDataAccess extends LoggerBase implements ICategoryD
             return data;
         } catch (e) {
             this._logger.error(
-                `Failed to fetch category with categoryId: ${categoryId} for userId: ${userId}. Error: ${(e as { message: string }).message}`,
+                `Failed to patch category with categoryId: ${categoryId} for userId: ${userId}. Error: ${(e as { message: string }).message}`,
             );
             throw new DBError({
                 message: `Patch category failed due to a database error: ${(e as { message: string }).message}`,

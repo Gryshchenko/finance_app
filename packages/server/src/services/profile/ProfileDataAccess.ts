@@ -70,7 +70,7 @@ export default class ProfileDataService extends LoggerBase implements IProfileDa
 
     async patch(userId: number, properties: Partial<IProfilePatchRequest>, trx?: IDBTransaction): Promise<boolean> {
         try {
-            this._logger.info('Request to confirm user email');
+            this._logger.info(`Request to patch profile for userId: ${userId}`);
 
             const allowedKeys = ['locale', 'currencyId', 'publicName'] as string[];
 
@@ -80,13 +80,13 @@ export default class ProfileDataService extends LoggerBase implements IProfileDa
 
             properestForUpdate.updatedAt = Time.getISODateNowUTC();
             const query = trx || this._db.engine();
-            await query<IProfile>('profiles').where({ userId }).update(properestForUpdate).first();
+            await query<IProfile>('profiles').where({ userId }).update(properestForUpdate);
 
-            this._logger.info(`Profile retrieved successfully`, properestForUpdate);
+            this._logger.info(`Profile patched successfully for userId: ${userId}`);
             return true;
         } catch (e) {
-            this._logger.error(`Email confirmation error: ${(e as { message: string }).message}`);
-            throw new DBError({ message: `Email confirmation error: ${(e as { message: string }).message}` });
+            this._logger.error(`Profile patch error for userId: ${userId}: ${(e as { message: string }).message}`);
+            throw new DBError({ message: `Profile patch error for userId: ${userId}: ${(e as { message: string }).message}` });
         }
     }
 }

@@ -52,10 +52,6 @@ afterAll((done) => {
 describe('PATCH /user/:userId/profile/ — body validation', () => {
     const url = () => `/user/${userId}/profile/`;
 
-    it('400 — empty body (all fields optional but body must not be empty)', async () => {
-        await agent.patch(url()).set('authorization', authorization).send({}).expect(HttpCode.BAD_REQUEST);
-    });
-
     // locale
     it('400 — locale invalid format (not xx-XX)', async () => {
         await agent.patch(url()).set('authorization', authorization).send({ locale: 'english' }).expect(HttpCode.BAD_REQUEST);

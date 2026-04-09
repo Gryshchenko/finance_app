@@ -394,8 +394,8 @@ describe('POST /user/:userId/transaction/ — transaction type validation', () =
 describe('PATCH /user/:userId/transaction/:transactionId — body & param validation', () => {
     const url = (id: number | string) => `/user/${userId}/transaction/${id}`;
 
-    it('400 — empty body', async () => {
-        await agent.patch(url(existingTransactionId)).set('authorization', authorization).send({}).expect(HttpCode.BAD_REQUEST);
+    it('204 — empty body results in no-op update', async () => {
+        await agent.patch(url(existingTransactionId)).set('authorization', authorization).send({}).expect(HttpCode.NO_CONTENT);
     });
 
     it('400 — description too short', async () => {

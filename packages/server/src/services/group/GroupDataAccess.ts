@@ -17,7 +17,7 @@ export default class GroupDataAccess extends LoggerBase implements IGroupDataAcc
 
     public async createGroup(userId: number, groupName: string, trx?: IDBTransaction): Promise<IGroup> {
         try {
-            this._logger.info(`Starting account creating for userId: ${userId}`);
+            this._logger.info(`Starting group creation for userId: ${userId}`);
             const query = trx || this._db.engine();
             const data = await query('usergroups').insert({ userId, groupName }, ['userGroupId', 'userId', 'groupName']);
             this._logger.info(`Successfully created ${data[0].userGroupId} group for userId: ${userId}`);
@@ -25,7 +25,7 @@ export default class GroupDataAccess extends LoggerBase implements IGroupDataAcc
         } catch (e) {
             this._logger.error(`Failed to create group for userId: ${userId}. Error: ${(e as { message: string }).message}`);
             throw new DBError({
-                message: `Fetching group failed due to a database error: ${(e as { message: string }).message}`,
+                message: `Creating group failed due to a database error: ${(e as { message: string }).message}`,
             });
         }
     }

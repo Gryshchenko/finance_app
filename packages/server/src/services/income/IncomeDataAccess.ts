@@ -91,7 +91,7 @@ export default class IncomeDataAccess extends LoggerBase implements IIncomeDataA
         } catch (e) {
             this._logger.error(`Error creating incomes for userId ${userId}: ${(e as { message: string }).message}`);
             throw new DBError({
-                message: `Fetching incomes failed due to a database error: ${(e as { message: string }).message}`,
+                message: `Creating income failed due to a database error: ${(e as { message: string }).message}`,
             });
         }
     }
@@ -190,7 +190,7 @@ export default class IncomeDataAccess extends LoggerBase implements IIncomeDataA
             return data;
         } catch (e) {
             this._logger.error(
-                `Failed to fetch income with incomeId: ${incomeId} for userId: ${userId}. Error: ${(e as { message: string }).message}`,
+                `Failed to patch income with incomeId: ${incomeId} for userId: ${userId}. Error: ${(e as { message: string }).message}`,
             );
             throw new DBError({
                 message: `Patch income failed due to a database error: ${(e as { message: string }).message}`,

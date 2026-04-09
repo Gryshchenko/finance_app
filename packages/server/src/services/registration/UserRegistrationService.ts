@@ -240,7 +240,7 @@ export default class UserRegistrationService extends LoggerBase {
             await uow.commit();
         } catch (e) {
             await uow.rollback();
-            this._logger.info(`User  mail confirmation failed due to a server error: ${(e as { message: string }).message}`);
+            this._logger.error(`Email confirmation failed due to a server error: ${(e as { message: string }).message}`);
             throw e;
         }
     }
@@ -297,7 +297,9 @@ export default class UserRegistrationService extends LoggerBase {
             ]);
             return true;
         } catch (e) {
-            this._logger.info(`Failed create initial user data error: ${e}`, ErrorCode.SIGNUP_CREATE_INITIAL_DATA_ERROR);
+            this._logger.error(
+                `Failed to create initial data for userId: ${userId}. Error: ${(e as { message: string }).message}`,
+            );
             throw e;
         }
     }

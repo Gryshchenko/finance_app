@@ -38,7 +38,7 @@ export default class ExchangeRateDataAccess extends LoggerBase implements IExcha
             const response = await this._db.engine()('currencyRates').insert(records);
             return response.length === records.length;
         } catch (e) {
-            this._logger.info(
+            this._logger.error(
                 `Insert list of currencies rates for currency: ${baseCurrency} failed due reason: ${(e as { message: string }).message}`,
             );
             throw new DBError({
@@ -80,7 +80,7 @@ export default class ExchangeRateDataAccess extends LoggerBase implements IExcha
             await this._db.engine().raw(query, bindings);
             return true;
         } catch (e) {
-            this._logger.info(
+            this._logger.error(
                 `Updating list of currencies rates for currency: ${baseCurrency} failed due reason: ${(e as { message: string }).message}`,
             );
             throw new DBError({

@@ -5,7 +5,7 @@ const signupValidationRules = [
         min: 5,
         max: 30,
     }),
-    ...createSignupValidationRules('email', 'email', { max: 30 }),
+    ...createSignupValidationRules('email', 'email', { max: 150 }),
     ...createSignupValidationRules('locale', 'string', {
         min: 4,
         max: 6,

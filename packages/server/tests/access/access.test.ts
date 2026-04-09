@@ -49,6 +49,7 @@ describe('Access control', () => {
                 accountName: 'Main',
                 amount: 1000,
                 currencyId: 1,
+                iconId: 'test_icon',
             })
             .expect(HttpCode.OK);
 
@@ -60,6 +61,7 @@ describe('Access control', () => {
             .send({
                 categoryName: 'Groceries',
                 currencyId: 1,
+                iconId: 'test_icon',
             })
             .expect(HttpCode.OK);
 

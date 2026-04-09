@@ -2,6 +2,7 @@ import express from 'express';
 import { validateQuery } from 'src/utils/validation/validateQuery';
 // import { validateFromToDateQuery } from 'src/utils/validation/validateFromToDateQuery';
 import { StatsController } from 'controllers/StatsController';
+import { validateFromToDateQuery } from 'src/utils/validation/validateFromToDateQuery';
 
 const statsRouter = express.Router({ mergeParams: true });
 
@@ -12,6 +13,11 @@ const statsRouter = express.Router({ mergeParams: true });
 //     StatsController.timeseries,
 // );
 
-statsRouter.get('/summary', validateQuery({ from: 'date', to: 'date', period: 'string' }), StatsController.summary);
+statsRouter.get(
+    '/summary',
+    validateQuery({ from: 'date', to: 'date', period: 'string' }),
+    validateFromToDateQuery({ from: 'date', to: 'date' }),
+    StatsController.summary,
+);
 
 export { statsRouter };

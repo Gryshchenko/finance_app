@@ -155,7 +155,7 @@ export default class AccountDataAccess extends LoggerBase implements IAccountDat
             return data;
         } catch (e) {
             this._logger.error(
-                `Failed to fetch account with accountId: ${accountId} for userId: ${userId}. Error: ${(e as { message: string }).message}`,
+                `Failed to patch account with accountId: ${accountId} for userId: ${userId}. Error: ${(e as { message: string }).message}`,
             );
             throw new DBError({
                 message: `Patch account failed due to a database error: ${(e as { message: string }).message}`,

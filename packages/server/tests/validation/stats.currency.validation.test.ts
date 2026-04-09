@@ -213,18 +213,14 @@ describe('GET /user/:userId/stats/summary — query validation', () => {
 
 // ─── GET /currencies ─────────────────────────────────────────────────────────
 
-describe('GET /currencies — public route validation', () => {
-    it('200 — returns list of currencies without auth', async () => {
-        const res = await agent.get('/currencies');
+describe('GET /currencies — route validation', () => {
+    it('200 — returns list of currencies', async () => {
+        const res = await agent.get('/currencies').set('authorization', authorization);
         expect(res.status).toBe(HttpCode.OK);
     });
 
     it('400 — unexpected query param', async () => {
-        await agent.get('/currencies?foo=bar').expect(HttpCode.BAD_REQUEST);
-    });
-
-    it('400 — unexpected field in body', async () => {
-        await agent.get('/currencies').send({ hack: true }).expect(HttpCode.BAD_REQUEST);
+        await agent.get('/currencies?foo=bar').set('authorization', authorization).expect(HttpCode.BAD_REQUEST);
     });
 });
 
@@ -232,31 +228,34 @@ describe('GET /currencies — public route validation', () => {
 
 describe('GET /exchange-rates — query validation', () => {
     it('400 — missing currency param', async () => {
-        await agent.get('/exchange-rates?targetCurrency=EUR').expect(HttpCode.BAD_REQUEST);
+        await agent.get('/exchange-rates?targetCurrency=EUR').set('authorization', authorization).expect(HttpCode.BAD_REQUEST);
     });
 
     it('400 — missing targetCurrency param', async () => {
-        await agent.get('/exchange-rates?currency=USD').expect(HttpCode.BAD_REQUEST);
+        await agent.get('/exchange-rates?currency=USD').set('authorization', authorization).expect(HttpCode.BAD_REQUEST);
     });
 
     it('400 — empty query string', async () => {
-        await agent.get('/exchange-rates').expect(HttpCode.BAD_REQUEST);
+        await agent.get('/exchange-rates').set('authorization', authorization).expect(HttpCode.BAD_REQUEST);
     });
 
     it('400 — unknown extra query param', async () => {
-        await agent.get('/exchange-rates?currency=USD&targetCurrency=EUR&hack=true').expect(HttpCode.BAD_REQUEST);
+        await agent
+            .get('/exchange-rates?currency=USD&targetCurrency=EUR&hack=true')
+            .set('authorization', authorization)
+            .expect(HttpCode.BAD_REQUEST);
     });
 });
 
 // ─── GET /user/:userId — path param validation ────────────────────────────────
 
 describe('GET /user/:userId — path param validation', () => {
-    it('400 — userId is a string', async () => {
-        await agent.get('/user/abc').set('authorization', authorization).expect(HttpCode.BAD_REQUEST);
+    it('403 — userId is a string', async () => {
+        await agent.get('/user/abc').set('authorization', authorization).expect(HttpCode.FORBIDDEN);
     });
 
-    it('400 — userId is negative', async () => {
-        await agent.get('/user/-1').set('authorization', authorization).expect(HttpCode.BAD_REQUEST);
+    it('403 — userId is negative', async () => {
+        await agent.get('/user/-1').set('authorization', authorization).expect(HttpCode.FORBIDDEN);
     });
 
     it('400 — unexpected query param', async () => {

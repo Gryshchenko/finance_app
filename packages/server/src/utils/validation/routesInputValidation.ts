@@ -1,6 +1,6 @@
 import { NextFunction, Request, Response } from 'express';
 import { body, ValidationChain, validationResult } from 'express-validator';
-import { ResponseStatusType } from 'tenpercent/shared';
+import { HttpCode, ResponseStatusType } from 'tenpercent/shared';
 import { ErrorCode } from 'tenpercent/shared';
 import ResponseBuilder from 'src/helper/responseBuilder/ResponseBuilder';
 import Logger from 'helper/logger/Logger';
@@ -100,7 +100,7 @@ export default function routesInputValidation(
             }),
         );
 
-        res.status(400).json(responseBuilder.build());
+        res.status(HttpCode.BAD_REQUEST).json(responseBuilder.build());
     };
 }
 
