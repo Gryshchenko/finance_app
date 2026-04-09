@@ -1,6 +1,5 @@
-import { IEmailConfirmationDataAccess } from 'interfaces/IEmailConfirmationDataAccess';
+import { IEmailConfirmationDataAccess } from 'services/emailConfirmation/EmailConfirmationDataAccess';
 import { EmailConfirmationStatusType } from 'tenpercent/shared';
-import { IEmailConfirmationService } from 'interfaces/IEmailConfirmationService';
 import { LoggerBase } from 'src/helper/logger/LoggerBase';
 import { ErrorCode } from 'tenpercent/shared';
 import { IMailService } from 'interfaces/IMailService';
@@ -22,6 +21,15 @@ import { IEmailVerifyResponse } from 'tenpercent/shared';
 import { IUserService } from 'services/user/UserService';
 
 const CONFIRMATION_MAIL_EXPIRED_TIME: [number, number, number] = [0, 10, 0];
+
+export interface IEmailConfirmationService {
+    createEmailConfirmation(userId: number, email: string, trx?: IDBTransaction): Promise<IEmailConfirmationData>;
+    sendConfirmationEmail(userId: number, email: string, properties: IEmailConfirmationData): Promise<IEmailConfirmationData>;
+    resendConfirmationEmail(userId: number, email: string): Promise<{ expiresAt: string } | undefined>;
+    confirmEmail(userId: number, email: string, confirmationCode: number, trx?: IDBTransaction): Promise<IEmailVerifyResponse>;
+    getEmailConfirmation(userId: number, email: string): Promise<IEmailConfirmationData | undefined>;
+    deleteEmailConfirmation(userId: number, email: string): Promise<boolean>;
+}
 
 export default class EmailConfirmationService extends LoggerBase implements IEmailConfirmationService {
     protected emailConfirmationDataAccess: IEmailConfirmationDataAccess;

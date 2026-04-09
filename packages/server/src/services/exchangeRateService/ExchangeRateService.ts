@@ -2,10 +2,17 @@ import { IRateProvider } from 'interfaces/IRateProvider';
 import RateProviderBuilder from 'services/exchangeRateService/providers/RateProviderBuilder';
 import { Time, TimeDuration } from 'tenpercent/shared';
 import { LoggerBase } from 'helper/logger/LoggerBase';
-import { IExchangeRateService } from 'interfaces/IExchangeRateService';
-import { IExchangeRateDataAccess } from 'interfaces/IExchangeRateDataAccess';
-import { ICurrencyService } from 'interfaces/ICurrencyService';
+import { IExchangeRateDataAccess } from 'services/exchangeRateService/ExchangeRateDataAccess';
+import { ICurrencyService } from 'services/currency/CurrencyService';
 import { IRate } from '../../../../shared/src/interfaces/IRate';
+
+export interface IExchangeRateService {
+    updateCurrencyRates(): Promise<void>;
+    get(baseCurrency: string, targetCurrency: string): Promise<IRate | undefined>;
+    post(baseCurrency: string, targetCurrencies: Record<string, number>): Promise<boolean>;
+    patch(baseCurrency: string, targetCurrencies: Record<string, number>): Promise<boolean>;
+    gets(baseCurrency: string): Promise<IRate[] | undefined>;
+}
 
 export default class ExchangeRateService extends LoggerBase implements IExchangeRateService {
     private readonly _rateProvider: IRateProvider;

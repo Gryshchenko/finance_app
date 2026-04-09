@@ -26,6 +26,10 @@ const createCategoryValidationRules = [
         min: Number.MIN_SAFE_INTEGER,
         max: Number.MAX_SAFE_INTEGER,
     }),
+    ...createSignupValidationRules('iconId', 'string', {
+        min: 3,
+        max: 128,
+    }),
 ];
 
 const patchCategoryValidationRules = [
@@ -38,6 +42,11 @@ const patchCategoryValidationRules = [
         optional: true,
         min: 2,
         max: 3,
+    }),
+    ...createSignupValidationRules('iconId', 'string', {
+        optional: true,
+        min: 3,
+        max: 128,
     }),
 ];
 

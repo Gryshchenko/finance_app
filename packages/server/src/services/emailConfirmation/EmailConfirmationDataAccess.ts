@@ -1,4 +1,3 @@
-import { IEmailConfirmationDataAccess } from 'interfaces/IEmailConfirmationDataAccess';
 import { IDatabaseConnection, IDBTransaction } from 'interfaces/IDatabaseConnection';
 import { LoggerBase } from 'src/helper/logger/LoggerBase';
 import { IEmailConfirmationData } from 'interfaces/IEmailConfirmationData';
@@ -13,6 +12,28 @@ import { EmailConfirmationStatusType } from 'tenpercent/shared';
 
 import { validateAllowedProperties } from 'src/utils/validation/validateAllowedProperties';
 import { getOnlyNotEmptyProperties } from 'src/utils/validation/getOnlyNotEmptyProperties';
+
+export interface IEmailConfirmationDataAccess {
+    getUserConfirmation(userId: number, email: string): Promise<IEmailConfirmationData | undefined>;
+    createUserConfirmation(
+        userId: number,
+        email: string,
+        payload: {
+            confirmationCode: number;
+            expiresAt: Date;
+            status: EmailConfirmationStatusType;
+        },
+        trx?: IDBTransaction,
+    ): Promise<IEmailConfirmationData>;
+    deleteUserConfirmation(userId: number, email: string): Promise<boolean>;
+    patchUserConfirmation(
+        userId: number,
+        email: string,
+        confirmationId: number,
+        properties: Record<string, unknown>,
+        trx?: IDBTransaction,
+    ): Promise<void>;
+}
 
 export default class EmailConfirmationDataAccess extends LoggerBase implements IEmailConfirmationDataAccess {
     private readonly _db: IDatabaseConnection;

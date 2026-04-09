@@ -9,7 +9,7 @@ import {
 } from '../TestsUtils.';
 import DatabaseConnection from '../../src/repositories/DatabaseConnection';
 import config from '../../src/config/dbConfig';
-import { user_initial } from '../../src/config/user_initial';
+import { user_initial } from 'src/config/user_initial';
 import { LanguageType } from 'tenpercent/shared';
 import { UserStatus } from 'tenpercent/shared';
 import { ResponseStatusType } from 'tenpercent/shared';
@@ -51,6 +51,7 @@ describe('POST /register/signup', () => {
             password: generateRandomPassword(),
             locale: 213123,
             publicName: generateRandomName(),
+            currencyCode: 'USD',
         });
 
         expect(response.status).toBe(HttpCode.BAD_REQUEST);
@@ -72,7 +73,12 @@ describe('POST /register/signup', () => {
     it('should return error for invalid email format to big', async () => {
         const response = await request(app)
             .post('/register/signup')
-            .send({ email: generateRandomEmail(31), password: generateRandomPassword(), publicName: generateRandomName() });
+            .send({
+                currencyCode: 'USD',
+                email: generateRandomEmail(31),
+                password: generateRandomPassword(),
+                publicName: generateRandomName(),
+            });
 
         expect(response.status).toBe(HttpCode.BAD_REQUEST);
         expect(response.body).toStrictEqual({
@@ -91,9 +97,12 @@ describe('POST /register/signup', () => {
         });
     });
     it('should return error for invalid email format', async () => {
-        const response = await request(app)
-            .post('/register/signup')
-            .send({ email: 'invalid-email', password: generateRandomPassword(), publicName: generateRandomName() });
+        const response = await request(app).post('/register/signup').send({
+            currencyCode: 'USD',
+            email: 'invalid-email',
+            password: generateRandomPassword(),
+            publicName: generateRandomName(),
+        });
 
         expect(response.status).toBe(HttpCode.BAD_REQUEST);
         expect(response.body).toStrictEqual({
@@ -112,9 +121,12 @@ describe('POST /register/signup', () => {
         });
     });
     it('should return error for invalid email format', async () => {
-        const response = await request(app)
-            .post('/register/signup')
-            .send({ email: 'example.com', password: generateRandomPassword(), publicName: generateRandomName() });
+        const response = await request(app).post('/register/signup').send({
+            currencyCode: 'USD',
+            email: 'example.com',
+            password: generateRandomPassword(),
+            publicName: generateRandomName(),
+        });
 
         expect(response.status).toBe(HttpCode.BAD_REQUEST);
         expect(response.body).toStrictEqual({
@@ -133,9 +145,12 @@ describe('POST /register/signup', () => {
         });
     });
     it('should return error for invalid email format', async () => {
-        const response = await request(app)
-            .post('/register/signup')
-            .send({ email: 'example@', password: generateRandomPassword(), publicName: generateRandomName() });
+        const response = await request(app).post('/register/signup').send({
+            currencyCode: 'USD',
+            email: 'example@',
+            password: generateRandomPassword(),
+            publicName: generateRandomName(),
+        });
 
         expect(response.status).toBe(HttpCode.BAD_REQUEST);
         expect(response.body).toStrictEqual({
@@ -154,9 +169,12 @@ describe('POST /register/signup', () => {
         });
     });
     it('should return error for invalid email format', async () => {
-        const response = await request(app)
-            .post('/register/signup')
-            .send({ email: 'example@test@com', password: generateRandomPassword(), publicName: generateRandomName() });
+        const response = await request(app).post('/register/signup').send({
+            currencyCode: 'USD',
+            email: 'example@test@com',
+            password: generateRandomPassword(),
+            publicName: generateRandomName(),
+        });
 
         expect(response.status).toBe(HttpCode.BAD_REQUEST);
         expect(response.body).toStrictEqual({
@@ -176,9 +194,12 @@ describe('POST /register/signup', () => {
     });
     it('should return error for invalid email format', async () => {
         const publicName = generateRandomName();
-        const response = await request(app)
-            .post('/register/signup')
-            .send({ email: null, password: generateRandomPassword(), publicName });
+        const response = await request(app).post('/register/signup').send({
+            email: null,
+            currencyCode: 'USD',
+            password: generateRandomPassword(),
+            publicName,
+        });
 
         expect(response.status).toBe(HttpCode.BAD_REQUEST);
         expect(response.body).toStrictEqual({
@@ -199,7 +220,12 @@ describe('POST /register/signup', () => {
     it('should return error for too short password', async () => {
         const response = await request(app)
             .post('/register/signup')
-            .send({ email: 'test_test@gmail.com', password: generateRandomPassword(5), publicName: generateRandomName() });
+            .send({
+                currencyCode: 'USD',
+                email: 'test_test@gmail.com',
+                password: generateRandomPassword(5),
+                publicName: generateRandomName(),
+            });
 
         expect(response.status).toBe(HttpCode.BAD_REQUEST);
         expect(response.body).toStrictEqual({
@@ -220,7 +246,36 @@ describe('POST /register/signup', () => {
     it('should return error for too big password', async () => {
         const response = await request(app)
             .post('/register/signup')
-            .send({ email: generateRandomEmail(), password: generateRandomPassword(31), publicName: generateRandomName() });
+            .send({
+                currencyCode: 'USD',
+                email: generateRandomEmail(),
+                password: generateRandomPassword(31),
+                publicName: generateRandomName(),
+            });
+
+        expect(response.status).toBe(HttpCode.BAD_REQUEST);
+        expect(response.body).toStrictEqual({
+            data: {},
+            errors: [
+                {
+                    errorCode: ErrorCode.PASSWORD_INVALID_ERROR,
+                    msg: expect.any(String),
+                    payload: {
+                        field: 'password',
+                        reason: 'invalid',
+                    },
+                },
+            ],
+            status: ResponseStatusType.INTERNAL,
+        });
+    });
+    it('should return error invalid format password', async () => {
+        const response = await request(app).post('/register/signup').send({
+            currencyCode: 'USD',
+            email: 'google_test1@test.com',
+            password: generateSecureRandom(),
+            publicName: generateRandomName(),
+        });
 
         expect(response.status).toBe(HttpCode.BAD_REQUEST);
         expect(response.body).toStrictEqual({
@@ -241,29 +296,13 @@ describe('POST /register/signup', () => {
     it('should return error invalid format password', async () => {
         const response = await request(app)
             .post('/register/signup')
-            .send({ email: 'google_test1@test.com', password: generateSecureRandom(), publicName: generateRandomName() });
 
-        expect(response.status).toBe(HttpCode.BAD_REQUEST);
-        expect(response.body).toStrictEqual({
-            data: {},
-            errors: [
-                {
-                    errorCode: ErrorCode.PASSWORD_INVALID_ERROR,
-                    msg: expect.any(String),
-                    payload: {
-                        field: 'password',
-                        reason: 'invalid',
-                    },
-                },
-            ],
-            status: ResponseStatusType.INTERNAL,
-        });
-    });
-    it('should return error invalid format password', async () => {
-        const response = await request(app)
-            .post('/register/signup')
-
-            .send({ email: 'google_test2@test.com', password: generateRandomString(5), publicName: generateRandomName() });
+            .send({
+                currencyCode: 'USD',
+                email: 'google_test2@test.com',
+                password: generateRandomString(5),
+                publicName: generateRandomName(),
+            });
 
         expect(response.status).toBe(HttpCode.BAD_REQUEST);
         expect(response.body).toStrictEqual({
@@ -283,9 +322,12 @@ describe('POST /register/signup', () => {
     });
     it('should return error invalid format password', async () => {
         const publicName = generateRandomName();
-        const response = await request(app)
-            .post('/register/signup')
-            .send({ email: 'google_test3@test.com', password: null, publicName });
+        const response = await request(app).post('/register/signup').send({
+            currencyCode: 'USD',
+            email: 'google_test3@test.com',
+            password: null,
+            publicName,
+        });
 
         expect(response.status).toBe(HttpCode.BAD_REQUEST);
         expect(response.body).toStrictEqual({
@@ -315,9 +357,12 @@ describe('POST /register/signup', () => {
         const spy = jest.spyOn(argon2, 'hash');
         const mail = generateRandomEmail();
         const publicName = generateRandomName();
-        const response = await request(app)
-            .post('/register/signup')
-            .send({ email: mail, password: generateRandomPassword(), publicName });
+        const response = await request(app).post('/register/signup').send({
+            currencyCode: 'USD',
+            email: mail,
+            password: generateRandomPassword(),
+            publicName,
+        });
 
         userIds.push(response.body.data.userId);
         expect(response.body).toStrictEqual({
@@ -340,10 +385,18 @@ describe('POST /register/signup', () => {
             body: {
                 data: { userId },
             },
-        } = await request(app).post('/register/signup').send({ email: mail, password: generateRandomPassword(), publicName });
-        const response = await request(app)
-            .post('/register/signup')
-            .send({ email: mail, password: generateRandomPassword(), publicName });
+        } = await request(app).post('/register/signup').send({
+            currencyCode: 'USD',
+            email: mail,
+            password: generateRandomPassword(),
+            publicName,
+        });
+        const response = await request(app).post('/register/signup').send({
+            currencyCode: 'USD',
+            email: mail,
+            password: generateRandomPassword(),
+            publicName,
+        });
         userIds.push(userId);
         expect(response.status).toBe(HttpCode.BAD_REQUEST);
         expect(response.body).toStrictEqual({
@@ -351,6 +404,30 @@ describe('POST /register/signup', () => {
             errors: [
                 {
                     errorCode: ErrorCode.SIGNUP_USER_ALREADY_EXISTS_ERROR,
+                },
+            ],
+            status: ResponseStatusType.INTERNAL,
+        });
+    });
+    it('should failed currencyCode miss', async () => {
+        const mail = generateRandomEmail();
+        const publicName = generateRandomName();
+        const response = await request(app).post('/register/signup').send({
+            email: mail,
+            password: generateRandomPassword(),
+            publicName,
+        });
+        expect(response.status).toBe(HttpCode.BAD_REQUEST);
+        expect(response.body).toStrictEqual({
+            data: {},
+            errors: [
+                {
+                    errorCode: ErrorCode.UNKNOWN_ERROR,
+                    msg: 'Field currencyCode must be a string',
+                    payload: {
+                        field: 'currencyCode',
+                        reason: 'invalid',
+                    },
                 },
             ],
             status: ResponseStatusType.INTERNAL,

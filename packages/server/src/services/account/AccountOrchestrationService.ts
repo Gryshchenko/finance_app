@@ -1,5 +1,5 @@
-import { ICurrencyService } from 'interfaces/ICurrencyService';
-import { IBalanceService } from 'interfaces/IBalanceService';
+import { ICurrencyService } from 'services/currency/CurrencyService';
+import { IBalanceService } from 'services/balance/BalanceService';
 import { LoggerBase } from 'helper/logger/LoggerBase';
 import { Utils } from 'tenpercent/shared';
 import { DBError } from 'src/utils/errors/DBError';

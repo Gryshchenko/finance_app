@@ -1,4 +1,3 @@
-import { IExchangeRateDataAccess } from 'interfaces/IExchangeRateDataAccess';
 import { IDatabaseConnection } from 'interfaces/IDatabaseConnection';
 import { LoggerBase } from 'src/helper/logger/LoggerBase';
 import { DBError } from 'src/utils/errors/DBError';
@@ -6,6 +5,13 @@ import { BaseError } from 'src/utils/errors/BaseError';
 import { NotFoundError } from 'src/utils/errors/NotFoundError';
 import { isBaseError } from 'src/utils/errors/isBaseError';
 import { IRate } from '../../../../shared/src/interfaces/IRate';
+
+export interface IExchangeRateDataAccess {
+    post(baseCurrency: string, targetCurrencies: Record<string, number>): Promise<boolean>;
+    patch(baseCurrency: string, targetCurrencies: Record<string, number>): Promise<boolean>;
+    gets(baseCurrency: string): Promise<IRate[] | undefined>;
+    get(baseCurrency: string, targetCurrency: string): Promise<IRate | undefined>;
+}
 
 export default class ExchangeRateDataAccess extends LoggerBase implements IExchangeRateDataAccess {
     private readonly _db: IDatabaseConnection;

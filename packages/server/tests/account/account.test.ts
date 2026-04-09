@@ -59,6 +59,7 @@ describe('Account', () => {
                     currencyId: 1,
                     accountName: name,
                     amount: newAmount,
+                    iconId: 'test_icon',
                 })
                 .expect(HttpCode.OK);
             expect(accountId).toBeTruthy();
@@ -126,6 +127,7 @@ describe('Account', () => {
                     currencyId: 1,
                     accountName: name,
                     amount: newAmount,
+                    iconId: 'test_icon',
                 })
                 .expect(HttpCode.OK);
             expect(accountId).toBeTruthy();
@@ -242,6 +244,7 @@ describe('Account', () => {
                 currencyId: 1,
                 accountName: 'Test 1',
                 amount: 20000,
+                iconId: 'test_icon',
             })
             .expect(HttpCode.OK);
         const transactions = [
@@ -321,6 +324,7 @@ describe('Account', () => {
                 currencyId: 1,
                 accountName: 'Test 1',
                 amount: 20000,
+                iconId: 'test_icon',
             })
             .expect(HttpCode.OK);
         const transactions = [

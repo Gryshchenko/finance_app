@@ -1,4 +1,3 @@
-import { ICurrencyDataAccess } from 'interfaces/ICurrencyDataAccess';
 import { IDatabaseConnection } from 'interfaces/IDatabaseConnection';
 import { LoggerBase } from 'src/helper/logger/LoggerBase';
 import { ICurrency } from 'tenpercent/shared';
@@ -7,6 +6,14 @@ import { BaseError } from 'src/utils/errors/BaseError';
 import { NotFoundError } from 'src/utils/errors/NotFoundError';
 import { isBaseError } from 'src/utils/errors/isBaseError';
 import { ValidationError } from 'src/utils/errors/ValidationError';
+
+export interface ICurrencyDataAccess {
+    getByName(symbol: string): Promise<ICurrency | undefined>;
+    getBySymbol(symbol: string): Promise<ICurrency | undefined>;
+    getById(id: number): Promise<ICurrency | undefined>;
+    getByCurrencyCode(currencyCode: string): Promise<ICurrency | undefined>;
+    gets(): Promise<ICurrency[]>;
+}
 
 export default class CurrencyDataAccess extends LoggerBase implements ICurrencyDataAccess {
     private readonly _db: IDatabaseConnection;

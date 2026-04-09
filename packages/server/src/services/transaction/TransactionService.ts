@@ -16,7 +16,7 @@ import { CustomError } from 'src/utils/errors/CustomError';
 import { IDatabaseConnection, IDBTransaction } from 'interfaces/IDatabaseConnection';
 import { LoggerBase } from 'helper/logger/LoggerBase';
 import { IPatchTransaction } from 'interfaces/IPatchTransaction';
-import { IBalanceService } from 'interfaces/IBalanceService';
+import { IBalanceService } from 'services/balance/BalanceService';
 import { IAccountService } from 'services/account/AccountService';
 import { IStatsOrchestratorService } from 'services/StatsOrchestrator/StatsOrchestratorService';
 import { ITransactionDataAccess } from 'services/transaction/TransactionDataAccess';

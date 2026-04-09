@@ -1,8 +1,11 @@
-import { IGroupDataAccess } from 'interfaces/IGroupDataAccess';
 import { IDatabaseConnection, IDBTransaction } from 'interfaces/IDatabaseConnection';
 import { LoggerBase } from 'src/helper/logger/LoggerBase';
 import { IGroup } from 'interfaces/IGroup';
 import { DBError } from 'src/utils/errors/DBError';
+
+export interface IGroupDataAccess {
+    createGroup(userId: number, groupName: string, trx?: IDBTransaction): Promise<IGroup>;
+}
 
 export default class GroupDataAccess extends LoggerBase implements IGroupDataAccess {
     private readonly _db: IDatabaseConnection;

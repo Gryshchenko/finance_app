@@ -1,8 +1,13 @@
-import { IUserRoleDataAccess } from 'interfaces/IUserRoleDataAccess';
 import { IDatabaseConnection, IDBTransaction } from 'interfaces/IDatabaseConnection';
 import { LoggerBase } from 'src/helper/logger/LoggerBase';
 import { IUserRole } from 'interfaces/IUserRole';
 import { DBError } from 'src/utils/errors/DBError';
+
+export interface IUserRoleDataAccess {
+    getUserRole(userId: number): Promise<IUserRole | undefined>;
+    updateUserRole(userId: number, newRoleId: number): Promise<IUserRole | undefined>;
+    createUserRole(userId: number, newRoleId: number, trx?: IDBTransaction): Promise<IUserRole | undefined>;
+}
 
 export default class UserRoleDataAccess extends LoggerBase implements IUserRoleDataAccess {
     private readonly _db: IDatabaseConnection;

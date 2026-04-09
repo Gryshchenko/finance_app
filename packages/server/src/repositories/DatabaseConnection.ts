@@ -30,12 +30,7 @@ export default class DatabaseConnection implements IDatabaseConnection {
                 database,
                 user,
                 password,
-                ssl:
-                    process.env.NODE_ENV === 'test'
-                        ? false
-                        : {
-                              rejectUnauthorized: false,
-                          },
+                ssl: { rejectUnauthorized: false },
                 pool: {
                     min: 1,
                     max: 100,

@@ -1,7 +1,12 @@
-import { IUserRoleService } from 'interfaces/IUserRoleService';
-import { IUserRoleDataAccess } from 'interfaces/IUserRoleDataAccess';
+import { IUserRoleDataAccess } from 'services/userRole/UserRoleDataAccess';
 import { IUserRole } from 'interfaces/IUserRole';
 import { IDBTransaction } from 'interfaces/IDatabaseConnection';
+
+export interface IUserRoleService {
+    getUserRole(userId: number): Promise<IUserRole | undefined>;
+    updateUserRole(userId: number, newRoleId: number): Promise<IUserRole | undefined>;
+    createUserRole(userId: number, newRoleId: number, trx?: IDBTransaction): Promise<IUserRole | undefined>;
+}
 
 export default class UserRoleService implements IUserRoleService {
     private readonly _userRoleDataAccess: IUserRoleDataAccess;

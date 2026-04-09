@@ -41,6 +41,7 @@ const patchIncomeValidationRules = [
     ...createSignupValidationRules('iconId', 'string', {
         min: 3,
         max: 128,
+        optional: true,
     }),
     ...createSignupValidationRules('status', 'number', {
         optional: true,

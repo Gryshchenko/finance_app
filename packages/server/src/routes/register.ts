@@ -11,8 +11,8 @@ const router = express.Router();
 
 router.post(
     '/signup',
-    sanitizeRequestBody(['email', 'password', 'locale', 'publicName', 'currencyCode']),
     validateQuery({}),
+    sanitizeRequestBody(['email', 'password', 'locale', 'publicName', 'currencyCode']),
     routesInputValidation(signupValidationRules),
     RegisterController.signup,
 );

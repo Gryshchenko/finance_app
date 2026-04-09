@@ -1,6 +1,5 @@
 import { IDatabaseConnection, IDBTransaction } from 'interfaces/IDatabaseConnection';
 import { LoggerBase } from 'helper/logger/LoggerBase';
-import { IBalanceDataAccess } from 'interfaces/IBalanceDataAccess';
 import { IBalance } from '../../../../shared/src/interfaces/IBalance';
 import { NotFoundError } from 'src/utils/errors/NotFoundError';
 import { DBError } from 'src/utils/errors/DBError';
@@ -8,6 +7,12 @@ import { isBaseError } from 'src/utils/errors/isBaseError';
 import { BaseError } from 'src/utils/errors/BaseError';
 import { validateAllowedProperties } from 'src/utils/validation/validateAllowedProperties';
 import { Time, Utils } from 'tenpercent/shared';
+
+export interface IBalanceDataAccess {
+    get(userId: number): Promise<IBalance>;
+    patch(userId: number, properties: { amount: number }, trx?: IDBTransaction): Promise<number>;
+    post(userId: number, properties: { amount: number; currencyCode: string }, trx?: IDBTransaction): Promise<number>;
+}
 
 export default class BalanceDataAccess extends LoggerBase implements IBalanceDataAccess {
     private readonly _db: IDatabaseConnection;

@@ -1,7 +1,14 @@
-import { ICurrencyDataAccess } from 'interfaces/ICurrencyDataAccess';
-import { ICurrencyService } from 'interfaces/ICurrencyService';
+import { ICurrencyDataAccess } from 'services/currency/CurrencyDataAccess';
 import { ICurrency } from 'tenpercent/shared';
 import { LoggerBase } from 'helper/logger/LoggerBase';
+
+export interface ICurrencyService {
+    getByName(symbol: string): Promise<ICurrency | undefined>;
+    getBySymbol(symbol: string): Promise<ICurrency | undefined>;
+    getById(id: number): Promise<ICurrency | undefined>;
+    getByCurrencyCode(currencyCode: string): Promise<ICurrency | undefined>;
+    gets(): Promise<ICurrency[]>;
+}
 
 export default class CurrencyService extends LoggerBase implements ICurrencyService {
     private readonly _currencyDataAccess: ICurrencyDataAccess;

@@ -1,5 +1,4 @@
-import { IBalanceDataAccess } from 'interfaces/IBalanceDataAccess';
-import { IBalanceService } from 'interfaces/IBalanceService';
+import { IBalanceDataAccess } from 'services/balance/BalanceDataAccess';
 import { LoggerBase } from 'helper/logger/LoggerBase';
 import { IDBTransaction } from 'interfaces/IDatabaseConnection';
 import { IBalance, Utils } from 'tenpercent/shared';
@@ -7,9 +6,15 @@ import { IRate } from '../../../../shared/src/interfaces/IRate';
 import { CustomError } from 'src/utils/errors/CustomError';
 import { HttpCode } from 'tenpercent/shared';
 import { ErrorCode } from 'tenpercent/shared';
-import { IExchangeRateService } from 'interfaces/IExchangeRateService';
-import { ICurrencyService } from 'interfaces/ICurrencyService';
+import { IExchangeRateService } from 'services/exchangeRateService/ExchangeRateService';
+import { ICurrencyService } from 'services/currency/CurrencyService';
 import { IProfileService } from 'services/profile/ProfileService';
+
+export interface IBalanceService {
+    get(userId: number): Promise<IBalance>;
+    patch(userId: number, properties: { amount: number; currencyCode: string }, trx?: IDBTransaction): Promise<number>;
+    post(userId: number, properties: { amount: number; currencyCode: string }, trx?: IDBTransaction): Promise<number>;
+}
 
 export default class BalanceService extends LoggerBase implements IBalanceService {
     private readonly _balanceDataAccess: IBalanceDataAccess;

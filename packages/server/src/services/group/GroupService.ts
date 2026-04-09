@@ -1,7 +1,10 @@
-import { IGroupDataAccess } from 'interfaces/IGroupDataAccess';
-import { IGroupService } from 'interfaces/IGroupService';
+import { IGroupDataAccess } from 'services/group/GroupDataAccess';
 import { IGroup } from 'interfaces/IGroup';
 import { IDBTransaction } from 'interfaces/IDatabaseConnection';
+
+export interface IGroupService {
+    createGroup(userId: number, groupName: string, trx?: IDBTransaction): Promise<IGroup>;
+}
 
 export default class GroupService implements IGroupService {
     private readonly _accountDataAccess: IGroupDataAccess;

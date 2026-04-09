@@ -1,6 +1,5 @@
 import { RoleType } from 'tenpercent/shared';
 import { LoggerBase } from 'src/helper/logger/LoggerBase';
-import { IAuthService } from 'interfaces/IAuthService';
 import { IUser } from 'interfaces/IUser';
 import { ErrorCode } from 'tenpercent/shared';
 import UserServiceUtils from 'src/services/user/UserServiceUtils';
@@ -16,6 +15,10 @@ import TokenBlacklistBuilder from 'services/auth/TokenBlacklistBuilder';
 import { Time } from 'tenpercent/shared';
 import { Utils } from 'tenpercent/shared';
 import { IUserService } from 'services/user/UserService';
+
+export interface IAuthService {
+    login(email: string, password: string): Promise<{ user: IUser; token: string }>;
+}
 
 export default class AuthService extends LoggerBase implements IAuthService {
     protected userService: IUserService;

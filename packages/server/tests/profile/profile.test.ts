@@ -29,10 +29,6 @@ afterAll((done) => {
 });
 
 describe('Profile', () => {
-    // ─────────────────────────────────────────────────────────────────────────
-    // GET /user/:userId/profile
-    // ─────────────────────────────────────────────────────────────────────────
-
     describe('GET', () => {
         it('should return correct profile shape for a verified user', async () => {
             const agent = request.agent(app);
