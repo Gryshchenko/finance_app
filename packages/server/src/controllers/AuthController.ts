@@ -1,9 +1,8 @@
 import { Request, Response } from 'express';
 import ResponseBuilder from 'helper/responseBuilder/ResponseBuilder';
 import Logger from 'helper/logger/Logger';
-import { validationResult } from 'express-validator';
 import AuthServiceBuilder from 'services/auth/AuthServiceBuilder';
-import { ResponseStatusType } from 'tenpercent/shared';
+import { ResponseStatusType, RoleType } from 'tenpercent/shared';
 import UserServiceUtils from 'services/user/UserServiceUtils';
 import { ErrorCode } from 'tenpercent/shared';
 import { ValidationError } from 'src/utils/errors/ValidationError';
@@ -13,7 +12,7 @@ import { generateErrorResponse } from 'src/utils/generateErrorResponse';
 import { BaseError } from 'src/utils/errors/BaseError';
 import { IUser } from 'interfaces/IUser';
 import { CustomError } from 'src/utils/errors/CustomError';
-import { RoleType } from 'tenpercent/shared';
+import PasswordForgetServiceBuilder from 'services/passwordForget/PasswordForgetServiceBuilder';
 
 export class AuthController {
     private static readonly logger = Logger.Of('AuthController');
@@ -84,10 +83,6 @@ export class AuthController {
     public static async login(req: Request, res: Response) {
         const responseBuilder = new ResponseBuilder();
         try {
-            const errors = validationResult(req);
-            if (!errors.isEmpty()) {
-                throw new ValidationError({ message: 'login validation error' });
-            }
             const { user, token, longToken } = await AuthServiceBuilder.build().login(
                 req.body.email.toLocaleLowerCase(),
                 req.body.password,
@@ -102,6 +97,55 @@ export class AuthController {
         } catch (e: unknown) {
             AuthController.logger.error(`Use login failed due reason: ${(e as { message: string }).message}`);
             generateErrorResponse(res, responseBuilder, e as BaseError, ErrorCode.AUTH_ERROR);
+        }
+    }
+    public static async forget(req: Request, res: Response) {
+        try {
+            await PasswordForgetServiceBuilder.build().request(req.body.email.toLowerCase());
+        } catch (e: unknown) {
+            // Log infra errors but do not expose them — the response is always 204.
+            AuthController.logger.error(`Forget password failed: ${(e as { message: string }).message}`);
+        } finally {
+            res.status(HttpCode.NO_CONTENT).send();
+        }
+    }
+
+    public static async forgetRefresh(req: Request, res: Response) {
+        try {
+            await PasswordForgetServiceBuilder.build().refresh(req.body.email.toLowerCase());
+        } catch (e: unknown) {
+            AuthController.logger.error(`Forget password refresh failed: ${(e as { message: string }).message}`);
+        } finally {
+            res.status(HttpCode.NO_CONTENT).send();
+        }
+    }
+
+    public static async forgetConfirm(req: Request, res: Response) {
+        const responseBuilder = new ResponseBuilder();
+        try {
+            const { resetToken } = await PasswordForgetServiceBuilder.build().confirm(
+                req.body.email.toLowerCase(),
+                Number(req.body.confirmationCode),
+            );
+            res.status(HttpCode.OK).json(responseBuilder.setStatus(ResponseStatusType.OK).setData({ resetToken }).build());
+        } catch (e: unknown) {
+            AuthController.logger.error(`Forget password confirm failed: ${(e as { message: string }).message}`);
+            generateErrorResponse(res, responseBuilder, e as BaseError, ErrorCode.AUTH_ERROR);
+        }
+    }
+
+    public static async forgetChange(req: Request, res: Response) {
+        const responseBuilder = new ResponseBuilder();
+        try {
+            const user = req.user;
+            const userId = Number(user?.userId);
+            await PasswordForgetServiceBuilder.build().forgetChange(req.body.newPassword, userId);
+            const token = extractToken(req.headers.authorization);
+            await AuthServiceBuilder.build().logout(token as string);
+            res.status(HttpCode.NO_CONTENT).send();
+        } catch (e: unknown) {
+            AuthController.logger.error(`Use forget change failed due reason: ${(e as { message: string }).message}`);
+            generateErrorResponse(res, responseBuilder, e as BaseError, ErrorCode.FORGOT_PASSWORD_ERROR);
         }
     }
 }

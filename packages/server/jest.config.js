@@ -4,7 +4,15 @@ const { pathsToModuleNameMapper } = require('ts-jest');
 const { baseUrl, paths } = compilerOptions;
 
 module.exports = {
-    maxWorkers: '50%',
+    // ─── Concurrency ──────────────────────────────────────────────────────────
+    // Integration tests each start an Express server + open DB connections.
+    // '50%' was the old default and caused system overload when many test files
+    // ran simultaneously. Use the dedicated configs for better control:
+    //   jest.unit.config.js        — unit tests, fully parallel
+    //   jest.integration.config.js — integration tests, maxWorkers: 2
+    // This value is the fallback for the "run everything" jest-test script.
+    maxWorkers: 2,
+
     preset: 'ts-jest',
     modulePaths: [baseUrl],
     moduleNameMapper: pathsToModuleNameMapper(paths),
@@ -36,7 +44,7 @@ module.exports = {
             {
                 publicPath: './jest-html-report',
                 filename: 'report.html',
-                openReport: true,
+                openReport: false,
             },
         ],
     ],

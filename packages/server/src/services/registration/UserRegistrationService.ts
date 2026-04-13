@@ -12,8 +12,6 @@ import {
     UserStatus,
     Utils,
 } from 'tenpercent/shared';
-import { IMailService } from 'interfaces/IMailService';
-import { IMailTemplateService } from 'interfaces/IMailTemplateService';
 import { IEmailConfirmationService } from 'services/emailConfirmation/EmailConfirmationService';
 import { IUser } from 'interfaces/IUser';
 import TranslationsUtils from 'src/services/translations/TranslationsUtils';
@@ -56,10 +54,6 @@ export default class UserRegistrationService extends LoggerBase {
 
     protected incomeService: IIncomeService;
 
-    protected mailService: IMailService;
-
-    protected mailTemplateService: IMailTemplateService;
-
     protected emailConfirmationService: IEmailConfirmationService;
 
     protected profileService: IProfileService;
@@ -80,8 +74,6 @@ export default class UserRegistrationService extends LoggerBase {
         categoryService: ICategoryService;
         groupService: IGroupService;
         incomeService: IIncomeService;
-        mailService: IMailService;
-        mailTemplateService: IMailTemplateService;
         emailConfirmationService: IEmailConfirmationService;
         profileService: IProfileService;
         userRoleService: IUserRoleService;
@@ -96,8 +88,6 @@ export default class UserRegistrationService extends LoggerBase {
         this.categoryService = services.categoryService;
         this.groupService = services.groupService;
         this.incomeService = services.incomeService;
-        this.mailService = services.mailService;
-        this.mailTemplateService = services.mailTemplateService;
         this.emailConfirmationService = services.emailConfirmationService;
         this.profileService = services.profileService;
         this.userRoleService = services.userRoleService;

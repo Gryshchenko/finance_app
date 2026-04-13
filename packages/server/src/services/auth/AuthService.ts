@@ -97,7 +97,6 @@ export default class AuthService extends LoggerBase implements IAuthService {
             throw e;
         }
     }
-
     public static createJWToken(userId: number, role: RoleType, jwtSecret: string, expiresIn: string): string {
         if (!jwtSecret) {
             throw new CustomError({

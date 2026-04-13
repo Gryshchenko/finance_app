@@ -23,6 +23,10 @@ interface IConfig {
     jwtAlgorithm: string;
     jwtExpiresIn: string;
     jwtLongExpiresIn: string;
+    // Short-lived token used exclusively for the password-reset flow.
+    // Must differ from jwtSecret so the reset token cannot be used as a regular session token.
+    jwtResetSecret: string;
+    jwtResetExpiresIn: string;
     redisHost: string;
     redisPort: string;
     redisPassword: string;
@@ -45,13 +49,15 @@ export function getConfig(): IConfig {
         dbPort: (process.env.TEST_DB_PORT ?? process.env.DB_PORT) as string,
         dbHost: (process.env.TEST_DB_HOST ?? process.env.DB_HOST) as string,
         // dbCACert: caCert,
-        jwtSecret: (process.env.TEST_JWT_SECRET ?? process.env.JWT_SECRET) as string,
+        jwtLongExpiresIn: (process.env.TEST_JWT_LONG_EXPIRES_IN ?? process.env.JWT_LONG_EXPIRES_IN) as string,
         jwtLongSecret: (process.env.TEST_JWT_LONG_SECRET ?? process.env.JWT_LONG_SECRET) as string,
+        jwtSecret: (process.env.TEST_JWT_SECRET ?? process.env.JWT_SECRET) as string,
         jwtIssuer: (process.env.TEST_JWT_ISSUER ?? process.env.JWT_ISSUER) as string,
         jwtAudience: (process.env.TEST_JWT_AUDIENCE ?? process.env.JWT_AUDIENCE) as string,
         jwtAlgorithm: (process.env.TEST_JWT_ALGORITHM ?? process.env.JWT_ALGORITHM) as string,
         jwtExpiresIn: (process.env.TEST_JWT_EXPIRES_IN ?? process.env.JWT_EXPIRES_IN) as string,
-        jwtLongExpiresIn: (process.env.TEST_JWT_LONG_EXPIRES_IN ?? process.env.JWT_LONG_EXPIRES_IN) as string,
+        jwtResetSecret: (process.env.TEST_JWT_RESET_SECRET ?? process.env.JWT_RESET_SECRET) as string,
+        jwtResetExpiresIn: process.env.TEST_JWT_RESET_EXPIRES_IN ?? process.env.JWT_RESET_EXPIRES_IN ?? '15m',
         redisHost: (process.env.TEST_REDIS_HOST ?? process.env.REDIS_HOST) as string,
         redisPort: (process.env.TEST_REDIS_PORT ?? process.env.REDIS_PORT) as string,
         redisPassword: (process.env.TEST_REDIS_PASSWORD ?? process.env.REDIS_PASSWORD) as string,

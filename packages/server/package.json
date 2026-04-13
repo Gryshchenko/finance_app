@@ -13,8 +13,11 @@
         "type-check": "tsc -v && tsc -p tsconfig.json",
         "eslint": "npx eslint src/ --fix",
         "eslint:check": "npx eslint src/",
-        "jest-test": "jest --verbose false ./tests --config ./jest.config.js --no-cache ",
-        "jest-test:coverage": "jest --verbose false ./ --config ./jest.config.js --no-cache --coverage",
+        "jest-test": "jest --verbose false --config ./jest.config.js --no-cache",
+        "jest-test:unit": "jest --verbose false --config ./jest.unit.config.js --no-cache",
+        "jest-test:integration": "jest --verbose false --config ./jest.integration.config.js --no-cache",
+        "jest-test:all": "jest --verbose false --config ./jest.unit.config.js --no-cache && jest --verbose false --config ./jest.integration.config.js --no-cache",
+        "jest-test:coverage": "jest --verbose false --config ./jest.config.js --no-cache --coverage",
         "lint-staged": "lint-staged"
     },
     "husky": {

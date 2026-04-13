@@ -23,6 +23,7 @@ export interface IUserDataAccess {
     patch(userId: number, properties: Partial<{ email: string; status: UserStatus }>, trx?: IDBTransaction): Promise<void>;
     getUserEmail(userId: number, trx?: IDBTransaction): Promise<{ email: string } | undefined>;
     updateUserPassword(userId: number, passwordHash: string, salt: string, trx?: IDBTransaction): Promise<boolean>;
+    getUserIdByMail(email: string, trx?: IDBTransaction): Promise<number | undefined>;
 }
 
 export default class UserDataService extends LoggerBase implements IUserDataAccess {
@@ -109,6 +110,21 @@ export default class UserDataService extends LoggerBase implements IUserDataAcce
         } catch (e) {
             this._logger.error(`Error creating user with email: ${email} - ${(e as { message: string }).message}`);
             throw new DBError({ message: `Error creating user with email: ${email} - ${(e as { message: string }).message}` });
+        }
+    }
+
+    public async getUserIdByMail(email: string, trx?: IDBTransaction): Promise<number | undefined> {
+        try {
+            this._logger.info(`Retrieving email for email: ${email}`);
+            const query = trx || this._db.engine();
+            const response = await query<IUser>('users').select('id').where({ email }).first();
+            this._logger.info(`Email retrieved for email: ${email}`);
+            return response?.id || undefined;
+        } catch (e) {
+            this._logger.error(`Error retrieving userId for email: ${email} - ${(e as { message: string }).message}`);
+            throw new DBError({
+                message: `Error retrieving userId for email: ${email} - ${(e as { message: string }).message}`,
+            });
         }
     }
 

@@ -2,23 +2,17 @@ import { IEmailConfirmationDataAccess } from 'services/emailConfirmation/EmailCo
 import { EmailConfirmationStatusType } from 'tenpercent/shared';
 import { LoggerBase } from 'src/helper/logger/LoggerBase';
 import { ErrorCode } from 'tenpercent/shared';
-import { IMailService } from 'interfaces/IMailService';
-import { IMailTemplateService } from 'interfaces/IMailTemplateService';
-import { TranslationKey } from 'types/TranslationKey';
 import { IEmailConfirmationData } from 'interfaces/IEmailConfirmationData';
-import Translations from 'src/services/translations/Translations';
 import TimeManagerUTC from 'src/utils/TimeManagerUTC';
 import { IDBTransaction } from 'interfaces/IDatabaseConnection';
-import { getConfig } from 'src/config/config';
-import { CustomError } from 'src/utils/errors/CustomError';
 import { ValidationError } from 'src/utils/errors/ValidationError';
-
 import { HttpCode } from 'tenpercent/shared';
 import { ConfirmationHelper } from 'services/confirmation/ConfirmationHelper';
 import { Utils } from 'tenpercent/shared';
 import { UserStatus } from 'tenpercent/shared';
 import { IEmailVerifyResponse } from 'tenpercent/shared';
 import { IUserService } from 'services/user/UserService';
+import { IConfirmationEmailNotification } from 'services/notification/emails/ConfirmationEmailNotification';
 
 const CONFIRMATION_MAIL_EXPIRED_TIME: [number, number, number] = [0, 10, 0];
 
@@ -33,51 +27,18 @@ export interface IEmailConfirmationService {
 
 export default class EmailConfirmationService extends LoggerBase implements IEmailConfirmationService {
     protected emailConfirmationDataAccess: IEmailConfirmationDataAccess;
-
-    protected mailService: IMailService;
-
-    protected mailTemplateService: IMailTemplateService;
-
+    protected confirmationEmailNotification: IConfirmationEmailNotification;
     protected userService: IUserService;
 
     public constructor(
         emailConfirmationDataAccess: IEmailConfirmationDataAccess,
-        emailService: IMailService,
-        mailTemplateService: IMailTemplateService,
+        confirmationEmailNotification: IConfirmationEmailNotification,
         userService: IUserService,
     ) {
         super();
         this.emailConfirmationDataAccess = emailConfirmationDataAccess;
-        this.mailService = emailService;
-        this.mailTemplateService = mailTemplateService;
+        this.confirmationEmailNotification = confirmationEmailNotification;
         this.userService = userService;
-    }
-
-    private async sendMail(email: string, confirmationCode: number): Promise<unknown> {
-        try {
-            const response = await this.mailService.sendMail({
-                subject: Translations.text(TranslationKey.CONFIRM_MAIL_ADDRESS),
-                sender: { mail: String(getConfig().mailNotReply), name: String(getConfig().appName) },
-                recipients: [{ mail: email, name: Translations.text(TranslationKey.HELLO_GUEST) }],
-                tags: {
-                    code: confirmationCode,
-                    company: String(getConfig().appName),
-                    CONFIRM_MAIL_ADDRESS: Translations.text(TranslationKey.CONFIRM_MAIL_ADDRESS),
-                    HELLO_GUEST: Translations.text(TranslationKey.HELLO_GUEST),
-                    CONFIRM_MAIL_TEXT: Translations.text(TranslationKey.CONFIRM_MAIL_TEXT),
-                    CONFIRM_MAIL_TEXT2: Translations.text(TranslationKey.CONFIRM_MAIL_TEXT2),
-                    SINCERELY: Translations.text(TranslationKey.SINCERELY),
-                },
-                text: Translations.text(TranslationKey.CONFIRM_MAIL_TEXT),
-                template: this.mailTemplateService.getConfirmMailTemplate(),
-            });
-            return response;
-        } catch (e) {
-            throw new CustomError({
-                message: `Cant send mail by provider reason : ${JSON.stringify(e)}`,
-                errorCode: ErrorCode.EMAIL_CANNOT_SEND_ERROR,
-            });
-        }
     }
 
     public async createEmailConfirmation(userId: number, email: string, trx?: IDBTransaction): Promise<IEmailConfirmationData> {
@@ -115,9 +76,11 @@ export default class EmailConfirmationService extends LoggerBase implements IEma
         await this.validateConfirmation(userConfirmationDataInWork, {
             requirePending: true,
         });
-        this.sendMail(userConfirmationDataInWork.email, userConfirmationDataInWork.confirmationCode).catch((e) => {
-            this._logger.error('Send mail error', e);
-        });
+        this.confirmationEmailNotification
+            .send(userConfirmationDataInWork.email, userConfirmationDataInWork.confirmationCode)
+            .catch((e) => {
+                this._logger.error('Send confirmation email error', e);
+            });
         return userConfirmationDataInWork;
     }
 
@@ -140,8 +103,8 @@ export default class EmailConfirmationService extends LoggerBase implements IEma
                 expiresAt: newTime,
             },
         );
-        this.sendMail(userConfirmationDataInWork.email, confirmationCode).catch((e) => {
-            this._logger.error('Send mail error', e);
+        this.confirmationEmailNotification.send(userConfirmationDataInWork.email, confirmationCode).catch((e) => {
+            this._logger.error('Send confirmation email error', e);
         });
         return {
             expiresAt: newTime.toISOString(),
@@ -196,6 +159,7 @@ export default class EmailConfirmationService extends LoggerBase implements IEma
             errorCode: ErrorCode.EMAIL_VERIFICATION_CODE_EXPIRED_ERROR,
         });
     }
+
     private createNotExpiredCodeError(): ValidationError {
         return new ValidationError({
             message: 'Sending confirmation mail failed, code not expired',
@@ -252,6 +216,7 @@ export default class EmailConfirmationService extends LoggerBase implements IEma
             this.assertNotExpired(payload);
         }
     }
+
     private assertNotConfirmed(payload: IEmailConfirmationData): void {
         if (payload?.status === EmailConfirmationStatusType.Confirmed) {
             throw this.createAlreadyConfirmedError();

@@ -117,6 +117,7 @@ export const convertErrorNameToErrorCode = (path: string): ErrorCode => {
         case 'email':
             return ErrorCode.EMAIL_INVALID_ERROR;
         case 'password':
+        case 'newPassword':
             return ErrorCode.PASSWORD_INVALID_ERROR;
         default:
             return ErrorCode.UNKNOWN_ERROR;

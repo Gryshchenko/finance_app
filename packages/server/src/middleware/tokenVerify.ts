@@ -62,6 +62,52 @@ export const tokenLongVerify = (req: Request, res: Response, next: NextFunction)
     }
 };
 
+export const tokenResetVerify = (req: Request, res: Response, next: NextFunction) => {
+    const buildError = (message: string) => {
+        throw new ValidationError({
+            message,
+            errorCode: ErrorCode.TOKEN_RESET_INVALID_ERROR,
+            statusCode: HttpCode.UNAUTHORIZED,
+        });
+    };
+
+    const token = extractToken(req.headers.authorization);
+    try {
+        const userId = req.params?.userId;
+        if (!token || typeof token !== 'string' || !userId) {
+            buildError(`Reset token or userId invalid - userId: ${userId}`);
+        }
+        const payload = jwt.verify(token as string, getConfig().jwtResetSecret, {
+            algorithms: [getConfig().jwtAlgorithm as Algorithm],
+            issuer: getConfig().jwtIssuer,
+            audience: getConfig().jwtAudience,
+            subject: String(userId),
+        }) as JwtPayloadCustom;
+
+        if (payload.sub !== String(userId)) {
+            buildError(`Reset token sub not same as userId`);
+        }
+        req.user = {
+            userId: Number(userId),
+        };
+
+        _logger.info('Reset token pass validation');
+        return next();
+    } catch (e: unknown) {
+        const responseBuilder = new ResponseBuilder();
+        _logger.error(`Reset token failed due reason: ${(e as { message: string }).message}`);
+        return res
+            .status(HttpCode.UNAUTHORIZED)
+            .json(
+                responseBuilder
+                    .setStatus(ResponseStatusType.INTERNAL)
+                    .setError({ errorCode: ErrorCode.TOKEN_RESET_INVALID_ERROR })
+                    .build(),
+            )
+            .end();
+    }
+};
+
 export const tokenVerify = async (req: Request, res: Response, next: NextFunction) => {
     const responseBuilder = new ResponseBuilder();
 

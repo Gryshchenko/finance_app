@@ -26,10 +26,7 @@ const requestPasswordChangeValidationRules = [
     ...createSignupValidationRules('password', 'password', { min: 5, max: 30 }),
 ];
 
-const confirmChangeValidationRules = [
-    ...createSignupValidationRules('confirmationId', 'number', { min: 8, max: 8 }),
-    validatePathConfirmationCodeProperty('confirmationCode'),
-];
+const confirmChangeValidationRules = [validatePathConfirmationCodeProperty('confirmationCode')];
 
 const refreshConfirmationCodeValidationRules = [
     ...createSignupValidationRules('confirmationId', 'number', { min: 1, max: Number.MAX_SAFE_INTEGER }),

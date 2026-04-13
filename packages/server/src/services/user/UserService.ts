@@ -10,6 +10,7 @@ import { IUserDataAccess } from 'services/user/UserDataAccess';
 export interface IUserService {
     getUserAuthenticationData(email: string, trx?: IDBTransaction): Promise<IGetUserAuthenticationData | undefined>;
     getUserAuthenticationDataById(id: number, trx?: IDBTransaction): Promise<IGetUserAuthenticationData | undefined>;
+    getUserIdByMail(email: string, trx?: IDBTransaction): Promise<number | undefined>;
     get(userId: number, trx?: IDBTransaction): Promise<IUser>;
     create(email: string, password: string, trx?: IDBTransaction): Promise<ICreateUser>;
     patch(userId: number, properties: Partial<{ email: string; status: UserStatus }>, trx?: IDBTransaction): Promise<void>;
@@ -31,6 +32,9 @@ export default class UserService extends LoggerBase implements IUserService {
     }
     public async getUserAuthenticationData(email: string, trx?: IDBTransaction): Promise<IGetUserAuthenticationData | undefined> {
         return await this._userDataAccess.getUserAuthenticationData(email, trx);
+    }
+    public async getUserIdByMail(email: string, trx?: IDBTransaction): Promise<number | undefined> {
+        return await this._userDataAccess.getUserIdByMail(email, trx);
     }
 
     public async get(userId: number, trx?: IDBTransaction): Promise<IUser> {
