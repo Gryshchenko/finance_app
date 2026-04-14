@@ -71,6 +71,9 @@ export default class ProfileService extends LoggerBase implements IProfileServic
     public async confirmEmailChange(userId: number, confirmationCode: number, trx?: IDBTransaction): Promise<boolean> {
         return await this._emailChangingService.confirm(userId, confirmationCode, trx);
     }
+    public async refreshConfirmationCodeForEmailChange(userId: number, confirmationId: number): Promise<boolean> {
+        return await this._emailChangingService.refresh(userId, confirmationId);
+    }
 
     public async requestPasswordChange(
         userId: number,
@@ -84,9 +87,6 @@ export default class ProfileService extends LoggerBase implements IProfileServic
         return await this._passwordChangingService.confirm(userId, confirmationCode);
     }
     public async refreshConfirmationCodeForPasswordChange(userId: number, confirmationId: number): Promise<boolean> {
-        return await this._passwordChangingService.refresh(userId, confirmationId);
-    }
-    public async refreshConfirmationCodeForEmailChange(userId: number, confirmationId: number): Promise<boolean> {
         return await this._passwordChangingService.refresh(userId, confirmationId);
     }
 }

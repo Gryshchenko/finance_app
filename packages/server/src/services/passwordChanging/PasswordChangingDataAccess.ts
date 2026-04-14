@@ -1,4 +1,4 @@
-import { ErrorCode, HttpCode, Time } from 'tenpercent/shared';
+import { ErrorCode, HttpCode } from 'tenpercent/shared';
 
 import { IDatabaseConnection, IDBTransaction } from 'interfaces/IDatabaseConnection';
 import { IPasswordChanging } from 'interfaces/IPasswordChanging';
@@ -17,7 +17,7 @@ export interface IPasswordChangingDataAccess {
         expiresAt: Date,
         trx?: IDBTransaction,
     ): Promise<IPasswordChanging>;
-    getByUserId(userId: number): Promise<IPasswordChanging | undefined>;
+    getByUserId(userId: number, expiresAt: string | undefined): Promise<IPasswordChanging | undefined>;
     confirm(userId: number, id: number, trx?: IDBTransaction): Promise<boolean>;
     refresh(userId: number, confirmationId: number, confirmationCode: number, expiresAt: Date): Promise<boolean>;
 }
@@ -56,17 +56,27 @@ export default class PasswordChangingDataAccess extends LoggerBase implements IP
         }
     }
 
-    public async getByUserId(userId: number): Promise<IPasswordChanging | undefined> {
+    public async getByUserId(userId: number, expiresAt: string): Promise<IPasswordChanging | undefined> {
         this._logger.info(`Fetching password change request for userId ${userId}`);
         try {
-            const data = await this._db
-                .engine()<IPasswordChanging>('password_changing')
-                .where({ userId, confirmed: false })
-                .andWhere('expiresAt', '>', Time.getISODateNowUTC())
-                .orderBy('expiresAt', 'desc')
-                .first();
+            if (expiresAt) {
+                const data = await this._db
+                    .engine()<IPasswordChanging>('password_changing')
+                    .where({ userId, confirmed: false })
+                    .andWhere('expiresAt', '>', expiresAt)
+                    .orderBy('expiresAt', 'desc')
+                    .first();
 
-            return data || undefined;
+                return data || undefined;
+            } else {
+                const data = await this._db
+                    .engine()<IPasswordChanging>('password_changing')
+                    .where({ userId, confirmed: false })
+                    .orderBy('expiresAt', 'desc')
+                    .first();
+
+                return data || undefined;
+            }
         } catch (e) {
             this._logger.error(
                 `Error fetching password change request for userId ${userId}: ${(e as { message: string }).message}`,

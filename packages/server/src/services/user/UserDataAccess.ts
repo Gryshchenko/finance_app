@@ -116,9 +116,9 @@ export default class UserDataService extends LoggerBase implements IUserDataAcce
         try {
             this._logger.info(`Retrieving email for email: ${email}`);
             const query = trx || this._db.engine();
-            const response = await query<IUser>('users').select('id').where({ email }).first();
+            const response = await query<IUser>('users').select('userId').where({ email }).first();
             this._logger.info(`Email retrieved for email: ${email}`);
-            return response?.id || undefined;
+            return response?.userId || undefined;
         } catch (e) {
             this._logger.error(`Error retrieving userId for email: ${email} - ${(e as { message: string }).message}`);
             throw new DBError({

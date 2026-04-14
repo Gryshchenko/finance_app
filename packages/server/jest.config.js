@@ -1,5 +1,6 @@
-const { compilerOptions } = require('./tsconfig.json');
 const { pathsToModuleNameMapper } = require('ts-jest');
+
+const { compilerOptions } = require('./tsconfig.json');
 
 const { baseUrl, paths } = compilerOptions;
 
@@ -11,7 +12,7 @@ module.exports = {
     //   jest.unit.config.js        — unit tests, fully parallel
     //   jest.integration.config.js — integration tests, maxWorkers: 2
     // This value is the fallback for the "run everything" jest-test script.
-    maxWorkers: 2,
+    maxWorkers: 1,
 
     preset: 'ts-jest',
     modulePaths: [baseUrl],

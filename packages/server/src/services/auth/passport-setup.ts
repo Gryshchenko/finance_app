@@ -6,11 +6,14 @@ import { ErrorCode } from 'tenpercent/shared';
 import { getConfig } from 'src/config/config';
 import UserServiceBuilder from 'src/services/user/UserServiceBuilder';
 
+export type TokenPurpose = 'access' | 'refresh' | 'reset';
+
 export interface JwtPayloadCustom extends JwtPayload {
     sub: string;
     email?: string;
     iat?: number;
     exp?: number;
+    purpose?: TokenPurpose;
 }
 
 const options: StrategyOptionsWithRequest = {
@@ -27,6 +30,9 @@ const passportSetup = (passport: PassportStatic) => {
     passport.use(
         new JwtStrategy(options, async (req, jwt_payload: JwtPayloadCustom, done: VerifiedCallback) => {
             try {
+                if (jwt_payload.purpose !== 'access') {
+                    return done(null, false, { errorCode: ErrorCode.TOKEN_PAYLOAD_ERROR });
+                }
                 const user = await userService.get(parseInt(jwt_payload.sub, 10));
                 if (user?.userId) {
                     return done(null, user);

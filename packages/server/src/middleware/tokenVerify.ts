@@ -1,189 +1,144 @@
 import { NextFunction, Request, Response } from 'express';
 import jwt, { Algorithm } from 'jsonwebtoken';
-import passport from 'passport';
 import { HttpCode, ResponseStatusType, extractToken, ErrorCode } from 'tenpercent/shared';
 
 import Logger from 'helper/logger/Logger';
 import ResponseBuilder from 'helper/responseBuilder/ResponseBuilder';
-import { ResponseBuilderPreset } from 'helper/responseBuilder/ResponseBuilderPreset';
-import { JwtPayloadCustom } from 'services/auth/passport-setup';
+import { JwtPayloadCustom, TokenPurpose } from 'services/auth/passport-setup';
 import TokenBlacklistBuilder from 'services/auth/TokenBlacklistBuilder';
 import { getConfig } from 'src/config/config';
+import UserServiceBuilder from 'src/services/user/UserServiceBuilder';
 import { ValidationError } from 'src/utils/errors/ValidationError';
 
 const _logger = Logger.Of('TokenVerify');
 
-export const tokenLongVerify = (req: Request, res: Response, next: NextFunction) => {
-    const buildError = (message: string) => {
-        throw new ValidationError({
-            message,
-            errorCode: ErrorCode.TOKEN_LONG_INVALID_ERROR,
-            statusCode: HttpCode.BAD_REQUEST,
-        });
-    };
+interface TokenMiddlewareOptions {
+    secret: () => string;
+    purpose: TokenPurpose;
+    errorCode: ErrorCode;
+    statusCode: HttpCode;
+    extractToken: (req: Request) => string | null | undefined;
+    ignoreExpiration?: boolean;
+    checkBlacklist?: boolean;
+    lookupUser?: boolean;
+}
 
-    const token = String(req.body?.token);
-    try {
-        const userId = req.params?.userId;
-        if (!token || !userId) {
-            buildError(`Token or userID invalid - userID: ${userId}`);
-        }
-        const payload = jwt.verify(token, getConfig().jwtLongSecret, {
-            algorithms: [getConfig().jwtAlgorithm as Algorithm],
-            issuer: getConfig().jwtIssuer,
-            ignoreExpiration: true,
-            audience: getConfig().jwtAudience,
-            subject: String(userId),
-        }) as JwtPayloadCustom;
-
-        if (payload.sub !== String(userId)) {
-            buildError(`Token sub not same as userId`);
-        }
-        req.user = {
-            userId: Number(userId),
-        };
-
-        _logger?.info('Token long pass validation');
-        return next();
-    } catch (e: unknown) {
+function createTokenMiddleware(options: TokenMiddlewareOptions) {
+    return async (req: Request, res: Response, next: NextFunction) => {
         const responseBuilder = new ResponseBuilder();
-        _logger.error(`Token long failed due reason: ${(e as { message: string }).message}`);
-        return res
-            .status(HttpCode.BAD_REQUEST)
-            .json(
-                responseBuilder
-                    .setStatus(ResponseStatusType.INTERNAL)
-                    .setError({ errorCode: ErrorCode.TOKEN_LONG_INVALID_ERROR })
-                    .build(),
-            )
-            .end();
-    }
-};
+        const token = options.extractToken(req);
 
-export const tokenResetVerify = (req: Request, res: Response, next: NextFunction) => {
-    const buildError = (message: string) => {
-        throw new ValidationError({
-            message,
-            errorCode: ErrorCode.TOKEN_RESET_INVALID_ERROR,
-            statusCode: HttpCode.UNAUTHORIZED,
-        });
-    };
-
-    const token = extractToken(req.headers.authorization);
-    try {
-        const userId = req.params?.userId;
-        if (!token || typeof token !== 'string' || !userId) {
-            buildError(`Reset token or userId invalid - userId: ${userId}`);
-        }
-        const payload = jwt.verify(token as string, getConfig().jwtResetSecret, {
-            algorithms: [getConfig().jwtAlgorithm as Algorithm],
-            issuer: getConfig().jwtIssuer,
-            audience: getConfig().jwtAudience,
-            subject: String(userId),
-        }) as JwtPayloadCustom;
-
-        if (payload.sub !== String(userId)) {
-            buildError(`Reset token sub not same as userId`);
-        }
-        req.user = {
-            userId: Number(userId),
-        };
-
-        _logger.info('Reset token pass validation');
-        return next();
-    } catch (e: unknown) {
-        const responseBuilder = new ResponseBuilder();
-        _logger.error(`Reset token failed due reason: ${(e as { message: string }).message}`);
-        return res
-            .status(HttpCode.UNAUTHORIZED)
-            .json(
-                responseBuilder
-                    .setStatus(ResponseStatusType.INTERNAL)
-                    .setError({ errorCode: ErrorCode.TOKEN_RESET_INVALID_ERROR })
-                    .build(),
-            )
-            .end();
-    }
-};
-
-export const tokenVerify = async (req: Request, res: Response, next: NextFunction) => {
-    const responseBuilder = new ResponseBuilder();
-
-    const token = extractToken(req.headers.authorization);
-
-    if (!token || typeof token !== 'string') {
-        _logger.error('No token provided');
-        return res.status(HttpCode.UNAUTHORIZED).json(ResponseBuilderPreset.getAuthError());
-    }
-
-    const blacklist = TokenBlacklistBuilder.build();
-    try {
-        if (await blacklist.isBlacklisted(token)) {
-            _logger.warn('Token is blacklisted');
+        if (!token || typeof token !== 'string') {
+            _logger.error(`Token not provided or invalid`);
             return res
-                .status(HttpCode.UNAUTHORIZED)
-                .json(
-                    responseBuilder
-                        .setStatus(ResponseStatusType.INTERNAL)
-                        .setError({ errorCode: ErrorCode.TOKEN_INVALID_ERROR })
-                        .build(),
-                );
+                .status(options.statusCode)
+                .json(responseBuilder.setStatus(ResponseStatusType.INTERNAL).setError({ errorCode: options.errorCode }).build())
+                .end();
         }
-    } catch (err) {
-        _logger.error('Error checking token blacklist', err);
-        return res.status(HttpCode.SERVICE_UNAVAILABLE).json(
-            responseBuilder
-                .setStatus(ResponseStatusType.INTERNAL)
-                .setError({
-                    errorCode: ErrorCode.UNKNOWN_ERROR,
-                })
-                .build(),
-        );
-    }
-    return passport.authenticate(
-        'jwt',
-        { session: false },
-        (err: unknown, user?: Express.User | false | null, info?: { name: string; message: string }) => {
-            if (err) {
-                _logger.error('JWT system error', err);
-                return res.status(HttpCode.SERVICE_UNAVAILABLE).json(
-                    new ResponseBuilder()
-                        .setStatus(ResponseStatusType.INTERNAL)
-                        .setError({
-                            errorCode: ErrorCode.TOKEN_INVALID_ERROR,
-                        })
-                        .build(),
-                );
-            }
-            if (!user) {
-                let message = 'Unauthorized';
-                let obj = null;
 
-                if (info) {
-                    if (info.name === 'TokenExpiredError') {
-                        message = 'Token expired';
-                        obj = ResponseBuilderPreset.getTokenExpired();
-                    } else if (info.name === 'JsonWebTokenError') {
-                        message = 'Invalid token';
-                        obj = ResponseBuilderPreset.getAuthError();
-                    } else if (typeof info === 'string') {
-                        message = info;
-                        obj = ResponseBuilderPreset.getAuthError();
-                    } else if (info.message) {
-                        obj = ResponseBuilderPreset.getAuthError();
-                        message = info.message;
-                    }
+        try {
+            if (options.checkBlacklist) {
+                const blacklist = TokenBlacklistBuilder.build();
+                if (await blacklist.isBlacklisted(token)) {
+                    _logger.warn('Token is blacklisted');
+                    return res
+                        .status(HttpCode.UNAUTHORIZED)
+                        .json(
+                            responseBuilder
+                                .setStatus(ResponseStatusType.INTERNAL)
+                                .setError({ errorCode: ErrorCode.TOKEN_INVALID_ERROR })
+                                .build(),
+                        )
+                        .end();
                 }
-
-                _logger.error(`JWT validation failed due reason: ${message}`);
-                return res.status(HttpCode.UNAUTHORIZED).json(obj);
             }
 
-            req.user = user;
-            _logger.info('Token regular pass validation');
+            const userId = req.params?.userId;
+            const payload = jwt.verify(token, options.secret(), {
+                algorithms: [getConfig().jwtAlgorithm as Algorithm],
+                issuer: getConfig().jwtIssuer,
+                audience: getConfig().jwtAudience,
+                ignoreExpiration: options.ignoreExpiration ?? false,
+                ...(userId ? { subject: String(userId) } : {}),
+            }) as JwtPayloadCustom;
+
+            if (payload.purpose !== options.purpose) {
+                throw new ValidationError({
+                    message: `Token purpose invalid: expected '${options.purpose}'`,
+                    errorCode: options.errorCode,
+                    statusCode: options.statusCode,
+                });
+            }
+
+            if (userId && payload.sub !== String(userId)) {
+                throw new ValidationError({
+                    message: `Token sub does not match userId`,
+                    errorCode: options.errorCode,
+                    statusCode: options.statusCode,
+                });
+            }
+
+            if (options.lookupUser) {
+                const userService = UserServiceBuilder.build();
+                const user = await userService.get(parseInt(payload.sub, 10));
+                if (!user?.userId) {
+                    _logger.error(`User not found for sub: ${payload.sub}`);
+                    return res
+                        .status(HttpCode.UNAUTHORIZED)
+                        .json(
+                            responseBuilder
+                                .setStatus(ResponseStatusType.INTERNAL)
+                                .setError({ errorCode: ErrorCode.TOKEN_PAYLOAD_ERROR })
+                                .build(),
+                        )
+                        .end();
+                }
+                req.user = user;
+            } else {
+                req.user = { userId: Number(payload.sub) };
+            }
+
+            _logger.info(`Token '${options.purpose}' passed validation`);
             return next();
-        },
-    )(req, res, next);
-};
+        } catch (e: unknown) {
+            _logger.error(`Token '${options.purpose}' failed: ${(e as { message: string }).message}`);
+            return res
+                .status(options.statusCode)
+                .json(responseBuilder.setStatus(ResponseStatusType.INTERNAL).setError({ errorCode: options.errorCode }).build())
+                .end();
+        }
+    };
+}
+
+export const tokenVerify = createTokenMiddleware({
+    secret: () => getConfig().jwtSecret,
+    purpose: 'access',
+    errorCode: ErrorCode.TOKEN_INVALID_ERROR,
+    statusCode: HttpCode.UNAUTHORIZED,
+    extractToken: (req) => extractToken(req.headers.authorization),
+    checkBlacklist: true,
+    lookupUser: true,
+});
+
+export const tokenLongVerify = createTokenMiddleware({
+    secret: () => getConfig().jwtLongSecret,
+    purpose: 'refresh',
+    errorCode: ErrorCode.TOKEN_LONG_INVALID_ERROR,
+    statusCode: HttpCode.BAD_REQUEST,
+    extractToken: (req) => req.body?.token,
+    ignoreExpiration: true,
+    checkBlacklist: true,
+    lookupUser: true,
+});
+
+export const tokenResetVerify = createTokenMiddleware({
+    secret: () => getConfig().jwtResetSecret,
+    purpose: 'reset',
+    errorCode: ErrorCode.TOKEN_RESET_INVALID_ERROR,
+    statusCode: HttpCode.UNAUTHORIZED,
+    extractToken: (req) => extractToken(req.headers.authorization),
+    checkBlacklist: false,
+    lookupUser: false,
+});
 
 export default tokenVerify;

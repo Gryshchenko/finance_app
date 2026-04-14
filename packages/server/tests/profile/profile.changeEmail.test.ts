@@ -286,8 +286,6 @@ describe('POST /user/:userId/profile/email-change/resend — resend confirmation
     });
 });
 
-// ─── Full flow ────────────────────────────────────────────────────────────────
-
 describe('Full flow — request → verify → login with new email', () => {
     it('new email works for login after change; old email does not', async () => {
         const agent = request.agent(app);

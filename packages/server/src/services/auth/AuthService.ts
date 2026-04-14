@@ -2,7 +2,7 @@ import jwt, { Algorithm, DecodeOptions, JwtPayload } from 'jsonwebtoken';
 import { RoleType, ErrorCode, HttpCode, Time, Utils } from 'tenpercent/shared';
 
 import { IUser } from 'interfaces/IUser';
-import { JwtPayloadCustom } from 'services/auth/passport-setup';
+import { JwtPayloadCustom, TokenPurpose } from 'services/auth/passport-setup';
 import TokenBlacklistBuilder from 'services/auth/TokenBlacklistBuilder';
 import { IUserService } from 'services/user/UserService';
 import { getConfig } from 'src/config/config';
@@ -65,6 +65,7 @@ export default class AuthService extends LoggerBase implements IAuthService {
                 throw new ValidationError({
                     message: 'User not found or invalid credentials provided',
                     errorCode: ErrorCode.AUTH_ERROR,
+                    statusCode: HttpCode.UNAUTHORIZED,
                 });
             }
 
@@ -86,6 +87,7 @@ export default class AuthService extends LoggerBase implements IAuthService {
                 RoleType.Default,
                 getConfig().jwtLongSecret,
                 getConfig().jwtLongExpiresIn,
+                'refresh',
             );
             return { user, token, longToken };
         } catch (e) {
@@ -93,7 +95,13 @@ export default class AuthService extends LoggerBase implements IAuthService {
             throw e;
         }
     }
-    public static createJWToken(userId: number, role: RoleType, jwtSecret: string, expiresIn: string): string {
+    public static createJWToken(
+        userId: number,
+        role: RoleType,
+        jwtSecret: string,
+        expiresIn: string,
+        purpose: TokenPurpose = 'access',
+    ): string {
         if (!jwtSecret) {
             throw new CustomError({
                 message: 'JWT secret is not configured',
@@ -102,7 +110,7 @@ export default class AuthService extends LoggerBase implements IAuthService {
             });
         }
 
-        return jwt.sign({ userId, role }, jwtSecret, {
+        return jwt.sign({ userId, role, purpose }, jwtSecret, {
             algorithm: getConfig().jwtAlgorithm as unknown as Algorithm,
             expiresIn,
             issuer: getConfig().jwtIssuer,

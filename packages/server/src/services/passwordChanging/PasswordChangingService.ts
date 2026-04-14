@@ -1,4 +1,4 @@
-import { ErrorCode, HttpCode, Utils } from 'tenpercent/shared';
+import { ErrorCode, HttpCode, Time, Utils } from 'tenpercent/shared';
 
 import { IDatabaseConnection, IDBTransaction } from 'interfaces/IDatabaseConnection';
 import { ConfirmationHelper } from 'services/confirmation/ConfirmationHelper';
@@ -58,17 +58,8 @@ export default class PasswordChangingService extends LoggerBase implements IPass
                 });
             }
 
-            const hashOldPasswordFromInput = await UserServiceUtils.hashPassword(oldPassword, Buffer.from(user.salt, 'hex'));
             const hashOldPasswordFromDB = user.passwordHash;
-            if (!hashOldPasswordFromInput || !hashOldPasswordFromDB) {
-                throw new ValidationError({
-                    message: 'Password hashing failed',
-                    errorCode: ErrorCode.AUTH_ERROR,
-                    statusCode: HttpCode.BAD_REQUEST,
-                    payload: { field: 'password', reason: 'invalid' },
-                });
-            }
-            const isPasswordSame = await UserServiceUtils.verifyPassword(hashOldPasswordFromDB, hashOldPasswordFromInput);
+            const isPasswordSame = await UserServiceUtils.verifyPassword(hashOldPasswordFromDB, oldPassword);
             if (!isPasswordSame) {
                 throw new ValidationError({
                     message: 'Password compare failed',
@@ -113,13 +104,13 @@ export default class PasswordChangingService extends LoggerBase implements IPass
                 });
             }
             const trx = trxInProcess as unknown as IDBTransaction;
-            const record = await this._dataAccess.getByUserId(userId);
+            const record = await this._dataAccess.getByUserId(userId, Time.getISODateNowUTC());
 
             if (!record) {
                 throw new ValidationError({
                     message: `No pending password change found for userId ${userId}`,
                     errorCode: ErrorCode.AUTH_ERROR,
-                    statusCode: HttpCode.NOT_FOUND,
+                    statusCode: HttpCode.BAD_REQUEST,
                 });
             }
 
@@ -142,7 +133,7 @@ export default class PasswordChangingService extends LoggerBase implements IPass
     public async refresh(userId: number, confirmationId: number): Promise<boolean> {
         this._logger.info(`Refresh confirmation code password change for userId ${userId}`);
         try {
-            const record = await this._dataAccess.getByUserId(userId);
+            const record = await this._dataAccess.getByUserId(userId, undefined);
 
             if (!record) {
                 throw new ValidationError({

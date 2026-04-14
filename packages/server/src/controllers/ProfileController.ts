@@ -62,6 +62,24 @@ export class ProfileController {
         }
     }
 
+    public static async refreshConfirmationCodeForEmailChange(req: Request, res: Response) {
+        const responseBuilder = new ResponseBuilder();
+        try {
+            const userFromSession = req.user as IUser;
+            const { confirmationId } = req.body;
+            await ProfileServiceBuilder.build().refreshConfirmationCodeForEmailChange(
+                userFromSession.userId,
+                Number(confirmationId),
+            );
+            res.status(HttpCode.NO_CONTENT).json(responseBuilder.setStatus(ResponseStatusType.OK).setData({}).build());
+        } catch (e: unknown) {
+            ProfileController.logger.error(
+                `Refresh confirmation code for email change failed due reason: ${(e as { message: string }).message}`,
+            );
+            generateErrorResponse(res, responseBuilder, e as BaseError, ErrorCode.PROFILE_ERROR);
+        }
+    }
+
     public static async confirmEmailChange(req: Request, res: Response) {
         const responseBuilder = new ResponseBuilder();
         try {
@@ -121,23 +139,6 @@ export class ProfileController {
         } catch (e: unknown) {
             ProfileController.logger.error(
                 `Refresh confirmation code for password change failed due reason: ${(e as { message: string }).message}`,
-            );
-            generateErrorResponse(res, responseBuilder, e as BaseError, ErrorCode.PROFILE_ERROR);
-        }
-    }
-    public static async refreshConfirmationCodeForEmailChange(req: Request, res: Response) {
-        const responseBuilder = new ResponseBuilder();
-        try {
-            const userFromSession = req.user as IUser;
-            const { confirmationId } = req.body;
-            await ProfileServiceBuilder.build().refreshConfirmationCodeForEmailChange(
-                userFromSession.userId,
-                Number(confirmationId),
-            );
-            res.status(HttpCode.NO_CONTENT).json(responseBuilder.setStatus(ResponseStatusType.OK).setData({}).build());
-        } catch (e: unknown) {
-            ProfileController.logger.error(
-                `Refresh confirmation code for email change failed due reason: ${(e as { message: string }).message}`,
             );
             generateErrorResponse(res, responseBuilder, e as BaseError, ErrorCode.PROFILE_ERROR);
         }

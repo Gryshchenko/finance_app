@@ -101,7 +101,6 @@ export class AuthController {
         try {
             await PasswordForgetServiceBuilder.build().request(req.body.email.toLowerCase());
         } catch (e: unknown) {
-            // Log infra errors but do not expose them — the response is always 204.
             AuthController.logger.error(`Forget password failed: ${(e as { message: string }).message}`);
         } finally {
             res.status(HttpCode.NO_CONTENT).send();
@@ -121,11 +120,13 @@ export class AuthController {
     public static async forgetConfirm(req: Request, res: Response) {
         const responseBuilder = new ResponseBuilder();
         try {
-            const { resetToken } = await PasswordForgetServiceBuilder.build().confirm(
+            const { resetToken, userId } = await PasswordForgetServiceBuilder.build().confirm(
                 req.body.email.toLowerCase(),
                 Number(req.body.confirmationCode),
             );
-            res.status(HttpCode.OK).json(responseBuilder.setStatus(ResponseStatusType.OK).setData({ resetToken }).build());
+            res.status(HttpCode.OK).json(
+                responseBuilder.setStatus(ResponseStatusType.OK).setData({ resetToken, userId }).build(),
+            );
         } catch (e: unknown) {
             AuthController.logger.error(`Forget password confirm failed: ${(e as { message: string }).message}`);
             generateErrorResponse(res, responseBuilder, e as BaseError, ErrorCode.AUTH_ERROR);

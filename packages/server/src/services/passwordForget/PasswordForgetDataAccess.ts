@@ -26,7 +26,7 @@ export default class PasswordForgetDataAccess extends LoggerBase implements IPas
             await this._db
                 .engine()<IPasswordForget>('password_forgot')
                 .insert({ userId, email, confirmationCode, expiresAt, confirmed: false })
-                .onConflict(['email'])
+                .onConflict(['email', 'userId'])
                 .merge(['userId', 'confirmationCode', 'expiresAt', 'confirmed']);
 
             this._logger.info(`Password forget request upserted for userId: ${userId}`);

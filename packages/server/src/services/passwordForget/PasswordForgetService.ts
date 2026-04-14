@@ -71,7 +71,7 @@ export default class PasswordForgetService extends LoggerBase implements IPasswo
             throw e;
         }
     }
-    public async confirm(email: string, confirmationCode: number): Promise<{ resetToken: string }> {
+    public async confirm(email: string, confirmationCode: number): Promise<{ resetToken: string; userId: number }> {
         this._logger.info(`Password forget confirm requested`);
         try {
             const record = await this._dataAccess.getActiveByEmail(email);
@@ -93,10 +93,11 @@ export default class PasswordForgetService extends LoggerBase implements IPasswo
                 RoleType.Default,
                 getConfig().jwtResetSecret,
                 getConfig().jwtResetExpiresIn,
+                'reset',
             );
 
             this._logger.info(`Password forget confirmed for userId: ${record.userId}`);
-            return { resetToken };
+            return { resetToken, userId: record.userId };
         } catch (e) {
             this._logger.error(`Password forget confirm failed: ${(e as { message: string }).message}`);
             throw e;
