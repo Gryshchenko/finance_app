@@ -1,14 +1,15 @@
-import { AccountController } from 'controllers/AccountController';
 import express from 'express';
-import { validateQuery } from 'src/utils/validation/validateQuery';
-import { sanitizeRequestBody } from 'src/utils/validation/sanitizeRequestBody';
-import routesInputValidation from 'src/utils/validation/routesInputValidation';
+
+import { AccountController } from 'controllers/AccountController';
 import {
     accountConvertValidationMessageToErrorCode,
     createAccountValidationRules,
     patchAccountValidationRules,
 } from 'src/utils/validation/accountValidationRules';
+import routesInputValidation from 'src/utils/validation/routesInputValidation';
+import { sanitizeRequestBody } from 'src/utils/validation/sanitizeRequestBody';
 import { validatePathQueryProperty } from 'src/utils/validation/validatePathQueryProperty';
+import { validateQuery } from 'src/utils/validation/validateQuery';
 
 const accountRouter = express.Router({ mergeParams: true });
 const accountsRouter = express.Router({ mergeParams: true });

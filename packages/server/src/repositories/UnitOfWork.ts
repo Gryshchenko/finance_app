@@ -1,5 +1,6 @@
-import { IDatabaseConnection, IDBTransaction } from 'interfaces/IDatabaseConnection';
 import { Utils } from 'tenpercent/shared';
+
+import { IDatabaseConnection, IDBTransaction } from 'interfaces/IDatabaseConnection';
 import { LoggerBase } from 'src/helper/logger/LoggerBase';
 
 export class UnitOfWork extends LoggerBase {

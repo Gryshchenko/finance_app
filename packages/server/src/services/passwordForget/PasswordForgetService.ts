@@ -1,12 +1,13 @@
-import { LoggerBase } from 'src/helper/logger/LoggerBase';
-import { ValidationError } from 'src/utils/errors/ValidationError';
 import { ErrorCode, HttpCode, RoleType } from 'tenpercent/shared';
-import { IUserService } from 'services/user/UserService';
+
+import AuthService from 'services/auth/AuthService';
 import { ConfirmationHelper } from 'services/confirmation/ConfirmationHelper';
 import { IPasswordForgetDataAccess } from 'services/passwordForget/PasswordForgetDataAccess';
-import AuthService from 'services/auth/AuthService';
-import { getConfig } from 'src/config/config';
+import { IUserService } from 'services/user/UserService';
 import UserServiceUtils from 'services/user/UserServiceUtils';
+import { getConfig } from 'src/config/config';
+import { LoggerBase } from 'src/helper/logger/LoggerBase';
+import { ValidationError } from 'src/utils/errors/ValidationError';
 
 const FORGET_CODE_EXPIRES_IN: [number, number, number] = [0, 10, 0]; // 10 minutes
 

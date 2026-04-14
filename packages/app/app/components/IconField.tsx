@@ -1,5 +1,4 @@
-import { ScrollView, StyleProp, TextStyle, View, ViewStyle } from 'react-native';
-import { Pressable } from 'react-native';
+import { ScrollView, StyleProp, TextStyle, View, ViewStyle, Pressable } from 'react-native';
 import {
     AccountIcon,
     CategoryIconType,

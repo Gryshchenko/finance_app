@@ -1,12 +1,13 @@
 import express from 'express';
-import { validateQuery } from 'src/utils/validation/validateQuery';
-import routesInputValidation from 'src/utils/validation/routesInputValidation';
+import { UserStatus } from 'tenpercent/shared';
+
 import { EmailConfirmationController } from 'controllers/EmailConfirmationController';
 import tokenVerify from 'middleware/tokenVerify';
-import userStatusVerify from 'middleware/userStatusVerify';
-import { UserStatus } from 'tenpercent/shared';
-import { validatePathConfirmationCodeProperty } from 'src/utils/validation/validatePathConfirmationCodeProperty';
 import userIdVerify from 'middleware/userIdVerify';
+import userStatusVerify from 'middleware/userStatusVerify';
+import routesInputValidation from 'src/utils/validation/routesInputValidation';
+import { validatePathConfirmationCodeProperty } from 'src/utils/validation/validatePathConfirmationCodeProperty';
+import { validateQuery } from 'src/utils/validation/validateQuery';
 
 const emailConfirmationRouter = express.Router({ mergeParams: true });
 

@@ -1,13 +1,12 @@
 import { Request, Response } from 'express';
+import { ResponseStatusType, ErrorCode, HttpCode } from 'tenpercent/shared';
+
 import Logger from 'helper/logger/Logger';
 import ResponseBuilder from 'helper/responseBuilder/ResponseBuilder';
-import { ResponseStatusType } from 'tenpercent/shared';
-import { ErrorCode } from 'tenpercent/shared';
-import { HttpCode } from 'tenpercent/shared';
-import { generateErrorResponse } from 'src/utils/generateErrorResponse';
-import { BaseError } from 'src/utils/errors/BaseError';
-import UserServiceBuilder from 'services/user/UserServiceBuilder';
 import { IUser } from 'interfaces/IUser';
+import UserServiceBuilder from 'services/user/UserServiceBuilder';
+import { BaseError } from 'src/utils/errors/BaseError';
+import { generateErrorResponse } from 'src/utils/generateErrorResponse';
 
 export class UserController {
     private static readonly logger = Logger.Of('UserController');

@@ -1,5 +1,5 @@
-import { IDatabaseConnection, IDBTransaction } from 'interfaces/IDatabaseConnection';
 import { LoggerBase } from 'helper/logger/LoggerBase';
+import { IDatabaseConnection, IDBTransaction } from 'interfaces/IDatabaseConnection';
 
 export interface IDailyTransferStatsDataAccess {
     updateTotal(

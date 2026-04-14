@@ -1,9 +1,10 @@
 import express from 'express';
-import routesInputValidation from 'src/utils/validation/routesInputValidation';
+import { UserStatus } from 'tenpercent/shared';
+
 import { CurrencyController } from 'controllers/CurrencyController';
 import tokenVerify from 'middleware/tokenVerify';
 import userStatusVerify from 'middleware/userStatusVerify';
-import { UserStatus } from 'tenpercent/shared';
+import routesInputValidation from 'src/utils/validation/routesInputValidation';
 import { validateQuery } from 'src/utils/validation/validateQuery';
 
 const currencyRouter = express.Router({ mergeParams: true });

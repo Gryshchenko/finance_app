@@ -1,10 +1,10 @@
+import { IDatabaseConnection } from 'interfaces/IDatabaseConnection';
 import AccountServiceBuilder from 'services/account/AccountServiceBuilder';
+import BalanceServiceBuilder from 'services/balance/BalanceServiceBuilder';
+import { StatsOrchestratorServiceBuilder } from 'services/StatsOrchestrator/StatsOrchestratorServiceBuilder';
 import TransactionDataAccess from 'services/transaction/TransactionDataAccess';
 import TransactionService from 'services/transaction/TransactionService';
 import DatabaseConnectionBuilder from 'src/repositories/DatabaseConnectionBuilder';
-import { IDatabaseConnection } from 'interfaces/IDatabaseConnection';
-import BalanceServiceBuilder from 'services/balance/BalanceServiceBuilder';
-import { StatsOrchestratorServiceBuilder } from 'services/StatsOrchestrator/StatsOrchestratorServiceBuilder';
 
 export default class TransactionServiceBuilder {
     public static build(db?: IDatabaseConnection): TransactionService {

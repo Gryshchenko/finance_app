@@ -1,15 +1,16 @@
-import { CategoryController } from 'controllers/CategoryController';
 import express from 'express';
-import { validateQuery } from 'src/utils/validation/validateQuery';
-import { sanitizeRequestBody } from 'src/utils/validation/sanitizeRequestBody';
-import routesInputValidation from 'src/utils/validation/routesInputValidation';
+
+import { CategoryController } from 'controllers/CategoryController';
 import {
     categoryConvertValidationMessageToErrorCode,
     createCategoryValidationRules,
     patchCategoryValidationRules,
 } from 'src/utils/validation/categoryValidationRules';
-import { validatePathQueryProperty } from 'src/utils/validation/validatePathQueryProperty';
+import routesInputValidation from 'src/utils/validation/routesInputValidation';
+import { sanitizeRequestBody } from 'src/utils/validation/sanitizeRequestBody';
 import { validateFromToDateQuery } from 'src/utils/validation/validateFromToDateQuery';
+import { validatePathQueryProperty } from 'src/utils/validation/validatePathQueryProperty';
+import { validateQuery } from 'src/utils/validation/validateQuery';
 
 const categoryRouter = express.Router({ mergeParams: true });
 const categoriesRouter = express.Router({ mergeParams: true });

@@ -1,5 +1,4 @@
-import { IAccount } from 'tenpercent/shared';
-import { IAccountListItem } from 'tenpercent/shared';
+import { IAccount, IAccountListItem } from 'tenpercent/shared';
 
 import { ApiAbstract } from '@/services/api/apiAbstract';
 import { GeneralApiProblem, GeneralApiProblemKind } from '@/services/api/apiProblem';

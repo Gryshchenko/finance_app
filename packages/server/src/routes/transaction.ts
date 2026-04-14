@@ -1,14 +1,15 @@
-import { TransactionController } from 'controllers/TransactionController';
 import express from 'express';
+
+import { TransactionController } from 'controllers/TransactionController';
+import routesInputValidation from 'src/utils/validation/routesInputValidation';
+import { sanitizeRequestBody } from 'src/utils/validation/sanitizeRequestBody';
 import {
     transactionConvertValidationMessageToErrorCode,
     createTransactionValidationRules,
     patchTransactionValidationRules,
 } from 'src/utils/validation/transactionValidationRules';
-import routesInputValidation from 'src/utils/validation/routesInputValidation';
-import { sanitizeRequestBody } from 'src/utils/validation/sanitizeRequestBody';
-import { validateQuery } from 'src/utils/validation/validateQuery';
 import { validatePathQueryProperty } from 'src/utils/validation/validatePathQueryProperty';
+import { validateQuery } from 'src/utils/validation/validateQuery';
 
 const transactionRouter = express.Router({ mergeParams: true });
 const transactionsRouter = express.Router({ mergeParams: true });

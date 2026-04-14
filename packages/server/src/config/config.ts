@@ -1,7 +1,6 @@
 // import { readFileSync } from 'fs';
-import * as process from 'process';
-
 import dotenv from 'dotenv';
+import * as process from 'process';
 
 dotenv.config();
 

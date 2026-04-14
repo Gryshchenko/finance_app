@@ -1,10 +1,11 @@
 import express from 'express';
-import { validateQuery } from 'src/utils/validation/validateQuery';
-import routesInputValidation from 'src/utils/validation/routesInputValidation';
+import { UserStatus } from 'tenpercent/shared';
+
 import { ExchangeRateController } from 'controllers/ExchangeRateController';
 import tokenVerify from 'middleware/tokenVerify';
 import userStatusVerify from 'middleware/userStatusVerify';
-import { UserStatus } from 'tenpercent/shared';
+import routesInputValidation from 'src/utils/validation/routesInputValidation';
+import { validateQuery } from 'src/utils/validation/validateQuery';
 
 const exchangeRates = express.Router({ mergeParams: true });
 

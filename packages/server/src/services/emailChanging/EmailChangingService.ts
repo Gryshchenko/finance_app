@@ -1,10 +1,11 @@
-import { LoggerBase } from 'src/helper/logger/LoggerBase';
-import { IDBTransaction } from 'interfaces/IDatabaseConnection';
-import { ValidationError } from 'src/utils/errors/ValidationError';
 import { ErrorCode, HttpCode } from 'tenpercent/shared';
+
+import { IDBTransaction } from 'interfaces/IDatabaseConnection';
+import { ConfirmationHelper } from 'services/confirmation/ConfirmationHelper';
 import { IEmailChangingDataAccess } from 'services/emailChanging/EmailChangingDataAccess';
 import { IUserService } from 'services/user/UserService';
-import { ConfirmationHelper } from 'services/confirmation/ConfirmationHelper';
+import { LoggerBase } from 'src/helper/logger/LoggerBase';
+import { ValidationError } from 'src/utils/errors/ValidationError';
 
 const CHANGE_CODE_EXPIRES_IN: [number, number, number] = [0, 10, 0];
 

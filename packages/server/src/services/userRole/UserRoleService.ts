@@ -1,6 +1,6 @@
-import { IUserRoleDataAccess } from 'services/userRole/UserRoleDataAccess';
-import { IUserRole } from 'interfaces/IUserRole';
 import { IDBTransaction } from 'interfaces/IDatabaseConnection';
+import { IUserRole } from 'interfaces/IUserRole';
+import { IUserRoleDataAccess } from 'services/userRole/UserRoleDataAccess';
 
 export interface IUserRoleService {
     getUserRole(userId: number): Promise<IUserRole | undefined>;

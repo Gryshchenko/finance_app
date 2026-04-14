@@ -1,7 +1,6 @@
 import { FC } from 'react';
 import { useNavigation } from '@react-navigation/native';
-import { ITransaction } from 'tenpercent/shared';
-import { Time } from 'tenpercent/shared';
+import { ITransaction, Time } from 'tenpercent/shared';
 import { IRate } from 'tenpercent/shared/dist/interfaces/IRate';
 
 import { TransactionFields } from '@/components/transaction/TransactionFields';
@@ -40,6 +39,7 @@ const fetchRates = async (
             return undefined;
         }
     } catch (e) {
+        Logger.Of('TransactionCreate').error(e);
         return undefined;
     }
 };

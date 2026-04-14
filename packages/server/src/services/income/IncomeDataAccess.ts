@@ -1,17 +1,14 @@
+import { IIncome, AccountStatusType, DateFormat, Time, IIncomeStats, IGetStatsProperties } from 'tenpercent/shared';
+
+import { ICreateIncome } from 'interfaces/ICreateIncome';
 import { IDatabaseConnection, IDBTransaction } from 'interfaces/IDatabaseConnection';
 import { LoggerBase } from 'src/helper/logger/LoggerBase';
-import { IIncome } from 'tenpercent/shared';
-import { ICreateIncome } from 'interfaces/ICreateIncome';
-import { DBError } from 'src/utils/errors/DBError';
 import { BaseError } from 'src/utils/errors/BaseError';
-import { NotFoundError } from 'src/utils/errors/NotFoundError';
+import { DBError } from 'src/utils/errors/DBError';
 import { isBaseError } from 'src/utils/errors/isBaseError';
-import { validateAllowedProperties } from 'src/utils/validation/validateAllowedProperties';
-import { AccountStatusType } from 'tenpercent/shared';
+import { NotFoundError } from 'src/utils/errors/NotFoundError';
 import { getOnlyNotEmptyProperties } from 'src/utils/validation/getOnlyNotEmptyProperties';
-import { DateFormat, Time } from 'tenpercent/shared';
-import { IIncomeStats } from 'tenpercent/shared';
-import { IGetStatsProperties } from 'tenpercent/shared';
+import { validateAllowedProperties } from 'src/utils/validation/validateAllowedProperties';
 
 export interface IIncomeDataAccess {
     getStats(userId: number, properties: IGetStatsProperties): Promise<IIncomeStats[]>;

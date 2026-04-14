@@ -1,15 +1,16 @@
-import { IncomeController } from 'controllers/IncomeController';
 import express from 'express';
-import { validateQuery } from 'src/utils/validation/validateQuery';
-import { sanitizeRequestBody } from 'src/utils/validation/sanitizeRequestBody';
-import routesInputValidation from 'src/utils/validation/routesInputValidation';
+
+import { IncomeController } from 'controllers/IncomeController';
 import {
     incomeConvertValidationMessageToErrorCode,
     createIncomeValidationRules,
     patchIncomeValidationRules,
 } from 'src/utils/validation/incomeValidationRules';
-import { validatePathQueryProperty } from 'src/utils/validation/validatePathQueryProperty';
+import routesInputValidation from 'src/utils/validation/routesInputValidation';
+import { sanitizeRequestBody } from 'src/utils/validation/sanitizeRequestBody';
 import { validateFromToDateQuery } from 'src/utils/validation/validateFromToDateQuery';
+import { validatePathQueryProperty } from 'src/utils/validation/validatePathQueryProperty';
+import { validateQuery } from 'src/utils/validation/validateQuery';
 
 const incomeRouter = express.Router({ mergeParams: true });
 const incomesRouter = express.Router({ mergeParams: true });

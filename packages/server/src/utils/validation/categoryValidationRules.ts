@@ -1,5 +1,6 @@
-import { createSignupValidationRules } from 'src/utils/validation/routesInputValidation';
 import { ErrorCode } from 'tenpercent/shared';
+
+import { createSignupValidationRules } from 'src/utils/validation/routesInputValidation';
 
 const categoryConvertValidationMessageToErrorCode = (path: string): ErrorCode => {
     switch (path) {

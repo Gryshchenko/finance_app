@@ -1,17 +1,15 @@
 import { Request, Response } from 'express';
+import { extractToken, ResponseStatusType, ErrorCode, HttpCode, Utils } from 'tenpercent/shared';
+
 import Logger from 'helper/logger/Logger';
 import ResponseBuilder from 'helper/responseBuilder/ResponseBuilder';
-import ProfileServiceBuilder from 'services/profile/ProfileServiceBuilder';
-import { extractToken, ResponseStatusType } from 'tenpercent/shared';
-import ProfileServiceUtils from 'services/profile/ProfileServiceUtils';
-import { ErrorCode } from 'tenpercent/shared';
-import { HttpCode } from 'tenpercent/shared';
-import { generateErrorResponse } from 'src/utils/generateErrorResponse';
-import { BaseError } from 'src/utils/errors/BaseError';
 import { IUser } from 'interfaces/IUser';
-import { ValidationError } from 'src/utils/errors/ValidationError';
-import { Utils } from 'tenpercent/shared';
 import AuthServiceBuilder from 'services/auth/AuthServiceBuilder';
+import ProfileServiceBuilder from 'services/profile/ProfileServiceBuilder';
+import ProfileServiceUtils from 'services/profile/ProfileServiceUtils';
+import { BaseError } from 'src/utils/errors/BaseError';
+import { ValidationError } from 'src/utils/errors/ValidationError';
+import { generateErrorResponse } from 'src/utils/generateErrorResponse';
 
 export class ProfileController {
     private static readonly logger = Logger.Of('ProfileController');

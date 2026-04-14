@@ -1,6 +1,5 @@
-import { IError } from 'tenpercent/shared';
-import { ErrorCode } from 'tenpercent/shared';
-import { HttpCode } from 'tenpercent/shared';
+import { IError, ErrorCode, HttpCode } from 'tenpercent/shared';
+
 import { BaseError } from './BaseError';
 
 export class NotFoundError extends BaseError {

@@ -1,8 +1,9 @@
+import { ISummary, StatsPeriod } from 'tenpercent/shared';
+
 import { IDatabaseConnection, IDBTransaction } from 'interfaces/IDatabaseConnection';
 import { LoggerBase } from 'src/helper/logger/LoggerBase';
-import { StatsTransactionType } from 'types/StatsTransactionType';
 import { DBError } from 'src/utils/errors/DBError';
-import { ISummary, StatsPeriod } from 'tenpercent/shared';
+import { StatsTransactionType } from 'types/StatsTransactionType';
 
 export interface IDailyStatsDataAccess {
     updateTotal: (

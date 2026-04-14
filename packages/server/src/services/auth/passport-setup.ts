@@ -1,12 +1,10 @@
-import { PassportStatic } from 'passport';
-import { getConfig } from 'src/config/config';
-
-import { Strategy as JwtStrategy, StrategyOptionsWithRequest, VerifiedCallback } from 'passport-jwt';
-import UserServiceBuilder from 'src/services/user/UserServiceBuilder';
-
-import { ExtractJwt } from 'passport-jwt';
 import { Algorithm, JwtPayload } from 'jsonwebtoken';
+import { PassportStatic } from 'passport';
+import { Strategy as JwtStrategy, StrategyOptionsWithRequest, VerifiedCallback, ExtractJwt } from 'passport-jwt';
 import { ErrorCode } from 'tenpercent/shared';
+
+import { getConfig } from 'src/config/config';
+import UserServiceBuilder from 'src/services/user/UserServiceBuilder';
 
 export interface JwtPayloadCustom extends JwtPayload {
     sub: string;

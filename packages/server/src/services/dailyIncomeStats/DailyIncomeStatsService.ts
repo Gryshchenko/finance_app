@@ -1,6 +1,6 @@
-import { IDailyIncomeStatsDataAccess } from 'services/dailyIncomeStats/DailyIncomeStatsDataAccess';
-import { IDBTransaction } from 'interfaces/IDatabaseConnection';
 import { LoggerBase } from 'helper/logger/LoggerBase';
+import { IDBTransaction } from 'interfaces/IDatabaseConnection';
+import { IDailyIncomeStatsDataAccess } from 'services/dailyIncomeStats/DailyIncomeStatsDataAccess';
 import { statsValidateDate } from 'src/utils/validation/StatsValidateDate';
 
 export interface IDailyIncomeStatsService {

@@ -1,6 +1,6 @@
-import { IDailyCategoryStatsDataAccess } from 'services/dailyCategoryStats/DailyCategoryStatsDataAccess';
-import { IDBTransaction } from 'interfaces/IDatabaseConnection';
 import { LoggerBase } from 'helper/logger/LoggerBase';
+import { IDBTransaction } from 'interfaces/IDatabaseConnection';
+import { IDailyCategoryStatsDataAccess } from 'services/dailyCategoryStats/DailyCategoryStatsDataAccess';
 import { statsValidateDate } from 'src/utils/validation/StatsValidateDate';
 
 export interface IDailyCategoryStatsService {

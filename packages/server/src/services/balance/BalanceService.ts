@@ -1,14 +1,14 @@
-import { IBalanceDataAccess } from 'services/balance/BalanceDataAccess';
+import { IBalance, Utils, HttpCode, ErrorCode } from 'tenpercent/shared';
+
 import { LoggerBase } from 'helper/logger/LoggerBase';
 import { IDBTransaction } from 'interfaces/IDatabaseConnection';
-import { IBalance, Utils } from 'tenpercent/shared';
-import { IRate } from '../../../../shared/src/interfaces/IRate';
-import { CustomError } from 'src/utils/errors/CustomError';
-import { HttpCode } from 'tenpercent/shared';
-import { ErrorCode } from 'tenpercent/shared';
-import { IExchangeRateService } from 'services/exchangeRateService/ExchangeRateService';
+import { IBalanceDataAccess } from 'services/balance/BalanceDataAccess';
 import { ICurrencyService } from 'services/currency/CurrencyService';
+import { IExchangeRateService } from 'services/exchangeRateService/ExchangeRateService';
 import { IProfileService } from 'services/profile/ProfileService';
+import { CustomError } from 'src/utils/errors/CustomError';
+
+import { IRate } from '../../../../shared/src/interfaces/IRate';
 
 export interface IBalanceService {
     get(userId: number): Promise<IBalance>;

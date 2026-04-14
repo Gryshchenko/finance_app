@@ -1,7 +1,6 @@
 import { FC } from 'react';
 import { useNavigation } from '@react-navigation/native';
-import { IIncome, IncomeIcon } from 'tenpercent/shared';
-import { Utils } from 'tenpercent/shared';
+import { IIncome, IncomeIcon, Utils } from 'tenpercent/shared';
 
 import { IncomeFields } from '@/components/income/IncomeFields';
 import { useInvalidateQuery } from '@/hooks/useAppQuery';

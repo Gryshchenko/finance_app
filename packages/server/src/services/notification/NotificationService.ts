@@ -1,6 +1,7 @@
-import { LoggerBase } from 'src/helper/logger/LoggerBase';
 import { IMailService } from 'interfaces/IMailService';
 import { getConfig } from 'src/config/config';
+import { LoggerBase } from 'src/helper/logger/LoggerBase';
+
 import { INotificationService, NotificationPayload } from './INotificationService';
 import { NotificationType } from './NotificationType';
 
@@ -30,8 +31,7 @@ export default class NotificationService extends LoggerBase implements INotifica
                 break;
 
             default: {
-                const exhaustive: never = payload;
-                this._logger.warn(`Unknown notification type: ${(exhaustive as NotificationPayload).type}`);
+                this._logger.warn(`Unknown notification type: ${(payload as NotificationPayload).type}`);
             }
         }
     }

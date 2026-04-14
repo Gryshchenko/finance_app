@@ -1,9 +1,7 @@
 import { forwardRef } from 'react';
-import { SectionList, StyleProp, View } from 'react-native';
-import { ViewStyle, TextStyle } from 'react-native';
+import { SectionList, StyleProp, View, ViewStyle, TextStyle } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
-import { ICategory } from 'tenpercent/shared';
-import { Utils } from 'tenpercent/shared';
+import { ICategory, Utils } from 'tenpercent/shared';
 
 import { EmptyState } from '@/components/EmptyState';
 import SectionListWithKeyboardAwareScrollView from '@/components/SectionListWithKeyboardAwareScrollView';
@@ -90,6 +88,8 @@ const CategorySectionList = forwardRef<SectionList<ICategory>, Props>(({ categor
         />
     );
 });
+
+CategorySectionList.displayName = 'CategoriesSectionList';
 
 export default CategorySectionList;
 

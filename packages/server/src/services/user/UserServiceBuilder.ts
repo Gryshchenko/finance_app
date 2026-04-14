@@ -1,6 +1,7 @@
-import UserDataAccess from 'src/services/user/UserDataAccess';
-import UserService from './UserService';
 import DatabaseConnectionBuilder from 'src/repositories/DatabaseConnectionBuilder';
+import UserDataAccess from 'src/services/user/UserDataAccess';
+
+import UserService from './UserService';
 
 export default class UserServiceBuilder {
     public static build() {

@@ -1,5 +1,5 @@
-import { IKeyValueStore, KeyValueStore } from 'src/repositories/keyValueStore/KeyValueStore';
 import { getConfig } from 'src/config/config';
+import { IKeyValueStore, KeyValueStore } from 'src/repositories/keyValueStore/KeyValueStore';
 
 export class KeyValueStoreBuilder {
     public static build(): IKeyValueStore {

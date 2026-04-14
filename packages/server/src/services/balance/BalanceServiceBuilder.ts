@@ -1,10 +1,10 @@
-import BalanceService from 'services/balance/BalanceService';
-import BalanceDataAccess from 'services/balance/BalanceDataAccess';
-import DatabaseConnectionBuilder from 'src/repositories/DatabaseConnectionBuilder';
 import { IDatabaseConnection } from 'interfaces/IDatabaseConnection';
-import ProfileServiceBuilder from 'services/profile/ProfileServiceBuilder';
-import ExchangeRateServiceBuilder from 'services/exchangeRateService/ExchangeRateServiceBuilder';
+import BalanceDataAccess from 'services/balance/BalanceDataAccess';
+import BalanceService from 'services/balance/BalanceService';
 import CurrencyServiceBuilder from 'services/currency/CurrencyServiceBuilder';
+import ExchangeRateServiceBuilder from 'services/exchangeRateService/ExchangeRateServiceBuilder';
+import ProfileServiceBuilder from 'services/profile/ProfileServiceBuilder';
+import DatabaseConnectionBuilder from 'src/repositories/DatabaseConnectionBuilder';
 
 export default class BalanceServiceBuilder {
     public static build(db?: IDatabaseConnection): BalanceService {

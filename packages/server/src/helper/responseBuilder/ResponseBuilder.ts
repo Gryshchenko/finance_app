@@ -1,6 +1,4 @@
-import { IResponse } from 'tenpercent/shared';
-import { IResponseError } from 'tenpercent/shared';
-import { ResponseStatusType } from 'tenpercent/shared';
+import { IResponse, IResponseError, ResponseStatusType } from 'tenpercent/shared';
 
 export default class ResponseBuilder {
     protected _response: IResponse = {

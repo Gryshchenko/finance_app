@@ -1,8 +1,7 @@
 import { FC } from 'react';
 import { TextStyle, View, ViewStyle } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
-import { IPagination } from 'tenpercent/shared';
-import { ITransactionListItem } from 'tenpercent/shared';
+import { IPagination, ITransactionListItem } from 'tenpercent/shared';
 
 import { EmptyState } from '@/components/EmptyState';
 import { Text } from '@/components/Text';

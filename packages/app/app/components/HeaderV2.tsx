@@ -1,5 +1,4 @@
-import { View, Image, Pressable } from 'react-native';
-import { ViewStyle, TextStyle, ImageStyle } from 'react-native';
+import { View, Image, Pressable, ViewStyle, TextStyle, ImageStyle } from 'react-native';
 import { MaterialIcons } from '@expo/vector-icons';
 import { useNavigation } from '@react-navigation/native';
 

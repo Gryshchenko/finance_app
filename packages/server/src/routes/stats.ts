@@ -1,8 +1,9 @@
 import express from 'express';
-import { validateQuery } from 'src/utils/validation/validateQuery';
+
 // import { validateFromToDateQuery } from 'src/utils/validation/validateFromToDateQuery';
 import { StatsController } from 'controllers/StatsController';
 import { validateFromToDateQuery } from 'src/utils/validation/validateFromToDateQuery';
+import { validateQuery } from 'src/utils/validation/validateQuery';
 
 const statsRouter = express.Router({ mergeParams: true });
 

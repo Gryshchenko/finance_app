@@ -1,9 +1,10 @@
 import { IDatabaseConnection } from 'interfaces/IDatabaseConnection';
 import { LoggerBase } from 'src/helper/logger/LoggerBase';
-import { DBError } from 'src/utils/errors/DBError';
 import { BaseError } from 'src/utils/errors/BaseError';
-import { NotFoundError } from 'src/utils/errors/NotFoundError';
+import { DBError } from 'src/utils/errors/DBError';
 import { isBaseError } from 'src/utils/errors/isBaseError';
+import { NotFoundError } from 'src/utils/errors/NotFoundError';
+
 import { IRate } from '../../../../shared/src/interfaces/IRate';
 
 export interface IExchangeRateDataAccess {

@@ -1,6 +1,5 @@
 import { useEffect, useRef, useCallback } from 'react';
-import { View } from 'react-native';
-import { ViewStyle } from 'react-native';
+import { View, ViewStyle } from 'react-native';
 import { Gesture, GestureDetector } from 'react-native-gesture-handler';
 import Animated, { useSharedValue, useAnimatedStyle, withSpring, clamp } from 'react-native-reanimated';
 import { scheduleOnRN } from 'react-native-worklets';

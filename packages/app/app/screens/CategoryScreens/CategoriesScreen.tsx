@@ -1,9 +1,6 @@
-import { ParamListBase } from '@react-navigation/native';
-import { useNavigation } from '@react-navigation/native';
+import { ParamListBase, useNavigation } from '@react-navigation/native';
 import { NativeStackScreenProps } from '@react-navigation/native-stack';
-import { ICategory } from 'tenpercent/shared';
-import { TransactionFieldType } from 'tenpercent/shared';
-import { TransactionType } from 'tenpercent/shared';
+import { ICategory, TransactionFieldType, TransactionType } from 'tenpercent/shared';
 
 import { AddButton } from '@/components/buttons/AddButton';
 import { Categories } from '@/components/category/Categories';

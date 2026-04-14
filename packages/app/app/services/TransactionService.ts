@@ -1,7 +1,4 @@
-import { IPagination } from 'tenpercent/shared';
-import { ITransaction } from 'tenpercent/shared';
-import { ITransactionListItem } from 'tenpercent/shared';
-import { TransactionFieldType } from 'tenpercent/shared';
+import { IPagination, ITransaction, ITransactionListItem, TransactionFieldType } from 'tenpercent/shared';
 
 import { ApiAbstract } from '@/services/api/apiAbstract';
 import { GeneralApiProblem, GeneralApiProblemKind } from '@/services/api/apiProblem';

@@ -1,7 +1,8 @@
-import { IUserAgentInfo } from 'interfaces/IUserAgentInfo';
 import { Utils } from 'tenpercent/shared';
 import uap from 'ua-parser-js';
+
 import Logger from 'helper/logger/Logger';
+import { IUserAgentInfo } from 'interfaces/IUserAgentInfo';
 
 export class UserAgentService {
     public static getUserAgent(userAgent: string | undefined): IUserAgentInfo | undefined {

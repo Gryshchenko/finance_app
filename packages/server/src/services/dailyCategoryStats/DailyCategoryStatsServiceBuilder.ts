@@ -1,5 +1,5 @@
-import { DailyCategoryStatsDataAccess } from 'services/dailyCategoryStats/DailyCategoryStatsDataAccess';
 import { IDatabaseConnection } from 'interfaces/IDatabaseConnection';
+import { DailyCategoryStatsDataAccess } from 'services/dailyCategoryStats/DailyCategoryStatsDataAccess';
 import { DailyCategoryStatsService } from 'services/dailyCategoryStats/DailyCategoryStatsService';
 import DatabaseConnectionBuilder from 'src/repositories/DatabaseConnectionBuilder';
 

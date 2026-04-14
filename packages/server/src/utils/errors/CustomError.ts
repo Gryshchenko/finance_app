@@ -1,5 +1,6 @@
-import { BaseError } from './BaseError';
 import { IError } from 'tenpercent/shared';
+
+import { BaseError } from './BaseError';
 
 export class CustomError extends BaseError {
     constructor({ message, statusCode, errorCode, payload }: IError) {

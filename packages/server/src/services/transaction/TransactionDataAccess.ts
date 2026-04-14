@@ -1,17 +1,14 @@
+import { ITransaction, Time, Utils, IPagination, ITransactionListItemsRequest, ITransactionListItem } from 'tenpercent/shared';
+
+import { ICreateTransaction } from 'interfaces/ICreateTransaction';
 import { IDatabaseConnection, IDBTransaction } from 'interfaces/IDatabaseConnection';
 import { LoggerBase } from 'src/helper/logger/LoggerBase';
-import { ITransaction, Time } from 'tenpercent/shared';
-import { ICreateTransaction } from 'interfaces/ICreateTransaction';
-import { DBError } from 'src/utils/errors/DBError';
-import { Utils } from 'tenpercent/shared';
-import { NotFoundError } from 'src/utils/errors/NotFoundError';
 import { BaseError } from 'src/utils/errors/BaseError';
+import { DBError } from 'src/utils/errors/DBError';
 import { isBaseError } from 'src/utils/errors/isBaseError';
-import { IPagination } from 'tenpercent/shared';
-import { validateAllowedProperties } from 'src/utils/validation/validateAllowedProperties';
-import { ITransactionListItemsRequest } from 'tenpercent/shared';
-import { ITransactionListItem } from 'tenpercent/shared';
+import { NotFoundError } from 'src/utils/errors/NotFoundError';
 import { parseSortBy } from 'src/utils/validation/parseSortBy';
+import { validateAllowedProperties } from 'src/utils/validation/validateAllowedProperties';
 
 export interface ITransactionDataAccess {
     createTransaction(transaction: ICreateTransaction, trx?: IDBTransaction): Promise<number>;

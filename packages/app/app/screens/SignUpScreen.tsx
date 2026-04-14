@@ -22,6 +22,7 @@ import { GeneralApiProblemKind } from '@/services/api/apiProblem';
 import { useAppTheme } from '@/theme/context';
 import type { ThemedStyle } from '@/theme/types';
 import detectLanguage from '@/utils/detectLanguage';
+import { Logger } from '@/utils/logger/Logger';
 import {
     validateCurrency,
     validateEmail,
@@ -77,6 +78,7 @@ export const SignUpScreen: FC<SignUpScreenProps> = (_props) => {
                     }
                 }
             } catch (e) {
+                Logger.Of('SignUpScreen').error(e);
                 setDefault();
             }
         };

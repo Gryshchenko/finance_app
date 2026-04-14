@@ -1,9 +1,10 @@
+import { DateFormat, ISummary, StatsPeriod, Time } from 'tenpercent/shared';
+
 import { LoggerBase } from 'helper/logger/LoggerBase';
 import { IDBTransaction } from 'interfaces/IDatabaseConnection';
 import { IDailyStatsDataAccess } from 'services/dailyStats/DailyStatsDataAccess';
-import { StatsTransactionType } from 'types/StatsTransactionType';
 import { statsValidateDate } from 'src/utils/validation/StatsValidateDate';
-import { DateFormat, ISummary, StatsPeriod, Time } from 'tenpercent/shared';
+import { StatsTransactionType } from 'types/StatsTransactionType';
 
 export interface IDailyStatsService {
     summary(userId: number, from: string, to: string, period: StatsPeriod): Promise<ISummary>;

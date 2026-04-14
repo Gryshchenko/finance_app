@@ -1,11 +1,12 @@
-import { IUser } from 'interfaces/IUser';
-import UserServiceUtils from 'src/services/user/UserServiceUtils';
-import { ICreateUser } from 'interfaces/ICreateUser';
-import { IGetUserAuthenticationData } from 'interfaces/IGetUserAuthenticationData';
-import { LoggerBase } from 'src/helper/logger/LoggerBase';
-import { IDBTransaction } from 'interfaces/IDatabaseConnection';
 import { UserStatus } from 'tenpercent/shared';
+
+import { ICreateUser } from 'interfaces/ICreateUser';
+import { IDBTransaction } from 'interfaces/IDatabaseConnection';
+import { IGetUserAuthenticationData } from 'interfaces/IGetUserAuthenticationData';
+import { IUser } from 'interfaces/IUser';
 import { IUserDataAccess } from 'services/user/UserDataAccess';
+import { LoggerBase } from 'src/helper/logger/LoggerBase';
+import UserServiceUtils from 'src/services/user/UserServiceUtils';
 
 export interface IUserService {
     getUserAuthenticationData(email: string, trx?: IDBTransaction): Promise<IGetUserAuthenticationData | undefined>;

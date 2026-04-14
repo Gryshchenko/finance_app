@@ -1,6 +1,5 @@
 import { FC } from 'react';
-import { ViewStyle } from 'react-native';
-import { Pressable } from 'react-native';
+import { ViewStyle, Pressable } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
 
 import { Icon } from '@/components/Icon';

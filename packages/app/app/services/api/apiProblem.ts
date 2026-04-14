@@ -1,7 +1,5 @@
 import { ApiResponse } from 'apisauce';
-import { IResponse, IResponseError } from 'tenpercent/shared';
-import { HttpCode } from 'tenpercent/shared';
-import { ResponseStatusType } from 'tenpercent/shared';
+import { IResponse, IResponseError, HttpCode, ResponseStatusType } from 'tenpercent/shared';
 
 import { TxKeyPath } from '@/i18n';
 import ToastService from '@/services/ToastService';

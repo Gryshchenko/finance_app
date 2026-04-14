@@ -1,21 +1,23 @@
 import express from 'express';
-import tokenVerify from '../middleware/tokenVerify';
-import routesInputValidation from 'src/utils/validation/routesInputValidation';
+import { UserStatus } from 'tenpercent/shared';
+
+import { UserController } from 'controllers/UserController';
+import userIdVerify from 'middleware/userIdVerify';
+import userStatusVerify from 'middleware/userStatusVerify';
+import balance from 'routes/balance';
+import { categoriesRouter, categoryRouter } from 'routes/category';
+import { incomeRouter, incomesRouter } from 'routes/income';
+import { statsRouter } from 'routes/stats';
+import { accountsRouter, accountRouter } from 'src/routes/account';
 import overview from 'src/routes/overview';
 import profile from 'src/routes/profile';
 import { transactionsRouter, transactionRouter } from 'src/routes/transaction';
-import { accountsRouter, accountRouter } from 'src/routes/account';
-import userIdVerify from 'middleware/userIdVerify';
-import { validatePathQueryProperty } from 'src/utils/validation/validatePathQueryProperty';
-import { incomeRouter, incomesRouter } from 'routes/income';
-import { UserController } from 'controllers/UserController';
+import routesInputValidation from 'src/utils/validation/routesInputValidation';
 import { sanitizeRequestBody } from 'src/utils/validation/sanitizeRequestBody';
+import { validatePathQueryProperty } from 'src/utils/validation/validatePathQueryProperty';
 import { validateQuery } from 'src/utils/validation/validateQuery';
-import userStatusVerify from 'middleware/userStatusVerify';
-import { UserStatus } from 'tenpercent/shared';
-import { categoriesRouter, categoryRouter } from 'routes/category';
-import { statsRouter } from 'routes/stats';
-import balance from 'routes/balance';
+
+import tokenVerify from '../middleware/tokenVerify';
 
 const userRouter = express.Router({ mergeParams: true });
 

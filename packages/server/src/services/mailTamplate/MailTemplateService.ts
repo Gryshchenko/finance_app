@@ -1,6 +1,6 @@
-import { LoggerBase } from 'src/helper/logger/LoggerBase';
-import { IMailTemplateService } from 'interfaces/IMailTemplateService';
 import { IMailTemplateEngine } from 'interfaces/IMailTemplateEngine';
+import { IMailTemplateService } from 'interfaces/IMailTemplateService';
+import { LoggerBase } from 'src/helper/logger/LoggerBase';
 
 import MailEngineBuilder from './MailTemplateBuilder';
 

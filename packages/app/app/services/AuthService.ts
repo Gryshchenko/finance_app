@@ -1,7 +1,4 @@
-import { IUserClient } from 'tenpercent/shared';
-import { ErrorCode } from 'tenpercent/shared';
-import { Utils } from 'tenpercent/shared';
-import { UserStatus } from 'tenpercent/shared';
+import { IUserClient, ErrorCode, Utils, UserStatus } from 'tenpercent/shared';
 
 import { buildGeneralApiBadData, GeneralApiProblem, GeneralApiProblemKind } from '@/services/api/apiProblem';
 import { LoginService } from '@/services/LoginService';

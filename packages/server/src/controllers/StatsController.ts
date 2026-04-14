@@ -1,12 +1,11 @@
 import { Request, Response } from 'express';
-import ResponseBuilder from 'helper/responseBuilder/ResponseBuilder';
-import { ErrorCode, StatsPeriod } from 'tenpercent/shared';
+import { ErrorCode, StatsPeriod, HttpCode, ResponseStatusType } from 'tenpercent/shared';
+
 import Logger from 'helper/logger/Logger';
-import { HttpCode } from 'tenpercent/shared';
-import { generateErrorResponse } from 'src/utils/generateErrorResponse';
-import { BaseError } from 'src/utils/errors/BaseError';
-import { ResponseStatusType } from 'tenpercent/shared';
+import ResponseBuilder from 'helper/responseBuilder/ResponseBuilder';
 import { StatsOrchestratorServiceBuilder } from 'services/StatsOrchestrator/StatsOrchestratorServiceBuilder';
+import { BaseError } from 'src/utils/errors/BaseError';
+import { generateErrorResponse } from 'src/utils/generateErrorResponse';
 
 export class StatsController {
     private static readonly logger = Logger.Of('StatsController');

@@ -1,6 +1,6 @@
+import { ErrorCode, Utils } from 'tenpercent/shared';
+
 import { ValidationError } from 'src/utils/errors/ValidationError';
-import { ErrorCode } from 'tenpercent/shared';
-import { Utils } from 'tenpercent/shared';
 
 type SortOrder = 'asc' | 'desc';
 

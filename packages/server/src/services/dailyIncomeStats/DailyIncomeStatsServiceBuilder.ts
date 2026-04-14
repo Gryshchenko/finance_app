@@ -1,5 +1,5 @@
-import { DailyIncomeStatsDataAccess } from 'services/dailyIncomeStats/DailyIncomeStatsDataAccess';
 import { IDatabaseConnection } from 'interfaces/IDatabaseConnection';
+import { DailyIncomeStatsDataAccess } from 'services/dailyIncomeStats/DailyIncomeStatsDataAccess';
 import { DailyIncomeStatsService } from 'services/dailyIncomeStats/DailyIncomeStatsService';
 import DatabaseConnectionBuilder from 'src/repositories/DatabaseConnectionBuilder';
 

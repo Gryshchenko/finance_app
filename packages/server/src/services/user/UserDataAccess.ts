@@ -1,19 +1,18 @@
-import { IDatabaseConnection, IDBTransaction } from 'interfaces/IDatabaseConnection';
-import { IUser } from 'interfaces/IUser';
-import { LoggerBase } from 'src/helper/logger/LoggerBase';
-import { IUserServer } from 'interfaces/IUserServer';
+import { ErrorCode, Time, HttpCode, UserStatus } from 'tenpercent/shared';
+
 import { ICreateUserServer } from 'interfaces/ICreateUserServer';
-import { IGetUserAuthenticationData } from 'interfaces/IGetUserAuthenticationData';
-import { DBError } from 'src/utils/errors/DBError';
-import { validateAllowedProperties } from 'src/utils/validation/validateAllowedProperties';
-import { getOnlyNotEmptyProperties } from 'src/utils/validation/getOnlyNotEmptyProperties';
+import { IDatabaseConnection, IDBTransaction } from 'interfaces/IDatabaseConnection';
 import { IEmailConfirmationData } from 'interfaces/IEmailConfirmationData';
-import { ValidationError } from 'src/utils/errors/ValidationError';
-import { ErrorCode, Time } from 'tenpercent/shared';
-import { HttpCode } from 'tenpercent/shared';
-import { isBaseError } from 'src/utils/errors/isBaseError';
+import { IGetUserAuthenticationData } from 'interfaces/IGetUserAuthenticationData';
+import { IUser } from 'interfaces/IUser';
+import { IUserServer } from 'interfaces/IUserServer';
+import { LoggerBase } from 'src/helper/logger/LoggerBase';
 import { BaseError } from 'src/utils/errors/BaseError';
-import { UserStatus } from 'tenpercent/shared';
+import { DBError } from 'src/utils/errors/DBError';
+import { isBaseError } from 'src/utils/errors/isBaseError';
+import { ValidationError } from 'src/utils/errors/ValidationError';
+import { getOnlyNotEmptyProperties } from 'src/utils/validation/getOnlyNotEmptyProperties';
+import { validateAllowedProperties } from 'src/utils/validation/validateAllowedProperties';
 
 export interface IUserDataAccess {
     getUserAuthenticationData(email: string, trx?: IDBTransaction): Promise<IGetUserAuthenticationData | undefined>;

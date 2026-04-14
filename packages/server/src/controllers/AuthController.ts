@@ -1,18 +1,16 @@
 import { Request, Response } from 'express';
-import ResponseBuilder from 'helper/responseBuilder/ResponseBuilder';
+import { ResponseStatusType, RoleType, ErrorCode, HttpCode, extractToken } from 'tenpercent/shared';
+
 import Logger from 'helper/logger/Logger';
-import AuthServiceBuilder from 'services/auth/AuthServiceBuilder';
-import { ResponseStatusType, RoleType } from 'tenpercent/shared';
-import UserServiceUtils from 'services/user/UserServiceUtils';
-import { ErrorCode } from 'tenpercent/shared';
-import { ValidationError } from 'src/utils/errors/ValidationError';
-import { HttpCode } from 'tenpercent/shared';
-import { extractToken } from 'tenpercent/shared';
-import { generateErrorResponse } from 'src/utils/generateErrorResponse';
-import { BaseError } from 'src/utils/errors/BaseError';
+import ResponseBuilder from 'helper/responseBuilder/ResponseBuilder';
 import { IUser } from 'interfaces/IUser';
-import { CustomError } from 'src/utils/errors/CustomError';
+import AuthServiceBuilder from 'services/auth/AuthServiceBuilder';
 import PasswordForgetServiceBuilder from 'services/passwordForget/PasswordForgetServiceBuilder';
+import UserServiceUtils from 'services/user/UserServiceUtils';
+import { BaseError } from 'src/utils/errors/BaseError';
+import { CustomError } from 'src/utils/errors/CustomError';
+import { ValidationError } from 'src/utils/errors/ValidationError';
+import { generateErrorResponse } from 'src/utils/generateErrorResponse';
 
 export class AuthController {
     private static readonly logger = Logger.Of('AuthController');

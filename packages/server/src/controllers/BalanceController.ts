@@ -1,12 +1,11 @@
 import { Request, Response } from 'express';
-import ResponseBuilder from 'helper/responseBuilder/ResponseBuilder';
-import { ErrorCode } from 'tenpercent/shared';
+import { ErrorCode, HttpCode, ResponseStatusType } from 'tenpercent/shared';
+
 import Logger from 'helper/logger/Logger';
-import { HttpCode } from 'tenpercent/shared';
-import { generateErrorResponse } from 'src/utils/generateErrorResponse';
-import { BaseError } from 'src/utils/errors/BaseError';
-import { ResponseStatusType } from 'tenpercent/shared';
+import ResponseBuilder from 'helper/responseBuilder/ResponseBuilder';
 import BalanceServiceBuilder from 'services/balance/BalanceServiceBuilder';
+import { BaseError } from 'src/utils/errors/BaseError';
+import { generateErrorResponse } from 'src/utils/generateErrorResponse';
 
 export class BalanceController {
     private static readonly logger = Logger.Of('BalanceController');

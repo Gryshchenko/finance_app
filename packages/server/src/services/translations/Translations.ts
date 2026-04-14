@@ -1,9 +1,10 @@
-import Logger from 'helper/logger/Logger';
-
 import { Utils } from 'tenpercent/shared';
+
+import Logger from 'helper/logger/Logger';
 import Parameter from 'src/services/translations/Parameter';
-import { TranslationUnit } from './TranslationUnit';
+
 import { TranslationLoader } from './TranslationLoader';
+import { TranslationUnit } from './TranslationUnit';
 
 export default class Translations {
     private static LOGGER = Logger.Of('Translations');

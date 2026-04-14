@@ -1,12 +1,14 @@
-import { IDatabaseConnection, IDBTransaction } from 'interfaces/IDatabaseConnection';
+import { Time, Utils } from 'tenpercent/shared';
+
 import { LoggerBase } from 'helper/logger/LoggerBase';
-import { IBalance } from '../../../../shared/src/interfaces/IBalance';
-import { NotFoundError } from 'src/utils/errors/NotFoundError';
+import { IDatabaseConnection, IDBTransaction } from 'interfaces/IDatabaseConnection';
+import { BaseError } from 'src/utils/errors/BaseError';
 import { DBError } from 'src/utils/errors/DBError';
 import { isBaseError } from 'src/utils/errors/isBaseError';
-import { BaseError } from 'src/utils/errors/BaseError';
+import { NotFoundError } from 'src/utils/errors/NotFoundError';
 import { validateAllowedProperties } from 'src/utils/validation/validateAllowedProperties';
-import { Time, Utils } from 'tenpercent/shared';
+
+import { IBalance } from '../../../../shared/src/interfaces/IBalance';
 
 export interface IBalanceDataAccess {
     get(userId: number): Promise<IBalance>;

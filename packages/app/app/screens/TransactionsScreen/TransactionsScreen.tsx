@@ -1,9 +1,6 @@
-import { ParamListBase } from '@react-navigation/native';
-import { useNavigation } from '@react-navigation/native';
+import { ParamListBase, useNavigation } from '@react-navigation/native';
 import { NativeStackScreenProps } from '@react-navigation/native-stack';
-import { IPagination } from 'tenpercent/shared';
-import { ITransactionListItem } from 'tenpercent/shared';
-import { TransactionFieldType } from 'tenpercent/shared';
+import { IPagination, ITransactionListItem, TransactionFieldType } from 'tenpercent/shared';
 
 import { EditButton } from '@/components/buttons/EditButton';
 import { Transactions } from '@/components/transaction/Transactions';

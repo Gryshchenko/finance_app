@@ -1,9 +1,6 @@
 import { useNavigation } from '@react-navigation/native';
 import { NativeStackScreenProps } from '@react-navigation/native-stack';
-import { IAccount } from 'tenpercent/shared';
-import { IAccountListItem } from 'tenpercent/shared';
-import { TransactionFieldType } from 'tenpercent/shared';
-import { TransactionType } from 'tenpercent/shared';
+import { IAccount, IAccountListItem, TransactionFieldType, TransactionType } from 'tenpercent/shared';
 
 import { Accounts } from '@/components/account/Accounts';
 import { AddButton } from '@/components/buttons/AddButton';

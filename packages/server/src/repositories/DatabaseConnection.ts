@@ -1,7 +1,6 @@
-import { IDatabaseConnection, IDBTransaction } from 'interfaces/IDatabaseConnection';
-import { Knex } from 'knex';
+import knex, { Knex } from 'knex';
 
-import knex from 'knex';
+import { IDatabaseConnection, IDBTransaction } from 'interfaces/IDatabaseConnection';
 
 interface IDatabaseConnectionConstructor {
     host: string | undefined;

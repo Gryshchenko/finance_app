@@ -1,11 +1,7 @@
 import { forwardRef, useState } from 'react';
 import { Pressable, SectionList, TextStyle, View, ViewStyle } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
-import { AccountIcon, IPagination } from 'tenpercent/shared';
-import { ITransactionListItem } from 'tenpercent/shared';
-import { TransactionType } from 'tenpercent/shared';
-import { Utils } from 'tenpercent/shared';
-import { DateFormat, Time } from 'tenpercent/shared';
+import { AccountIcon, IPagination, ITransactionListItem, TransactionType, Utils, DateFormat, Time } from 'tenpercent/shared';
 
 import { CategoryIcon } from '@/components/CategoryIcon';
 import { EmptyState } from '@/components/EmptyState';

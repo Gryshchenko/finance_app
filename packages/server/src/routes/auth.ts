@@ -1,18 +1,19 @@
 import express from 'express';
 
-import routesInputValidation from '../utils/validation/routesInputValidation';
 import tokenVerify, { tokenLongVerify, tokenResetVerify } from 'middleware/tokenVerify';
-import loginValidationRules from 'src/utils/validation/loginValidationRules';
-import { AuthController } from 'src/controllers/AuthController';
-import { sanitizeRequestBody } from 'src/utils/validation/sanitizeRequestBody';
-import { validateQuery } from 'src/utils/validation/validateQuery';
 import userIdVerify from 'middleware/userIdVerify';
-import refreshTokenValidation from 'src/utils/validation/refreshTokenValidationRules';
+import { AuthController } from 'src/controllers/AuthController';
 import {
     forgetPasswordValidationRules,
     forgetConfirmPasswordValidationRules,
     forgetChangePasswordValidationRules,
 } from 'src/utils/validation/forgetPasswordValidationRules';
+import loginValidationRules from 'src/utils/validation/loginValidationRules';
+import refreshTokenValidation from 'src/utils/validation/refreshTokenValidationRules';
+import { sanitizeRequestBody } from 'src/utils/validation/sanitizeRequestBody';
+import { validateQuery } from 'src/utils/validation/validateQuery';
+
+import routesInputValidation from '../utils/validation/routesInputValidation';
 
 const router = express.Router();
 

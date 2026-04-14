@@ -1,8 +1,8 @@
 import { LoggerBase } from 'helper/logger/LoggerBase';
-import { IDailyAccountStatsDataAccess } from 'services/dailyAccountStats/DailyAccountStatsDataAccess';
 import { IDBTransaction } from 'interfaces/IDatabaseConnection';
-import { StatsTransactionType } from 'types/StatsTransactionType';
+import { IDailyAccountStatsDataAccess } from 'services/dailyAccountStats/DailyAccountStatsDataAccess';
 import { statsValidateDate } from 'src/utils/validation/StatsValidateDate';
+import { StatsTransactionType } from 'types/StatsTransactionType';
 
 export interface IDailyAccountStatsService {
     updateTotal(

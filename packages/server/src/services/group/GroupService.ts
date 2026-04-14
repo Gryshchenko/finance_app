@@ -1,6 +1,6 @@
-import { IGroupDataAccess } from 'services/group/GroupDataAccess';
-import { IGroup } from 'interfaces/IGroup';
 import { IDBTransaction } from 'interfaces/IDatabaseConnection';
+import { IGroup } from 'interfaces/IGroup';
+import { IGroupDataAccess } from 'services/group/GroupDataAccess';
 
 export interface IGroupService {
     createGroup(userId: number, groupName: string, trx?: IDBTransaction): Promise<IGroup>;

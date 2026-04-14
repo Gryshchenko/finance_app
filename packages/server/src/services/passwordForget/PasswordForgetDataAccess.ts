@@ -1,8 +1,9 @@
+import { Time } from 'tenpercent/shared';
+
 import { IDatabaseConnection } from 'interfaces/IDatabaseConnection';
+import { IPasswordForget } from 'interfaces/IPasswordForget';
 import { LoggerBase } from 'src/helper/logger/LoggerBase';
 import { DBError } from 'src/utils/errors/DBError';
-import { Time } from 'tenpercent/shared';
-import { IPasswordForget } from 'interfaces/IPasswordForget';
 
 export interface IPasswordForgetDataAccess {
     upsert(userId: number, email: string, confirmationCode: number, expiresAt: Date): Promise<boolean>;

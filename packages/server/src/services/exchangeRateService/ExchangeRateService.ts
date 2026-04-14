@@ -1,9 +1,11 @@
-import { IRateProvider } from 'interfaces/IRateProvider';
-import RateProviderBuilder from 'services/exchangeRateService/providers/RateProviderBuilder';
 import { Time, TimeDuration } from 'tenpercent/shared';
+
 import { LoggerBase } from 'helper/logger/LoggerBase';
-import { IExchangeRateDataAccess } from 'services/exchangeRateService/ExchangeRateDataAccess';
+import { IRateProvider } from 'interfaces/IRateProvider';
 import { ICurrencyService } from 'services/currency/CurrencyService';
+import { IExchangeRateDataAccess } from 'services/exchangeRateService/ExchangeRateDataAccess';
+import RateProviderBuilder from 'services/exchangeRateService/providers/RateProviderBuilder';
+
 import { IRate } from '../../../../shared/src/interfaces/IRate';
 
 export interface IExchangeRateService {

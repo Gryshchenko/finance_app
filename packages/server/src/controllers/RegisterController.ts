@@ -1,14 +1,12 @@
 import { Request, Response } from 'express';
+import { LanguageType, ResponseStatusType, ErrorCode, HttpCode, UserStatus } from 'tenpercent/shared';
+
 import Logger from 'helper/logger/Logger';
 import ResponseBuilder from 'helper/responseBuilder/ResponseBuilder';
-import UserRegistrationServiceBuilder from 'services/registration/UserRegistrationServiceBuilder';
-import { LanguageType, ResponseStatusType } from 'tenpercent/shared';
-import { ErrorCode } from 'tenpercent/shared';
-import { HttpCode } from 'tenpercent/shared';
-import { generateErrorResponse } from 'src/utils/generateErrorResponse';
-import { BaseError } from 'src/utils/errors/BaseError';
-import { UserStatus } from 'tenpercent/shared';
 import { IUser } from 'interfaces/IUser';
+import UserRegistrationServiceBuilder from 'services/registration/UserRegistrationServiceBuilder';
+import { BaseError } from 'src/utils/errors/BaseError';
+import { generateErrorResponse } from 'src/utils/generateErrorResponse';
 
 export class RegisterController {
     private static readonly logger = Logger.Of('RegisterController');

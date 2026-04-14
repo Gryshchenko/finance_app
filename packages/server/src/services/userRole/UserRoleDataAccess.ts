@@ -1,6 +1,6 @@
 import { IDatabaseConnection, IDBTransaction } from 'interfaces/IDatabaseConnection';
-import { LoggerBase } from 'src/helper/logger/LoggerBase';
 import { IUserRole } from 'interfaces/IUserRole';
+import { LoggerBase } from 'src/helper/logger/LoggerBase';
 import { DBError } from 'src/utils/errors/DBError';
 
 export interface IUserRoleDataAccess {

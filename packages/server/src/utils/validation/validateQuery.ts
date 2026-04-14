@@ -1,11 +1,8 @@
 import { NextFunction, Request, Response } from 'express';
-import { HttpCode } from 'tenpercent/shared';
-import ResponseBuilder from 'helper/responseBuilder/ResponseBuilder';
-import { ResponseStatusType } from 'tenpercent/shared';
-import { ErrorCode } from 'tenpercent/shared';
-import { Utils } from 'tenpercent/shared';
+import { HttpCode, ResponseStatusType, ErrorCode, Utils, Time } from 'tenpercent/shared';
+
 import Logger from 'helper/logger/Logger';
-import { Time } from 'tenpercent/shared';
+import ResponseBuilder from 'helper/responseBuilder/ResponseBuilder';
 
 const validateQuery = (schema: Record<string, string>) => {
     return (req: Request, res: Response, next: NextFunction) => {

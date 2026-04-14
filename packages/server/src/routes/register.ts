@@ -1,11 +1,13 @@
 import express from 'express';
-import signupValidationRules from 'src/utils/validation/signupValidationRules';
-import routesInputValidation from '../utils/validation/routesInputValidation';
+
+import emailConfirmation from 'routes/emailConfirmation';
 import { RegisterController } from 'src/controllers/RegisterController';
 import { sanitizeRequestBody } from 'src/utils/validation/sanitizeRequestBody';
-import { validateQuery } from 'src/utils/validation/validateQuery';
+import signupValidationRules from 'src/utils/validation/signupValidationRules';
 import { validatePathQueryProperty } from 'src/utils/validation/validatePathQueryProperty';
-import emailConfirmation from 'routes/emailConfirmation';
+import { validateQuery } from 'src/utils/validation/validateQuery';
+
+import routesInputValidation from '../utils/validation/routesInputValidation';
 
 const router = express.Router();
 

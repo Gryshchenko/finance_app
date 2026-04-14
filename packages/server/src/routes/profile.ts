@@ -1,8 +1,6 @@
 import express from 'express';
+
 import { ProfileController } from 'controllers/ProfileController';
-import { sanitizeRequestBody } from 'src/utils/validation/sanitizeRequestBody';
-import { validateQuery } from 'src/utils/validation/validateQuery';
-import routesInputValidation from 'src/utils/validation/routesInputValidation';
 import {
     patchProfileValidationRules,
     requestEmailChangeValidationRules,
@@ -10,6 +8,9 @@ import {
     confirmChangeValidationRules,
     refreshConfirmationCodeValidationRules,
 } from 'src/utils/validation/profileValidationRules';
+import routesInputValidation from 'src/utils/validation/routesInputValidation';
+import { sanitizeRequestBody } from 'src/utils/validation/sanitizeRequestBody';
+import { validateQuery } from 'src/utils/validation/validateQuery';
 
 const router = express.Router({ mergeParams: true });
 

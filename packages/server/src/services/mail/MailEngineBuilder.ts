@@ -1,5 +1,6 @@
-import { IMailEngine } from 'interfaces/IMailEngine';
 import * as process from 'process';
+
+import { IMailEngine } from 'interfaces/IMailEngine';
 
 import MailerSend from './Mailersend';
 

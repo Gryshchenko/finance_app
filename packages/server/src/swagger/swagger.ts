@@ -1,8 +1,7 @@
 import { Express } from 'express';
-import path from 'path';
-
 import { initialize } from 'express-openapi';
 import fs from 'fs';
+import path from 'path';
 
 const swaggerUi = require('swagger-ui-express');
 

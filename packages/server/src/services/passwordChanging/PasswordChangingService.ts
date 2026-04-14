@@ -1,13 +1,14 @@
-import { LoggerBase } from 'src/helper/logger/LoggerBase';
-import { IDatabaseConnection, IDBTransaction } from 'interfaces/IDatabaseConnection';
-import { ValidationError } from 'src/utils/errors/ValidationError';
 import { ErrorCode, HttpCode, Utils } from 'tenpercent/shared';
-import UserServiceUtils from 'src/services/user/UserServiceUtils';
+
+import { IDatabaseConnection, IDBTransaction } from 'interfaces/IDatabaseConnection';
+import { ConfirmationHelper } from 'services/confirmation/ConfirmationHelper';
 import { IPasswordChangingDataAccess } from 'services/passwordChanging/PasswordChangingDataAccess';
 import { IUserService } from 'services/user/UserService';
+import { LoggerBase } from 'src/helper/logger/LoggerBase';
 import { UnitOfWork } from 'src/repositories/UnitOfWork';
+import UserServiceUtils from 'src/services/user/UserServiceUtils';
 import { CustomError } from 'src/utils/errors/CustomError';
-import { ConfirmationHelper } from 'services/confirmation/ConfirmationHelper';
+import { ValidationError } from 'src/utils/errors/ValidationError';
 
 const CHANGE_CODE_EXPIRES_IN: [number, number, number] = [0, 10, 0];
 

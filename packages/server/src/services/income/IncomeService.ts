@@ -1,14 +1,11 @@
-import { IIncome } from 'tenpercent/shared';
+import { IIncome, Utils, IStatsResponse, IGetStatsProperties, IIncomeStats } from 'tenpercent/shared';
+
+import { LoggerBase } from 'helper/logger/LoggerBase';
 import { ICreateIncome } from 'interfaces/ICreateIncome';
 import { IDBTransaction } from 'interfaces/IDatabaseConnection';
-import { validateAllowedProperties } from 'src/utils/validation/validateAllowedProperties';
-import { ValidationError } from 'src/utils/errors/ValidationError';
-import { Utils } from 'tenpercent/shared';
-import { LoggerBase } from 'helper/logger/LoggerBase';
 import { IIncomeDataAccess } from 'services/income/IncomeDataAccess';
-import { IStatsResponse } from 'tenpercent/shared';
-import { IGetStatsProperties } from 'tenpercent/shared';
-import { IIncomeStats } from 'tenpercent/shared';
+import { ValidationError } from 'src/utils/errors/ValidationError';
+import { validateAllowedProperties } from 'src/utils/validation/validateAllowedProperties';
 
 export interface IIncomeService {
     getStats(userId: number, properties: IGetStatsProperties): Promise<IStatsResponse<IIncomeStats>>;

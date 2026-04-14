@@ -1,6 +1,5 @@
 import { NativeStackScreenProps } from '@react-navigation/native-stack';
-import { ITransaction } from 'tenpercent/shared';
-import { Utils } from 'tenpercent/shared';
+import { ITransaction, Utils } from 'tenpercent/shared';
 
 import { TransactionEdit } from '@/components/transaction/TransactionEdit';
 import { translate } from '@/i18n/translate';

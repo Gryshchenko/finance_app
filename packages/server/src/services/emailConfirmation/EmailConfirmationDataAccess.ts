@@ -1,17 +1,14 @@
-import { IDatabaseConnection, IDBTransaction } from 'interfaces/IDatabaseConnection';
-import { LoggerBase } from 'src/helper/logger/LoggerBase';
-import { IEmailConfirmationData } from 'interfaces/IEmailConfirmationData';
-import { Time, Utils } from 'tenpercent/shared';
-import { DBError } from 'src/utils/errors/DBError';
-import { ValidationError } from 'src/utils/errors/ValidationError';
-import { ErrorCode } from 'tenpercent/shared';
-import { isBaseError } from 'src/utils/errors/isBaseError';
-import { BaseError } from 'src/utils/errors/BaseError';
-import { HttpCode } from 'tenpercent/shared';
-import { EmailConfirmationStatusType } from 'tenpercent/shared';
+import { Time, Utils, ErrorCode, HttpCode, EmailConfirmationStatusType } from 'tenpercent/shared';
 
-import { validateAllowedProperties } from 'src/utils/validation/validateAllowedProperties';
+import { IDatabaseConnection, IDBTransaction } from 'interfaces/IDatabaseConnection';
+import { IEmailConfirmationData } from 'interfaces/IEmailConfirmationData';
+import { LoggerBase } from 'src/helper/logger/LoggerBase';
+import { BaseError } from 'src/utils/errors/BaseError';
+import { DBError } from 'src/utils/errors/DBError';
+import { isBaseError } from 'src/utils/errors/isBaseError';
+import { ValidationError } from 'src/utils/errors/ValidationError';
 import { getOnlyNotEmptyProperties } from 'src/utils/validation/getOnlyNotEmptyProperties';
+import { validateAllowedProperties } from 'src/utils/validation/validateAllowedProperties';
 
 export interface IEmailConfirmationDataAccess {
     getUserConfirmation(userId: number, email: string): Promise<IEmailConfirmationData | undefined>;

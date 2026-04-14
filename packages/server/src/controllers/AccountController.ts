@@ -1,15 +1,13 @@
 import { Request, Response } from 'express';
-import ResponseBuilder from 'helper/responseBuilder/ResponseBuilder';
-import { ErrorCode } from 'tenpercent/shared';
+import { ErrorCode, HttpCode, ResponseStatusType, Utils } from 'tenpercent/shared';
+
 import Logger from 'helper/logger/Logger';
-import { HttpCode } from 'tenpercent/shared';
-import { generateErrorResponse } from 'src/utils/generateErrorResponse';
-import { BaseError } from 'src/utils/errors/BaseError';
-import AccountServiceBuilder from 'services/account/AccountServiceBuilder';
-import { ResponseStatusType } from 'tenpercent/shared';
-import { ValidationError } from 'src/utils/errors/ValidationError';
+import ResponseBuilder from 'helper/responseBuilder/ResponseBuilder';
 import { AccountOrchestrationServiceBuilder } from 'services/account/AccountOrchestrationServiceBuilder';
-import { Utils } from 'tenpercent/shared';
+import AccountServiceBuilder from 'services/account/AccountServiceBuilder';
+import { BaseError } from 'src/utils/errors/BaseError';
+import { ValidationError } from 'src/utils/errors/ValidationError';
+import { generateErrorResponse } from 'src/utils/generateErrorResponse';
 
 export class AccountController {
     private static readonly logger = Logger.Of('AccountController');

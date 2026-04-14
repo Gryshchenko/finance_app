@@ -206,7 +206,7 @@ describe('POST /user/:userId/profile/email-change/verify — confirm email chang
             .post(`/user/${userId3}/profile/email-change/verify`)
             .set('authorization', auth3)
             .send({ confirmationCode: 12345678 })
-            .expect(HttpCode.BAD_REQUEST);
+            .expect(HttpCode.NOT_FOUND);
     });
 
     it('401 — unauthorized request is rejected', async () => {

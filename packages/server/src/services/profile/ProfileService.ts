@@ -1,11 +1,12 @@
-import { IProfile } from 'interfaces/IProfile';
-import { LoggerBase } from 'src/helper/logger/LoggerBase';
+import { IProfilePatchRequest } from 'tenpercent/shared';
+
 import { ICreateProfile } from 'interfaces/ICreateProfile';
 import { IDBTransaction } from 'interfaces/IDatabaseConnection';
-import { IProfilePatchRequest } from 'tenpercent/shared';
-import { IPasswordChangingService } from 'services/passwordChanging/PasswordChangingService';
+import { IProfile } from 'interfaces/IProfile';
 import { IEmailChangingService } from 'services/emailChanging/EmailChangingService';
+import { IPasswordChangingService } from 'services/passwordChanging/PasswordChangingService';
 import { IProfileDataAccess } from 'services/profile/ProfileDataAccess';
+import { LoggerBase } from 'src/helper/logger/LoggerBase';
 
 export interface IProfileService {
     post(data: ICreateProfile, trx?: IDBTransaction): Promise<IProfile | undefined>;

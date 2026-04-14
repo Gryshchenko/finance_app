@@ -1,7 +1,8 @@
 import express from 'express';
-import { validateQuery } from 'src/utils/validation/validateQuery';
-import routesInputValidation from 'src/utils/validation/routesInputValidation';
+
 import { BalanceController } from 'controllers/BalanceController';
+import routesInputValidation from 'src/utils/validation/routesInputValidation';
+import { validateQuery } from 'src/utils/validation/validateQuery';
 
 const balanceRouter = express.Router({ mergeParams: true });
 

@@ -1,8 +1,9 @@
-import { StatsTransactionType } from 'types/StatsTransactionType';
+import { Time } from 'tenpercent/shared';
+
 import { LoggerBase } from 'helper/logger/LoggerBase';
 import { IDatabaseConnection, IDBTransaction } from 'interfaces/IDatabaseConnection';
 import { DBError } from 'src/utils/errors/DBError';
-import { Time } from 'tenpercent/shared';
+import { StatsTransactionType } from 'types/StatsTransactionType';
 
 export interface IDailyAccountStatsDataAccess {
     updateTotal(

@@ -1,6 +1,7 @@
-import AuthService from './AuthService';
-import UserServiceBuilder from 'src/services/user/UserServiceBuilder';
 import { KeyValueStoreBuilder } from 'src/repositories/keyValueStore/KeyValueStoreBuilder';
+import UserServiceBuilder from 'src/services/user/UserServiceBuilder';
+
+import AuthService from './AuthService';
 
 export default class AuthServiceBuilder {
     public static build() {

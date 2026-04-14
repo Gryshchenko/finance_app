@@ -1,4 +1,5 @@
 import { DateFormat, Time } from 'tenpercent/shared';
+
 import { ValidationError } from 'src/utils/errors/ValidationError';
 
 export const statsValidateDate = (date: string): string => {

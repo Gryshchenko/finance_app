@@ -1,11 +1,12 @@
-import { IEmailChanging } from 'interfaces/IEmailChanging';
-import { IDatabaseConnection, IDBTransaction } from 'interfaces/IDatabaseConnection';
-import { LoggerBase } from 'src/helper/logger/LoggerBase';
-import { DBError } from 'src/utils/errors/DBError';
-import { ValidationError } from 'src/utils/errors/ValidationError';
-import { isBaseError } from 'src/utils/errors/isBaseError';
-import { BaseError } from 'src/utils/errors/BaseError';
 import { ErrorCode, HttpCode, Time } from 'tenpercent/shared';
+
+import { IDatabaseConnection, IDBTransaction } from 'interfaces/IDatabaseConnection';
+import { IEmailChanging } from 'interfaces/IEmailChanging';
+import { LoggerBase } from 'src/helper/logger/LoggerBase';
+import { BaseError } from 'src/utils/errors/BaseError';
+import { DBError } from 'src/utils/errors/DBError';
+import { isBaseError } from 'src/utils/errors/isBaseError';
+import { ValidationError } from 'src/utils/errors/ValidationError';
 
 export interface IEmailChangingDataAccess {
     create(

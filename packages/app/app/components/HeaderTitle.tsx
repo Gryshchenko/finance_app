@@ -1,5 +1,4 @@
 import { FC } from 'react';
-// eslint-disable-next-line no-restricted-imports
 import { TextStyle } from 'react-native';
 
 import { Text } from '@/components/Text';

@@ -1,14 +1,12 @@
 import { Request, Response } from 'express';
-import ResponseBuilder from 'helper/responseBuilder/ResponseBuilder';
-import { ErrorCode } from 'tenpercent/shared';
+import { ErrorCode, HttpCode, ResponseStatusType, Utils } from 'tenpercent/shared';
+
 import Logger from 'helper/logger/Logger';
-import { HttpCode } from 'tenpercent/shared';
-import { generateErrorResponse } from 'src/utils/generateErrorResponse';
-import { BaseError } from 'src/utils/errors/BaseError';
-import { ResponseStatusType } from 'tenpercent/shared';
-import { Utils } from 'tenpercent/shared';
-import { ValidationError } from 'src/utils/errors/ValidationError';
+import ResponseBuilder from 'helper/responseBuilder/ResponseBuilder';
 import ExchangeRateServiceBuilder from 'services/exchangeRateService/ExchangeRateServiceBuilder';
+import { BaseError } from 'src/utils/errors/BaseError';
+import { ValidationError } from 'src/utils/errors/ValidationError';
+import { generateErrorResponse } from 'src/utils/generateErrorResponse';
 
 export class ExchangeRateController {
     private static readonly logger = Logger.Of('ExchangeRateController');

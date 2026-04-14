@@ -1,28 +1,26 @@
 import express, { NextFunction, Request, Response } from 'express';
-import helmet from 'helmet';
 import rateLimit from 'express-rate-limit';
+import helmet from 'helmet';
+import passport from 'passport';
+import path from 'path';
+import { ResponseStatusType, ErrorCode } from 'tenpercent/shared';
 
-import passportSetup from './services/auth/passport-setup';
+import Logger from 'helper/logger/Logger';
+import { checkCors } from 'middleware/checkCors';
+import { currenciesRouter, currencyRouter } from 'routes/currency';
+import exchangeRates from 'routes/exchangeRates';
+import ExchangeRateServiceBuilder from 'services/exchangeRateService/ExchangeRateServiceBuilder';
+import { getConfig } from 'src/config/config';
+import { createServer } from 'src/createServer';
+import ResponseBuilder from 'src/helper/responseBuilder/ResponseBuilder';
+import DatabaseConnectionBuilder from 'src/repositories/DatabaseConnectionBuilder';
+import { KeyValueStoreBuilder } from 'src/repositories/keyValueStore/KeyValueStoreBuilder';
+import { getLocalIP } from 'src/utils/getLocalIP';
 
 import authRouter from './routes/auth';
 import registerRouter from './routes/register';
 import userRouter from './routes/user';
-import { getConfig } from 'src/config/config';
-import ResponseBuilder from 'src/helper/responseBuilder/ResponseBuilder';
-import { checkCors } from 'middleware/checkCors';
-import { getLocalIP } from 'src/utils/getLocalIP';
-
-import passport from 'passport';
-import { currenciesRouter, currencyRouter } from 'routes/currency';
-import exchangeRates from 'routes/exchangeRates';
-import ExchangeRateServiceBuilder from 'services/exchangeRateService/ExchangeRateServiceBuilder';
-import Logger from 'helper/logger/Logger';
-import { ResponseStatusType } from 'tenpercent/shared';
-import { ErrorCode } from 'tenpercent/shared';
-import { createServer } from 'src/createServer';
-import DatabaseConnectionBuilder from 'src/repositories/DatabaseConnectionBuilder';
-import { KeyValueStoreBuilder } from 'src/repositories/keyValueStore/KeyValueStoreBuilder';
-import path from 'path';
+import passportSetup from './services/auth/passport-setup';
 
 process.env.NODE_TLS_REJECT_UNAUTHORIZED = '0';
 const app = express();

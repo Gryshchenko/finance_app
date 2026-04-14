@@ -4,7 +4,7 @@ import DatabaseConnection from '../src/repositories/DatabaseConnection';
 import config from '../src/config/dbConfig';
 import { Agent } from 'supertest';
 import { LanguageType } from 'tenpercent/shared';
-import { UserStatus } from '../../shared/src/types/UserStatus';
+import { UserStatus } from 'tenpercent/shared';
 import { EmailConfirmationStatusType } from 'tenpercent/shared';
 // eslint-disable-next-line @typescript-eslint/no-require-imports
 const crypto = require('crypto');

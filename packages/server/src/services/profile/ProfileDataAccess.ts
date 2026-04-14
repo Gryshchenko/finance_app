@@ -1,12 +1,12 @@
-import { IDatabaseConnection, IDBTransaction } from 'interfaces/IDatabaseConnection';
-import { LoggerBase } from 'src/helper/logger/LoggerBase';
-import { IProfile } from 'interfaces/IProfile';
+import { IProfilePatchRequest, Time, EmailConfirmationStatusType } from 'tenpercent/shared';
+
 import { ICreateProfile } from 'interfaces/ICreateProfile';
-import { IProfilePatchRequest, Time } from 'tenpercent/shared';
+import { IDatabaseConnection, IDBTransaction } from 'interfaces/IDatabaseConnection';
+import { IProfile } from 'interfaces/IProfile';
+import { LoggerBase } from 'src/helper/logger/LoggerBase';
 import { DBError } from 'src/utils/errors/DBError';
-import { validateAllowedProperties } from 'src/utils/validation/validateAllowedProperties';
 import { getOnlyNotEmptyProperties } from 'src/utils/validation/getOnlyNotEmptyProperties';
-import { EmailConfirmationStatusType } from 'tenpercent/shared';
+import { validateAllowedProperties } from 'src/utils/validation/validateAllowedProperties';
 
 export interface IProfileDataAccess {
     post(data: ICreateProfile, trx?: IDBTransaction): Promise<IProfile | undefined>;

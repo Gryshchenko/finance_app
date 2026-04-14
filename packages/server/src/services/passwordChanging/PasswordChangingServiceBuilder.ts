@@ -1,7 +1,7 @@
+import DatabaseConnectionBuilder from 'src/repositories/DatabaseConnectionBuilder';
 import PasswordChangingDataAccess from 'src/services/passwordChanging/PasswordChangingDataAccess';
 import PasswordChangingService from 'src/services/passwordChanging/PasswordChangingService';
 import UserServiceBuilder from 'src/services/user/UserServiceBuilder';
-import DatabaseConnectionBuilder from 'src/repositories/DatabaseConnectionBuilder';
 
 export default class PasswordChangingServiceBuilder {
     public static build() {

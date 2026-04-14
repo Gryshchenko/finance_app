@@ -1,20 +1,16 @@
-import { RoleType } from 'tenpercent/shared';
-import { LoggerBase } from 'src/helper/logger/LoggerBase';
-import { IUser } from 'interfaces/IUser';
-import { ErrorCode } from 'tenpercent/shared';
-import UserServiceUtils from 'src/services/user/UserServiceUtils';
-import { getConfig } from 'src/config/config';
-import { ValidationError } from 'src/utils/errors/ValidationError';
-import { CustomError } from 'src/utils/errors/CustomError';
-import { HttpCode } from 'tenpercent/shared';
-
 import jwt, { Algorithm, DecodeOptions, JwtPayload } from 'jsonwebtoken';
-import { IKeyValueStore } from 'src/repositories/keyValueStore/KeyValueStore';
+import { RoleType, ErrorCode, HttpCode, Time, Utils } from 'tenpercent/shared';
+
+import { IUser } from 'interfaces/IUser';
 import { JwtPayloadCustom } from 'services/auth/passport-setup';
 import TokenBlacklistBuilder from 'services/auth/TokenBlacklistBuilder';
-import { Time } from 'tenpercent/shared';
-import { Utils } from 'tenpercent/shared';
 import { IUserService } from 'services/user/UserService';
+import { getConfig } from 'src/config/config';
+import { LoggerBase } from 'src/helper/logger/LoggerBase';
+import { IKeyValueStore } from 'src/repositories/keyValueStore/KeyValueStore';
+import UserServiceUtils from 'src/services/user/UserServiceUtils';
+import { CustomError } from 'src/utils/errors/CustomError';
+import { ValidationError } from 'src/utils/errors/ValidationError';
 
 export interface IAuthService {
     login(email: string, password: string): Promise<{ user: IUser; token: string }>;

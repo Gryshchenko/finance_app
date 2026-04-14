@@ -1,6 +1,7 @@
 import Redis from 'ioredis';
-import { getConfig } from 'src/config/config';
+
 import { LoggerBase } from 'helper/logger/LoggerBase';
+import { getConfig } from 'src/config/config';
 
 export enum KeyValueStoreKeys {
     TokenShort = 'tokenShort',

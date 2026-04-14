@@ -1,18 +1,14 @@
-import { IEmailConfirmationDataAccess } from 'services/emailConfirmation/EmailConfirmationDataAccess';
-import { EmailConfirmationStatusType } from 'tenpercent/shared';
-import { LoggerBase } from 'src/helper/logger/LoggerBase';
-import { ErrorCode } from 'tenpercent/shared';
-import { IEmailConfirmationData } from 'interfaces/IEmailConfirmationData';
-import TimeManagerUTC from 'src/utils/TimeManagerUTC';
+import { EmailConfirmationStatusType, ErrorCode, HttpCode, Utils, UserStatus, IEmailVerifyResponse } from 'tenpercent/shared';
+
 import { IDBTransaction } from 'interfaces/IDatabaseConnection';
-import { ValidationError } from 'src/utils/errors/ValidationError';
-import { HttpCode } from 'tenpercent/shared';
+import { IEmailConfirmationData } from 'interfaces/IEmailConfirmationData';
 import { ConfirmationHelper } from 'services/confirmation/ConfirmationHelper';
-import { Utils } from 'tenpercent/shared';
-import { UserStatus } from 'tenpercent/shared';
-import { IEmailVerifyResponse } from 'tenpercent/shared';
-import { IUserService } from 'services/user/UserService';
+import { IEmailConfirmationDataAccess } from 'services/emailConfirmation/EmailConfirmationDataAccess';
 import { IConfirmationEmailNotification } from 'services/notification/emails/ConfirmationEmailNotification';
+import { IUserService } from 'services/user/UserService';
+import { LoggerBase } from 'src/helper/logger/LoggerBase';
+import { ValidationError } from 'src/utils/errors/ValidationError';
+import TimeManagerUTC from 'src/utils/TimeManagerUTC';
 
 const CONFIRMATION_MAIL_EXPIRED_TIME: [number, number, number] = [0, 10, 0];
 

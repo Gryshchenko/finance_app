@@ -1,12 +1,9 @@
 import { Request, Response, NextFunction } from 'express';
+import { HttpCode, ErrorCode, ResponseStatusType, UserStatus, Utils } from 'tenpercent/shared';
+
 import Logger from 'helper/logger/Logger';
-import { HttpCode } from 'tenpercent/shared';
-import { ErrorCode } from 'tenpercent/shared';
-import { ResponseStatusType } from 'tenpercent/shared';
 import ResponseBuilder from 'helper/responseBuilder/ResponseBuilder';
-import { UserStatus } from 'tenpercent/shared';
 import { IUser } from 'interfaces/IUser';
-import { Utils } from 'tenpercent/shared';
 
 const _logger = Logger.Of('UserStatusVerify');
 

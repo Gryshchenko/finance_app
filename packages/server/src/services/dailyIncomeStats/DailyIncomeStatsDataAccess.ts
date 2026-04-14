@@ -1,7 +1,8 @@
-import { IDatabaseConnection, IDBTransaction } from 'interfaces/IDatabaseConnection';
-import { LoggerBase } from 'helper/logger/LoggerBase';
-import { DBError } from 'src/utils/errors/DBError';
 import { Time } from 'tenpercent/shared';
+
+import { LoggerBase } from 'helper/logger/LoggerBase';
+import { IDatabaseConnection, IDBTransaction } from 'interfaces/IDatabaseConnection';
+import { DBError } from 'src/utils/errors/DBError';
 
 export interface IDailyIncomeStatsDataAccess {
     updateTotal(userId: number, date: string, incomeId: number, amount: number, trx?: IDBTransaction): Promise<boolean>;

@@ -1,16 +1,16 @@
-import UserRegistrationService from 'src/services/registration/UserRegistrationService';
-import UserServiceBuilder from 'src/services/user/UserServiceBuilder';
 import AccountServiceBuilder from 'services/account/AccountServiceBuilder';
+import BalanceServiceBuilder from 'services/balance/BalanceServiceBuilder';
 import CategoryServiceBuilder from 'services/category/CategoryServiceBuilder';
+import CurrencyServiceBuilder from 'services/currency/CurrencyServiceBuilder';
+import EmailConfirmationServiceBuilder from 'services/emailConfirmation/EmailConfirmationServiceBuilder';
 import GroupServiceBuilder from 'services/group/GroupServiceBuilder';
 import IncomeServiceBuilder from 'services/income/IncomeServiceBuilder';
-import UserRoleServiceBuilder from 'services/userRole/UserRoleServiceBuilder';
 import ProfileServiceBuilder from 'services/profile/ProfileServiceBuilder';
-import CurrencyServiceBuilder from 'services/currency/CurrencyServiceBuilder';
+import UserRoleServiceBuilder from 'services/userRole/UserRoleServiceBuilder';
 import DatabaseConnectionBuilder from 'src/repositories/DatabaseConnectionBuilder';
-import BalanceServiceBuilder from 'services/balance/BalanceServiceBuilder';
 import { KeyValueStoreBuilder } from 'src/repositories/keyValueStore/KeyValueStoreBuilder';
-import EmailConfirmationServiceBuilder from 'services/emailConfirmation/EmailConfirmationServiceBuilder';
+import UserRegistrationService from 'src/services/registration/UserRegistrationService';
+import UserServiceBuilder from 'src/services/user/UserServiceBuilder';
 
 export default class UserRegistrationServiceBuilder {
     public static build() {

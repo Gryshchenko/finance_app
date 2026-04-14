@@ -13,8 +13,7 @@ import {
     useState,
 } from 'react';
 import { Dimensions, type ViewStyle } from 'react-native';
-import Animated from 'react-native-reanimated';
-import {
+import Animated, {
     ScrollHandlerProcessed,
     useAnimatedScrollHandler,
     useAnimatedStyle,

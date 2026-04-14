@@ -1,6 +1,4 @@
-import { IEmailConfirmationResponse } from 'tenpercent/shared';
-import { IEmailResendResponse } from 'tenpercent/shared';
-import { IEmailVerifyResponse } from 'tenpercent/shared';
+import { IEmailConfirmationResponse, IEmailResendResponse, IEmailVerifyResponse } from 'tenpercent/shared';
 
 import { ApiAbstract } from '@/services/api/apiAbstract';
 import { GeneralApiProblem, GeneralApiProblemKind } from '@/services/api/apiProblem';

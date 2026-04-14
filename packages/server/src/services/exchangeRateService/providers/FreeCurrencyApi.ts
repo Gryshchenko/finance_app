@@ -1,6 +1,7 @@
-import { IRateProvider, IRateStatus } from 'interfaces/IRateProvider';
-import { LoggerBase } from 'helper/logger/LoggerBase';
 import { Utils } from 'tenpercent/shared';
+
+import { LoggerBase } from 'helper/logger/LoggerBase';
+import { IRateProvider, IRateStatus } from 'interfaces/IRateProvider';
 
 export class FreeCurrencyApi extends LoggerBase implements IRateProvider {
     private readonly _API_KEY: string | null = null;

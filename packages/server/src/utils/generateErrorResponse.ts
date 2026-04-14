@@ -1,8 +1,8 @@
-import ResponseBuilder from 'helper/responseBuilder/ResponseBuilder';
 import { Response } from 'express';
-import { ErrorCode } from 'tenpercent/shared';
-import { HttpCode } from 'tenpercent/shared';
-import { ResponseStatusType } from 'tenpercent/shared';
+import { ErrorCode, HttpCode, ResponseStatusType } from 'tenpercent/shared';
+
+import ResponseBuilder from 'helper/responseBuilder/ResponseBuilder';
+
 import { BaseError } from './errors/BaseError';
 
 export function generateErrorResponse(

@@ -1,5 +1,3 @@
-import { LoggerBase } from 'src/helper/logger/LoggerBase';
-import { IGroupService } from 'services/group/GroupService';
 import {
     AccountIcon,
     ErrorCode,
@@ -12,29 +10,32 @@ import {
     UserStatus,
     Utils,
 } from 'tenpercent/shared';
-import { IEmailConfirmationService } from 'services/emailConfirmation/EmailConfirmationService';
-import { IUser } from 'interfaces/IUser';
-import TranslationsUtils from 'src/services/translations/TranslationsUtils';
-import Translations from 'src/services/translations/Translations';
-import TranslationLoaderImpl from 'src/services/translations/TranslationLoaderImpl';
-import AuthService from 'src/services/auth/AuthService';
-import { IUserRoleService } from 'services/userRole/UserRoleService';
-import { ICurrencyService } from 'services/currency/CurrencyService';
+
 import { IDatabaseConnection, IDBTransaction } from 'interfaces/IDatabaseConnection';
-import { UnitOfWork } from 'src/repositories/UnitOfWork';
 import { IProfile } from 'interfaces/IProfile';
-import { user_initial } from 'src/config/user_initial';
-import currency_initial from 'src/config/currency_initial';
-import { ValidationError } from 'src/utils/errors/ValidationError';
-import { CustomError } from 'src/utils/errors/CustomError';
-import { IBalanceService } from 'services/balance/BalanceService';
-import { IKeyValueStore } from 'src/repositories/keyValueStore/KeyValueStore';
-import { getConfig } from 'src/config/config';
+import { IUser } from 'interfaces/IUser';
 import { IAccountService } from 'services/account/AccountService';
+import { IBalanceService } from 'services/balance/BalanceService';
 import { ICategoryService } from 'services/category/CategoryService';
+import { ICurrencyService } from 'services/currency/CurrencyService';
+import { IEmailConfirmationService } from 'services/emailConfirmation/EmailConfirmationService';
+import { IGroupService } from 'services/group/GroupService';
 import { IIncomeService } from 'services/income/IncomeService';
-import { IUserService } from 'services/user/UserService';
 import { IProfileService } from 'services/profile/ProfileService';
+import { IUserService } from 'services/user/UserService';
+import { IUserRoleService } from 'services/userRole/UserRoleService';
+import { getConfig } from 'src/config/config';
+import currency_initial from 'src/config/currency_initial';
+import { user_initial } from 'src/config/user_initial';
+import { LoggerBase } from 'src/helper/logger/LoggerBase';
+import { IKeyValueStore } from 'src/repositories/keyValueStore/KeyValueStore';
+import { UnitOfWork } from 'src/repositories/UnitOfWork';
+import AuthService from 'src/services/auth/AuthService';
+import TranslationLoaderImpl from 'src/services/translations/TranslationLoaderImpl';
+import Translations from 'src/services/translations/Translations';
+import TranslationsUtils from 'src/services/translations/TranslationsUtils';
+import { CustomError } from 'src/utils/errors/CustomError';
+import { ValidationError } from 'src/utils/errors/ValidationError';
 
 interface IDefaultData {
     group: string;

@@ -1,8 +1,8 @@
+import { IMailTemplateService } from 'interfaces/IMailTemplateService';
 import { INotificationService } from 'services/notification/INotificationService';
 import { NotificationType } from 'services/notification/NotificationType';
-import { IMailTemplateService } from 'interfaces/IMailTemplateService';
-import { TranslationKey } from 'types/TranslationKey';
 import Translations from 'src/services/translations/Translations';
+import { TranslationKey } from 'types/TranslationKey';
 
 export interface IConfirmationEmailNotification {
     send(email: string, confirmationCode: number): Promise<void>;

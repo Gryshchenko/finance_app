@@ -1,13 +1,12 @@
-import { IAccount } from 'tenpercent/shared';
+import { IAccount, Utils, IAccountListItem } from 'tenpercent/shared';
+
+import { LoggerBase } from 'helper/logger/LoggerBase';
 import { ICreateAccount } from 'interfaces/ICreateAccount';
 import { IDBTransaction } from 'interfaces/IDatabaseConnection';
-import { LoggerBase } from 'helper/logger/LoggerBase';
-import { Utils } from 'tenpercent/shared';
+import { IAccountDataAccess } from 'services/account/AccountDataAccess';
+import { DBError } from 'src/utils/errors/DBError';
 import { ValidationError } from 'src/utils/errors/ValidationError';
 import { validateAllowedProperties } from 'src/utils/validation/validateAllowedProperties';
-import { DBError } from 'src/utils/errors/DBError';
-import { IAccountListItem } from 'tenpercent/shared';
-import { IAccountDataAccess } from 'services/account/AccountDataAccess';
 
 export interface IAccountService {
     createAccount(userId: number, account: ICreateAccount, trx?: IDBTransaction): Promise<IAccount>;

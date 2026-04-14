@@ -1,6 +1,5 @@
 import { FC } from 'react';
-import { StyleProp, ViewStyle } from 'react-native';
-import { Pressable } from 'react-native';
+import { StyleProp, ViewStyle, Pressable } from 'react-native';
 
 import { Icon } from '@/components/Icon';
 import { useAppTheme } from '@/theme/context';

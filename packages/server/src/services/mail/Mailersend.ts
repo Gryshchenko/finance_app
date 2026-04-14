@@ -1,8 +1,8 @@
-import { IMailEngine } from 'interfaces/IMailEngine';
+import { MailerSend as MailerSendType } from 'mailersend';
 
+import { IMailEngine } from 'interfaces/IMailEngine';
 import { ISendMailPayload } from 'interfaces/ISendMailPayload';
 import { ISendMailResponse } from 'interfaces/ISendMailResponse';
-import { MailerSend as MailerSendType } from 'mailersend';
 
 const { Recipient } = require('mailersend');
 const { Sender } = require('mailersend');
