@@ -6,4 +6,5 @@ export interface IProfileClient {
     currencyId: number | undefined;
     locale: LanguageType | undefined;
     mailConfirmed: boolean | undefined;
+    email: string | undefined;
 }

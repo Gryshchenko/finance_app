@@ -1,5 +1,6 @@
 import { ReactNode, useState } from 'react';
-import { Modal, Pressable, StyleProp, View, ViewStyle } from 'react-native';
+import { Modal, Pressable, StyleProp, TextStyle, View, ViewStyle } from 'react-native';
+import { MaterialIcons } from '@expo/vector-icons';
 
 import { Text, TextProps } from '@/components/Text';
 import { TxKeyPath } from '@/i18n';
@@ -34,6 +35,8 @@ export type FieldModalProps = {
     triggerStyle?: StyleProp<ViewStyle>;
 
     /* ── modal content ── */
+    /** i18n key for the modal header title. When provided a header bar with title and close button is rendered. */
+    modalTitleTx?: TxKeyPath;
     /** Content rendered inside the bottom-sheet modal. */
     renderContent: (close: () => void) => ReactNode;
     /** Style overrides for the inner modal container. */
@@ -60,6 +63,7 @@ export function FieldModal({
     onClose,
     renderTrigger,
     triggerStyle,
+    modalTitleTx,
     renderContent,
     modalContentStyle,
     labelTx,
@@ -72,7 +76,10 @@ export function FieldModal({
     style,
     disabled,
 }: FieldModalProps) {
-    const { themed } = useAppTheme();
+    const {
+        themed,
+        theme: { colors: themeColors },
+    } = useAppTheme();
 
     // support both controlled and uncontrolled mode
     const [internalOpen, setInternalOpen] = useState(false);
@@ -131,7 +138,17 @@ export function FieldModal({
             <Modal visible={isOpen} transparent animationType="slide" onRequestClose={close}>
                 <Pressable style={themed($overlay)} onPress={close}>
                     <View style={[themed($modalContent), modalContentStyle]}>
-                        <Pressable onPress={(e) => e.stopPropagation()}>{renderContent(close)}</Pressable>
+                        <Pressable onPress={(e) => e.stopPropagation()}>
+                            {!!modalTitleTx && (
+                                <View style={themed($sheetHeader)}>
+                                    <Text tx={modalTitleTx} style={themed($sheetTitle)} />
+                                    <Pressable onPress={close} hitSlop={12}>
+                                        <MaterialIcons name="close" size={20} color={themeColors.textDim} />
+                                    </Pressable>
+                                </View>
+                            )}
+                            {renderContent(close)}
+                        </Pressable>
                     </View>
                 </Pressable>
             </Modal>
@@ -145,6 +162,25 @@ const $overlay: ThemedStyle<ViewStyle> = () => ({
     flex: 1,
     justifyContent: 'flex-end',
     backgroundColor: 'rgba(0, 0, 0, 0.5)',
+});
+
+const $sheetHeader: ThemedStyle<ViewStyle> = ({ colors, spacing }) => ({
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    paddingHorizontal: spacing.lg,
+    paddingVertical: spacing.md,
+    borderBottomWidth: 1,
+    borderBottomColor: colors.border,
+});
+
+const $sheetTitle: ThemedStyle<TextStyle> = ({ colors, typography }) => ({
+    fontSize: 14,
+    fontWeight: '600',
+    color: colors.text,
+    textTransform: 'uppercase',
+    letterSpacing: 1.5,
+    fontFamily: typography.primary.semiBold,
 });
 
 const $modalContent: ThemedStyle<ViewStyle> = ({ colors, spacing }) => ({

@@ -32,7 +32,7 @@ import {
     ValidationTypes,
 } from '@/utils/validation';
 
-interface SignUpScreenProps extends AppStackScreenProps<'SignUp'> {}
+interface SignUpScreenProps extends AppStackScreenProps<'signUp'> {}
 
 export const SignUpScreen: FC<SignUpScreenProps> = (_props) => {
     const authPasswordInput = useRef<TextInput>(null);

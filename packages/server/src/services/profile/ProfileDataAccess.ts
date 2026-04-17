@@ -3,6 +3,7 @@ import { IProfilePatchRequest, Time, EmailConfirmationStatusType } from 'tenperc
 import { ICreateProfile } from 'interfaces/ICreateProfile';
 import { IDatabaseConnection, IDBTransaction } from 'interfaces/IDatabaseConnection';
 import { IProfile } from 'interfaces/IProfile';
+import { IProfileWithEmail } from 'interfaces/IProfileWithEmail';
 import { LoggerBase } from 'src/helper/logger/LoggerBase';
 import { DBError } from 'src/utils/errors/DBError';
 import { getOnlyNotEmptyProperties } from 'src/utils/validation/getOnlyNotEmptyProperties';
@@ -10,7 +11,7 @@ import { validateAllowedProperties } from 'src/utils/validation/validateAllowedP
 
 export interface IProfileDataAccess {
     post(data: ICreateProfile, trx?: IDBTransaction): Promise<IProfile | undefined>;
-    get(userId: number, trx?: IDBTransaction): Promise<IProfile | undefined>;
+    get(userId: number, trx?: IDBTransaction): Promise<IProfileWithEmail | undefined>;
     patch(userId: number, properties: Partial<IProfilePatchRequest>, trx?: IDBTransaction): Promise<boolean | undefined>;
 }
 
@@ -40,23 +41,25 @@ export default class ProfileDataService extends LoggerBase implements IProfileDa
         }
     }
 
-    async get(userId: number, trx?: IDBTransaction): Promise<IProfile | undefined> {
+    async get(userId: number, trx?: IDBTransaction): Promise<IProfileWithEmail | undefined> {
         try {
             this._logger.info('Request to retrieve profile');
             const query = trx || this._db.engine();
-            const data = query<IProfile>('profiles')
-                .select<IProfile>(
+            const data = await query<IProfileWithEmail>('profiles')
+                .select<IProfileWithEmail>(
                     'profiles.profileId',
                     'profiles.userId',
                     'profiles.publicName',
                     'profiles.currencyId',
                     'profiles.additionalInfo',
                     'profiles.locale',
+                    'users.email',
                     query.raw(
                         `CASE WHEN email_confirmations.status = ${EmailConfirmationStatusType.Confirmed} THEN true ELSE false END as "mailConfirmed"`,
                     ),
                 )
                 .innerJoin('email_confirmations', 'profiles.userId', 'email_confirmations.userId')
+                .innerJoin('users', 'profiles.userId', 'users.userId')
                 .where({ 'profiles.userId': userId })
                 .first();
 

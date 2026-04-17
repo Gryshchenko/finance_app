@@ -1,10 +1,12 @@
 import { Request, Response } from 'express';
-import { ResponseStatusType, RoleType, ErrorCode, HttpCode, extractToken } from 'tenpercent/shared';
+import { ResponseStatusType, RoleType, ErrorCode, HttpCode, LanguageType, extractToken } from 'tenpercent/shared';
 
 import Logger from 'helper/logger/Logger';
 import ResponseBuilder from 'helper/responseBuilder/ResponseBuilder';
 import { IUser } from 'interfaces/IUser';
 import AuthServiceBuilder from 'services/auth/AuthServiceBuilder';
+import OAuthServiceBuilder from 'services/oauth/OAuthServiceBuilder';
+import { OAuthProviderType } from 'services/oauth/providers/IOAuthProvider';
 import PasswordForgetServiceBuilder from 'services/passwordForget/PasswordForgetServiceBuilder';
 import UserServiceUtils from 'services/user/UserServiceUtils';
 import { BaseError } from 'src/utils/errors/BaseError';
@@ -129,6 +131,37 @@ export class AuthController {
             );
         } catch (e: unknown) {
             AuthController.logger.error(`Forget password confirm failed: ${(e as { message: string }).message}`);
+            generateErrorResponse(res, responseBuilder, e as BaseError, ErrorCode.AUTH_ERROR);
+        }
+    }
+
+    public static async oauth(req: Request, res: Response) {
+        const responseBuilder = new ResponseBuilder();
+        try {
+            const provider = req.body.provider as OAuthProviderType;
+            const idToken = String(req.body.idToken);
+            const locale = req.body.locale as LanguageType | undefined;
+            const publicName = req.body.publicName as string | undefined;
+            const currencyCode = req.body.currencyCode as string | undefined;
+
+            const result = await OAuthServiceBuilder.build().authenticate(provider, idToken, locale, publicName, currencyCode);
+
+            res.setHeader('Authorization', `Bearer ${result.token}`);
+            res.status(HttpCode.OK).json(
+                responseBuilder
+                    .setStatus(ResponseStatusType.OK)
+                    .setData({
+                        userId: result.user.userId,
+                        email: result.user.email,
+                        status: result.user.status,
+                        token: result.token,
+                        tokenLong: result.longToken,
+                        isNewUser: result.isNewUser,
+                    })
+                    .build(),
+            );
+        } catch (e: unknown) {
+            AuthController.logger.error(`OAuth login failed: ${(e as { message: string }).message}`);
             generateErrorResponse(res, responseBuilder, e as BaseError, ErrorCode.AUTH_ERROR);
         }
     }

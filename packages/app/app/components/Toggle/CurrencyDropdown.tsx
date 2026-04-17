@@ -36,6 +36,7 @@ export const CurrencyDropdown: React.FC<CurrencyDropdownProps> = ({
             onChange={onChange}
             value={value}
             labelTx={'common:currency'}
+            modalTitleTx={'common:currency'}
             editable={editable}
             queryKey={'currencies'}
             fetcher={fetchCurrencies}

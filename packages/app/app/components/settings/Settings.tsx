@@ -1,11 +1,15 @@
 import { FC } from 'react';
 import { ScrollView, View, ViewStyle } from 'react-native';
+import { NavigationProp, useNavigation } from '@react-navigation/native';
 
 import { SettingsLogoutButton } from '@/components/settings/SettingsLogoutButton';
 import { SettingsPreferencesSection } from '@/components/settings/SettingsPreferencesSection';
 import { SettingsRow } from '@/components/settings/SettingsRow';
 import { SettingsSection } from '@/components/settings/SettingsSection';
 import { useSettingsProfile } from '@/hooks/useSettingsProfile';
+import { OverviewTabParamList } from '@/navigators/OverviewNavigator';
+import { SettingsPath } from '@/navigators/SettingsStackNavigator';
+import { OverviewPath } from '@/types/OverviewPath';
 import { openLinkInBrowser } from '@/utils/openLinkInBrowser';
 
 const APP_VERSION = 'v1.0.0';
@@ -28,22 +32,47 @@ export const Settings: FC = function Settings() {
         handleLanguageChange,
     } = useSettingsProfile();
 
+    const navigation = useNavigation<NavigationProp<OverviewTabParamList>>();
     return (
         <ScrollView>
             <View style={$sections}>
                 <SettingsSection titleTx="settingsScreen:account">
                     <SettingsRow
                         labelTx="settingsScreen:emailAddress"
-                        value="alex@tenpercent.app"
+                        value={profile?.email}
                         icon="chevron-right"
-                        onPress={() => {}}
+                        onPress={() => {
+                            navigation.navigate(OverviewPath.Settings, {
+                                screen: SettingsPath.ChangeEmail,
+                                params: {
+                                    email: profile?.email ?? '-',
+                                    originEmail: profile?.email ?? '-',
+                                },
+                            });
+                        }}
                     />
-                    <SettingsRow labelTx="settingsScreen:password" value="••••••••" icon="edit" onPress={() => {}} />
+                    <SettingsRow
+                        labelTx="settingsScreen:password"
+                        value="••••••••"
+                        icon="edit"
+                        onPress={() => {
+                            navigation.navigate(OverviewPath.Settings, {
+                                screen: SettingsPath.ChangePassword,
+                            });
+                        }}
+                    />
                     <SettingsRow
                         labelTx="settingsScreen:publicName"
                         value={profile?.publicName ?? '—'}
                         icon="edit"
-                        onPress={() => {}}
+                        onPress={() => {
+                            navigation.navigate(OverviewPath.Settings, {
+                                screen: SettingsPath.ChangePublicName,
+                                params: {
+                                    publicName: profile?.publicName,
+                                },
+                            });
+                        }}
                         isLast
                     />
                 </SettingsSection>

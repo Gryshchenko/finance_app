@@ -36,6 +36,7 @@ export const AccountDropdown: React.FC<AccountDropdownProps> = ({
             onChange={onChange}
             value={value}
             labelTx={'common:accounts'}
+            modalTitleTx={'common:accounts'}
             editable={!disabled}
             queryKey={'accounts'}
             fetcher={fetchAccounts}

@@ -1,4 +1,3 @@
-import { ParamListBase } from '@react-navigation/native';
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
 import { TransactionFieldType } from 'tenpercent/shared';
 
@@ -26,7 +25,7 @@ export enum AccountsPath {
  * Transaction screens are shared across navigators and keep their
  * TransactionPath string values as keys.
  */
-export interface AccountsStackParamList extends ParamListBase {
+export interface AccountsStackParamList {
     /** Main accounts list — no params required. */
     accounts: undefined;
 
@@ -70,12 +69,10 @@ export interface AccountsStackParamList extends ParamListBase {
 function AccountsStackNavigator() {
     return (
         <AccountsStack.Navigator screenOptions={{ headerShown: false }}>
-            {/* ── Account screens ─────────────────────────────────────────── */}
             <AccountsStack.Screen name={AccountsPath.Accounts} component={AccountsScreen} />
             <AccountsStack.Screen name={AccountsPath.AccountsCreate} component={AccountCreateScreen} />
             <AccountsStack.Screen name={AccountsPath.AccountEdit} component={AccountEditScreen} />
 
-            {/* ── Shared transaction screens ───────────────────────────────── */}
             <AccountsStack.Screen name={TransactionPath.Transactions} component={TransactionsScreen} />
             <AccountsStack.Screen name={TransactionPath.TransactionCreate} component={TransactionCreateScreen} />
             <AccountsStack.Screen name={TransactionPath.TransactionEdit} component={TransactionEditScreen} />

@@ -1,4 +1,5 @@
 import { View, ViewStyle, TextStyle, StyleProp } from 'react-native';
+import { MaterialIcons } from '@expo/vector-icons';
 
 import { FieldModal } from '@/components/FieldModal';
 import { ListItem } from '@/components/ListItem';
@@ -21,6 +22,8 @@ type DropdownProps<T> = {
     keyExtractor: (item: T) => string;
     labelExtractor: (item: T) => string;
     labelTx?: TxKeyPath;
+    /** i18n key for the modal header title */
+    modalTitleTx?: TxKeyPath;
     style?: StyleProp<TextStyle>;
     disabled?: boolean;
     editable?: boolean;
@@ -41,6 +44,7 @@ export function Dropdown<T>({
     keyExtractor,
     labelExtractor,
     labelTx,
+    modalTitleTx,
     style,
     disabled: disabledProp,
     editable,
@@ -52,7 +56,10 @@ export function Dropdown<T>({
     helperTxOptions,
 }: DropdownProps<T>) {
     const { isError, data, isPending } = useAppQuery<T[] | undefined>(queryKey, fetcher);
-    const { themed } = useAppTheme();
+    const {
+        themed,
+        theme: { colors: themeColors },
+    } = useAppTheme();
 
     const selected = data?.find((item) => keyExtractor(item) === String(value));
     const filteredData = filter ? filter(data) : data;
@@ -81,6 +88,7 @@ export function Dropdown<T>({
         <FieldModal
             preset={preset}
             labelTx={labelTx}
+            modalTitleTx={modalTitleTx}
             style={style}
             disabled={disabled || isPending || isError}
             status={status}
@@ -105,15 +113,20 @@ export function Dropdown<T>({
 
                 const renderItem = ({ item: transaction }: { item: T }) => {
                     if (!transaction) return null;
+                    const isSelected = keyExtractor(transaction) === String(value);
                     return (
                         <ListItem
                             key={keyExtractor(transaction)}
                             disabled={false}
                             bottomSeparator
                             onPress={() => handleSelect(transaction)}
+                            style={isSelected ? themed($optionSelected) : undefined}
                         >
                             <View style={themed($option)}>
-                                <Text style={themed($inputStyles)}>{labelExtractor(transaction)}</Text>
+                                <Text style={themed([...$inputStyles, ...(isSelected ? [$optionTextSelected] : [])])}>
+                                    {labelExtractor(transaction)}
+                                </Text>
+                                {isSelected && <MaterialIcons name="check" size={16} color={themeColors.text} />}
                             </View>
                         </ListItem>
                     );
@@ -147,11 +160,22 @@ const $errorText: ThemedStyle<TextStyle> = ({ colors }) => ({
 });
 
 const $option: ThemedStyle<ViewStyle> = ({ spacing }) => ({
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
     paddingVertical: spacing.md,
     paddingHorizontal: spacing.lg,
+});
+
+const $optionSelected: ThemedStyle<ViewStyle> = ({ colors }) => ({
+    backgroundColor: colors.palette.neutral200,
 });
 
 const $optionText: ThemedStyle<TextStyle> = ({ colors }) => ({
     color: colors.text,
     fontSize: 14,
+});
+
+const $optionTextSelected: ThemedStyle<TextStyle> = ({ typography }) => ({
+    fontFamily: typography.primary.medium,
 });

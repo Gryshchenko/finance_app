@@ -1559,6 +1559,33 @@ INSERT INTO public."currencyRates" ("baseCurrency","targetCurrency",rate,"update
 	 ('PLN','CZK',5.825433,'2025-06-25 12:48:19.276694'),
 	 ('PLN','PLN',1.000000,'2025-06-25 12:48:19.276694');
 
+--
+-- Name: user_oauth_providers; Type: TABLE; Schema: public; Owner: -
+--
+
+CREATE TABLE public.user_oauth_providers (
+    id integer NOT NULL,
+    "userId" integer NOT NULL,
+    provider character varying(20) NOT NULL,
+    "providerId" character varying(256) NOT NULL,
+    email character varying(150),
+    "createdAt" timestamp without time zone DEFAULT CURRENT_TIMESTAMP NOT NULL
+);
+
+CREATE SEQUENCE public.user_oauth_providers_id_seq
+    AS integer
+    START WITH 1
+    INCREMENT BY 1
+    NO MINVALUE
+    NO MAXVALUE
+    CACHE 1;
+
+ALTER SEQUENCE public.user_oauth_providers_id_seq OWNED BY public.user_oauth_providers.id;
+ALTER TABLE ONLY public.user_oauth_providers ALTER COLUMN id SET DEFAULT nextval('public.user_oauth_providers_id_seq'::regclass);
+ALTER TABLE ONLY public.user_oauth_providers ADD CONSTRAINT user_oauth_providers_pkey PRIMARY KEY (id);
+ALTER TABLE ONLY public.user_oauth_providers ADD CONSTRAINT user_oauth_providers_provider_providerid_unique UNIQUE (provider, "providerId");
+ALTER TABLE ONLY public.user_oauth_providers ADD CONSTRAINT user_oauth_providers_userid_fkey FOREIGN KEY ("userId") REFERENCES public.users("userId");
+
 INSERT INTO public.roles ("roleType") VALUES
 	 (1),
 	 (2);

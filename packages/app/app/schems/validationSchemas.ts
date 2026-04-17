@@ -7,6 +7,12 @@ const translationsKeys = {
     valueTooLong: 'validation:valueTooLong',
     valueInvalidRange: 'validation:valueInvalidRange',
     codeInvalided: 'validation:codeInvalided',
+    emailInvalided: 'validation:email',
+    passwordMinLength: 'validation:passwordMinLength',
+    passwordUppercase: 'validation:passwordUppercase',
+    passwordLowercase: 'validation:passwordLowercase',
+    passwordNumber: 'validation:passwordNumber',
+    passwordSpecial: 'validation:passwordSpecial',
 };
 
 const incomeCreate = {
@@ -46,6 +52,17 @@ const categoryCreate = {
 const incomeEdit = {
     incomeName: Yup.string().min(3, translationsKeys.valueTooShort).max(50, translationsKeys.valueTooLong).notRequired(),
     currencyId: Yup.number().notRequired(),
+};
+const publicNameEdit = {
+    publicName: Yup.string().min(3, translationsKeys.valueTooShort).max(40, translationsKeys.valueTooLong).required(),
+};
+
+const emailEdit = {
+    email: Yup.string()
+        .min(3, translationsKeys.valueTooShort)
+        .max(50, translationsKeys.valueTooLong)
+        .email(translationsKeys.emailInvalided)
+        .required(),
 };
 
 const accountEdit = {
@@ -185,6 +202,25 @@ const categoryEditSchema = Yup.object(categoryEdit);
 
 const signUpConfirmationShema = Yup.object(signUpConfirmation);
 
+const settingsChangePublicNameShema = Yup.object(publicNameEdit);
+
+const settingsChangeEmailShema = Yup.object(emailEdit);
+const settingsChangeEmailConfirmationShema = Yup.object(signUpConfirmation);
+
+const passwordChange = {
+    password: Yup.string().required(translationsKeys.valueRequired),
+    newPassword: Yup.string()
+        .required(translationsKeys.valueRequired)
+        .min(5, translationsKeys.passwordMinLength)
+        .matches(/[A-Z]/, translationsKeys.passwordUppercase)
+        .matches(/[a-z]/, translationsKeys.passwordLowercase)
+        .matches(/[0-9]/, translationsKeys.passwordNumber)
+        .matches(/[!@#$%^&*]/, translationsKeys.passwordSpecial),
+};
+
+const settingsChangePasswordSchema = Yup.object(passwordChange);
+const settingsChangePasswordConfirmSchema = Yup.object(signUpConfirmation);
+
 export {
     incomeEditSchema,
     incomeCreateSchema,
@@ -195,4 +231,9 @@ export {
     buildTransactionCreateSchema,
     buildTransactionEditSchema,
     signUpConfirmationShema,
+    settingsChangePublicNameShema,
+    settingsChangeEmailShema,
+    settingsChangeEmailConfirmationShema,
+    settingsChangePasswordSchema,
+    settingsChangePasswordConfirmSchema,
 };

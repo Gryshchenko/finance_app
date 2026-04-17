@@ -1,10 +1,9 @@
-import { useState } from 'react';
 import { ICurrency } from 'tenpercent/shared';
 
 import { LanguageOption } from '@/components/settings/settingsLocales';
 import { SettingsPickerRow } from '@/components/settings/SettingsPickerRow';
 import { SettingsSection } from '@/components/settings/SettingsSection';
-import { SettingsSwitchRow } from '@/components/settings/SettingsSwitchRow';
+// import { SettingsSwitchRow } from '@/components/settings/SettingsSwitchRow';
 
 interface Props {
     currencyList: ICurrency[];
@@ -29,8 +28,8 @@ export function SettingsPreferencesSection({
     onCurrencyChange,
     onLanguageChange,
 }: Props) {
-    const [notificationsEnabled, setNotificationsEnabled] = useState(true);
-    const [darkModeEnabled, setDarkModeEnabled] = useState(false);
+    // const [notificationsEnabled, setNotificationsEnabled] = useState(true);
+    // const [darkModeEnabled, setDarkModeEnabled] = useState(false);
 
     return (
         <SettingsSection titleTx="settingsScreen:preferences">
@@ -55,13 +54,14 @@ export function SettingsPreferencesSection({
                 labelExtractor={(item) => item.label}
                 onChange={onLanguageChange}
                 disabled={isSaving}
+                isLast
             />
-            <SettingsSwitchRow
-                labelTx="settingsScreen:notifications"
-                value={notificationsEnabled}
-                onToggle={setNotificationsEnabled}
-            />
-            <SettingsSwitchRow labelTx="settingsScreen:darkMode" value={darkModeEnabled} onToggle={setDarkModeEnabled} isLast />
+            {/*<SettingsSwitchRow*/}
+            {/*    labelTx="settingsScreen:notifications"*/}
+            {/*    value={notificationsEnabled}*/}
+            {/*    onToggle={setNotificationsEnabled}*/}
+            {/*/>*/}
+            {/*<SettingsSwitchRow labelTx="settingsScreen:darkMode" value={darkModeEnabled} onToggle={setDarkModeEnabled} isLast />*/}
         </SettingsSection>
     );
 }

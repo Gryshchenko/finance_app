@@ -34,14 +34,14 @@ router.post(
 
 router.post(
     '/email-change/verify',
-    sanitizeRequestBody(['confirmationCode']),
+    sanitizeRequestBody(['confirmationCode', 'newEmail']),
     validateQuery({}),
     routesInputValidation(confirmChangeValidationRules),
     ProfileController.confirmEmailChange,
 );
 router.post(
     '/email-change/resend',
-    sanitizeRequestBody(['confirmationId']),
+    sanitizeRequestBody(['newEmail']),
     validateQuery({}),
     routesInputValidation(refreshConfirmationCodeValidationRules),
     ProfileController.refreshConfirmationCodeForEmailChange,

@@ -124,8 +124,9 @@ export function parseServerErrors(errors: IResponseError[] | undefined): {
 
     for (const error of errors ?? []) {
         const field = error.payload?.field as string | undefined;
+        const reason = error.payload?.reason as TxKeyPath;
         if (field) {
-            fieldErrors[field] = 'validation:required' as TxKeyPath;
+            fieldErrors[field] = reason ?? ('validation:required' as TxKeyPath);
         } else {
             hasNonFieldErrors = true;
         }

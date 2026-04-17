@@ -19,6 +19,13 @@ export class ProfileController {
             const userFromSession = req.user as IUser;
             const profileService = ProfileServiceBuilder.build();
             const response = await profileService.get(userFromSession.userId);
+            if (!response) {
+                throw new ValidationError({
+                    errorCode: ErrorCode.PROFILE_ERROR,
+                    statusCode: HttpCode.INTERNAL_SERVER_ERROR,
+                    message: 'Fetch profile failed due reason: profile not found',
+                });
+            }
             res.status(HttpCode.OK).json(
                 responseBuilder
                     .setStatus(ResponseStatusType.OK)
@@ -54,7 +61,7 @@ export class ProfileController {
             const { newEmail } = req.body;
             const result = await ProfileServiceBuilder.build().requestEmailChange(userFromSession.userId, newEmail);
             res.status(HttpCode.OK).json(
-                responseBuilder.setStatus(ResponseStatusType.OK).setData({ expiresAt: result.expiresAt }).build(),
+                responseBuilder.setStatus(ResponseStatusType.OK).setData({ expiresAt: result.expiresAt, id: result.id }).build(),
             );
         } catch (e: unknown) {
             ProfileController.logger.error(`Request email change failed due reason: ${(e as { message: string }).message}`);
@@ -66,11 +73,8 @@ export class ProfileController {
         const responseBuilder = new ResponseBuilder();
         try {
             const userFromSession = req.user as IUser;
-            const { confirmationId } = req.body;
-            await ProfileServiceBuilder.build().refreshConfirmationCodeForEmailChange(
-                userFromSession.userId,
-                Number(confirmationId),
-            );
+            const { newEmail } = req.body;
+            await ProfileServiceBuilder.build().refreshConfirmationCodeForEmailChange(userFromSession.userId, newEmail);
             res.status(HttpCode.NO_CONTENT).json(responseBuilder.setStatus(ResponseStatusType.OK).setData({}).build());
         } catch (e: unknown) {
             ProfileController.logger.error(
@@ -84,8 +88,8 @@ export class ProfileController {
         const responseBuilder = new ResponseBuilder();
         try {
             const userFromSession = req.user as IUser;
-            const { confirmationCode } = req.body;
-            await ProfileServiceBuilder.build().confirmEmailChange(userFromSession.userId, Number(confirmationCode));
+            const { confirmationCode, newEmail } = req.body;
+            await ProfileServiceBuilder.build().confirmEmailChange(userFromSession.userId, newEmail, Number(confirmationCode));
             res.status(HttpCode.NO_CONTENT).json(responseBuilder.setStatus(ResponseStatusType.OK).setData({}).build());
         } catch (e: unknown) {
             ProfileController.logger.error(`Confirm email change failed due reason: ${(e as { message: string }).message}`);

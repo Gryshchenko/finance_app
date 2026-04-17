@@ -3,6 +3,7 @@ import { IProfilePatchRequest } from 'tenpercent/shared';
 import { ICreateProfile } from 'interfaces/ICreateProfile';
 import { IDBTransaction } from 'interfaces/IDatabaseConnection';
 import { IProfile } from 'interfaces/IProfile';
+import { IProfileWithEmail } from 'interfaces/IProfileWithEmail';
 import { IEmailChangingService } from 'services/emailChanging/EmailChangingService';
 import { IPasswordChangingService } from 'services/passwordChanging/PasswordChangingService';
 import { IProfileDataAccess } from 'services/profile/ProfileDataAccess';
@@ -10,14 +11,15 @@ import { LoggerBase } from 'src/helper/logger/LoggerBase';
 
 export interface IProfileService {
     post(data: ICreateProfile, trx?: IDBTransaction): Promise<IProfile | undefined>;
-    get(userId: number, trx?: IDBTransaction): Promise<IProfile | undefined>;
+    get(userId: number, trx?: IDBTransaction): Promise<IProfileWithEmail | undefined>;
     patch(userId: number, properties: Partial<IProfilePatchRequest>, trx?: IDBTransaction): Promise<boolean | undefined>;
     requestEmailChange(
         userId: number,
         newEmail: string,
         trx?: IDBTransaction,
     ): Promise<{ confirmationCode: number; expiresAt: Date }>;
-    confirmEmailChange(userId: number, confirmationCode: number, trx?: IDBTransaction): Promise<boolean>;
+    confirmEmailChange(userId: number, email: string, confirmationCode: number, trx?: IDBTransaction): Promise<boolean>;
+    refreshConfirmationCodeForEmailChange(userId: number, newEmail: string, confirmationId: number): Promise<boolean>;
     requestPasswordChange(
         userId: number,
         newPassword: string,
@@ -48,7 +50,7 @@ export default class ProfileService extends LoggerBase implements IProfileServic
         return await this._profileDataAccess.post(data, trx);
     }
 
-    public async get(userId: number, trx?: IDBTransaction): Promise<IProfile | undefined> {
+    public async get(userId: number, trx?: IDBTransaction): Promise<IProfileWithEmail | undefined> {
         return await this._profileDataAccess.get(userId, trx);
     }
 
@@ -64,15 +66,20 @@ export default class ProfileService extends LoggerBase implements IProfileServic
         userId: number,
         newEmail: string,
         trx?: IDBTransaction,
-    ): Promise<{ confirmationCode: number; expiresAt: Date }> {
+    ): Promise<{ confirmationCode: number; expiresAt: Date; id: number }> {
         return await this._emailChangingService.request(userId, newEmail, trx);
     }
 
-    public async confirmEmailChange(userId: number, confirmationCode: number, trx?: IDBTransaction): Promise<boolean> {
-        return await this._emailChangingService.confirm(userId, confirmationCode, trx);
+    public async confirmEmailChange(
+        userId: number,
+        email: string,
+        confirmationCode: number,
+        trx?: IDBTransaction,
+    ): Promise<boolean> {
+        return await this._emailChangingService.confirm(userId, email, confirmationCode, trx);
     }
-    public async refreshConfirmationCodeForEmailChange(userId: number, confirmationId: number): Promise<boolean> {
-        return await this._emailChangingService.refresh(userId, confirmationId);
+    public async refreshConfirmationCodeForEmailChange(userId: number, newEmail: string): Promise<boolean> {
+        return await this._emailChangingService.refresh(userId, newEmail);
     }
 
     public async requestPasswordChange(

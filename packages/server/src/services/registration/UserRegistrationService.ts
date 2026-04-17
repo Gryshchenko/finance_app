@@ -1,3 +1,4 @@
+import cryptoModule from 'crypto';
 import {
     AccountIcon,
     ErrorCode,
@@ -232,6 +233,131 @@ export default class UserRegistrationService extends LoggerBase {
         } catch (e) {
             await uow.rollback();
             this._logger.error(`Email confirmation failed due to a server error: ${(e as { message: string }).message}`);
+            throw e;
+        }
+    }
+
+    public async createOAuthUser(
+        email: string,
+        localeFromUser: LanguageType = LanguageType.US,
+        publicName: string,
+        currencyCode: string,
+        emailVerified: boolean,
+    ): Promise<{ user: IUser; token: string; longToken: string }> {
+        const uow = new UnitOfWork(this.db);
+
+        try {
+            await uow.start();
+            const locale = TranslationsUtils.convertToSupportLocale(localeFromUser);
+            const otherUser = await this.userService.getUserAuthenticationData(email);
+            if (otherUser) {
+                throw new ValidationError({
+                    message: 'A user with this email already exists',
+                    errorCode: ErrorCode.SIGNUP_USER_ALREADY_EXISTS_ERROR,
+                });
+            }
+            const trxInProcess = uow.getTransaction();
+            if (Utils.isNull(trxInProcess)) {
+                throw new CustomError({
+                    message: 'Transaction not initiated. User could not be created',
+                    errorCode: ErrorCode.TRANSACTION_ERROR,
+                    statusCode: HttpCode.INTERNAL_SERVER_ERROR,
+                });
+            }
+            const trx = trxInProcess as unknown as IDBTransaction;
+
+            // Generate a random password for OAuth users (they will never use it)
+            const randomPassword = cryptoModule.randomBytes(32).toString('hex');
+            const user = await this.userService.create(email, randomPassword, trx);
+
+            if (!user) {
+                throw new CustomError({
+                    message: 'OAuth user could not be created due to an unknown error.',
+                    statusCode: HttpCode.INTERNAL_SERVER_ERROR,
+                    errorCode: ErrorCode.SIGNUP_CATCH_ERROR,
+                });
+            }
+
+            const getCurrency = async (): Promise<ICurrency | undefined> => {
+                try {
+                    if (Utils.isNotNull(currencyCode)) {
+                        const currency = await this.currencyService.getByCurrencyCode(currencyCode);
+                        if (Utils.isNull(currency)) throw new Error('Currency not found.');
+                        return currency;
+                    }
+                } catch {
+                    const code = (currency_initial[locale] ?? currency_initial[LanguageType.US]).currencyCode;
+                    return await this.currencyService.getByCurrencyCode(code);
+                }
+            };
+
+            const currency = await getCurrency();
+            if (!currency) {
+                throw new CustomError({
+                    message: 'Unable to retrieve the user\u2019s currency based on their locale.',
+                    statusCode: HttpCode.INTERNAL_SERVER_ERROR,
+                    errorCode: ErrorCode.SESSION_CREATE_ERROR,
+                });
+            }
+
+            await Translations.load(locale, TranslationLoaderImpl.instance());
+
+            // const initialStatus = emailVerified ? UserStatus.ACTIVE : UserStatus.NO_VERIFIED;
+
+            const response = await Promise.all([
+                await this.userRoleService.createUserRole(user.userId, RoleType.Default, trx),
+                await this.profileService.post({ userId: user.userId, currencyId: currency.currencyId, locale, publicName }, trx),
+                ...(emailVerified
+                    ? []
+                    : [await this.emailConfirmationService.createEmailConfirmation(user.userId, user.email, trx)]),
+            ]);
+
+            if (Utils.isNull(response[1]?.profileId)) {
+                throw new CustomError({
+                    message: 'User profile creation failed during the registration process.',
+                    statusCode: HttpCode.INTERNAL_SERVER_ERROR,
+                    errorCode: ErrorCode.SIGNUP_PROFILE_NOT_CREATED_ERROR,
+                });
+            }
+
+            await this.balanceService.post(user.userId, { amount: 0, currencyCode: currency.currencyCode }, trx);
+            const profile = response[1] as IProfile;
+            await this.createInitialDataForNewUser(user.userId, profile, trx);
+
+            if (emailVerified) {
+                await this.userService.patch(user.userId, { status: UserStatus.ACTIVE }, trx);
+            }
+
+            await uow.commit();
+
+            if (!emailVerified) {
+                this.emailConfirmationService.sendConfirmationEmail(user.userId, user.email, response[2]).catch((e) => {
+                    this._logger.error(`OAuth user confirmation mail send failed: ${(e as { message: string }).message}`);
+                });
+            }
+
+            const readyUser = await this.userService.get(user.userId);
+            this._logger.info('OAuth user created, generating tokens.');
+
+            const token = AuthService.createJWToken(
+                user.userId,
+                RoleType.Default,
+                getConfig().jwtSecret,
+                getConfig().jwtExpiresIn,
+            );
+            const longToken = AuthService.createJWToken(
+                user.userId,
+                RoleType.Default,
+                getConfig().jwtLongSecret,
+                getConfig().jwtLongExpiresIn,
+                'refresh',
+            );
+
+            this._logger.info(`OAuth user registration completed for userId: ${user.userId}`);
+            return { user: readyUser, token, longToken };
+        } catch (e) {
+            await uow.rollback();
+            this._logger.error(`OAuth user creation failed: ${(e as { message: string }).message}`);
             throw e;
         }
     }

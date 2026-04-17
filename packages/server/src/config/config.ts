@@ -35,6 +35,8 @@ interface IConfig {
     trustedOrigin: string;
     rateProviderAPI: string;
     rateProviderUrl: string;
+    googleClientId: string;
+    appleClientId: string;
 }
 
 export function getConfig(): IConfig {
@@ -65,5 +67,7 @@ export function getConfig(): IConfig {
         rateProviderAPI: (process.env.TEST_RATE_PROVIDER_API ?? process.env.RATE_PROVIDER_API) as string,
         rateProviderUrl: (process.env.TEST_RATE_PROVIDER_URL ?? process.env.RATE_PROVIDER_URL) as string,
         mailNotReply: 'test',
+        googleClientId: (process.env.TEST_GOOGLE_CLIENT_ID ?? process.env.GOOGLE_CLIENT_ID) as string,
+        appleClientId: (process.env.TEST_APPLE_CLIENT_ID ?? process.env.APPLE_CLIENT_ID) as string,
     };
 }

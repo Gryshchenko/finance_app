@@ -44,6 +44,8 @@ const en = {
         EMAIL_CONFIRMATION_ERROR: 'We couldn’t confirm your email.',
     },
     validation: {
+        sameEmail: 'Same email address',
+        samePassword: 'Same password',
         unsupportedLanguage: 'Invalid language',
         unsupportedCurrency: 'Invalid currency',
         valueRequired: 'This field is required',
@@ -55,6 +57,7 @@ const en = {
         required: 'Field cannot be empty',
         email: 'Invalid email format',
         codeInvalided: 'Invalid confirmation code',
+        codeExpired: 'Invalid confirmation code (expires)',
         name: 'Invalid name format must contain only numbers or alphabet characters.',
         password: 'Invalid password format',
         passwordMinLength: 'Must be at least 5 characters',
@@ -273,6 +276,43 @@ const en = {
         updateLanguageFailed: 'Could not update language. Please try again.',
         selectCurrency: 'Select Currency',
         selectLanguage: 'Select Language',
+    },
+    settingsChangePublicNameScreen: {
+        name: 'Change Public Name',
+        description: 'This is the name other users will see. You can update it anytime.',
+        input: 'Public Name',
+        updateSuccess: 'Public name updated successfully.',
+        updateFailed: 'Could not update public name. Please try again.',
+    },
+    settingsChangeEmailScreen: {
+        name: 'Change Email',
+        description: 'Enter your new email address. We will send a verification code to confirm the change.',
+        input: 'Email',
+        updateSuccess: 'Email updated successfully.',
+        updateFailed: 'Could not update email. Please try again.',
+    },
+    settingsChangeEmailConfirmScreen: {
+        description: "We've sent an 8-digit verification code to your new email address. Enter it below to confirm the change.",
+        timerHelper: 'Resend code in:',
+        confirmButton: 'Confirm',
+        resendButton: 'Resend code',
+        success: 'Your email has been successfully confirmed.',
+    },
+    settingsChangePasswordScreen: {
+        name: 'Change Password',
+        description:
+            'Enter your current password and choose a new one. You will need to confirm the change via a code sent to your email.',
+        currentPassword: 'Current Password',
+        newPassword: 'New Password',
+        updateFailed: 'Could not update password. Please try again.',
+    },
+    settingsChangePasswordConfirmScreen: {
+        name: 'Change Password',
+        description: "We've sent a verification code to your email. Enter it below to confirm your password change.",
+        timerHelper: 'Resend code in:',
+        confirmButton: 'Confirm',
+        resendButton: 'Resend code',
+        successMessage: 'Password changed successfully. Please sign in again.',
     },
 };
 

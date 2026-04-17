@@ -1,7 +1,8 @@
 import { createContext, FC, PropsWithChildren, useContext, useEffect, useState } from 'react';
-import { ICurrency, Utils } from 'tenpercent/shared';
+import { ICurrency, IProfileClient, Utils } from 'tenpercent/shared';
 
 import { useAppQuery } from '@/hooks/useAppQuery';
+import { fetchProfile } from '@/hooks/useSettingsProfile';
 import { buildGeneralApiBaseHandler, GeneralApiProblemKind } from '@/services/api/apiProblem';
 import { CurrencyService } from '@/services/CurrencyService';
 import { QueryKeys, QueryStaleTimes } from '@/services/QueryCacheService';
@@ -54,6 +55,9 @@ export const CurrencyProvider: FC<PropsWithChildren<CurrencyProviderProps>> = ({
     const { data, isLoading, isError } = useAppQuery<ICurrency[] | undefined>(QueryKeys.currencies(), fetchCurrencies, {
         staleTime: QueryStaleTimes.static,
     });
+    const { data: profile } = useAppQuery<IProfileClient | undefined>(QueryKeys.profile(), fetchProfile, {
+        staleTime: QueryStaleTimes.detail,
+    });
     const [currencies, setCurrencies] = useState<Map<number, ICurrency>>(new Map());
     const getDefaultCurrency = (): ICurrency => {
         return {
@@ -77,8 +81,8 @@ export const CurrencyProvider: FC<PropsWithChildren<CurrencyProviderProps>> = ({
         getCurrency,
         getCurrencySymbol,
         currencies,
-        defaultCurrency: 'USD',
-        defaultCurrencyId: 1,
+        defaultCurrency: currencies.get(profile?.currencyId ?? -1)?.currencyCode ?? 'UNK',
+        defaultCurrencyId: profile?.currencyId ?? -1,
         isLoading,
         isError,
     };

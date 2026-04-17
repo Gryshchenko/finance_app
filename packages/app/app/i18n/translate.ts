@@ -35,3 +35,9 @@ export function translate(key: TxKeyPath, options?: TOptions): string {
 export function hasTranslate(key: TxKeyPath): boolean {
     return i18n.exists(key);
 }
+
+export async function changeLanguage(lang: string): Promise<void> {
+    if (i18n.isInitialized) {
+        await i18n.changeLanguage(lang);
+    }
+}

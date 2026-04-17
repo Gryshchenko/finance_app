@@ -52,6 +52,7 @@ export const LanguageDropdown: React.FC<LanguageDropdownProps> = ({
             onChange={onChange}
             value={value}
             labelTx={'common:language'}
+            modalTitleTx={'common:language'}
             disabled={disabled}
             queryKey={'language'}
             fetcher={fetchConfig}

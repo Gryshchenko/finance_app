@@ -1,15 +1,15 @@
-import { IProfileClient } from 'tenpercent/shared';
-
-import { IProfile } from 'interfaces/IProfile';
+import { IProfileWithEmail } from 'interfaces/IProfileWithEmail';
 
 export default class ProfileServiceUtils {
-    public static convertServerUserToClientUser(profile: Partial<IProfile> | undefined = {}): IProfileClient {
+    public static convertServerUserToClientUser(profile: IProfileWithEmail): IProfileWithEmail {
         return {
-            profileId: profile.profileId,
-            publicName: profile.publicName,
-            currencyId: profile.currencyId,
-            locale: profile.locale,
-            mailConfirmed: profile.mailConfirmed,
+            profileId: profile.profileId ?? undefined,
+            publicName: profile.publicName ?? undefined,
+            currencyId: profile.currencyId ?? undefined,
+            locale: profile.locale ?? undefined,
+            mailConfirmed: profile.mailConfirmed ?? undefined,
+            email: profile.email ?? undefined,
+            userId: profile.userId ?? undefined,
         };
     }
 }

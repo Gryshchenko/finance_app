@@ -1,6 +1,6 @@
 import { TextStyle, ViewStyle } from 'react-native';
 import { BottomTabScreenProps, createBottomTabNavigator } from '@react-navigation/bottom-tabs';
-import { CompositeScreenProps, NavigatorScreenParams, ParamListBase } from '@react-navigation/native';
+import { CompositeScreenProps, NavigatorScreenParams } from '@react-navigation/native';
 
 import { CurrencyProvider } from '@/context/CurrencyContext';
 import { AccountsPath, AccountsStackNavigator, AccountsStackParamList } from '@/navigators/AccountsStackNavigator';
@@ -8,7 +8,7 @@ import { CategoriesPath, CategoriesStackNavigator, CategoriesStackParamList } fr
 import { DashboardPath, DashboardStackNavigator, DashboardStackParamList } from '@/navigators/DashboardStackNavigator';
 import { HistoryStackNavigator, HistoryStackParamList } from '@/navigators/HistoryStackNavigator';
 import { IncomePath, IncomesStackNavigator, IncomesStackParamList } from '@/navigators/IncomesStackNavigator';
-import { SettingsScreen } from '@/screens/SettingsScreen';
+import { SettingsPath, SettingsStackNavigator, SettingsStackParamList } from '@/navigators/SettingsStackNavigator';
 import { useAppTheme } from '@/theme/context';
 import type { ThemedStyle } from '@/theme/types';
 import { OverviewPath } from '@/types/OverviewPath';
@@ -17,13 +17,13 @@ import { TransactionPath } from '@/types/TransactionPath';
 import { AppStackParamList, AppStackScreenProps } from './AppNavigator';
 
 export type OverviewTabParamList = {
-    dashboard: NavigatorScreenParams<DashboardStackParamList> | undefined;
-    incomes: NavigatorScreenParams<IncomesStackParamList> | undefined;
-    accounts: NavigatorScreenParams<AccountsStackParamList> | undefined;
-    categories: NavigatorScreenParams<CategoriesStackParamList> | undefined;
-    transactions: NavigatorScreenParams<HistoryStackParamList> | undefined;
-    settings: undefined;
-} & ParamListBase;
+    dashboard: NavigatorScreenParams<DashboardStackParamList>;
+    incomes: NavigatorScreenParams<IncomesStackParamList>;
+    accounts: NavigatorScreenParams<AccountsStackParamList>;
+    categories: NavigatorScreenParams<CategoriesStackParamList>;
+    transactions: NavigatorScreenParams<HistoryStackParamList>;
+    settings: NavigatorScreenParams<SettingsStackParamList>;
+};
 
 /**
  * Helper for automatically generating navigation prop types for each route.
@@ -129,7 +129,16 @@ export function OverviewNavigator() {
                         },
                     })}
                 />
-                <Tab.Screen name="settings" component={SettingsScreen} />
+                <Tab.Screen
+                    name="settings"
+                    component={SettingsStackNavigator}
+                    listeners={({ navigation }) => ({
+                        tabPress: (event) => {
+                            event.preventDefault();
+                            navigation.navigate(OverviewPath.Settings, { screen: SettingsPath.Settings });
+                        },
+                    })}
+                />
             </Tab.Navigator>
         </CurrencyProvider>
     );

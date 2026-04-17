@@ -32,7 +32,7 @@ import type { ThemedStyle } from '@/theme/types';
 import { getMessageFromErrorCode } from '@/utils/getMessageFromErrorCode';
 import { Logger } from '@/utils/logger/Logger';
 
-interface SignUpConfirmationScreenProps extends AppStackScreenProps<'SignUpConfirmation'> {}
+interface SignUpConfirmationScreenProps extends AppStackScreenProps<'signUpConfirmation'> {}
 
 const _logger: Logger = Logger.Of('SignUpConfirmationScreen');
 
@@ -257,7 +257,7 @@ const $screenContentContainer: ThemedStyle<ViewStyle> = ({ spacing }) => ({
 });
 
 export const $timer: ThemedStyle<TextStyle> = ({ colors, typography, spacing }) => ({
-    marginTop: spacing.xs,
+    marginTop: spacing.md,
     marginBottom: spacing.md,
     color: colors.textDim,
     fontSize: 14,

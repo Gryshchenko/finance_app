@@ -30,7 +30,6 @@ import { navigationRef, useBackButtonHandler } from './navigationUtilities';
  *   https://reactnavigation.org/docs/typescript/#organizing-types
  */
 export interface AppStackParamList extends ParamListBase {
-    welcome: undefined;
     login: undefined;
     signUp: undefined;
     signUpConfirmation: undefined;

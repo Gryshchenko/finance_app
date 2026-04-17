@@ -26,6 +26,7 @@ export const IncomeDropdown: React.FC<IncomeDropdownProps> = ({ preset, value, o
             onChange={onChange}
             value={value}
             labelTx={'common:incomes'}
+            modalTitleTx={'common:incomes'}
             editable={!disabled}
             queryKey={'incomes'}
             fetcher={fetchIncomes}

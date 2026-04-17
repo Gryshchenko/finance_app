@@ -26,11 +26,12 @@ const requestPasswordChangeValidationRules = [
     ...createSignupValidationRules('password', 'password', { min: 5, max: 30 }),
 ];
 
-const confirmChangeValidationRules = [validatePathConfirmationCodeProperty('confirmationCode')];
-
-const refreshConfirmationCodeValidationRules = [
-    ...createSignupValidationRules('confirmationId', 'number', { min: 1, max: Number.MAX_SAFE_INTEGER }),
+const confirmChangeValidationRules = [
+    validatePathConfirmationCodeProperty('confirmationCode'),
+    ...createSignupValidationRules('newEmail', 'email', { max: 100 }),
 ];
+
+const refreshConfirmationCodeValidationRules = [...createSignupValidationRules('newEmail', 'email', { max: 100 })];
 
 export {
     patchProfileValidationRules,

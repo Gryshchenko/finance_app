@@ -4,6 +4,7 @@ import { ICurrency, IProfileClient } from 'tenpercent/shared';
 import { LanguageOption } from '@/components/settings/settingsLocales';
 import { useCurrency } from '@/context/CurrencyContext';
 import { useAppQuery, useInvalidateQuery } from '@/hooks/useAppQuery';
+import { changeLanguage } from '@/i18n/translate';
 import { IClientConfig } from '@/interfaces/IClientConfig';
 import { buildGeneralApiBaseHandler, GeneralApiProblemKind } from '@/services/api/apiProblem';
 import { ClientConfigService } from '@/services/ClientConfigService';
@@ -11,16 +12,16 @@ import { ProfileService } from '@/services/ProfileService';
 import { InvalidationGroups, QueryKeys, QueryStaleTimes } from '@/services/QueryCacheService';
 import ToastService from '@/services/ToastService';
 
-async function fetchProfile(): Promise<IProfileClient | undefined> {
+export async function fetchProfile(): Promise<IProfileClient | undefined> {
     const response = await ProfileService.instance().doGetProfile();
-    if (response.kind === GeneralApiProblemKind.Ok) return response.data;
+    if (response.kind === GeneralApiProblemKind.Ok) return response.data as IProfileClient;
     buildGeneralApiBaseHandler(response);
     return undefined;
 }
 
 async function fetchClientConfig(): Promise<IClientConfig | undefined> {
     const response = await ClientConfigService.instance().doGetConfig();
-    if (response.kind === GeneralApiProblemKind.Ok) return response.data;
+    if (response.kind === GeneralApiProblemKind.Ok) return response.data as IClientConfig;
     buildGeneralApiBaseHandler(response);
     return undefined;
 }
@@ -98,6 +99,7 @@ export function useSettingsProfile(): UseSettingsProfileResult {
             if (response.kind === GeneralApiProblemKind.Ok) {
                 ToastService.success({ message: 'settingsScreen:updateLanguageSuccess' });
                 await invalidateQuery(InvalidationGroups.profile());
+                await changeLanguage(item.locale);
             } else {
                 ToastService.error({ message: 'settingsScreen:updateLanguageFailed' });
             }

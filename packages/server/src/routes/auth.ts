@@ -9,6 +9,7 @@ import {
     forgetChangePasswordValidationRules,
 } from 'src/utils/validation/forgetPasswordValidationRules';
 import loginValidationRules from 'src/utils/validation/loginValidationRules';
+import oauthValidationRules from 'src/utils/validation/oauthValidationRules';
 import refreshTokenValidation from 'src/utils/validation/refreshTokenValidationRules';
 import { sanitizeRequestBody } from 'src/utils/validation/sanitizeRequestBody';
 import { validateQuery } from 'src/utils/validation/validateQuery';
@@ -36,6 +37,14 @@ router.post(
     sanitizeRequestBody(['email', 'password']),
     routesInputValidation(loginValidationRules),
     AuthController.login,
+);
+
+router.post(
+    '/oauth',
+    validateQuery({}),
+    sanitizeRequestBody(['provider', 'idToken', 'locale', 'publicName', 'currencyCode']),
+    routesInputValidation(oauthValidationRules),
+    AuthController.oauth,
 );
 
 router.post(

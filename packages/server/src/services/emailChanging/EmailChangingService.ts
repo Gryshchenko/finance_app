@@ -1,4 +1,4 @@
-import { ErrorCode, HttpCode } from 'tenpercent/shared';
+import { ErrorCode, HttpCode, Time } from 'tenpercent/shared';
 
 import { IDBTransaction } from 'interfaces/IDatabaseConnection';
 import { ConfirmationHelper } from 'services/confirmation/ConfirmationHelper';
@@ -10,9 +10,13 @@ import { ValidationError } from 'src/utils/errors/ValidationError';
 const CHANGE_CODE_EXPIRES_IN: [number, number, number] = [0, 10, 0];
 
 export interface IEmailChangingService {
-    request(userId: number, newEmail: string, trx?: IDBTransaction): Promise<{ confirmationCode: number; expiresAt: Date }>;
-    confirm(userId: number, confirmationCode: number, trx?: IDBTransaction): Promise<boolean>;
-    refresh(userId: number, confirmationId: number): Promise<boolean>;
+    request(
+        userId: number,
+        newEmail: string,
+        trx?: IDBTransaction,
+    ): Promise<{ confirmationCode: number; expiresAt: Date; id: number }>;
+    confirm(userId: number, email: string, confirmationCode: number, trx?: IDBTransaction): Promise<boolean>;
+    refresh(userId: number, email: string): Promise<boolean>;
 }
 
 export default class EmailChangingService extends LoggerBase implements IEmailChangingService {
@@ -25,36 +29,53 @@ export default class EmailChangingService extends LoggerBase implements IEmailCh
         this._userService = userService;
     }
 
-    public async request(
-        userId: number,
-        newEmail: string,
-        trx?: IDBTransaction,
-    ): Promise<{ confirmationCode: number; expiresAt: Date }> {
+    public async request(userId: number, email: string): Promise<{ confirmationCode: number; expiresAt: Date; id: number }> {
         this._logger.info(`Email change requested for userId ${userId}`);
         try {
+            const record = await this._dataAccess.getByUserId(userId, email);
             const expiresAt = ConfirmationHelper.createExpiresAt(CHANGE_CODE_EXPIRES_IN);
             const confirmationCode = ConfirmationHelper.generateCode();
-
-            await this._dataAccess.create(userId, newEmail, confirmationCode, expiresAt, trx);
-
-            this._logger.info(`Email change request created for userId ${userId}`);
-            return { confirmationCode, expiresAt };
+            if (!record) {
+                const response = await this._dataAccess.create(userId, email, confirmationCode, expiresAt);
+                this._logger.info(`Email change request created for userId ${userId}`);
+                return { confirmationCode, expiresAt, id: response.id };
+            } else {
+                await this._dataAccess.refresh(userId, email, confirmationCode, expiresAt);
+                this._logger.info(`Email change request created for userId ${userId}`);
+                return { confirmationCode, expiresAt, id: record.id };
+            }
         } catch (e) {
             this._logger.error(`Email change request failed for userId ${userId}: ${(e as { message: string }).message}`);
             throw e;
         }
     }
 
-    public async confirm(userId: number, confirmationCode: number, trx?: IDBTransaction): Promise<boolean> {
+    public async confirm(userId: number, email: string, confirmationCode: number, trx?: IDBTransaction): Promise<boolean> {
         this._logger.info(`Confirming email change for userId ${userId}`);
         try {
-            const record = await this._dataAccess.getByUserId(userId);
+            const record = await this._dataAccess.getByUserId(userId, email);
 
             if (!record) {
                 throw new ValidationError({
                     message: `No pending email change found for userId ${userId}`,
                     errorCode: ErrorCode.EMAIL_CONFIRMATION_ERROR,
-                    statusCode: HttpCode.NOT_FOUND,
+                    statusCode: HttpCode.BAD_REQUEST,
+                    payload: {
+                        field: 'confirmationCode',
+                        reason: 'validation:codeInvalided',
+                    },
+                });
+            }
+
+            if (Time.getISODate(record.expiresAt) < Time.getISODateNowUTC()) {
+                throw new ValidationError({
+                    message: `No pending email change found for userId ${userId}`,
+                    errorCode: ErrorCode.EMAIL_CONFIRMATION_ERROR,
+                    statusCode: HttpCode.BAD_REQUEST,
+                    payload: {
+                        field: 'confirmationCode',
+                        reason: 'validation:codeExpired',
+                    },
                 });
             }
 
@@ -70,23 +91,18 @@ export default class EmailChangingService extends LoggerBase implements IEmailCh
             throw e;
         }
     }
-    public async refresh(userId: number, confirmationId: number): Promise<boolean> {
+    public async refresh(userId: number, email: string): Promise<boolean> {
         this._logger.info(`Refresh confirmation code email change for userId ${userId}`);
         try {
-            const record = await this._dataAccess.getByUserId(userId);
+            const record = await this._dataAccess.getByUserId(userId, email);
 
-            if (!record) {
-                throw new ValidationError({
-                    message: 'Sending confirmation code failed, code expired',
-                    errorCode: ErrorCode.PROFILE_PASSWORD_VERIFICATION_CODE_EXPIRED_ERROR,
-                    payload: {
-                        field: 'confirmationCode',
-                    },
-                });
-            }
             const expiresAt = ConfirmationHelper.createExpiresAt(CHANGE_CODE_EXPIRES_IN);
             const confirmationCode = ConfirmationHelper.generateCode();
-            await this._dataAccess.refresh(userId, confirmationId, confirmationCode, expiresAt);
+            if (!record) {
+                await this._dataAccess.create(userId, email, confirmationCode, expiresAt);
+            } else {
+                await this._dataAccess.refresh(userId, email, confirmationCode, expiresAt);
+            }
             this._logger.info(`Refresh confirmation code email change send for userId ${userId}`);
             return true;
         } catch (e) {

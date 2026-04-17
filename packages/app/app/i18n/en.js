@@ -1,5 +1,3 @@
-import demoEn from './demo-en';
-
 const en = {
     errorCode: {
         FORBIDDEN_ERROR: 'Access is forbidden.',
@@ -274,6 +272,5 @@ const en = {
             content: 'No favorites have been added yet. Tap the heart on an episode to add it to your favorites!',
         },
     },
-    ...demoEn,
 };
 export default en;

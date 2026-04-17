@@ -1,4 +1,4 @@
-import { ErrorCode, HttpCode, Time } from 'tenpercent/shared';
+import { ErrorCode, HttpCode } from 'tenpercent/shared';
 
 import { IDatabaseConnection, IDBTransaction } from 'interfaces/IDatabaseConnection';
 import { IEmailChanging } from 'interfaces/IEmailChanging';
@@ -16,9 +16,9 @@ export interface IEmailChangingDataAccess {
         expiresAt: Date,
         trx?: IDBTransaction,
     ): Promise<IEmailChanging>;
-    getByUserId(userId: number): Promise<IEmailChanging | undefined>;
+    getByUserId(userId: number, email: string): Promise<IEmailChanging | undefined>;
     confirm(userId: number, trx?: IDBTransaction): Promise<boolean>;
-    refresh(userId: number, confirmationId: number, confirmationCode: number, expiresAt: Date): Promise<boolean>;
+    refresh(userId: number, email: string, confirmationCode: number, expiresAt: Date): Promise<boolean>;
 }
 
 export default class EmailChangingDataAccess extends LoggerBase implements IEmailChangingDataAccess {
@@ -39,13 +39,12 @@ export default class EmailChangingDataAccess extends LoggerBase implements IEmai
         this._logger.info(`Creating email change request for userId ${userId}`);
         try {
             const query = trx || this._db.engine();
-            const data = await query<IEmailChanging>('email_changing')
+            const [data] = await query<IEmailChanging>('email_changing')
                 .insert({ userId, email, confirmationCode, expiresAt }, ['*'])
-                .onConflict(['userId', 'email'])
-                .merge(['confirmationCode', 'expiresAt', 'confirmed']);
+                .returning(['id']);
 
             this._logger.info(`Email change request created for userId ${userId}`);
-            return data[0];
+            return data.id;
         } catch (e) {
             this._logger.error(`Error creating email change request for userId ${userId}: ${(e as { message: string }).message}`);
             throw new DBError({
@@ -54,13 +53,12 @@ export default class EmailChangingDataAccess extends LoggerBase implements IEmai
         }
     }
 
-    public async getByUserId(userId: number): Promise<IEmailChanging | undefined> {
+    public async getByUserId(userId: number, email: string): Promise<IEmailChanging | undefined> {
         this._logger.info(`Fetching email change request for userId ${userId}`);
         try {
             const data = await this._db
                 .engine()<IEmailChanging>('email_changing')
-                .where({ userId, confirmed: false })
-                .andWhere('expiresAt', '>', Time.getISODateNowUTC())
+                .where({ userId, confirmed: false, email })
                 .orderBy('expiresAt', 'desc')
                 .first();
 
@@ -99,12 +97,12 @@ export default class EmailChangingDataAccess extends LoggerBase implements IEmai
             });
         }
     }
-    public async refresh(userId: number, confirmationId: number, confirmationCode: number, expiresAt: Date): Promise<boolean> {
+    public async refresh(userId: number, email: string, confirmationCode: number, expiresAt: Date): Promise<boolean> {
         this._logger.info(`Refresh confirmation code for userId ${userId}`);
         try {
             const query = this._db.engine();
             const updated = await query<IEmailChanging>('email_changing')
-                .where({ userId, confirmed: false, id: confirmationId })
+                .where({ userId, confirmed: false, email })
                 .update({ expiresAt, confirmationCode });
 
             if (!updated) {
