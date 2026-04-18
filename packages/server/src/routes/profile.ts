@@ -5,8 +5,9 @@ import {
     patchProfileValidationRules,
     requestEmailChangeValidationRules,
     requestPasswordChangeValidationRules,
-    confirmChangeValidationRules,
-    refreshConfirmationCodeValidationRules,
+    confirmEmailChangeValidationRules,
+    confirmPasswordChangeValidationRules,
+    refreshEmailChangeCodeValidationRules,
 } from 'src/utils/validation/profileValidationRules';
 import routesInputValidation from 'src/utils/validation/routesInputValidation';
 import { sanitizeRequestBody } from 'src/utils/validation/sanitizeRequestBody';
@@ -36,14 +37,14 @@ router.post(
     '/email-change/verify',
     sanitizeRequestBody(['confirmationCode', 'newEmail']),
     validateQuery({}),
-    routesInputValidation(confirmChangeValidationRules),
+    routesInputValidation(confirmEmailChangeValidationRules),
     ProfileController.confirmEmailChange,
 );
 router.post(
     '/email-change/resend',
     sanitizeRequestBody(['newEmail']),
     validateQuery({}),
-    routesInputValidation(refreshConfirmationCodeValidationRules),
+    routesInputValidation(refreshEmailChangeCodeValidationRules),
     ProfileController.refreshConfirmationCodeForEmailChange,
 );
 
@@ -59,15 +60,14 @@ router.post(
     '/password-change/verify',
     sanitizeRequestBody(['confirmationCode']),
     validateQuery({}),
-    routesInputValidation(confirmChangeValidationRules),
+    routesInputValidation(confirmPasswordChangeValidationRules),
     ProfileController.confirmPasswordChange,
 );
 
 router.post(
     '/password-change/resend',
-    sanitizeRequestBody(['confirmationId']),
+    sanitizeRequestBody([]),
     validateQuery({}),
-    routesInputValidation(refreshConfirmationCodeValidationRules),
     ProfileController.refreshConfirmationCodeForPasswordChange,
 );
 

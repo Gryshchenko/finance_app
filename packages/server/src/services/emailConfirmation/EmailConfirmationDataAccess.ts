@@ -1,4 +1,4 @@
-import { Time, Utils, ErrorCode, HttpCode, EmailConfirmationStatusType } from 'tenpercent/shared';
+import { ErrorCode, HttpCode } from 'tenpercent/shared';
 
 import { IDatabaseConnection, IDBTransaction } from 'interfaces/IDatabaseConnection';
 import { IEmailConfirmationData } from 'interfaces/IEmailConfirmationData';
@@ -7,29 +7,18 @@ import { BaseError } from 'src/utils/errors/BaseError';
 import { DBError } from 'src/utils/errors/DBError';
 import { isBaseError } from 'src/utils/errors/isBaseError';
 import { ValidationError } from 'src/utils/errors/ValidationError';
-import { getOnlyNotEmptyProperties } from 'src/utils/validation/getOnlyNotEmptyProperties';
-import { validateAllowedProperties } from 'src/utils/validation/validateAllowedProperties';
 
 export interface IEmailConfirmationDataAccess {
-    getUserConfirmation(userId: number, email: string): Promise<IEmailConfirmationData | undefined>;
-    createUserConfirmation(
+    create(
         userId: number,
         email: string,
-        payload: {
-            confirmationCode: number;
-            expiresAt: Date;
-            status: EmailConfirmationStatusType;
-        },
+        confirmationCode: number,
+        expiresAt: Date,
         trx?: IDBTransaction,
     ): Promise<IEmailConfirmationData>;
-    deleteUserConfirmation(userId: number, email: string): Promise<boolean>;
-    patchUserConfirmation(
-        userId: number,
-        email: string,
-        confirmationId: number,
-        properties: Record<string, unknown>,
-        trx?: IDBTransaction,
-    ): Promise<void>;
+    getByUserId(userId: number, email: string): Promise<IEmailConfirmationData | undefined>;
+    confirm(userId: number, trx?: IDBTransaction): Promise<boolean>;
+    refresh(userId: number, email: string, confirmationCode: number, expiresAt: Date): Promise<boolean>;
 }
 
 export default class EmailConfirmationDataAccess extends LoggerBase implements IEmailConfirmationDataAccess {
@@ -40,138 +29,96 @@ export default class EmailConfirmationDataAccess extends LoggerBase implements I
         this._db = db;
     }
 
-    public async deleteUserConfirmation(userId: number, email: string): Promise<boolean> {
-        this._logger.info(`Attempting to delete confirmation with email ${email} for userId ${userId}`);
-
+    public async create(
+        userId: number,
+        email: string,
+        confirmationCode: number,
+        expiresAt: Date,
+        trx?: IDBTransaction,
+    ): Promise<IEmailConfirmationData> {
+        this._logger.info(`Creating email  request for userId ${userId}`);
         try {
-            const result = await this._db
-                .engine()<IEmailConfirmationData>('email_confirmations')
-                .where({ userId, email })
-                .delete();
+            const query = trx || this._db.engine();
+            const [data] = await query<IEmailConfirmationData>('email_confirmations')
+                .insert({ userId, email, confirmationCode, expiresAt }, ['*'])
+                .returning(['id']);
 
-            const isDeleted = Utils.greaterThen0(result);
-            if (!isDeleted) {
-                this._logger.error(`No confirmation found with email ${email} for userId ${userId}`);
-                throw new ValidationError({
-                    message: `No confirmation found with email ${email} for userId ${userId}`,
-                    statusCode: HttpCode.NOT_FOUND,
-                });
-            }
-            this._logger.info(`Successfully deleted confirmation with email ${email} for userId ${userId}`);
-
-            return isDeleted;
+            this._logger.info(`Email  request created for userId ${userId}`);
+            return data.id;
         } catch (e) {
-            this._logger.error(`Error deleting confirmation for userId ${userId}: ${(e as { message: string }).message}`);
+            this._logger.error(`Error creating email  request for userId ${userId}: ${(e as { message: string }).message}`);
             throw new DBError({
-                message: `Error deleting confirmation for userId ${userId}: ${(e as { message: string }).message}`,
-                statusCode: isBaseError(e) ? (e as unknown as BaseError)?.getStatusCode() : undefined,
+                message: `Error creating email  request for userId ${userId}: ${(e as { message: string }).message}`,
             });
         }
     }
-    public async patchUserConfirmation(
-        userId: number,
-        email: string,
-        confirmationId: number,
-        properties: Record<string, unknown>,
-        trx?: IDBTransaction,
-    ): Promise<void> {
-        const allowedProperties = {
-            confirmationCode: properties.confirmationCode,
-            expiresAt: properties.expiresAt as Date,
-            status: properties.status,
-        };
-        this._logger.info(`Patch confirmation for userId ${userId} with email ${email}`, {
-            confirmationCode: String(allowedProperties.confirmationCode).slice(0, 2),
-        });
-
+    public async getByUserId(userId: number, email: string): Promise<IEmailConfirmationData | undefined> {
+        this._logger.info(`Fetching email confirmation request for userId ${userId}`);
         try {
-            const allowedKeys = ['expiresAt', 'confirmationCode', 'status'];
-            validateAllowedProperties(allowedProperties, allowedKeys);
-            const properestForUpdate = getOnlyNotEmptyProperties(allowedProperties, allowedKeys);
-            const query = trx || this._db.engine();
-            const data = await query<IEmailConfirmationData>('email_confirmations')
-                .where({ userId, email, confirmationId: confirmationId })
-                .update(properestForUpdate);
+            const data = await this._db
+                .engine()<IEmailConfirmationData>('email_confirmations')
+                .where({ userId, confirmed: false, email })
+                .orderBy('expiresAt', 'desc')
+                .first();
 
-            if (data) {
-                this._logger.info(`Successfully patch confirmation for userId ${userId} with email ${email}`);
-            } else {
+            return data || undefined;
+        } catch (e) {
+            this._logger.error(`Error fetching email  request for userId ${userId}: ${(e as { message: string }).message}`);
+            throw new DBError({
+                message: `Error fetching email  request for userId ${userId}: ${(e as { message: string }).message}`,
+            });
+        }
+    }
+
+    public async confirm(userId: number, trx?: IDBTransaction): Promise<boolean> {
+        this._logger.info(`Confirming email  for userId ${userId}`);
+        try {
+            const query = trx || this._db.engine();
+            const updated = await query<IEmailConfirmationData>('email_confirmations')
+                .where({ userId, confirmed: false })
+                .update({ confirmed: true });
+
+            if (!updated) {
                 throw new ValidationError({
-                    message: `No confirmation found for userId ${userId} with email ${email}`,
+                    message: `No pending email confirmation for userId ${userId}`,
                     errorCode: ErrorCode.EMAIL_CONFIRMATION_ERROR,
                     statusCode: HttpCode.NOT_FOUND,
                 });
             }
+
+            this._logger.info(`Email confirmed for userId ${userId}`);
+            return true;
         } catch (e) {
-            this._logger.error(
-                `Error patch confirmation for userId ${userId} with email ${email}: ${(e as { message: string }).message}`,
-            );
+            this._logger.error(`Error confirming email  for userId ${userId}: ${(e as { message: string }).message}`);
             throw new DBError({
-                message: `Error patch confirmation for userId ${userId} with email ${email}: ${(e as { message: string }).message}`,
+                message: `Error confirming email  for userId ${userId}: ${(e as { message: string }).message}`,
                 statusCode: isBaseError(e) ? (e as unknown as BaseError)?.getStatusCode() : undefined,
             });
         }
     }
-
-    public async getUserConfirmation(userId: number, email: string): Promise<IEmailConfirmationData | undefined> {
-        this._logger.info(`Fetching confirmation for userId ${userId} with email ${email}`);
-
+    public async refresh(userId: number, email: string, confirmationCode: number, expiresAt: Date): Promise<boolean> {
+        this._logger.info(`Refresh confirmation code for userId ${userId}`);
         try {
-            const data = await this._db
-                .engine()<IEmailConfirmationData>('email_confirmations')
-                .where({ userId, email })
-                .andWhere('email_confirmations.expiresAt', '>', Time.getISODateNowUTC())
-                .orderBy('expiresAt', 'desc')
-                .select(['confirmationId', 'userId', 'email', 'confirmationCode', 'expiresAt', 'status'])
-                .first();
-            if (data) {
-                this._logger.info(`Successfully fetched confirmation for userId ${userId} with email ${email}`);
-            } else {
-                this._logger.info(`No confirmation found for userId ${userId} with email ${email}`);
+            const query = this._db.engine();
+            const updated = await query<IEmailConfirmationData>('email_confirmations')
+                .where({ userId, confirmed: false, email })
+                .update({ expiresAt, confirmationCode });
+
+            if (!updated) {
+                throw new ValidationError({
+                    message: `No pending email for confirmation for userId ${userId}`,
+                    errorCode: ErrorCode.EMAIL_CONFIRMATION_ERROR,
+                    statusCode: HttpCode.NOT_FOUND,
+                });
             }
 
-            return data as IEmailConfirmationData;
+            this._logger.info(`Refresh confirmation code success for userId ${userId}`);
+            return true;
         } catch (e) {
-            this._logger.error(
-                `Error fetching confirmation for userId ${userId} with email ${email}: ${(e as { message: string }).message}`,
-            );
+            this._logger.error(`Refresh confirmation code  failed for userId ${userId}: ${(e as { message: string }).message}`);
             throw new DBError({
-                message: `Error fetching confirmation for userId ${userId} with email ${email}: ${(e as { message: string }).message}`,
+                message: `Refresh confirmation code  failed for userId ${userId}: ${(e as { message: string }).message}`,
                 statusCode: isBaseError(e) ? (e as unknown as BaseError)?.getStatusCode() : undefined,
-            });
-        }
-    }
-
-    public async createUserConfirmation(
-        userId: number,
-        email: string,
-        payload: {
-            confirmationCode: number;
-            expiresAt: Date;
-            status: EmailConfirmationStatusType;
-        },
-        trx?: IDBTransaction,
-    ): Promise<IEmailConfirmationData> {
-        const { confirmationCode, expiresAt, status } = payload;
-        this._logger.info(
-            `Creating confirmation for userId ${userId} with email ${email} and code ${String(confirmationCode).slice(0, 2)}`,
-        );
-
-        try {
-            const query = trx || this._db.engine();
-            const data = await query<IEmailConfirmationData>('email_confirmations').insert(
-                { email, userId, confirmationCode, expiresAt, status },
-                ['confirmationId', 'userId', 'email', 'confirmationCode', 'expiresAt', 'status'],
-            );
-
-            this._logger.info(`Successfully created confirmation for userId ${userId} with email ${email}`);
-            return data[0];
-        } catch (e) {
-            this._logger.error(
-                `Error creating confirmation for userId ${userId} with email ${email}: ${(e as { message: string }).message}`,
-            );
-            throw new DBError({
-                message: `Error creating confirmation for userId ${userId} with email ${email}: ${(e as { message: string }).message}`,
             });
         }
     }

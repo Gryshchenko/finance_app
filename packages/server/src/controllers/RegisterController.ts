@@ -3,7 +3,6 @@ import { LanguageType, ResponseStatusType, ErrorCode, HttpCode, UserStatus } fro
 
 import Logger from 'helper/logger/Logger';
 import ResponseBuilder from 'helper/responseBuilder/ResponseBuilder';
-import { IUser } from 'interfaces/IUser';
 import UserRegistrationServiceBuilder from 'services/registration/UserRegistrationServiceBuilder';
 import { BaseError } from 'src/utils/errors/BaseError';
 import { generateErrorResponse } from 'src/utils/generateErrorResponse';
@@ -38,21 +37,6 @@ export class RegisterController {
         } catch (e: unknown) {
             RegisterController.logger.error(`Signup failed due reason: ${(e as { message: string }).message}`);
             generateErrorResponse(res, responseBuilder, e as BaseError, ErrorCode.SIGNUP_CATCH_ERROR);
-        }
-    }
-    public static async signUpConfirmMail(req: Request, res: Response) {
-        const responseBuilder = new ResponseBuilder();
-        try {
-            const userFromSession = req.user as IUser;
-            await UserRegistrationServiceBuilder.build().confirmUserMail(
-                userFromSession.userId,
-                userFromSession.email,
-                Number(req.body.confirmationCode),
-            );
-            res.status(HttpCode.NO_CONTENT).json(responseBuilder.setStatus(ResponseStatusType.OK).build());
-        } catch (e: unknown) {
-            RegisterController.logger.error(`Signup confirm mail failed due reason: ${(e as { message: string }).message}`);
-            generateErrorResponse(res, responseBuilder, e as BaseError, ErrorCode.EMAIL_VERIFICATION_FAILED_ERROR);
         }
     }
 }

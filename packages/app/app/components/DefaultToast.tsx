@@ -1,13 +1,12 @@
 import { View } from 'react-native';
 
-import { TxKeyPath } from '@/i18n/index';
 import { InfoToast } from '@/screens/Toaster/InfoToast';
 import { ToastType } from '@/services/ToastService';
 import { useSafeAreaInsetsStyle } from '@/utils/useSafeAreaInsetsStyle';
 
 export const DefaultToast: React.FC<{
-    title: TxKeyPath;
-    message: TxKeyPath;
+    title: string;
+    message: string;
     onClose: () => void;
     type: ToastType;
 }> = ({ title, message, type, onClose }) => {

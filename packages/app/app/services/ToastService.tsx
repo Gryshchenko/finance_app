@@ -2,6 +2,7 @@ import ToastManager, { Toast } from 'toastify-react-native';
 
 import { DefaultToast } from '@/components/DefaultToast';
 import { TxKeyPath } from '@/i18n/index';
+import { translate } from '@/i18n/translate';
 import { Logger } from '@/utils/logger/Logger';
 
 export enum ToastType {
@@ -32,8 +33,8 @@ class ToastService {
         Toast.show({
             // @ts-ignore
             type: 'custom',
-            text1,
-            text2,
+            text1: translate(text1),
+            text2: translate(text2),
             visibilityTime: duration,
             position: 'top',
             props: {
@@ -87,8 +88,8 @@ class ToastService {
                 text2,
                 props,
             }: {
-                text1: TxKeyPath;
-                text2: TxKeyPath;
+                text1: string;
+                text2: string;
                 hide: () => void;
                 props: { type: ToastType };
             }) => {

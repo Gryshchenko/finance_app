@@ -15,22 +15,16 @@ import { Text } from '@/components/Text';
 import { TextField, type TextFieldAccessoryProps } from '@/components/TextField';
 import { useAuth } from '@/context/AuthContext';
 import { useBiometricSetup } from '@/hooks/useBiometricSetup';
-import { TxKeyPath } from '@/i18n';
+import { useEditView } from '@/hooks/useEditView';
 import { IClientConfigLanguage } from '@/interfaces/IClientConfigLanguages';
 import type { AppStackScreenProps } from '@/navigators/AppNavigator';
+import { buildSignUpSchema } from '@/schems/validationSchemas';
 import { GeneralApiProblemKind } from '@/services/api/apiProblem';
 import { useAppTheme } from '@/theme/context';
 import type { ThemedStyle } from '@/theme/types';
 import detectLanguage from '@/utils/detectLanguage';
 import { Logger } from '@/utils/logger/Logger';
-import {
-    validateCurrency,
-    validateEmail,
-    validateLanguage,
-    validatePassword,
-    validatePublicName,
-    ValidationTypes,
-} from '@/utils/validation';
+import { ValidationTypes } from '@/utils/validation';
 
 interface SignUpScreenProps extends AppStackScreenProps<'signUp'> {}
 
@@ -38,40 +32,43 @@ export const SignUpScreen: FC<SignUpScreenProps> = (_props) => {
     const authPasswordInput = useRef<TextInput>(null);
     const { navigation } = _props;
     const [config, setConfig] = useState<IClientConfigLanguage[]>();
-    const [authPassword, setAuthPassword] = useState<string>('');
-    const [publicName, setPublicName] = useState<string>('');
-    const [language, setLanguage] = useState<string>('');
-    const [currency, setCurrency] = useState<string>('');
     const [isAuthPasswordHidden, setIsAuthPasswordHidden] = useState(true);
-    const [authEmail, setAuthEmail] = useState<string>('');
-    const [publicNameError, setPublicNameError] = useState<TxKeyPath | undefined>();
-    const [emailError, setEmailError] = useState<TxKeyPath | undefined>();
-    const [passwordError, setPasswordError] = useState<TxKeyPath | undefined>();
-    const [languageError, setLanguageError] = useState<TxKeyPath | undefined>();
-    const [currencyError, setCurrencyError] = useState<TxKeyPath | undefined>();
     const [enableBiometric, setEnableBiometric] = useState(false);
     const { doSignUp } = useAuth();
     const { isAvailable: isBiometricAvailable, biometricType, enroll } = useBiometricSetup();
 
+    const schema = useMemo(
+        () => buildSignUpSchema(config?.map((c) => c.locale) ?? [], config?.map((c) => c.currencyCode) ?? []),
+        [config],
+    );
+
+    const { form, handleChange, save, errors, setErrors } = useEditView<{
+        publicName: string;
+        email: string;
+        password: string;
+        locale: string;
+        currency: string;
+    }>({ publicName: '', email: '', password: '', locale: '', currency: '' }, schema);
+
     useEffect(() => {
         const setDefault = () => {
-            setCurrency('USD');
-            setLanguage('en-US');
+            handleChange('currency', 'USD');
+            handleChange('locale', 'en-US');
         };
         const fetcher = async () => {
             try {
                 const currentUserLocale: string = detectLanguage();
                 const data = await fetchConfig();
                 if (Utils.isArrayNotEmpty(data!)) {
-                    const config = data?.find((data) => {
-                        const locale = data.locale.split('-')[0];
+                    const match = data?.find((item) => {
+                        const locale = item.locale.split('-')[0];
                         return locale === currentUserLocale;
                     });
                     setConfig(data);
-                    if (Utils.isNotNull(config!)) {
-                        const inWork = config as IClientConfigLanguage;
-                        setCurrency(inWork.currencyCode);
-                        setLanguage(inWork.locale);
+                    if (Utils.isNotNull(match!)) {
+                        const inWork = match as IClientConfigLanguage;
+                        handleChange('currency', inWork.currencyCode);
+                        handleChange('locale', inWork.locale);
                         return;
                     } else {
                         setDefault();
@@ -83,6 +80,7 @@ export const SignUpScreen: FC<SignUpScreenProps> = (_props) => {
             }
         };
         void fetcher();
+        // eslint-disable-next-line react-hooks/exhaustive-deps
     }, []);
 
     const {
@@ -93,35 +91,23 @@ export const SignUpScreen: FC<SignUpScreenProps> = (_props) => {
     function goBack() {
         navigation.navigate({ name: 'login', params: undefined });
     }
+
     async function signUp() {
-        const emailErr = validateEmail(authEmail);
-        const passwordErr = validatePassword(authPassword);
-        const publicNameError = validatePublicName(publicName);
-        const languageError = validateLanguage(language, config);
-        const currencyError = validateCurrency(currency, config);
-
-        setPublicNameError(publicNameError);
-        setEmailError(emailErr);
-        setPasswordError(passwordErr);
-        setLanguageError(languageError);
-        setCurrencyError(currencyError);
-
-        if (emailErr || passwordErr || publicNameError || currencyError || languageError) {
-            return;
-        }
+        const isValid = await save();
+        if (!isValid) return;
 
         const response = await doSignUp({
-            password: authPassword as string,
-            email: authEmail as string,
-            publicName: publicName as string,
-            locale: language,
-            currencyCode: currency,
+            password: form.password as string,
+            email: form.email as string,
+            publicName: form.publicName as string,
+            locale: form.locale as string,
+            currencyCode: form.currency as string,
         });
         switch (response.kind) {
             case GeneralApiProblemKind.Ok: {
-                setPublicName('');
-                setAuthEmail('');
-                setAuthPassword('');
+                handleChange('publicName', '');
+                handleChange('email', '');
+                handleChange('password', '');
                 // Biometric enrollment: triggers the native Face ID / fingerprint
                 // dialog. On iOS this also requests the NSFaceIDUsageDescription
                 // permission. We fire-and-forget — a failure is non-fatal.
@@ -136,21 +122,21 @@ export const SignUpScreen: FC<SignUpScreenProps> = (_props) => {
                     const payload = error?.payload;
                     const errorCode = error?.errorCode;
                     if (errorCode === ErrorCode.SIGNUP_USER_ALREADY_EXISTS_ERROR) {
-                        setEmailError(ValidationTypes.EMAIL_UNIQUE);
+                        setErrors((prev) => ({ ...prev, email: ValidationTypes.EMAIL_UNIQUE }));
                     } else if (payload?.field === 'email') {
-                        setEmailError(ValidationTypes.REQUIRED);
+                        setErrors((prev) => ({ ...prev, email: ValidationTypes.REQUIRED }));
                     }
                     if (payload?.field === 'password') {
-                        setPasswordError(ValidationTypes.REQUIRED);
+                        setErrors((prev) => ({ ...prev, password: ValidationTypes.REQUIRED }));
                     }
                     if (payload?.field === 'locale') {
-                        setLanguageError(ValidationTypes.REQUIRED);
+                        setErrors((prev) => ({ ...prev, locale: ValidationTypes.REQUIRED }));
                     }
                     if (payload?.field === 'publicName') {
-                        setPublicNameError(ValidationTypes.REQUIRED);
+                        setErrors((prev) => ({ ...prev, publicName: ValidationTypes.REQUIRED }));
                     }
                     if (payload?.field === 'currencyId') {
-                        setCurrencyError(ValidationTypes.REQUIRED);
+                        setErrors((prev) => ({ ...prev, currency: ValidationTypes.REQUIRED }));
                     }
                 }
                 break;
@@ -185,21 +171,21 @@ export const SignUpScreen: FC<SignUpScreenProps> = (_props) => {
             <Text tx={'signUpScreen:subTitle'} preset="heading" style={themed($subTitle)} />
 
             <TextField
-                value={publicName}
-                onChangeText={setPublicName}
+                value={String(form.publicName)}
+                onChangeText={(v) => handleChange('publicName', v)}
                 containerStyle={themed($textField)}
                 autoCapitalize="none"
                 autoCorrect={false}
                 keyboardType="default"
                 labelTx="common:publicNameFieldLabel"
                 placeholderTx="common:publicNameFieldPlaceholder"
-                helperTx={publicNameError}
-                status={publicNameError ? 'error' : undefined}
+                helperTx={errors.publicName}
+                status={errors.publicName ? 'error' : undefined}
                 onSubmitEditing={() => authPasswordInput.current?.focus()}
             />
             <TextField
-                value={authEmail}
-                onChangeText={setAuthEmail}
+                value={String(form.email)}
+                onChangeText={(v) => handleChange('email', v)}
                 containerStyle={themed($textField)}
                 autoCapitalize="none"
                 autoComplete="email"
@@ -207,38 +193,38 @@ export const SignUpScreen: FC<SignUpScreenProps> = (_props) => {
                 keyboardType="email-address"
                 labelTx="common:emailFieldLabel"
                 placeholderTx="common:emailFieldPlaceholder"
-                helperTx={emailError}
-                status={emailError ? 'error' : undefined}
+                helperTx={errors.email}
+                status={errors.email ? 'error' : undefined}
                 onSubmitEditing={() => authPasswordInput.current?.focus()}
             />
 
             <TextField
                 ref={authPasswordInput}
-                value={authPassword}
-                onChangeText={setAuthPassword}
+                value={String(form.password)}
+                onChangeText={(v) => handleChange('password', v)}
                 containerStyle={themed($textField)}
                 autoCapitalize="none"
                 autoComplete="password"
                 autoCorrect={false}
-                helperTx={passwordError}
-                status={passwordError ? 'error' : undefined}
+                helperTx={errors.password}
+                status={errors.password ? 'error' : undefined}
                 secureTextEntry={isAuthPasswordHidden}
                 labelTx="common:passwordFieldLabel"
                 placeholderTx="common:passwordFieldPlaceholder"
                 RightAccessory={PasswordRightAccessory}
             />
             <LanguageDropdown
-                value={language}
+                value={String(form.locale)}
                 disabled={false}
-                helperTx={languageError}
-                status={Utils.isNotNull(languageError) ? 'error' : undefined}
-                onChange={(v) => setLanguage(v.locale)}
+                helperTx={errors.locale}
+                status={errors.locale ? 'error' : undefined}
+                onChange={(v) => handleChange('locale', v.locale)}
             />
             <CurrencyDropdown
-                value={currency}
-                helperTx={currencyError}
-                status={Utils.isNotNull(currencyError) ? 'error' : undefined}
-                onChange={(v) => setCurrency(v.currencyCode)}
+                value={String(form.currency)}
+                helperTx={errors.currency}
+                status={errors.currency ? 'error' : undefined}
+                onChange={(v) => handleChange('currency', v.currencyCode)}
             />
 
             {isBiometricAvailable && (

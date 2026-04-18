@@ -13,6 +13,8 @@ const translationsKeys = {
     passwordLowercase: 'validation:passwordLowercase',
     passwordNumber: 'validation:passwordNumber',
     passwordSpecial: 'validation:passwordSpecial',
+    unsupportedLanguage: 'validation:unsupportedLanguage',
+    unsupportedCurrency: 'validation:unsupportedCurrency',
 };
 
 const incomeCreate = {
@@ -75,6 +77,50 @@ const signUpConfirmation = {
         .min(6, translationsKeys.valueTooShort)
         .max(8, translationsKeys.valueTooLong)
         .required(translationsKeys.codeInvalided),
+};
+
+const login = {
+    email: Yup.string()
+        .required(translationsKeys.valueRequired)
+        .max(50, translationsKeys.valueTooLong)
+        .email(translationsKeys.emailInvalided),
+    password: Yup.string()
+        .required(translationsKeys.valueRequired)
+        .min(5, translationsKeys.passwordMinLength)
+        .max(50, translationsKeys.valueTooLong)
+        .matches(/[A-Z]/, translationsKeys.passwordUppercase)
+        .matches(/[a-z]/, translationsKeys.passwordLowercase)
+        .matches(/[0-9]/, translationsKeys.passwordNumber)
+        .matches(/[!@#$%^&*(),.?":{}|<>]/, translationsKeys.passwordSpecial),
+};
+
+const buildSignUpSchema = (locales: string[], currencies: string[]) => {
+    return Yup.object({
+        publicName: Yup.string()
+            .required(translationsKeys.valueRequired)
+            .min(3, translationsKeys.valueTooShort)
+            .max(50, translationsKeys.valueTooLong),
+        email: Yup.string()
+            .required(translationsKeys.valueRequired)
+            .max(50, translationsKeys.valueTooLong)
+            .email(translationsKeys.emailInvalided),
+        password: Yup.string()
+            .required(translationsKeys.valueRequired)
+            .min(5, translationsKeys.passwordMinLength)
+            .max(50, translationsKeys.valueTooLong)
+            .matches(/[A-Z]/, translationsKeys.passwordUppercase)
+            .matches(/[a-z]/, translationsKeys.passwordLowercase)
+            .matches(/[0-9]/, translationsKeys.passwordNumber)
+            .matches(/[!@#$%^&*(),.?":{}|<>]/, translationsKeys.passwordSpecial),
+        locale:
+            locales.length > 0
+                ? Yup.string().required(translationsKeys.valueRequired).oneOf(locales, translationsKeys.unsupportedLanguage)
+                : Yup.string().required(translationsKeys.valueRequired),
+        currency:
+            currencies.length > 0
+                ? Yup.string().required(translationsKeys.valueRequired).oneOf(currencies, translationsKeys.unsupportedCurrency)
+                : Yup.string().required(translationsKeys.valueRequired),
+    });
 };
 
 const categoryEdit = {
@@ -201,6 +247,7 @@ const categoryCreateSchema = Yup.object(categoryCreate);
 const categoryEditSchema = Yup.object(categoryEdit);
 
 const signUpConfirmationShema = Yup.object(signUpConfirmation);
+const loginSchema = Yup.object(login);
 
 const settingsChangePublicNameShema = Yup.object(publicNameEdit);
 
@@ -236,4 +283,6 @@ export {
     settingsChangeEmailConfirmationShema,
     settingsChangePasswordSchema,
     settingsChangePasswordConfirmSchema,
+    loginSchema,
+    buildSignUpSchema,
 };

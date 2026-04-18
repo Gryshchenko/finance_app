@@ -61,6 +61,7 @@ const $baseInputWrapper: ThemedStyle<ViewStyle> = ({ colors, border }) => ({
     shadowOffset: { width: 0, height: 1 },
     shadowOpacity: 0.05,
     elevation: 1,
+    height: 54,
 });
 // ---------------------------------------------------------------------------
 // Underline Big
@@ -121,6 +122,7 @@ const $underlineInputWrapper: ThemedStyle<ViewStyle> = ({ colors }) => ({
     borderColor: colors.border,
     backgroundColor: 'transparent',
     overflow: 'hidden',
+    height: 54,
 });
 
 const $underlineInput: ThemedStyle<TextStyle> = ({ colors, typography }) => ({
@@ -144,6 +146,7 @@ const $filledInputWrapper: ThemedStyle<ViewStyle> = ({ colors, border }) => ({
     backgroundColor: colors.palette.neutral200,
     borderRadius: border.borderRadius,
     overflow: 'hidden',
+    height: 54,
 });
 
 // ---------------------------------------------------------------------------

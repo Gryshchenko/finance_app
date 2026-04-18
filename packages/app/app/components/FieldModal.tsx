@@ -102,7 +102,7 @@ export function FieldModal({
 
     const $triggers = [
         ...presetStyles.inputWrapper,
-        { justifyContent: 'center' as const, height: 44 },
+        { justifyContent: 'center' as const },
         triggerStyle,
         status === 'error' && { borderColor: colors.error },
         status !== 'error' && (isOpen ? $borderFocusStyle : $borderNoFocusStyle),

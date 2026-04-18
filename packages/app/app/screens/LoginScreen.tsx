@@ -5,31 +5,32 @@ import { Pressable, TextInput, TextStyle, ViewStyle } from 'react-native';
 import { Button } from '@/components/buttons/Button';
 import { HeaderTitle } from '@/components/HeaderTitle';
 import { PressableIcon } from '@/components/Icon';
-import { QuickAccessButton } from '@/components/QuickAccessButton';
 import { Screen } from '@/components/Screen';
 import { SignUpPrompt } from '@/components/SignUpPrompt';
 import { Text } from '@/components/Text';
 import { TextField, type TextFieldAccessoryProps } from '@/components/TextField';
 import { useAuth } from '@/context/AuthContext';
+import { useEditView } from '@/hooks/useEditView';
 import { TxKeyPath } from '@/i18n';
+import { hasTranslate } from '@/i18n/translate';
 import type { AppStackScreenProps } from '@/navigators/AppNavigator';
+import { loginSchema } from '@/schems/validationSchemas';
 import { GeneralApiProblemKind, parseServerErrors } from '@/services/api/apiProblem';
 import ToastService from '@/services/ToastService';
 import { useAppTheme } from '@/theme/context';
 import type { ThemedStyle } from '@/theme/types';
-import { validateEmail, validatePassword } from '@/utils/validation';
 
 interface LoginScreenProps extends AppStackScreenProps<'Login'> {}
 
 export const LoginScreen: FC<LoginScreenProps> = (_props) => {
     const authPasswordInput = useRef<TextInput>(null);
     const { navigation } = _props;
-    const [authPassword, setAuthPassword] = useState<string>('Qwerty!2345');
-    const [authEmail, setAuthEmail] = useState<string>('andy@test.com');
     const [isAuthPasswordHidden, setIsAuthPasswordHidden] = useState<boolean>(true);
-    const [emailError, setEmailError] = useState<TxKeyPath | undefined>();
-    const [passwordError, setPasswordError] = useState<TxKeyPath | undefined>();
     const { doLogin } = useAuth();
+    const { form, handleChange, save, errors, setErrors } = useEditView<{ email: string; password: string }>(
+        { email: 'andy@test.com', password: 'Qwerty!2345' },
+        loginSchema,
+    );
 
     const {
         themed,
@@ -41,32 +42,34 @@ export const LoginScreen: FC<LoginScreenProps> = (_props) => {
     }
 
     async function login() {
-        const emailErr = validateEmail(authEmail);
-        const passwordErr = validatePassword(authPassword);
-        setEmailError(emailErr);
-        setPasswordError(passwordErr);
-
-        if (emailErr || passwordErr) {
-            return;
-        }
+        const isValid = await save();
+        if (!isValid) return;
 
         const response = await doLogin({
-            password: authPassword as string,
-            email: authEmail as string,
+            password: form.password as string,
+            email: form.email as string,
         });
 
         if (response.kind === GeneralApiProblemKind.Ok) {
-            setAuthEmail('');
-            setAuthPassword('');
+            handleChange('email', '');
+            handleChange('password', '');
         } else if (response.kind === GeneralApiProblemKind.BadData) {
             const { fieldErrors, hasNonFieldErrors } = parseServerErrors(response.errors);
-            if (fieldErrors.email) setEmailError(fieldErrors.email as TxKeyPath);
-            if (fieldErrors.password) setPasswordError(fieldErrors.password as TxKeyPath);
+            const formFields = new Set(['email', 'password']);
+
+            for (const [field, reason] of Object.entries(fieldErrors)) {
+                const key: TxKeyPath = hasTranslate(reason) ? reason : 'errorCode:UNKNOWN_ERROR';
+                if (formFields.has(field)) {
+                    setErrors((prev) => ({ ...prev, [field]: key }));
+                } else {
+                    ToastService.error({ message: key });
+                }
+            }
+
             if (hasNonFieldErrors) {
                 ToastService.error({ message: 'errorCode:UNKNOWN_ERROR' });
             }
         }
-        // Server / Timeout / etc. — toast already shown by buildGeneralApiBaseHandler in AuthContext
     }
 
     const PasswordRightAccessory: ComponentType<TextFieldAccessoryProps> = useMemo(
@@ -90,13 +93,8 @@ export const LoginScreen: FC<LoginScreenProps> = (_props) => {
             <HeaderTitle subLogoText={'loginScreen:authorization'} />
 
             <TextField
-                value={authEmail}
-                onChangeText={(email) => {
-                    if (emailError) {
-                        setEmailError(validateEmail(email));
-                    }
-                    setAuthEmail(email);
-                }}
+                value={String(form.email)}
+                onChangeText={(v) => handleChange('email', v)}
                 containerStyle={[themed($textField), themed($emailTextField)]}
                 autoCapitalize="none"
                 autoComplete="email"
@@ -104,20 +102,15 @@ export const LoginScreen: FC<LoginScreenProps> = (_props) => {
                 keyboardType="email-address"
                 labelTx="common:emailFieldLabel"
                 placeholderTx="common:emailFieldPlaceholder"
-                helperTx={emailError}
-                status={emailError ? 'error' : undefined}
+                helperTx={errors.email}
+                status={errors.email ? 'error' : undefined}
                 onSubmitEditing={() => authPasswordInput.current?.focus()}
             />
 
             <TextField
                 ref={authPasswordInput}
-                value={authPassword}
-                onChangeText={(password) => {
-                    if (passwordError) {
-                        setPasswordError(validatePassword(password));
-                    }
-                    setAuthPassword(password);
-                }}
+                value={String(form.password)}
+                onChangeText={(v) => handleChange('password', v)}
                 containerStyle={themed($textField)}
                 autoCapitalize="none"
                 autoComplete="password"
@@ -126,8 +119,8 @@ export const LoginScreen: FC<LoginScreenProps> = (_props) => {
                 labelTx="common:passwordFieldLabel"
                 placeholderTx="common:passwordFieldPlaceholder"
                 onSubmitEditing={login}
-                helperTx={passwordError}
-                status={passwordError ? 'error' : undefined}
+                helperTx={errors.password}
+                status={errors.password ? 'error' : undefined}
                 RightAccessory={PasswordRightAccessory}
             />
 
@@ -144,7 +137,7 @@ export const LoginScreen: FC<LoginScreenProps> = (_props) => {
             />
 
             <SignUpPrompt onSignUp={signUp} />
-            <QuickAccessButton onPress={() => null} />
+            {/*<QuickAccessButton onPress={() => null} />*/}
         </Screen>
     );
 };

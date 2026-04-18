@@ -166,7 +166,7 @@ export default class UserRegistrationService extends LoggerBase {
                         },
                         trx,
                     ),
-                    await this.emailConfirmationService.createEmailConfirmation(user.userId, user.email, trx),
+                    await this.emailConfirmationService.request(user.userId, user.email, trx),
                 ]);
                 if (Utils.isNull(response[1]?.profileId)) {
                     throw new CustomError({
@@ -179,11 +179,6 @@ export default class UserRegistrationService extends LoggerBase {
                 const profile = response[1] as IProfile;
                 await this.createInitialDataForNewUser(user.userId, profile, trx);
                 await uow.commit();
-                this.emailConfirmationService.sendConfirmationEmail(user.userId, user.email, response[2]).catch((e) => {
-                    this._logger.error(
-                        `User creation confirmation mail send failed due reason: ${(e as { message: string }).message}`,
-                    );
-                });
                 const readyUser = await this.userService.get(user.userId);
                 this._logger.info('Starting token creation.');
                 const token = AuthService.createJWToken(
@@ -209,30 +204,6 @@ export default class UserRegistrationService extends LoggerBase {
         } catch (e) {
             await uow.rollback();
             this._logger.error(`User creation failed due to a server error: ${(e as { message: string }).message}`);
-            throw e;
-        }
-    }
-
-    async confirmUserMail(userId: number, email: string, code: number): Promise<void> {
-        const uow = new UnitOfWork(this.db);
-
-        try {
-            await uow.start();
-            const trxInProcess = uow.getTransaction();
-            if (Utils.isNull(trxInProcess)) {
-                throw new CustomError({
-                    message: "Transaction not initiated. User email can't not be confirmed",
-                    errorCode: ErrorCode.TRANSACTION_ERROR,
-                    statusCode: HttpCode.INTERNAL_SERVER_ERROR,
-                });
-            }
-            const trx = trxInProcess as unknown as IDBTransaction;
-            await this.emailConfirmationService.confirmEmail(userId, email, code, trx);
-            await this.userService.patch(userId, { status: UserStatus.ACTIVE }, trx);
-            await uow.commit();
-        } catch (e) {
-            await uow.rollback();
-            this._logger.error(`Email confirmation failed due to a server error: ${(e as { message: string }).message}`);
             throw e;
         }
     }
@@ -307,9 +278,7 @@ export default class UserRegistrationService extends LoggerBase {
             const response = await Promise.all([
                 await this.userRoleService.createUserRole(user.userId, RoleType.Default, trx),
                 await this.profileService.post({ userId: user.userId, currencyId: currency.currencyId, locale, publicName }, trx),
-                ...(emailVerified
-                    ? []
-                    : [await this.emailConfirmationService.createEmailConfirmation(user.userId, user.email, trx)]),
+                // ...(emailVerified ? [] : [await this.emailConfirmationService.refresh(user.userId, user.email, trx)]),
             ]);
 
             if (Utils.isNull(response[1]?.profileId)) {
@@ -329,12 +298,6 @@ export default class UserRegistrationService extends LoggerBase {
             }
 
             await uow.commit();
-
-            if (!emailVerified) {
-                this.emailConfirmationService.sendConfirmationEmail(user.userId, user.email, response[2]).catch((e) => {
-                    this._logger.error(`OAuth user confirmation mail send failed: ${(e as { message: string }).message}`);
-                });
-            }
 
             const readyUser = await this.userService.get(user.userId);
             this._logger.info('OAuth user created, generating tokens.');

@@ -108,7 +108,7 @@ export default class EmailChangingDataAccess extends LoggerBase implements IEmai
             if (!updated) {
                 throw new ValidationError({
                     message: `No pending email change found for userId ${userId}`,
-                    errorCode: ErrorCode.AUTH_ERROR,
+                    errorCode: ErrorCode.EMAIL_CONFIRMATION_ERROR,
                     statusCode: HttpCode.NOT_FOUND,
                 });
             }

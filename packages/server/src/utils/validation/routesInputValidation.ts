@@ -74,6 +74,27 @@ export function createSignupValidationRules(field: string, type: string, options
     return [validatorChain];
 }
 
+const convertFieldToReason = (field: string): string => {
+    switch (field) {
+        case 'email':
+            return 'validation:email';
+        case 'password':
+        case 'newPassword':
+            return 'validation:password';
+        case 'publicName':
+            return 'validation:name';
+        case 'locale':
+            return 'validation:unsupportedLanguage';
+        case 'currencyId':
+        case 'currency':
+            return 'validation:unsupportedCurrency';
+        case 'confirmationCode':
+            return 'validation:codeInvalided';
+        default:
+            return 'validation:valueRequired';
+    }
+};
+
 export default function routesInputValidation(
     validations: ValidationChain[],
     converter: (path: string) => ErrorCode = convertErrorNameToErrorCode,
@@ -94,7 +115,7 @@ export default function routesInputValidation(
                     msg: value.msg,
                     payload: {
                         field,
-                        reason: 'invalid',
+                        reason: convertFieldToReason(field),
                     },
                 };
             }),
@@ -119,6 +140,9 @@ export const convertErrorNameToErrorCode = (path: string): ErrorCode => {
         case 'password':
         case 'newPassword':
             return ErrorCode.PASSWORD_INVALID_ERROR;
+        case 'confirmationCode':
+        case 'code':
+            return ErrorCode.EMAIL_CONFIRMATION_ERROR;
         default:
             return ErrorCode.UNKNOWN_ERROR;
     }

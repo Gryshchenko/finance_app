@@ -2,14 +2,13 @@ import { View, Pressable, ViewStyle, TextStyle } from 'react-native';
 import { MaterialIcons } from '@expo/vector-icons';
 
 import { Text } from '@/components/Text';
-import { TxKeyPath } from '@/i18n';
 import { ToastType } from '@/services/ToastService';
 import { useAppTheme } from '@/theme/context';
 import { ThemedStyle } from '@/theme/types';
 
 interface InfoToastProps {
-    title: TxKeyPath;
-    message: TxKeyPath;
+    title: string;
+    message: string;
     onClose: () => void;
     type: ToastType;
 }
@@ -32,8 +31,8 @@ export const InfoToast: React.FC<InfoToastProps> = ({ title, message, onClose, t
             </View>
 
             <View style={themed($content)}>
-                <Text tx={title} style={themed($title(type))} />
-                <Text tx={message} style={themed($message(type))} />
+                <Text text={title} style={themed($title(type))} />
+                <Text text={message} style={themed($message(type))} />
             </View>
 
             <Pressable onPress={onClose} hitSlop={8}>

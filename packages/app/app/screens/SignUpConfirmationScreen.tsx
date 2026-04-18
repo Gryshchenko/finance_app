@@ -7,7 +7,6 @@ import {
     IEmailConfirmationResponse,
     IEmailResendResponse,
     Time,
-    Utils,
 } from 'tenpercent/shared';
 
 import { Button } from '@/components/buttons/Button';
@@ -18,26 +17,19 @@ import { Screen } from '@/components/Screen';
 import { Text } from '@/components/Text';
 import { useAuth } from '@/context/AuthContext';
 import { useEditView } from '@/hooks/useEditView';
-import { TxKeyPath } from '@/i18n';
-import { translate } from '@/i18n/translate';
 import type { AppStackScreenProps } from '@/navigators/AppNavigator';
 import { signUpConfirmationShema } from '@/schems/validationSchemas';
-import AlertService from '@/services/AlertService';
 import { buildGeneralApiBaseHandler, GeneralApiProblemKind } from '@/services/api/apiProblem';
-import { AuthService } from '@/services/AuthService';
-import { SignupService } from '@/services/SignUpService';
+import { EmailConfirmationService } from '@/services/EmailConfirmationService';
 import ToastService from '@/services/ToastService';
 import { useAppTheme } from '@/theme/context';
 import type { ThemedStyle } from '@/theme/types';
 import { getMessageFromErrorCode } from '@/utils/getMessageFromErrorCode';
-import { Logger } from '@/utils/logger/Logger';
 
 interface SignUpConfirmationScreenProps extends AppStackScreenProps<'signUpConfirmation'> {}
 
-const _logger: Logger = Logger.Of('SignUpConfirmationScreen');
-
 export const SignUpConfirmationScreen: FC<SignUpConfirmationScreenProps> = () => {
-    const { form, handleChange, errors, setErrors } = useEditView<{ confirmationCode: string | null }>(
+    const { form, handleChange, save, errors, setErrors } = useEditView<{ confirmationCode: string | null }>(
         { confirmationCode: null },
         signUpConfirmationShema,
     );
@@ -50,58 +42,80 @@ export const SignUpConfirmationScreen: FC<SignUpConfirmationScreenProps> = () =>
     function setTimer(expiresAt: string) {
         const seconds = Time.getSecondsLeft(expiresAt);
         setResendTimer(seconds);
-        if (seconds > 0) {
-            setIsResendDisabled(true);
-        }
+        if (seconds > 0) setIsResendDisabled(true);
     }
 
-    const resend = useCallback(async () => {
-        const userId = AuthService.instance().userId;
-        if (!userId) {
-            _logger.error(`userId missed on resend action`);
-            ToastService.info({ message: 'errorCode:UNEXPECTED_PROPERTY' });
+    const handleVerify = async (confirmationCode: string) => {
+        if (resendTimer <= 0) {
+            ToastService.error({ message: 'signUpConfirmation:expiredCode' });
             return;
         }
-        try {
-            const response = await SignupService.instance().doSignUpEmailResend({ userId });
-            switch (response.kind) {
-                case GeneralApiProblemKind.Ok: {
-                    const { expiresAt, status } = response.data as IEmailResendResponse;
-                    if (status === EmailConfirmationStatusType.Confirmed) {
-                        doSetUserConfirmed();
-                    } else {
-                        ToastService.info({ message: 'signUpConfirmation:codeSent' });
-                        setTimer(expiresAt);
-                        handleChange('confirmationCode', '');
-                    }
-                    break;
+
+        const response = await EmailConfirmationService.instance().confirm(confirmationCode);
+        switch (response.kind) {
+            case GeneralApiProblemKind.Ok: {
+                const { status } = response.data as IEmailResendResponse;
+                if (status === EmailConfirmationStatusType.Confirmed) {
+                    doSetUserConfirmed();
                 }
-                case GeneralApiProblemKind.BadData: {
-                    const responseErrors = response?.errors ?? [];
-                    for (const error of responseErrors) {
-                        const errorCode = error?.errorCode;
-                        if (errorCode === ErrorCode.EMAIL_VERIFICATION_CODE_EXPIRED_ERROR) {
-                            ToastService.error({ message: 'errorCode:EMAIL_VERIFICATION_CODE_EXPIRED_ERROR' });
-                        } else if (errorCode === ErrorCode.EMAIL_VERIFICATION_CODE_STILL_ACTIVE_ERROR) {
-                            ToastService.error({ message: 'errorCode:EMAIL_VERIFICATION_CODE_STILL_ACTIVE_ERROR' });
-                        }
-                    }
-                    break;
-                }
-                default: {
-                    buildGeneralApiBaseHandler(response);
-                }
+                break;
             }
-        } catch (e) {
-            _logger.error(`Resend failed due reason: ${(e as { message: string }).message}`);
-            AlertService.error(translate('common:error'), translate('errorCode:UNEXPECTED_PROPERTY' as TxKeyPath));
+            case GeneralApiProblemKind.BadData: {
+                for (const error of response.errors ?? []) {
+                    if (error?.payload?.field === 'confirmationCode') {
+                        setErrors({ confirmationCode: 'validation:codeInvalided' });
+                    } else if (error?.errorCode) {
+                        ToastService.error({ message: getMessageFromErrorCode(error.errorCode) });
+                    }
+                }
+                break;
+            }
+            default: {
+                buildGeneralApiBaseHandler(response);
+            }
+        }
+    };
+
+    const handleConfirm = async () => {
+        const isValid = await save();
+        if (!isValid || !form.confirmationCode) return;
+        await handleVerify(form.confirmationCode);
+    };
+
+    const resend = useCallback(async () => {
+        const response = await EmailConfirmationService.instance().refreshCode();
+        switch (response.kind) {
+            case GeneralApiProblemKind.Ok: {
+                const { expiresAt, status } = response.data as IEmailResendResponse;
+                if (status === EmailConfirmationStatusType.Confirmed) {
+                    doSetUserConfirmed();
+                } else {
+                    ToastService.info({ message: 'signUpConfirmation:codeSent' });
+                    setTimer(expiresAt);
+                    handleChange('confirmationCode', '');
+                }
+                break;
+            }
+            case GeneralApiProblemKind.BadData: {
+                for (const error of response?.errors ?? []) {
+                    const errorCode = error?.errorCode;
+                    if (errorCode === ErrorCode.EMAIL_VERIFICATION_CODE_EXPIRED_ERROR) {
+                        ToastService.error({ message: 'errorCode:EMAIL_VERIFICATION_CODE_EXPIRED_ERROR' });
+                    } else if (errorCode === ErrorCode.EMAIL_VERIFICATION_CODE_STILL_ACTIVE_ERROR) {
+                        ToastService.error({ message: 'errorCode:EMAIL_VERIFICATION_CODE_STILL_ACTIVE_ERROR' });
+                    }
+                }
+                break;
+            }
+            default: {
+                buildGeneralApiBaseHandler(response);
+            }
         }
     }, [doSetUserConfirmed, handleChange]);
 
     useEffect(() => {
         const handler = async () => {
-            const userId = AuthService.instance().userId as number;
-            const response = await SignupService.instance().getSignUpConfirmationCode(userId);
+            const response = await EmailConfirmationService.instance().getCode();
             switch (response.kind) {
                 case GeneralApiProblemKind.Ok: {
                     const { expiresAt } = response.data as IEmailConfirmationResponse;
@@ -130,64 +144,13 @@ export const SignUpConfirmationScreen: FC<SignUpConfirmationScreenProps> = () =>
         return () => clearTimeout(timer);
     }, [isResendDisabled, resendTimer]);
 
-    async function verify(codeOverride?: string) {
-        try {
-            const confirmationCode = codeOverride ?? form.confirmationCode;
-            if (resendTimer <= 0) {
-                ToastService.error({ message: 'signUpConfirmation:expiredCode' });
-                return;
-            }
-            if (!confirmationCode || errors.confirmationCode) return;
-            const userId = AuthService.instance().userId;
-
-            if (!userId) {
-                _logger.error(`userId missed on verify action`);
-                ToastService.error({ message: 'errorCode:UNEXPECTED_PROPERTY' });
-                return;
-            }
-
-            const response = await SignupService.instance().doSignUpEmailVerify({
-                userId,
-                confirmationCode,
-            });
-            switch (response.kind) {
-                case GeneralApiProblemKind.Ok: {
-                    const { status } = response.data as IEmailResendResponse;
-                    if (status === EmailConfirmationStatusType.Confirmed) {
-                        doSetUserConfirmed();
-                    }
-                    break;
-                }
-                case GeneralApiProblemKind.BadData: {
-                    const responseErrors = response.errors ?? [];
-                    for (const error of responseErrors) {
-                        const payload = error?.payload;
-                        const errorCode = error?.errorCode;
-                        if (payload?.field === 'confirmationCode') {
-                            setErrors({ confirmationCode: 'validation:codeInvalided' });
-                        } else if (errorCode) {
-                            ToastService.error({ message: getMessageFromErrorCode(errorCode) });
-                        }
-                    }
-                    break;
-                }
-                default: {
-                    buildGeneralApiBaseHandler(response);
-                }
-            }
-        } catch (e) {
-            _logger.error(`Confirm failed due reason: ${(e as { message: string }).message}`);
-            AlertService.error(translate('common:error'), translate('errorCode:UNEXPECTED_PROPERTY' as TxKeyPath));
-        }
-    }
-
     return (
         <Screen preset="auto" contentContainerStyle={themed($screenContentContainer)} safeAreaEdges={['top', 'bottom']}>
             <HeaderTitle subLogoText={'loginScreen:authorization'} />
             <View style={themed($content)}>
                 <View style={themed($header)}>
-                    <Text tx={'signUpConfirmation:title'} style={themed($title)}></Text>
-                    <Text tx={'signUpConfirmation:description'} style={themed($subtitle)}></Text>
+                    <Text tx={'signUpConfirmation:title'} style={themed($title)} />
+                    <Text tx={'signUpConfirmation:description'} style={themed($subtitle)} />
                 </View>
                 <KeyboardAwareScrollView bottomOffset={62}>
                     <OtpCodeInput
@@ -196,7 +159,7 @@ export const SignUpConfirmationScreen: FC<SignUpConfirmationScreenProps> = () =>
                         status={errors?.confirmationCode ? 'error' : undefined}
                         onFinish={async (code: string) => {
                             handleChange('confirmationCode', code);
-                            await verify(code);
+                            await handleVerify(code);
                         }}
                     />
                 </KeyboardAwareScrollView>
@@ -209,12 +172,8 @@ export const SignUpConfirmationScreen: FC<SignUpConfirmationScreenProps> = () =>
                         tx="signUpConfirmation:confirmButton"
                         style={themed($tapButton)}
                         preset={'reversed'}
-                        disabled={
-                            resendTimer <= 0 ||
-                            !Utils.isEmpty(errors?.confirmationCode as string) ||
-                            Utils.isEmpty(form?.confirmationCode as string)
-                        }
-                        onPress={() => verify()}
+                        disabled={resendTimer <= 0 || !!errors.confirmationCode || !form.confirmationCode}
+                        onPress={handleConfirm}
                     />
                     <TextButton
                         tx={'signUpConfirmation:resendButton'}
@@ -251,6 +210,7 @@ export const $subtitle: ThemedStyle<TextStyle> = ({ colors, typography }) => ({
     textAlign: 'center',
     lineHeight: 20,
 });
+
 const $screenContentContainer: ThemedStyle<ViewStyle> = ({ spacing }) => ({
     paddingVertical: spacing.xxl,
     paddingHorizontal: spacing.lg,
