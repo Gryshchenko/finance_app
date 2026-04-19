@@ -31,7 +31,7 @@ afterAll((done) => {
 describe('Profile', () => {
     describe('GET', () => {
         it('should return correct profile shape for a verified user', async () => {
-            const agent = request.agent(app);
+            const agent = request.agent(server);
             const databaseConnection = DatabaseConnection.instance(config);
 
             const publicName = 'TestProfile';
@@ -53,12 +53,11 @@ describe('Profile', () => {
                 publicName,
                 locale,
                 currencyId: expect.any(Number),
-                mailConfirmed: true,
             });
         });
 
         it('should return publicName and locale that match registration data', async () => {
-            const agent = request.agent(app);
+            const agent = request.agent(server);
             const databaseConnection = DatabaseConnection.instance(config);
 
             const publicName = 'UniqueNameDE';
@@ -78,11 +77,10 @@ describe('Profile', () => {
 
             expect(data.publicName).toStrictEqual(publicName);
             expect(data.locale).toStrictEqual(locale);
-            expect(data.mailConfirmed).toBe(true);
         });
 
         it('should return 403 for an unverified user', async () => {
-            const agent = request.agent(app);
+            const agent = request.agent(server);
 
             const { userId, authorization } = await createUserNotVerify({ agent });
             userIds.push(userId);
@@ -91,7 +89,7 @@ describe('Profile', () => {
         });
 
         it('should return 401 when authorization header is missing', async () => {
-            const agent = request.agent(app);
+            const agent = request.agent(server);
             const databaseConnection = DatabaseConnection.instance(config);
 
             const { userId } = await createUser({ agent, databaseConnection });
@@ -101,7 +99,7 @@ describe('Profile', () => {
         });
 
         it('should return 400 for unknown query params', async () => {
-            const agent = request.agent(app);
+            const agent = request.agent(server);
             const databaseConnection = DatabaseConnection.instance(config);
 
             const { userId, authorization } = await createUser({ agent, databaseConnection });
@@ -122,7 +120,7 @@ describe('Profile', () => {
 
     describe('PATCH', () => {
         it('should return 400 for an empty body', async () => {
-            const agent = request.agent(app);
+            const agent = request.agent(server);
             const databaseConnection = DatabaseConnection.instance(config);
 
             const { userId, authorization } = await createUser({ agent, databaseConnection });
@@ -136,7 +134,7 @@ describe('Profile', () => {
         });
 
         it('should return 204 when updating locale', async () => {
-            const agent = request.agent(app);
+            const agent = request.agent(server);
             const databaseConnection = DatabaseConnection.instance(config);
 
             const { userId, authorization } = await createUser({ agent, databaseConnection });
@@ -156,7 +154,7 @@ describe('Profile', () => {
         });
 
         it('should return 204 when updating publicName', async () => {
-            const agent = request.agent(app);
+            const agent = request.agent(server);
             const databaseConnection = DatabaseConnection.instance(config);
 
             const { userId, authorization } = await createUser({ agent, databaseConnection });
@@ -176,7 +174,7 @@ describe('Profile', () => {
         });
 
         it('should return 204 when updating currencyId', async () => {
-            const agent = request.agent(app);
+            const agent = request.agent(server);
             const databaseConnection = DatabaseConnection.instance(config);
 
             const { userId, authorization } = await createUser({ agent, databaseConnection });
@@ -194,7 +192,7 @@ describe('Profile', () => {
         });
 
         it('should return 204 when updating all fields at once', async () => {
-            const agent = request.agent(app);
+            const agent = request.agent(server);
             const databaseConnection = DatabaseConnection.instance(config);
 
             const { userId, authorization } = await createUser({ agent, databaseConnection });
@@ -219,7 +217,7 @@ describe('Profile', () => {
         });
 
         it('should return 400 for invalid locale format', async () => {
-            const agent = request.agent(app);
+            const agent = request.agent(server);
             const databaseConnection = DatabaseConnection.instance(config);
 
             const { userId, authorization } = await createUser({ agent, databaseConnection });
@@ -235,7 +233,7 @@ describe('Profile', () => {
         });
 
         it('should return 400 for publicName that is too short', async () => {
-            const agent = request.agent(app);
+            const agent = request.agent(server);
             const databaseConnection = DatabaseConnection.instance(config);
 
             const { userId, authorization } = await createUser({ agent, databaseConnection });
@@ -249,7 +247,7 @@ describe('Profile', () => {
         });
 
         it('should return 400 when body contains unknown properties', async () => {
-            const agent = request.agent(app);
+            const agent = request.agent(server);
             const databaseConnection = DatabaseConnection.instance(config);
 
             const { userId, authorization } = await createUser({ agent, databaseConnection });
@@ -270,7 +268,7 @@ describe('Profile', () => {
         });
 
         it('should return 400 for unknown query params', async () => {
-            const agent = request.agent(app);
+            const agent = request.agent(server);
             const databaseConnection = DatabaseConnection.instance(config);
 
             const { userId, authorization } = await createUser({ agent, databaseConnection });
@@ -286,7 +284,7 @@ describe('Profile', () => {
         });
 
         it('should return 403 for an unverified user', async () => {
-            const agent = request.agent(app);
+            const agent = request.agent(server);
 
             const { userId, authorization } = await createUserNotVerify({ agent });
             userIds.push(userId);
@@ -299,7 +297,7 @@ describe('Profile', () => {
         });
 
         it('should return 401 when authorization header is missing', async () => {
-            const agent = request.agent(app);
+            const agent = request.agent(server);
             const databaseConnection = DatabaseConnection.instance(config);
 
             const { userId } = await createUser({ agent, databaseConnection });

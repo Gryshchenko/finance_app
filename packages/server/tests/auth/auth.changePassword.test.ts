@@ -90,7 +90,7 @@ async function runForgetFlowUntilResetToken(agent: ReturnType<typeof request.age
 
 describe('1. Full flow — request → confirm → change → login with new password', () => {
     it('new password works for login after change; old password does not', async () => {
-        const agent = request.agent(app);
+        const agent = request.agent(server);
         const email = generateRandomEmail();
 
         const { userId, authorization } = await createUser({
@@ -147,22 +147,22 @@ describe('1. Full flow — request → confirm → change → login with new pas
 
 describe('2. POST /auth/forget — request endpoint', () => {
     it('returns 204 for a non-existent email (does not leak user existence)', async () => {
-        const agent = request.agent(app);
+        const agent = request.agent(server);
         await agent.post('/auth/forget').send({ email: 'nobody@nowhere.test' }).expect(HttpCode.NO_CONTENT);
     });
 
-    it('returns 422 when email is missing', async () => {
-        const agent = request.agent(app);
-        await agent.post('/auth/forget').send({}).expect(HttpCode.UNPROCESSABLE_ENTITY);
+    it('returns 400 when email is missing', async () => {
+        const agent = request.agent(server);
+        await agent.post('/auth/forget').send({}).expect(HttpCode.BAD_REQUEST);
     });
 
-    it('returns 422 when email is invalid format', async () => {
-        const agent = request.agent(app);
-        await agent.post('/auth/forget').send({ email: 'not-an-email' }).expect(HttpCode.UNPROCESSABLE_ENTITY);
+    it('returns 400 when email is invalid format', async () => {
+        const agent = request.agent(server);
+        await agent.post('/auth/forget').send({ email: 'not-an-email' }).expect(HttpCode.BAD_REQUEST);
     });
 
     it('can be called multiple times for the same email (upsert)', async () => {
-        const agent = request.agent(app);
+        const agent = request.agent(server);
         const email = generateRandomEmail();
         const { userId } = await createUser({ agent, databaseConnection: db, email, password: OLD_PASSWORD });
         userIds.push(userId);
@@ -174,17 +174,17 @@ describe('2. POST /auth/forget — request endpoint', () => {
 
 describe('3. POST /auth/forget-refresh — resend code', () => {
     it('returns 204 for email with no active request (does not leak info)', async () => {
-        const agent = request.agent(app);
+        const agent = request.agent(server);
         await agent.post('/auth/forget-refresh').send({ email: 'nobody@nowhere.test' }).expect(HttpCode.NO_CONTENT);
     });
 
-    it('returns 422 when email is missing', async () => {
-        const agent = request.agent(app);
-        await agent.post('/auth/forget-refresh').send({}).expect(HttpCode.UNPROCESSABLE_ENTITY);
+    it('returns 400 when email is missing', async () => {
+        const agent = request.agent(server);
+        await agent.post('/auth/forget-refresh').send({}).expect(HttpCode.BAD_REQUEST);
     });
 
     it('generates a new code after refresh (old code no longer works)', async () => {
-        const agent = request.agent(app);
+        const agent = request.agent(server);
         const email = generateRandomEmail();
         const { userId } = await createUser({ agent, databaseConnection: db, email, password: OLD_PASSWORD });
         userIds.push(userId);
@@ -230,7 +230,7 @@ describe('3. POST /auth/forget-refresh — resend code', () => {
 
 describe('4. POST /auth/forget-confirm — confirm code', () => {
     it('returns error for wrong confirmation code', async () => {
-        const agent = request.agent(app);
+        const agent = request.agent(server);
         const email = generateRandomEmail();
         const { userId } = await createUser({ agent, databaseConnection: db, email, password: OLD_PASSWORD });
         userIds.push(userId);
@@ -242,24 +242,24 @@ describe('4. POST /auth/forget-confirm — confirm code', () => {
     });
 
     it('returns error for non-existent email', async () => {
-        const agent = request.agent(app);
+        const agent = request.agent(server);
         const res = await agent.post('/auth/forget-confirm').send({ confirmationCode: 12345678, email: 'nobody@nowhere.test' });
         expect(res.status).not.toBe(HttpCode.OK);
     });
 
-    it('returns 422 when confirmationCode is missing', async () => {
-        const agent = request.agent(app);
+    it('returns 400 when confirmationCode is missing', async () => {
+        const agent = request.agent(server);
         const email = generateRandomEmail();
-        await agent.post('/auth/forget-confirm').send({ email }).expect(HttpCode.UNPROCESSABLE_ENTITY);
+        await agent.post('/auth/forget-confirm').send({ email }).expect(HttpCode.BAD_REQUEST);
     });
 
-    it('returns 422 when email is missing', async () => {
-        const agent = request.agent(app);
-        await agent.post('/auth/forget-confirm').send({ confirmationCode: 12345678 }).expect(HttpCode.UNPROCESSABLE_ENTITY);
+    it('returns 400 when email is missing', async () => {
+        const agent = request.agent(server);
+        await agent.post('/auth/forget-confirm').send({ confirmationCode: 12345678 }).expect(HttpCode.BAD_REQUEST);
     });
 
     it('returns error when code has already been confirmed', async () => {
-        const agent = request.agent(app);
+        const agent = request.agent(server);
         const email = generateRandomEmail();
         const { userId } = await createUser({ agent, databaseConnection: db, email, password: OLD_PASSWORD });
         userIds.push(userId);
@@ -288,7 +288,7 @@ describe('5. POST /auth/:userId/forget-change — reset token security', () => {
     let agent: ReturnType<typeof request.agent>;
 
     beforeAll(async () => {
-        agent = request.agent(app);
+        agent = request.agent(server);
         email = generateRandomEmail();
         const result = await createUser({ agent, databaseConnection: db, email, password: OLD_PASSWORD });
         userId = result.userId;
@@ -371,8 +371,8 @@ describe('5. POST /auth/:userId/forget-change — reset token security', () => {
 });
 
 describe('6. POST /auth/:userId/forget-change — password validation', () => {
-    it('returns 422 when newPassword is missing', async () => {
-        const agent = request.agent(app);
+    it('returns 400 when newPassword is missing', async () => {
+        const agent = request.agent(server);
         const email = generateRandomEmail();
         const { userId } = await createUser({ agent, databaseConnection: db, email, password: OLD_PASSWORD });
         userIds.push(userId);
@@ -383,11 +383,11 @@ describe('6. POST /auth/:userId/forget-change — password validation', () => {
             .post(`/auth/${userId}/forget-change`)
             .set('authorization', `Bearer ${resetToken}`)
             .send({})
-            .expect(HttpCode.UNPROCESSABLE_ENTITY);
+            .expect(HttpCode.BAD_REQUEST);
     });
 
-    it('returns 422 when newPassword is too short (< 5 chars)', async () => {
-        const agent = request.agent(app);
+    it('returns 400 when newPassword is too short (< 5 chars)', async () => {
+        const agent = request.agent(server);
         const email = generateRandomEmail();
         const { userId } = await createUser({ agent, databaseConnection: db, email, password: OLD_PASSWORD });
         userIds.push(userId);
@@ -398,11 +398,11 @@ describe('6. POST /auth/:userId/forget-change — password validation', () => {
             .post(`/auth/${userId}/forget-change`)
             .set('authorization', `Bearer ${resetToken}`)
             .send({ newPassword: 'Ab1!' })
-            .expect(HttpCode.UNPROCESSABLE_ENTITY);
+            .expect(HttpCode.BAD_REQUEST);
     });
 
-    it('returns 422 when newPassword is too long (> 30 chars)', async () => {
-        const agent = request.agent(app);
+    it('returns 400 when newPassword is too long (> 30 chars)', async () => {
+        const agent = request.agent(server);
         const email = generateRandomEmail();
         const { userId } = await createUser({ agent, databaseConnection: db, email, password: OLD_PASSWORD });
         userIds.push(userId);
@@ -413,13 +413,13 @@ describe('6. POST /auth/:userId/forget-change — password validation', () => {
             .post(`/auth/${userId}/forget-change`)
             .set('authorization', `Bearer ${resetToken}`)
             .send({ newPassword: 'A'.repeat(31) + '1!' })
-            .expect(HttpCode.UNPROCESSABLE_ENTITY);
+            .expect(HttpCode.BAD_REQUEST);
     });
 });
 
 describe('7. Reset token replay & reuse', () => {
     it('reset token cannot be used twice to change password', async () => {
-        const agent = request.agent(app);
+        const agent = request.agent(server);
         const email = generateRandomEmail();
         const { userId } = await createUser({ agent, databaseConnection: db, email, password: OLD_PASSWORD });
         userIds.push(userId);
@@ -442,7 +442,7 @@ describe('7. Reset token replay & reuse', () => {
     });
 
     it('reset token for user A cannot be used to change user B password', async () => {
-        const agent = request.agent(app);
+        const agent = request.agent(server);
         const emailA = generateRandomEmail();
         const emailB = generateRandomEmail();
         const { userId: userIdA } = await createUser({ agent, databaseConnection: db, email: emailA, password: OLD_PASSWORD });
@@ -462,7 +462,7 @@ describe('7. Reset token replay & reuse', () => {
 
 describe('8. Reset token isolation — cannot be used on protected endpoints', () => {
     it('reset token is rejected on GET /user/:userId/profile', async () => {
-        const agent = request.agent(app);
+        const agent = request.agent(server);
         const email = generateRandomEmail();
         const { userId } = await createUser({ agent, databaseConnection: db, email, password: OLD_PASSWORD });
         userIds.push(userId);
@@ -473,7 +473,7 @@ describe('8. Reset token isolation — cannot be used on protected endpoints', (
     });
 
     it('reset token is rejected on GET /auth/:userId/verify', async () => {
-        const agent = request.agent(app);
+        const agent = request.agent(server);
         const email = generateRandomEmail();
         const { userId } = await createUser({ agent, databaseConnection: db, email, password: OLD_PASSWORD });
         userIds.push(userId);
@@ -484,7 +484,7 @@ describe('8. Reset token isolation — cannot be used on protected endpoints', (
     });
 
     it('reset token is rejected by refresh endpoint', async () => {
-        const agent = request.agent(app);
+        const agent = request.agent(server);
         const email = generateRandomEmail();
         const { userId } = await createUser({ agent, databaseConnection: db, email, password: OLD_PASSWORD });
         userIds.push(userId);
@@ -497,7 +497,7 @@ describe('8. Reset token isolation — cannot be used on protected endpoints', (
 
 describe('9. Full flow with forget-refresh step', () => {
     it('forget → refresh → confirm with new code → change works', async () => {
-        const agent = request.agent(app);
+        const agent = request.agent(server);
         const email = generateRandomEmail();
         const { userId } = await createUser({ agent, databaseConnection: db, email, password: OLD_PASSWORD });
         userIds.push(userId);
@@ -537,12 +537,12 @@ describe('9. Full flow with forget-refresh step', () => {
 
 describe('10. Query string rejection', () => {
     it('rejects /auth/forget with unexpected query params', async () => {
-        const agent = request.agent(app);
+        const agent = request.agent(server);
         await agent.post('/auth/forget?admin=true').send({ email: 'test@test.com' }).expect(HttpCode.BAD_REQUEST);
     });
 
     it('rejects /auth/forget-confirm with unexpected query params', async () => {
-        const agent = request.agent(app);
+        const agent = request.agent(server);
         await agent
             .post('/auth/forget-confirm?debug=1')
             .send({ email: 'test@test.com', confirmationCode: 12345678 })

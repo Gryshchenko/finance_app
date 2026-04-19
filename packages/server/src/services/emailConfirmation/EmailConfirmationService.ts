@@ -10,12 +10,8 @@ import { ValidationError } from 'src/utils/errors/ValidationError';
 const CHANGE_CODE_EXPIRES_IN: [number, number, number] = [0, 10, 0];
 
 export interface IEmailConfirmationService {
-    request(
-        userId: number,
-        email: string,
-        trx?: IDBTransaction,
-    ): Promise<{ confirmationCode: number; expiresAt: Date; id: number }>;
-    confirm(userId: number, email: string, confirmationCode: number, trx?: IDBTransaction): Promise<boolean>;
+    request(userId: number, email: string, trx?: IDBTransaction): Promise<boolean>;
+    confirm(userId: number, email: string, confirmationCode: number, trx?: IDBTransaction): Promise<{ confirmationId: number }>;
     refresh(userId: number, email: string): Promise<boolean>;
 }
 
@@ -29,20 +25,20 @@ export default class EmailConfirmationService extends LoggerBase implements IEma
         this.userService = userService;
     }
 
-    public async request(userId: number, email: string): Promise<{ confirmationCode: number; expiresAt: Date; id: number }> {
+    public async request(userId: number, email: string, trx?: IDBTransaction): Promise<boolean> {
         this._logger.info(`Email change requested for userId ${userId}`);
         try {
             const record = await this._dataAccess.getByUserId(userId, email);
             const expiresAt = ConfirmationHelper.createExpiresAt(CHANGE_CODE_EXPIRES_IN);
             const confirmationCode = ConfirmationHelper.generateCode();
             if (!record) {
-                const response = await this._dataAccess.create(userId, email, confirmationCode, expiresAt);
+                await this._dataAccess.create(userId, email, confirmationCode, expiresAt, trx);
                 this._logger.info(`Email change request created for userId ${userId}`);
-                return { confirmationCode, expiresAt, id: response.id };
+                return true;
             } else {
                 await this._dataAccess.refresh(userId, email, confirmationCode, expiresAt);
                 this._logger.info(`Email change request created for userId ${userId}`);
-                return { confirmationCode, expiresAt, id: record.id };
+                return true;
             }
         } catch (e) {
             this._logger.error(`Email change request failed for userId ${userId}: ${(e as { message: string }).message}`);
@@ -72,7 +68,12 @@ export default class EmailConfirmationService extends LoggerBase implements IEma
         }
     }
 
-    public async confirm(userId: number, email: string, confirmationCode: number, trx?: IDBTransaction): Promise<boolean> {
+    public async confirm(
+        userId: number,
+        email: string,
+        confirmationCode: number,
+        trx?: IDBTransaction,
+    ): Promise<{ confirmationId: number }> {
         this._logger.info(`Confirming email change for userId ${userId}`);
         try {
             const record = await this._dataAccess.getByUserId(userId, email);
@@ -103,11 +104,11 @@ export default class EmailConfirmationService extends LoggerBase implements IEma
 
             ConfirmationHelper.validateCode(record.confirmationCode, confirmationCode);
 
-            await this._dataAccess.confirm(userId, trx);
+            const result = await this._dataAccess.confirm(userId, email, trx);
             await this.userService.patch(userId, { status: UserStatus.ACTIVE, email: record.email }, trx);
 
             this._logger.info(`Email change confirmed for userId ${userId}, new email: ${record.email}`);
-            return true;
+            return result;
         } catch (e) {
             this._logger.error(`Email change confirmation failed for userId ${userId}: ${(e as { message: string }).message}`);
             throw e;

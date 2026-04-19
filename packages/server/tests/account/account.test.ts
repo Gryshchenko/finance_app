@@ -34,7 +34,7 @@ afterAll((done) => {
 
 describe('Account', () => {
     it(`POST - create account`, async () => {
-        const agent = request.agent(app);
+        const agent = request.agent(server);
 
         const databaseConnection = new DatabaseConnection(config);
         const { userId, authorization } = await createUser({
@@ -100,7 +100,7 @@ describe('Account', () => {
         }
     });
     it(`PATCH - update account`, async () => {
-        const agent = request.agent(app);
+        const agent = request.agent(server);
 
         const databaseConnection = new DatabaseConnection(config);
         const { userId, authorization } = await createUser({
@@ -182,7 +182,7 @@ describe('Account', () => {
             .expect(HttpCode.BAD_REQUEST);
     });
     it(`unknown properties`, async () => {
-        const agent = request.agent(app);
+        const agent = request.agent(server);
 
         const databaseConnection = new DatabaseConnection(config);
         const { userId, authorization } = await createUser({
@@ -217,7 +217,7 @@ describe('Account', () => {
             .expect(HttpCode.BAD_REQUEST);
     });
     it(`DELETE - delete account - hide`, async () => {
-        const agent = request.agent(app);
+        const agent = request.agent(server);
         const databaseConnection = new DatabaseConnection(config);
         const { userId, authorization } = await createUser({
             agent,
@@ -296,7 +296,7 @@ describe('Account', () => {
         }
     });
     it(`DELETE - delete account - full`, async () => {
-        const agent = request.agent(app);
+        const agent = request.agent(server);
         const databaseConnection = new DatabaseConnection(config);
         const { userId, authorization } = await createUser({
             agent,

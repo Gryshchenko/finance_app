@@ -36,7 +36,7 @@ describe('POST /user/:userId/profile/password-change — request password change
     let authorization: string;
 
     beforeAll(async () => {
-        agent = request.agent(app);
+        agent = request.agent(server);
         const result = await createUser({ agent, databaseConnection: db, password: OLD_PASSWORD });
         userId = result.userId;
         authorization = result.authorization;
@@ -82,7 +82,7 @@ describe('POST /user/:userId/profile/password-change — request password change
     });
 
     it('403 — unverified user cannot request password change', async () => {
-        const unverifiedAgent = request.agent(app);
+        const unverifiedAgent = request.agent(server);
         const { userId: unverifiedId, authorization: unverifiedAuth } = await createUserNotVerify({ agent: unverifiedAgent });
         userIds.push(unverifiedId);
 
@@ -108,7 +108,7 @@ describe('POST /user/:userId/profile/password-change/verify — confirm password
     let confirmationCode: number;
 
     beforeAll(async () => {
-        agent = request.agent(app);
+        agent = request.agent(server);
         const result = await createUser({ agent, databaseConnection: db, password: OLD_PASSWORD });
         userId = result.userId;
         authorization = result.authorization;
@@ -150,7 +150,7 @@ describe('POST /user/:userId/profile/password-change/verify — confirm password
     });
 
     it('400 — wrong confirmationCode is rejected', async () => {
-        const agent2 = request.agent(app);
+        const agent2 = request.agent(server);
         const { userId: userId2, authorization: auth2 } = await createUser({
             agent: agent2,
             databaseConnection: db,
@@ -180,7 +180,7 @@ describe('POST /user/:userId/profile/password-change/verify — confirm password
     });
 
     it('400 — verify without a prior request returns error', async () => {
-        const agent3 = request.agent(app);
+        const agent3 = request.agent(server);
         const { userId: userId3, authorization: auth3 } = await createUser({
             agent: agent3,
             databaseConnection: db,
@@ -210,7 +210,7 @@ describe('POST /user/:userId/profile/password-change/resend — resend confirmat
     let confirmationId: number;
 
     beforeAll(async () => {
-        agent = request.agent(app);
+        agent = request.agent(server);
         const result = await createUser({ agent, databaseConnection: db, password: OLD_PASSWORD });
         userId = result.userId;
         authorization = result.authorization;
@@ -256,7 +256,7 @@ describe('POST /user/:userId/profile/password-change/resend — resend confirmat
     });
 
     it('400 — resend with non-existent confirmationId returns error', async () => {
-        const agent4 = request.agent(app);
+        const agent4 = request.agent(server);
         const { userId: userId4, authorization: auth4 } = await createUser({
             agent: agent4,
             databaseConnection: db,
@@ -279,7 +279,7 @@ describe('POST /user/:userId/profile/password-change/resend — resend confirmat
 
 describe('Full flow — request → verify → login with new password', () => {
     it('new password works for login after change; old password does not', async () => {
-        const agent = request.agent(app);
+        const agent = request.agent(server);
         const email = generateRandomEmail();
 
         const { userId, authorization } = await createUser({

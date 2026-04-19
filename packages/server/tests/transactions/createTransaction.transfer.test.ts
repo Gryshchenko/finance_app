@@ -35,7 +35,7 @@ afterAll((done) => {
 describe('POST /transaction/create - transfare', () => {
     [10, 20, 32, 42.23, 4342, 342425, 32424.34, 324234.54, 5345345.345345, 5345345346.4554].forEach((num) => {
         it(`should create new transaction num: ${num}`, async () => {
-            const agent = request.agent(app);
+            const agent = request.agent(server);
 
             const databaseConnection = DatabaseConnection.instance(config);
             const { userId, authorization } = await createUser({
@@ -112,7 +112,7 @@ describe('POST /transaction/create - transfare', () => {
         });
     });
     it('should not create new transaction - miss targetAccountId', async () => {
-        const agent = request.agent(app);
+        const agent = request.agent(server);
 
         const databaseConnection = DatabaseConnection.instance(config);
         const { userId, authorization } = await createUser({
@@ -144,7 +144,7 @@ describe('POST /transaction/create - transfare', () => {
         });
     });
     it('should not create new transaction - miss accountId', async () => {
-        const agent = request.agent(app);
+        const agent = request.agent(server);
 
         const databaseConnection = DatabaseConnection.instance(config);
         const { userId, authorization } = await createUser({
@@ -176,7 +176,7 @@ describe('POST /transaction/create - transfare', () => {
         });
     });
     it('should not create new transaction - miss targetAccountId and accountId', async () => {
-        const agent = request.agent(app);
+        const agent = request.agent(server);
 
         const databaseConnection = DatabaseConnection.instance(config);
         const { userId, authorization } = await createUser({
@@ -201,7 +201,7 @@ describe('POST /transaction/create - transfare', () => {
         });
     });
     it('should not create new transaction - miss amount', async () => {
-        const agent = request.agent(app);
+        const agent = request.agent(server);
 
         const databaseConnection = DatabaseConnection.instance(config);
         const { userId, authorization } = await createUser({
@@ -227,7 +227,7 @@ describe('POST /transaction/create - transfare', () => {
         });
     });
     it('should not create new transaction - not allow unknown properties', async () => {
-        const agent = request.agent(app);
+        const agent = request.agent(server);
 
         const databaseConnection = DatabaseConnection.instance(config);
         const { userId, authorization } = await createUser({

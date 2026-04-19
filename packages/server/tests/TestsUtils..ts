@@ -5,7 +5,6 @@ import config from '../src/config/dbConfig';
 import { Agent } from 'supertest';
 import { LanguageType } from 'tenpercent/shared';
 import { UserStatus } from 'tenpercent/shared';
-import { EmailConfirmationStatusType } from 'tenpercent/shared';
 // eslint-disable-next-line @typescript-eslint/no-require-imports
 const crypto = require('crypto');
 
@@ -148,7 +147,7 @@ export const createUser = async ({
     expect(profileBefore.status).toStrictEqual(HttpCode.FORBIDDEN);
 
     expect(confirm.confirmationCode).toEqual(expect.any(Number));
-    expect(confirm.status).toBe(EmailConfirmationStatusType.Pending);
+    expect(confirm.confirmed).toBe(false);
     const confirmMailResponse = await agent
         .post(`/register/signup/${userId}/email-confirmation/verify`)
         .set('authorization', authorization)
@@ -157,20 +156,20 @@ export const createUser = async ({
     expect(confirmMailResponse.status).toBe(HttpCode.OK);
     expect(confirmMailResponse.body.data).toStrictEqual({
         confirmationId: expect.any(Number),
-        status: EmailConfirmationStatusType.Confirmed,
     });
     const confirmAfter = await databaseConnection.engine()('email_confirmations').select('*').where({ userId, email }).first();
-    expect(confirmAfter.status).toBe(EmailConfirmationStatusType.Confirmed);
+    expect(confirmAfter.confirmed).toBe(true);
     expect(confirmAfter.email).toStrictEqual(email);
     expect(confirm.confirmationCode).toStrictEqual(confirmAfter.confirmationCode);
     const userAfter = await agent.get(`/user/${userId}`).set('authorization', authorization);
     const profile = await agent.get(`/user/${userId}/profile`).set('authorization', authorization);
     expect(profile.body.data).toStrictEqual({
         profileId: expect.any(Number),
+        email,
         publicName,
         locale: expect.any(String),
         currencyId: expect.any(Number),
-        mailConfirmed: true,
+        userId: expect.any(Number),
     });
     expect(userAfter.body.data).toStrictEqual({
         userId,

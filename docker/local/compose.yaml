@@ -1,0 +1,32 @@
+services:
+    tn-redis-master:
+        container_name: tn-redis-master
+        image: 'bitnami/redis:latest'
+        environment:
+            - REDIS_REPLICATION_MODE=master
+            - REDIS_PASSWORD=redispassword
+        ports:
+            - '6379:6379'
+        networks:
+            - app-tier
+    tn-postgres:
+        container_name: tn-postgres
+        image: postgres:16-alpine
+        volumes:
+            - ./db/schema.sql:/docker-entrypoint-initdb.d/01-schema.sql
+        environment:
+            - POSTGRES_DB=test_db
+            - POSTGRES_USER=test_user
+            - POSTGRES_PASSWORD=test_password
+        ports:
+            - '5432:5432'
+        healthcheck:
+            test: ['CMD-SHELL', 'pg_isready -U test_user -d test_db']
+            interval: 5s
+            timeout: 5s
+            retries: 5
+        networks:
+            - app-tier
+networks:
+    app-tier:
+        driver: bridge

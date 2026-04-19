@@ -84,7 +84,7 @@ describe('1. Token format & absence', () => {
     let agent: ReturnType<typeof request.agent>;
 
     beforeAll(async () => {
-        agent = request.agent(app);
+        agent = request.agent(server);
         const result = await createUser({ agent });
         userId = result.userId;
         userIds.push(userId);
@@ -120,7 +120,7 @@ describe('2. Signature tampering & algorithm confusion', () => {
     let validToken: string;
 
     beforeAll(async () => {
-        agent = request.agent(app);
+        agent = request.agent(server);
         const result = await createUser({ agent });
         userId = result.userId;
         userIds.push(userId);
@@ -186,7 +186,7 @@ describe('3. JWT claims validation', () => {
     let agent: ReturnType<typeof request.agent>;
 
     beforeAll(async () => {
-        agent = request.agent(app);
+        agent = request.agent(server);
         const result = await createUser({ agent });
         userId = result.userId;
         userIds.push(userId);
@@ -225,7 +225,7 @@ describe('3. JWT claims validation', () => {
 
 describe('4. Token blacklist (logout)', () => {
     it('rejects every protected endpoint after logout', async () => {
-        const agent = request.agent(app);
+        const agent = request.agent(server);
         const { userId, authorization } = await createUser({ agent });
         userIds.push(userId);
 
@@ -242,7 +242,7 @@ describe('4. Token blacklist (logout)', () => {
     });
 
     it('second logout attempt returns 401 (token already blacklisted)', async () => {
-        const agent = request.agent(app);
+        const agent = request.agent(server);
         const { userId, authorization } = await createUser({ agent });
         userIds.push(userId);
 
@@ -251,12 +251,12 @@ describe('4. Token blacklist (logout)', () => {
     });
 
     it('requires a valid token to logout (cannot logout without auth)', async () => {
-        const agent = request.agent(app);
+        const agent = request.agent(server);
         await agent.post('/auth/logout').expect(HttpCode.UNAUTHORIZED);
     });
 
     it('login again after logout issues a new valid token', async () => {
-        const agent = request.agent(app);
+        const agent = request.agent(server);
         const password = `Aa1!${Math.random().toString(36).slice(2, 10)}`;
         const email = `test_${Date.now()}@example.com`;
         const { userId, authorization } = await createUser({ agent, password, email });
@@ -283,7 +283,7 @@ describe('5. Cross-user resource isolation', () => {
 
     beforeAll(async () => {
         const db = DatabaseConnection.instance(config);
-        agent = request.agent(app);
+        agent = request.agent(server);
         userA = await createUser({ agent, databaseConnection: db });
         userB = await createUser({ agent, databaseConnection: db });
         userIds.push(userA.userId, userB.userId);
@@ -329,7 +329,7 @@ describe('5. Cross-user resource isolation', () => {
 
 describe('6. Long-token / refresh security', () => {
     it('long token is rejected by protected endpoints (different secret)', async () => {
-        const agent = request.agent(app);
+        const agent = request.agent(server);
         const { userId, longToken } = await createUser({ agent });
         userIds.push(userId);
 
@@ -337,7 +337,7 @@ describe('6. Long-token / refresh security', () => {
     });
 
     it('short (access) token is rejected by the refresh endpoint', async () => {
-        const agent = request.agent(app);
+        const agent = request.agent(server);
         const { userId, authorization } = await createUser({ agent });
         userIds.push(userId);
 
@@ -346,7 +346,7 @@ describe('6. Long-token / refresh security', () => {
     });
 
     it('refresh with token whose sub does not match :userId param returns 400', async () => {
-        const agent = request.agent(app);
+        const agent = request.agent(server);
         const db = DatabaseConnection.instance(config);
         const { userId: userAId, longToken } = await createUser({ agent, databaseConnection: db });
         const { userId: userBId } = await createUser({ agent, databaseConnection: db });
@@ -368,7 +368,7 @@ describe('6. Long-token / refresh security', () => {
      * Evidence: the unit test for this case is commented out in tokenLongVerify.test.ts
      */
     it('[BUG] expired long token must be rejected by the refresh endpoint', async () => {
-        const agent = request.agent(app);
+        const agent = request.agent(server);
         const { userId } = await createUser({ agent });
         userIds.push(userId);
 
@@ -395,7 +395,7 @@ describe('6. Long-token / refresh security', () => {
      * per-user token-generation counter stored in Redis/DB.
      */
     it('[BUG] long token must not produce a new access token after logout', async () => {
-        const agent = request.agent(app);
+        const agent = request.agent(server);
         const { userId, authorization, longToken } = await createUser({ agent });
         userIds.push(userId);
 
@@ -427,7 +427,7 @@ describe('6. Long-token / refresh security', () => {
      * Fix: add userStatusVerify(UserStatus.ACTIVE) to the refresh route.
      */
     it('[BUG] suspended user must not be able to refresh their token', async () => {
-        const agent = request.agent(app);
+        const agent = request.agent(server);
         const db = DatabaseConnection.instance(config);
         const { userId, longToken } = await createUser({ agent, databaseConnection: db });
         userIds.push(userId);

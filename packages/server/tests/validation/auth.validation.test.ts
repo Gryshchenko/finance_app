@@ -31,7 +31,7 @@ let longToken: string;
 beforeAll(async () => {
     const port = Math.floor(generateSecureRandom() * (65535 - 1024) + 1024);
     server = app.listen(port);
-    agent = request.agent(app);
+    agent = request.agent(server);
     const db = new DatabaseConnection(config);
     const result = await createUser({ agent, email: validEmail, password: validPassword, databaseConnection: db });
     userId = result.userId;

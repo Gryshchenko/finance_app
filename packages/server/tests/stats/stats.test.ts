@@ -40,7 +40,7 @@ afterAll((done) => {
 
 describe('Stats', () => {
     it(`Check state for month`, async () => {
-        const agent = request.agent(app);
+        const agent = request.agent(server);
 
         const databaseConnection = DatabaseConnection.instance(config);
         const { userId, authorization } = await createUser({

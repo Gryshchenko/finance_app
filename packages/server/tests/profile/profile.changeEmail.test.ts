@@ -41,7 +41,7 @@ describe('POST /user/:userId/profile/email-change — request email change', () 
     let authorization: string;
 
     beforeAll(async () => {
-        agent = request.agent(app);
+        agent = request.agent(server);
         const result = await createUser({ agent, databaseConnection: db });
         userId = result.userId;
         authorization = result.authorization;
@@ -107,7 +107,7 @@ describe('POST /user/:userId/profile/email-change — request email change', () 
     });
 
     it('403 — unverified user cannot request email change', async () => {
-        const unverifiedAgent = request.agent(app);
+        const unverifiedAgent = request.agent(server);
         const { userId: unverifiedId, authorization: unverifiedAuth } = await createUserNotVerify({ agent: unverifiedAgent });
         userIds.push(unverifiedId);
 
@@ -134,7 +134,7 @@ describe('POST /user/:userId/profile/email-change/verify — confirm email chang
     let newEmail: string;
 
     beforeAll(async () => {
-        agent = request.agent(app);
+        agent = request.agent(server);
         const result = await createUser({ agent, databaseConnection: db });
         userId = result.userId;
         authorization = result.authorization;
@@ -172,7 +172,7 @@ describe('POST /user/:userId/profile/email-change/verify — confirm email chang
     });
 
     it('400 — wrong confirmationCode is rejected', async () => {
-        const agent2 = request.agent(app);
+        const agent2 = request.agent(server);
         const { userId: userId2, authorization: auth2 } = await createUser({ agent: agent2, databaseConnection: db });
         userIds.push(userId2);
 
@@ -198,7 +198,7 @@ describe('POST /user/:userId/profile/email-change/verify — confirm email chang
     });
 
     it('400 — verify without a prior request returns error', async () => {
-        const agent3 = request.agent(app);
+        const agent3 = request.agent(server);
         const { userId: userId3, authorization: auth3 } = await createUser({ agent: agent3, databaseConnection: db });
         userIds.push(userId3);
 
@@ -222,7 +222,7 @@ describe('POST /user/:userId/profile/email-change/resend — resend confirmation
     let newEmail: string;
 
     beforeAll(async () => {
-        agent = request.agent(app);
+        agent = request.agent(server);
         const result = await createUser({ agent, databaseConnection: db });
         userId = result.userId;
         authorization = result.authorization;
@@ -269,7 +269,7 @@ describe('POST /user/:userId/profile/email-change/resend — resend confirmation
     });
 
     it('400 — resend after the code has expired or no pending change', async () => {
-        const agent4 = request.agent(app);
+        const agent4 = request.agent(server);
         const { userId: userId4, authorization: auth4 } = await createUser({ agent: agent4, databaseConnection: db });
         userIds.push(userId4);
 
@@ -288,7 +288,7 @@ describe('POST /user/:userId/profile/email-change/resend — resend confirmation
 
 describe('Full flow — request → verify → login with new email', () => {
     it('new email works for login after change; old email does not', async () => {
-        const agent = request.agent(app);
+        const agent = request.agent(server);
         const password = 'ValidPass1!';
         const oldEmail = generateRandomEmail();
         const newEmail = generateRandomEmail();

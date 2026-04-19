@@ -1,4 +1,4 @@
-import { IProfilePatchRequest, Time, EmailConfirmationStatusType } from 'tenpercent/shared';
+import { IProfilePatchRequest, Time } from 'tenpercent/shared';
 
 import { ICreateProfile } from 'interfaces/ICreateProfile';
 import { IDatabaseConnection, IDBTransaction } from 'interfaces/IDatabaseConnection';
@@ -54,9 +54,6 @@ export default class ProfileDataService extends LoggerBase implements IProfileDa
                     'profiles.additionalInfo',
                     'profiles.locale',
                     'users.email',
-                    query.raw(
-                        `CASE WHEN email_confirmations.status = ${EmailConfirmationStatusType.Confirmed} THEN true ELSE false END as "mailConfirmed"`,
-                    ),
                 )
                 .innerJoin('email_confirmations', 'profiles.userId', 'email_confirmations.userId')
                 .innerJoin('users', 'profiles.userId', 'users.userId')

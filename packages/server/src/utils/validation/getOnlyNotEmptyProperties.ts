@@ -7,9 +7,6 @@ export const getOnlyNotEmptyProperties = (
         const value = (properties as Record<string, unknown>)[key];
 
         if (value !== undefined && allowedKeys.includes(key as string)) {
-            if (key === 'mailConfirmed' && value !== true) {
-                return;
-            }
             properestForUpdate[key] = value;
         }
     });

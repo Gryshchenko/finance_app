@@ -18,8 +18,8 @@ export class EmailConfirmationController {
             const { confirmationCode } = req.body;
             const userId = Number(req.user?.userId);
             const email = String(userFromSession?.email);
-            await EmailConfirmationServiceBuilder.build().confirm(userId, email, Number(confirmationCode));
-            res.status(HttpCode.NO_CONTENT).json(responseBuilder.setStatus(ResponseStatusType.OK).build());
+            const result = await EmailConfirmationServiceBuilder.build().confirm(userId, email, Number(confirmationCode));
+            res.status(HttpCode.OK).json(responseBuilder.setStatus(ResponseStatusType.OK).setData(result).build());
         } catch (e: unknown) {
             EmailConfirmationController.logger.error(` failed due reason: ${(e as { message: string }).message}`);
             generateErrorResponse(res, responseBuilder, e as BaseError, ErrorCode.EMAIL_CONFIRMATION_ERROR);
@@ -32,7 +32,7 @@ export class EmailConfirmationController {
             const userId = Number(req.user?.userId);
             const email = String(req.user?.email);
             await EmailConfirmationServiceBuilder.build().refresh(userId, email);
-            res.status(HttpCode.NO_CONTENT).json(responseBuilder.setStatus(ResponseStatusType.OK).build());
+            res.status(HttpCode.OK).json(responseBuilder.setStatus(ResponseStatusType.OK).build());
         } catch (e: unknown) {
             EmailConfirmationController.logger.error(` failed due reason: ${(e as { message: string }).message}`);
             generateErrorResponse(res, responseBuilder, e as BaseError, ErrorCode.EMAIL_CONFIRMATION_ERROR);

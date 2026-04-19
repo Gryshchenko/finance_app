@@ -23,7 +23,7 @@ export class ConfirmationHelper {
                 message: 'Invalid confirmation code',
                 errorCode: ErrorCode.EMAIL_CONFIRMATION_ERROR,
                 statusCode: HttpCode.BAD_REQUEST,
-                payload: { field: 'confirmationCode', reason: 'invalid' },
+                payload: { field: 'confirmationCode', reason: 'validation:codeInvalided' },
             });
         }
     }

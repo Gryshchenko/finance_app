@@ -26,7 +26,7 @@ let agent: ReturnType<typeof request.agent>;
 beforeAll(async () => {
     const port = Math.floor(generateSecureRandom() * (65535 - 1024) + 1024);
     server = app.listen(port);
-    agent = request.agent(app);
+    agent = request.agent(server);
 });
 
 afterAll((done) => {
@@ -192,7 +192,7 @@ describe('POST /register/signup/:userId/email-confirmation/verify — validation
 
     beforeAll(async () => {
         const db = new DatabaseConnection(config);
-        const localAgent = request.agent(app);
+        const localAgent = request.agent(server);
         const email = `verif_${Date.now()}@example.com`;
         const result = await createUserNotVerify({ agent: localAgent, email });
         userId = result.userId;

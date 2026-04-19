@@ -33,7 +33,7 @@ afterAll((done) => {
 
 describe('PATCH /transaction/patch - amount', () => {
     it(`should create new transaction amount, createdAt, description`, async () => {
-        const agent = request.agent(app);
+        const agent = request.agent(server);
 
         const databaseConnection = DatabaseConnection.instance(config);
         const { userId, authorization } = await createUser({
@@ -117,7 +117,7 @@ describe('PATCH /transaction/patch - amount', () => {
             .expect(HttpCode.NOT_FOUND);
     });
     it(`pagination`, async () => {
-        const agent = request.agent(app);
+        const agent = request.agent(server);
         const databaseConnection = DatabaseConnection.instance(config);
         const { userId, authorization } = await createUser({ agent, databaseConnection });
         userIds.push(userId);

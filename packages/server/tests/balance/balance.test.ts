@@ -33,7 +33,7 @@ afterAll((done) => {
 describe('POST /balance', () => {
     it(`create income transaction and increase balance`, async () => {
         let sum = 0;
-        const agent = request.agent(app);
+        const agent = request.agent(server);
         const databaseConnection = DatabaseConnection.instance(config);
         const { userId, authorization } = await createUser({
             agent,
@@ -81,7 +81,7 @@ describe('POST /balance', () => {
     });
     it(`create income transaction and decrease balance`, async () => {
         let sum = 0;
-        const agent = request.agent(app);
+        const agent = request.agent(server);
         const databaseConnection = DatabaseConnection.instance(config);
         const { userId, authorization } = await createUser({
             agent,
@@ -128,7 +128,7 @@ describe('POST /balance', () => {
     });
 
     it(`updates balance after modifying transaction amount`, async () => {
-        const agent = request.agent(app);
+        const agent = request.agent(server);
         const databaseConnection = DatabaseConnection.instance(config);
         const { userId, authorization } = await createUser({
             agent,
@@ -208,7 +208,7 @@ describe('POST /balance', () => {
         }
     });
     it('updates balance after adding accounts in other currencies', async () => {
-        const agent = request.agent(app);
+        const agent = request.agent(server);
         const newAmount = 1000;
 
         const registerUser = async () => {

@@ -34,7 +34,7 @@ afterAll((done) => {
 
 describe('Category', () => {
     it(`POST - create category`, async () => {
-        const agent = request.agent(app);
+        const agent = request.agent(server);
 
         const databaseConnection = DatabaseConnection.instance(config);
         const { userId, authorization } = await createUser({
@@ -86,7 +86,7 @@ describe('Category', () => {
         }
     });
     it(`PATCH - update category`, async () => {
-        const agent = request.agent(app);
+        const agent = request.agent(server);
 
         const databaseConnection = DatabaseConnection.instance(config);
         const { userId, authorization } = await createUser({
@@ -162,7 +162,7 @@ describe('Category', () => {
             .expect(HttpCode.BAD_REQUEST);
     });
     it(`unknown properties`, async () => {
-        const agent = request.agent(app);
+        const agent = request.agent(server);
 
         const databaseConnection = DatabaseConnection.instance(config);
         const { userId, authorization } = await createUser({
@@ -198,7 +198,7 @@ describe('Category', () => {
             .expect(HttpCode.BAD_REQUEST);
     });
     it(`DELETE - delete category`, async () => {
-        const agent = request.agent(app);
+        const agent = request.agent(server);
         const databaseConnection = DatabaseConnection.instance(config);
         const { userId, authorization } = await createUser({
             agent,

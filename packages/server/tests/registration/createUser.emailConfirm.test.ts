@@ -8,10 +8,9 @@ import {
 } from '../TestsUtils.';
 import DatabaseConnection from '../../src/repositories/DatabaseConnection';
 import config from '../../src/config/dbConfig';
-import { ErrorCode, LanguageType } from 'tenpercent/shared';
+import { ErrorCode, LanguageType, UserStatus } from 'tenpercent/shared';
 import { HttpCode } from 'tenpercent/shared';
 import TimeManagerUTC from '../../src/utils/TimeManagerUTC';
-import { EmailConfirmationStatusType } from 'tenpercent/shared';
 
 // eslint-disable-next-line @typescript-eslint/no-require-imports
 const request = require('supertest');
@@ -44,7 +43,7 @@ describe('POST /register/signup/emailConfirm', () => {
         const databaseConnection = new DatabaseConnection(config);
         const timeManager = new TimeManagerUTC();
         timeManager.subtractTime(1, 1, 1);
-        const agent = request.agent(app);
+        const agent = request.agent(server);
         const password = generateRandomPassword();
         const email = generateRandomEmail();
         const publicName = generateRandomName();
@@ -69,19 +68,19 @@ describe('POST /register/signup/emailConfirm', () => {
                 {
                     errorCode: expect.any(Number),
                     msg: expect.any(String),
-                    payload: { field: 'confirmationCode', reason: 'invalid' },
+                    payload: { field: 'confirmationCode', reason: 'validation:codeInvalided' },
                 },
             ]);
         }
         const failedTest2 = await agent
             .post(`/register/signup/${111111111}/email-confirmation/resend`)
             .set('authorization', authorization);
-        expect(failedTest2.status).toBe(HttpCode.FORBIDDEN);
+        expect(failedTest2.status).toBe(HttpCode.UNAUTHORIZED);
         const failedTest1 = await agent
             .post(`/register/signup/${1111111111}/email-confirmation/verify`)
             .set('authorization', authorization)
             .send({ confirmationCode: 11111111 });
-        expect(failedTest1.status).toBe(HttpCode.FORBIDDEN);
+        expect(failedTest1.status).toBe(HttpCode.UNAUTHORIZED);
 
         const confirmMailResponse = await agent
             .post(`/register/signup/${userId}/email-confirmation/verify`)
@@ -91,7 +90,7 @@ describe('POST /register/signup/emailConfirm', () => {
         expect(confirmMailResponse.body.errors).toStrictEqual([
             {
                 errorCode: expect.any(Number),
-                payload: { field: 'confirmationCode', reason: 'invalid' },
+                payload: { field: 'confirmationCode', reason: 'validation:codeInvalided' },
             },
         ]);
         await databaseConnection
@@ -111,22 +110,20 @@ describe('POST /register/signup/emailConfirm', () => {
         expect(confirmMail.status).toBe(HttpCode.BAD_REQUEST);
         expect(confirmMail.body.errors).toStrictEqual([
             {
-                errorCode: ErrorCode.EMAIL_VERIFICATION_CODE_EXPIRED_ERROR,
+                errorCode: ErrorCode.EMAIL_CONFIRMATION_ERROR,
+                payload: {
+                    field: 'confirmationCode',
+                    reason: 'validation:codeExpired',
+                },
             },
         ]);
         const resendRequest = await agent
             .post(`/register/signup/${userId}/email-confirmation/resend`)
             .set('authorization', authorization);
         expect(resendRequest.status).toBe(HttpCode.OK);
-        const newSesendRequest = await agent
-            .post(`/register/signup/${userId}/email-confirmation/resend`)
-            .set('authorization', authorization);
-        expect(newSesendRequest.status).toBe(HttpCode.BAD_REQUEST);
-        expect(newSesendRequest.body.errors).toStrictEqual([
-            {
-                errorCode: ErrorCode.EMAIL_VERIFICATION_CODE_STILL_ACTIVE_ERROR,
-            },
-        ]);
+
+        const userBefore = await agent.get(`/user/${userId}`).set('authorization', authorization);
+        expect(userBefore.status).toBe(HttpCode.FORBIDDEN);
         const newConfirmation = await databaseConnection
             .engine()('email_confirmations')
             .select(['confirmationCode'])
@@ -140,8 +137,13 @@ describe('POST /register/signup/emailConfirm', () => {
         expect(newConfirmMail.status).toBe(HttpCode.OK);
         expect(newConfirmMail.body.data).toStrictEqual({
             confirmationId: expect.any(Number),
-            status: EmailConfirmationStatusType.Confirmed,
         });
+        const confirmationAfter = await databaseConnection
+            .engine()('email_confirmations')
+            .select(['confirmed'])
+            .where({ userId, email })
+            .first();
+        expect(confirmationAfter.confirmed).toBe(true);
         const newConfirmMail2 = await agent
             .post(`/register/signup/${userId}/email-confirmation/verify`)
             .set('authorization', authorization)
@@ -157,10 +159,18 @@ describe('POST /register/signup/emailConfirm', () => {
         expect(profileAfter.status).toBe(HttpCode.OK);
         expect(profileAfter.body.data).toStrictEqual({
             profileId: expect.any(Number),
+            email,
             publicName,
             locale: LanguageType.US,
             currencyId: expect.any(Number),
-            mailConfirmed: true,
+            userId: expect.any(Number),
+        });
+        const userAfter = await agent.get(`/user/${userId}/`).set('authorization', authorization);
+        expect(userAfter.status).toBe(HttpCode.OK);
+        expect(userAfter.body.data).toStrictEqual({
+            userId: expect.any(Number),
+            email,
+            status: UserStatus.ACTIVE,
         });
     });
 });

@@ -32,7 +32,7 @@ afterAll((done) => {
 
 describe('Access control', () => {
     it("denies access to another user's account, category, balance and transaction", async () => {
-        const agent = request.agent(app);
+        const agent = request.agent(server);
         const databaseConnection = new DatabaseConnection(config);
         const { userId, authorization } = await createUser({
             agent,

@@ -33,7 +33,7 @@ afterAll((done) => {
 
 describe('Income', () => {
     it(`POST - create income`, async () => {
-        const agent = request.agent(app);
+        const agent = request.agent(server);
 
         const databaseConnection = DatabaseConnection.instance(config);
         const { userId, authorization } = await createUser({
@@ -85,7 +85,7 @@ describe('Income', () => {
         }
     });
     it(`PATCH - update income`, async () => {
-        const agent = request.agent(app);
+        const agent = request.agent(server);
 
         const databaseConnection = DatabaseConnection.instance(config);
         const { userId, authorization } = await createUser({
@@ -158,7 +158,7 @@ describe('Income', () => {
         await agent.patch(`/user/${userId}/income/${obj[0].id}`).set('authorization', authorization).expect(HttpCode.BAD_REQUEST);
     });
     it(`unknown properties`, async () => {
-        const agent = request.agent(app);
+        const agent = request.agent(server);
 
         const databaseConnection = DatabaseConnection.instance(config);
         const { userId, authorization } = await createUser({
@@ -194,7 +194,7 @@ describe('Income', () => {
             .expect(HttpCode.BAD_REQUEST);
     });
     it(`DELETE - delete income`, async () => {
-        const agent = request.agent(app);
+        const agent = request.agent(server);
         const databaseConnection = DatabaseConnection.instance(config);
         const { userId, authorization } = await createUser({
             agent,

@@ -31,7 +31,6 @@ export * from './interfaces/IBalance';
 // --- Types ---
 export * from './types/AccountStatusType';
 export * from './types/CurrencyType';
-export * from './types/EmailConfirmationStatusType';
 export * from './types/ErrorCode';
 export * from './types/HttpCode';
 export * from './types/LanguageType';

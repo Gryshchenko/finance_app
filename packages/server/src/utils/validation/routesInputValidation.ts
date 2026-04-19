@@ -85,6 +85,7 @@ const convertFieldToReason = (field: string): string => {
             return 'validation:name';
         case 'locale':
             return 'validation:unsupportedLanguage';
+        case 'currencyCode':
         case 'currencyId':
         case 'currency':
             return 'validation:unsupportedCurrency';

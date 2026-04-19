@@ -63,7 +63,7 @@ describe('POST /register/signup', () => {
                     msg: expect.any(String),
                     payload: {
                         field: 'locale',
-                        reason: 'invalid',
+                        reason: 'validation:unsupportedLanguage',
                     },
                 },
             ],
@@ -87,7 +87,7 @@ describe('POST /register/signup', () => {
                     msg: expect.any(String),
                     payload: {
                         field: 'email',
-                        reason: 'invalid',
+                        reason: 'validation:email',
                     },
                 },
             ],
@@ -111,7 +111,7 @@ describe('POST /register/signup', () => {
                     msg: expect.any(String),
                     payload: {
                         field: 'email',
-                        reason: 'invalid',
+                        reason: 'validation:email',
                     },
                 },
             ],
@@ -135,7 +135,7 @@ describe('POST /register/signup', () => {
                     msg: expect.any(String),
                     payload: {
                         field: 'email',
-                        reason: 'invalid',
+                        reason: 'validation:email',
                     },
                 },
             ],
@@ -159,7 +159,7 @@ describe('POST /register/signup', () => {
                     msg: expect.any(String),
                     payload: {
                         field: 'email',
-                        reason: 'invalid',
+                        reason: 'validation:email',
                     },
                 },
             ],
@@ -184,7 +184,7 @@ describe('POST /register/signup', () => {
                     msg: expect.any(String),
                     payload: {
                         field: 'email',
-                        reason: 'invalid',
+                        reason: 'validation:email',
                     },
                 },
             ],
@@ -210,7 +210,7 @@ describe('POST /register/signup', () => {
                     msg: expect.any(String),
                     payload: {
                         field: 'password',
-                        reason: 'invalid',
+                        reason: 'validation:password',
                     },
                 },
             ],
@@ -236,7 +236,7 @@ describe('POST /register/signup', () => {
                     msg: expect.any(String),
                     payload: {
                         field: 'password',
-                        reason: 'invalid',
+                        reason: 'validation:password',
                     },
                 },
             ],
@@ -260,7 +260,7 @@ describe('POST /register/signup', () => {
                     msg: expect.any(String),
                     payload: {
                         field: 'password',
-                        reason: 'invalid',
+                        reason: 'validation:password',
                     },
                 },
             ],
@@ -287,7 +287,7 @@ describe('POST /register/signup', () => {
                     msg: expect.any(String),
                     payload: {
                         field: 'password',
-                        reason: 'invalid',
+                        reason: 'validation:password',
                     },
                 },
             ],
@@ -312,7 +312,7 @@ describe('POST /register/signup', () => {
                     msg: expect.any(String),
                     payload: {
                         field: 'password',
-                        reason: 'invalid',
+                        reason: 'validation:password',
                     },
                 },
                 {
@@ -320,7 +320,7 @@ describe('POST /register/signup', () => {
                     msg: expect.any(String),
                     payload: {
                         field: 'password',
-                        reason: 'invalid',
+                        reason: 'validation:password',
                     },
                 },
             ],
@@ -400,7 +400,7 @@ describe('POST /register/signup', () => {
                     msg: 'Field currencyCode must be a string',
                     payload: {
                         field: 'currencyCode',
-                        reason: 'invalid',
+                        reason: 'validation:unsupportedCurrency',
                     },
                 },
             ],
@@ -413,7 +413,7 @@ describe('POST /register/signup', () => {
         it(`check users accounts, incomes, category for locale: ${locale}`, async () => {
             const databaseConnection = new DatabaseConnection(config);
 
-            const agent = request.agent(app);
+            const agent = request.agent(server);
             const initialData = user_initial[locale as LanguageType] ?? user_initial[LanguageType.US];
             const password = generateRandomPassword();
             const email = generateRandomEmail();
@@ -498,10 +498,11 @@ describe('POST /register/signup', () => {
                 status: ResponseStatusType.OK,
                 data: {
                     publicName: publicName,
-                    mailConfirmed: true,
+                    email,
                     profileId: profile.profileId,
                     currencyId: profile.currencyId,
                     locale: profile.locale,
+                    userId: expect.any(Number),
                 },
                 errors: [],
             });

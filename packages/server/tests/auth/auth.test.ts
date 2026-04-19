@@ -53,7 +53,7 @@ describe('POST /auth', () => {
 
     beforeAll(async () => {
         databaseConnection = new DatabaseConnection(config);
-        agent = request.agent(app);
+        agent = request.agent(server);
         password = generateRandomPassword();
         email = generateRandomEmail();
         const publicName = generateRandomName();
