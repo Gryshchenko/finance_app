@@ -17,7 +17,7 @@
 import { createUser, deleteUserAfterTest, generateSecureRandom } from '../TestsUtils.';
 import DatabaseConnection from '../../src/repositories/DatabaseConnection';
 import config from '../../src/config/dbConfig';
-import { HttpCode } from 'tenpercent/shared';
+import { HttpCode, UserStatus } from 'tenpercent/shared';
 import { getConfig } from '../../src/config/config';
 
 // eslint-disable-next-line @typescript-eslint/no-require-imports
@@ -43,6 +43,7 @@ afterAll((done) => {
     userIds.forEach(async (id) => {
         await deleteUserAfterTest(id, DatabaseConnection.instance(config));
     });
+    (server as any).closeAllConnections();
     (server as { close: (cb: () => void) => void }).close(done);
 });
 
@@ -296,22 +297,22 @@ describe('5. Cross-user resource isolation', () => {
         `/user/${ownerId}/overview/`,
     ];
 
-    it("user A's token cannot access user B's endpoints (403)", async () => {
+    it("user A's token cannot access user B's endpoints (401)", async () => {
         for (const url of endpoints(userB.userId)) {
-            await agent.get(url).set('authorization', userA.authorization).expect(HttpCode.FORBIDDEN);
+            await agent.get(url).set('authorization', userA.authorization).expect(HttpCode.UNAUTHORIZED);
         }
     });
 
-    it("user B's token cannot access user A's endpoints (403)", async () => {
+    it("user B's token cannot access user A's endpoints (401)", async () => {
         for (const url of endpoints(userA.userId)) {
-            await agent.get(url).set('authorization', userB.authorization).expect(HttpCode.FORBIDDEN);
+            await agent.get(url).set('authorization', userB.authorization).expect(HttpCode.UNAUTHORIZED);
         }
     });
 
     it('manually crafted token for user B cannot access user A resources', async () => {
-        // Valid signature, valid claims — but wrong userId in URL
+        // Valid signature, valid claims — but wrong userId in URL; tokenVerify rejects with 401
         const craftedForB = signAccessToken(userB.userId);
-        await agent.get(profileUrl(userA.userId)).set('authorization', `Bearer ${craftedForB}`).expect(HttpCode.FORBIDDEN);
+        await agent.get(profileUrl(userA.userId)).set('authorization', `Bearer ${craftedForB}`).expect(HttpCode.UNAUTHORIZED);
     });
 
     it("cannot write to another user's account via POST with own token", async () => {
@@ -319,7 +320,7 @@ describe('5. Cross-user resource isolation', () => {
             .post(`/user/${userB.userId}/account/`)
             .set('authorization', userA.authorization)
             .send({ currencyId: 1, accountName: 'Hack', amount: 0, iconId: 'icon_test' })
-            .expect(HttpCode.FORBIDDEN);
+            .expect(HttpCode.UNAUTHORIZED);
     });
 });
 
@@ -433,7 +434,7 @@ describe('6. Long-token / refresh security', () => {
         userIds.push(userId);
 
         // Simulate account suspension directly in DB
-        await db.engine()('users').where({ userId }).update({ status: 'INACTIVE' });
+        await db.engine()('users').where({ userId }).update({ status: UserStatus.INACTIVE });
 
         const refreshResponse = await agent.post(`/auth/${userId}/refresh`).send({ token: longToken });
 

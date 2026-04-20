@@ -32,7 +32,8 @@ afterAll(async () => {
     for (const id of userIds) {
         await deleteUserAfterTest(id, db);
     }
-    (server as { close: () => void }).close();
+    (server as any).closeAllConnections();
+    await new Promise<void>((resolve) => (server as { close: (cb: () => void) => void }).close(resolve));
 });
 
 describe('POST /user/:userId/profile/email-change — request email change', () => {
@@ -157,7 +158,7 @@ describe('POST /user/:userId/profile/email-change/verify — confirm email chang
         await agent
             .post(`/user/${userId}/profile/email-change/verify`)
             .set('authorization', authorization)
-            .send({ confirmationCode })
+            .send({ confirmationCode, newEmail })
             .expect(HttpCode.NO_CONTENT);
     });
 
@@ -193,7 +194,7 @@ describe('POST /user/:userId/profile/email-change/verify — confirm email chang
         await agent2
             .post(`/user/${userId2}/profile/email-change/verify`)
             .set('authorization', auth2)
-            .send({ confirmationCode: wrongCode })
+            .send({ confirmationCode: wrongCode, newEmail: email2 })
             .expect(HttpCode.BAD_REQUEST);
     });
 
@@ -205,12 +206,15 @@ describe('POST /user/:userId/profile/email-change/verify — confirm email chang
         await agent3
             .post(`/user/${userId3}/profile/email-change/verify`)
             .set('authorization', auth3)
-            .send({ confirmationCode: 12345678 })
-            .expect(HttpCode.NOT_FOUND);
+            .send({ confirmationCode: 12345678, newEmail: generateRandomEmail() })
+            .expect(HttpCode.BAD_REQUEST);
     });
 
     it('401 — unauthorized request is rejected', async () => {
-        await agent.post(`/user/${userId}/profile/email-change/verify`).send({ confirmationCode }).expect(HttpCode.UNAUTHORIZED);
+        await agent
+            .post(`/user/${userId}/profile/email-change/verify`)
+            .send({ confirmationCode, newEmail })
+            .expect(HttpCode.UNAUTHORIZED);
     });
 });
 
@@ -251,7 +255,7 @@ describe('POST /user/:userId/profile/email-change/resend — resend confirmation
         await agent
             .post(`/user/${userId}/profile/email-change/resend`)
             .set('authorization', authorization)
-            .send({ confirmationId })
+            .send({ newEmail })
             .expect(HttpCode.NO_CONTENT);
 
         const after = await db
@@ -273,16 +277,16 @@ describe('POST /user/:userId/profile/email-change/resend — resend confirmation
         const { userId: userId4, authorization: auth4 } = await createUser({ agent: agent4, databaseConnection: db });
         userIds.push(userId4);
 
-        // No email_changing record for this user
+        // No email_changing record for this user + email combination
         await agent4
             .post(`/user/${userId4}/profile/email-change/resend`)
             .set('authorization', auth4)
-            .send({ confirmationId: 9999999 })
+            .send({ newEmail: generateRandomEmail() })
             .expect(HttpCode.BAD_REQUEST);
     });
 
     it('401 — unauthorized request is rejected', async () => {
-        await agent.post(`/user/${userId}/profile/email-change/resend`).send({ confirmationId }).expect(HttpCode.UNAUTHORIZED);
+        await agent.post(`/user/${userId}/profile/email-change/resend`).send({ newEmail }).expect(HttpCode.UNAUTHORIZED);
     });
 });
 
@@ -315,7 +319,7 @@ describe('Full flow — request → verify → login with new email', () => {
         await agent
             .post(`/user/${userId}/profile/email-change/verify`)
             .set('authorization', authorization)
-            .send({ confirmationCode: record.confirmationCode })
+            .send({ confirmationCode: record.confirmationCode, newEmail })
             .expect(HttpCode.NO_CONTENT);
 
         // Step 4 — login with new email succeeds

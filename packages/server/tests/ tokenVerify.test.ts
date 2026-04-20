@@ -33,7 +33,8 @@ describe('tokenVerify middleware', () => {
         };
         res = {
             status: jest.fn().mockReturnThis(),
-            json: jest.fn(),
+            json: jest.fn().mockReturnThis(),
+            end: jest.fn().mockReturnThis(),
         };
         next = jest.fn();
 

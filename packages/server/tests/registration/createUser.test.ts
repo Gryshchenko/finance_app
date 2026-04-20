@@ -41,6 +41,8 @@ afterAll((done) => {
         await deleteUserAfterTest(id, DatabaseConnection.instance(config));
     });
     // @ts-expect-error is necessary
+    server.closeAllConnections();
+    // @ts-expect-error is necessary
     server.close(done);
 });
 

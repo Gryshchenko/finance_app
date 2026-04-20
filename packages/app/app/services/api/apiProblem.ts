@@ -4,6 +4,7 @@ import { IResponse, IResponseError, HttpCode, ResponseStatusType } from 'tenperc
 import { TxKeyPath } from '@/i18n';
 import ToastService from '@/services/ToastService';
 import { BaseError } from '@/utils/errors/BaseError';
+import { getMessageFromErrorCode } from '@/utils/getMessageFromErrorCode';
 
 /**
  * Enum representing the possible types of general API problems.
@@ -117,10 +118,10 @@ export function buildGeneralApiBadData(error: BaseError): GeneralApiProblem {
  */
 export function parseServerErrors(errors: IResponseError[] | undefined): {
     fieldErrors: Record<string, TxKeyPath>;
-    hasNonFieldErrors: boolean;
+    nonFieldErrors: TxKeyPath[];
 } {
     const fieldErrors: Record<string, TxKeyPath> = {};
-    let hasNonFieldErrors = !errors || errors.length === 0;
+    const nonFieldErrors: TxKeyPath[] = [];
 
     for (const error of errors ?? []) {
         const field = error.payload?.field as string | undefined;
@@ -128,11 +129,13 @@ export function parseServerErrors(errors: IResponseError[] | undefined): {
         if (field) {
             fieldErrors[field] = reason ?? ('validation:required' as TxKeyPath);
         } else {
-            hasNonFieldErrors = true;
+            if (error.errorCode) {
+                nonFieldErrors.push(getMessageFromErrorCode(error.errorCode));
+            }
         }
     }
 
-    return { fieldErrors, hasNonFieldErrors };
+    return { fieldErrors, nonFieldErrors };
 }
 
 export function buildGeneralApiBaseHandler(
@@ -141,28 +144,28 @@ export function buildGeneralApiBaseHandler(
 ): void {
     switch (problem.kind) {
         case GeneralApiProblemKind.Forbidden:
-            handler('errorCode.FORBIDDEN_ERROR' as TxKeyPath);
+            handler('errorCode:FORBIDDEN_ERROR' as TxKeyPath);
             break;
         case GeneralApiProblemKind.Rejected:
-            handler('errorCode.REJECTED_ERROR' as TxKeyPath);
+            handler('errorCode:REJECTED_ERROR' as TxKeyPath);
             break;
         case GeneralApiProblemKind.Server:
-            handler('errorCode.SERVER_ERROR' as TxKeyPath);
+            handler('errorCode:SERVER_ERROR' as TxKeyPath);
             break;
         case GeneralApiProblemKind.Timeout:
-            handler('errorCode.REQUEST_TIMEOUT_ERROR' as TxKeyPath);
+            handler('errorCode:REQUEST_TIMEOUT_ERROR' as TxKeyPath);
             break;
         case GeneralApiProblemKind.Unauthorized:
-            handler('errorCode.UNAUTHORIZED_ERROR' as TxKeyPath);
+            handler('errorCode:UNAUTHORIZED_ERROR' as TxKeyPath);
             break;
         case GeneralApiProblemKind.Unknown:
-            handler('errorCode.UNKNOWN_ERROR' as TxKeyPath);
+            handler('errorCode:UNKNOWN_ERROR' as TxKeyPath);
             break;
         case GeneralApiProblemKind.NotFound:
-            handler('errorCode.NOT_FOUND_ERROR' as TxKeyPath);
+            handler('errorCode:NOT_FOUND_ERROR' as TxKeyPath);
             break;
         case GeneralApiProblemKind.CannotConnect:
-            handler('errorCode.CANNOT_CONNECT_ERROR' as TxKeyPath);
+            handler('errorCode:CANNOT_CONNECT_ERROR' as TxKeyPath);
             break;
     }
 }

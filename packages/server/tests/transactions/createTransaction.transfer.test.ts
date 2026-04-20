@@ -29,6 +29,8 @@ afterAll((done) => {
     });
     userIds = [];
     // @ts-expect-error is necessary
+    server.closeAllConnections();
+    // @ts-expect-error is necessary
     server.close(done);
 });
 

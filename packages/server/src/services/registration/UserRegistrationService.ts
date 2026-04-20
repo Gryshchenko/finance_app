@@ -192,6 +192,7 @@ export default class UserRegistrationService extends LoggerBase {
                     RoleType.Default,
                     getConfig().jwtLongSecret,
                     getConfig().jwtLongExpiresIn,
+                    'refresh',
                 );
                 this._logger.info('Token created successfully.');
                 return { user: readyUser, token, longToken };

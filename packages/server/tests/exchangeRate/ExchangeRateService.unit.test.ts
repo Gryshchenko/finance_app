@@ -250,9 +250,7 @@ describe('updateCurrencyRates', () => {
             .mockResolvedValueOnce([]) // USD: no existing rates
             .mockResolvedValueOnce([makeRate('EUR', 'USD')]); // EUR: one existing rate
 
-        getDiffSpy
-            .mockReturnValueOnce(0) // USD call to gets returns [] so getDiff is not reached
-            .mockReturnValueOnce(14); // EUR rate is 14h old → outdated
+        getDiffSpy.mockReturnValueOnce(14); // EUR rate is 14h old → outdated (USD has no existing rates so getDiff is not called for it)
 
         mockRateProvider.getRates
             .mockResolvedValueOnce({ EUR: 0.92, USD: 1 }) // for USD insert

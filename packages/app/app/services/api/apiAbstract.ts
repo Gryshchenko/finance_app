@@ -42,6 +42,8 @@ export abstract class ApiAbstract {
 
     private async refresh(): Promise<boolean> {
         try {
+            const isAuthorized = this._authService.isAuthorized;
+            if (!isAuthorized) return true;
             const userId = this._authService.userId;
             const tokenLong = await this._authService.getTokenLong();
             if (!userId) throw new Error('refresh failed userId empty');

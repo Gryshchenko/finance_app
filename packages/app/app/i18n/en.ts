@@ -10,6 +10,7 @@ const en = {
         UNEXPECTED_PROPERTY: 'Hmm… something you entered doesn’t look right.',
         UNKNOWN_ERROR: 'Something went wrong on our side.',
         REQUEST_TIMEOUT_ERROR: 'That took too long. Let’s give it another try.',
+        QUERY_DATA_ERROR: 'We couldn’t load the requested data.',
 
         EMAIL_INVALID_ERROR: 'Please double-check your email address.',
         NAME_INVALID_ERROR: 'That name doesn’t seem right.',
@@ -18,6 +19,11 @@ const en = {
 
         CREDENTIALS_ERROR: 'Your sign-in details don’t match.',
         AUTH_ERROR: 'Sign in to keep going.',
+        TOKEN_EXPIRED_ERROR: 'Your session has expired. Please sign in again.',
+        TOKEN_INVALID_ERROR: 'Your session is invalid. Please sign in again.',
+        TOKEN_PAYLOAD_ERROR: 'Something is wrong with your session. Please sign in again.',
+        TOKEN_LONG_INVALID_ERROR: 'Your session token is no longer valid. Please sign in again.',
+        TOKEN_RESET_INVALID_ERROR: 'Your password reset link is invalid or has expired.',
 
         SIGNUP_CATCH_ERROR: 'We hit a snag during sign-up.',
         SIGNUP_CREATE_INITIAL_DATA_ERROR: 'We couldn’t finish setting up your account.',
@@ -34,6 +40,9 @@ const en = {
         SESSION_DESTROY_ERROR: 'We couldn’t log you out properly.',
         PROFILE_ERROR: 'Your profile isn’t loading right now.',
         OVERVIEW_ERROR: 'We couldn’t load your overview.',
+        PROFILE_EMAIL_VERIFICATION_CODE_EXPIRED_ERROR: 'Your email verification code has expired.',
+        PROFILE_PASSWORD_VERIFICATION_CODE_EXPIRED_ERROR: 'Your password verification code has expired.',
+        FORGOT_PASSWORD_ERROR: 'We couldn’t process your password reset request.',
 
         TRANSACTION_ERROR: 'Something went wrong with the transaction.',
         ACCOUNT_ERROR: 'There was a problem accessing your account.',
@@ -42,6 +51,9 @@ const en = {
         CURRENCY_ERROR: 'We couldn’t process your currency data.',
         USER_ERROR: 'We couldn’t process your user data.',
         EMAIL_CONFIRMATION_ERROR: 'We couldn’t confirm your email.',
+        STATS_ERROR: 'We couldn’t load your statistics.',
+        CLIENT_UNKNOWN_ERROR: 'An unexpected client error occurred.',
+        CLIENT_AUTH_ERROR: 'A client authentication error occurred. Please sign in again.',
     },
     validation: {
         sameEmail: 'Same email address',
@@ -60,6 +72,7 @@ const en = {
         codeExpired: 'Invalid confirmation code (expires)',
         name: 'Invalid name format must contain only numbers or alphabet characters.',
         password: 'Invalid password format',
+        passwordWrong: 'Incorrect current password',
         passwordMinLength: 'Must be at least 5 characters',
         passwordUppercase: 'Password must contain at least one uppercase letter',
         passwordLowercase: 'Password must contain at least one lowercase letter',
@@ -237,10 +250,12 @@ const en = {
         signup: 'Sign up',
         dontHaveAccount: "Don't have an account?",
         quickAccess: 'Quick Access',
+        loginError: 'Check your email address or password',
     },
     signUpScreen: {
         signup: 'Sign up',
         tapToLogIn: 'Tap to Sign Up!',
+        timerHelper: 'Resend code in:',
         repeatPasswordFieldLabel: 'Repeat your password',
         repeatPasswordFieldPlaceholder: 'Confirm your password here',
         title: 'Almost there!',
@@ -249,6 +264,7 @@ const en = {
         biometricSubtitleFace: 'Use Face ID to sign in faster next time',
         biometricSubtitleFingerprint: 'Use your fingerprint to sign in faster next time',
         biometricEnrollFailed: 'Biometric setup failed. You can enable it later in settings.',
+        updateFailed: 'Could not confirm email. Please try again.',
     },
     dashboardScreen: {
         dashboard: 'Dashboard',
@@ -289,7 +305,7 @@ const en = {
         description: 'Enter your new email address. We will send a verification code to confirm the change.',
         input: 'Email',
         updateSuccess: 'Email updated successfully.',
-        updateFailed: 'Could not update email. Please try again.',
+        updateFailed: 'Could not confirm email. Please try again.',
     },
     settingsChangeEmailConfirmScreen: {
         description: "We've sent an 8-digit verification code to your new email address. Enter it below to confirm the change.",

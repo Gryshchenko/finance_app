@@ -1,4 +1,4 @@
-import { createUser, deleteUserAfterTest, generateSecureRandom, generateRandomEmail } from '../TestsUtils.';
+import { createUser, deleteUserAfterTest, generateRandomEmail } from '../TestsUtils.';
 import DatabaseConnection from '../../src/repositories/DatabaseConnection';
 import config from '../../src/config/dbConfig';
 import { HttpCode } from 'tenpercent/shared';
@@ -23,8 +23,7 @@ const OLD_PASSWORD = 'ValidPass1!';
 const NEW_PASSWORD = 'NewSecure2@';
 
 beforeAll(() => {
-    const port = Math.floor(generateSecureRandom() * (65535 - 1024) + 1024);
-    server = app.listen(port);
+    server = app.listen(0);
 });
 
 afterAll(async () => {
@@ -33,7 +32,8 @@ afterAll(async () => {
     for (const id of userIds) {
         await deleteUserAfterTest(id, db);
     }
-    (server as { close: () => void }).close();
+    (server as any).closeAllConnections();
+    await new Promise<void>((resolve) => (server as { close: (cb: () => void) => void }).close(() => resolve()));
 });
 
 function signResetToken(userId: number, overrides: Record<string, unknown> = {}, signOptions: Record<string, unknown> = {}) {

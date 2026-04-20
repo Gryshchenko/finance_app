@@ -39,6 +39,8 @@ afterAll((done) => {
         await deleteUserAfterTest(id, DatabaseConnection.instance(config));
     });
     // @ts-expect-error is necessary
+    server.closeAllConnections();
+    // @ts-expect-error is necessary
     server.close(done);
 });
 
@@ -148,7 +150,7 @@ describe('POST /auth', () => {
             databaseConnection,
         });
         const response = await agent.get(`/auth/${userId}/verify`).set('authorization', otherUser.authorization);
-        expect(response.status).toBe(HttpCode.FORBIDDEN);
+        expect(response.status).toBe(HttpCode.UNAUTHORIZED);
         const response1 = await agent.get(`/auth/${otherUser.userId}/verify`).set('authorization', otherUser.authorization);
         expect(response1.status).toBe(HttpCode.OK);
         const profileOrigin = await agent.get(`/user/${userId}/profile`).set('authorization', otherUser.authorization);

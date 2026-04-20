@@ -71,7 +71,6 @@ export const SettingsChangeEmailConfirmation: FC<Props> = function SettingsChang
             navigation.navigate(OverviewPath.Settings, { screen: SettingsPath.Settings });
         } else if (response.kind === GeneralApiProblemKind.BadData) {
             const { fieldErrors, hasNonFieldErrors } = parseServerErrors(response.errors);
-            console.log(response.errors);
             if (Object.keys(fieldErrors).length > 0) {
                 setErrors(fieldErrors as any);
             }
@@ -88,6 +87,7 @@ export const SettingsChangeEmailConfirmation: FC<Props> = function SettingsChang
         const changeEmailService = ChangeEmailService.instance();
         const response = await changeEmailService.refreshCode(email);
         if (response.kind === GeneralApiProblemKind.Ok) {
+            handleChange('confirmationCode', '');
             startTimer();
         } else if (response.kind === GeneralApiProblemKind.BadData) {
             const { fieldErrors, hasNonFieldErrors } = parseServerErrors(response.errors);

@@ -4,6 +4,8 @@ import { tokenLongVerify } from '../src/middleware/tokenVerify';
 import { HttpCode } from 'tenpercent/shared';
 import { ErrorCode } from 'tenpercent/shared';
 import { ResponseStatusType } from 'tenpercent/shared';
+import TokenBlacklistBuilder from '../src/services/auth/TokenBlacklistBuilder';
+import UserServiceBuilder from '../src/services/user/UserServiceBuilder';
 
 jest.mock('../src/config/config', () => ({
     getConfig: () => ({
@@ -12,6 +14,20 @@ jest.mock('../src/config/config', () => ({
         jwtIssuer: 'my-service',
         jwtAudience: 'my-clients',
     }),
+}));
+
+jest.mock('../src/services/auth/TokenBlacklistBuilder', () => ({
+    __esModule: true,
+    default: {
+        build: jest.fn(),
+    },
+}));
+
+jest.mock('../src/services/user/UserServiceBuilder', () => ({
+    __esModule: true,
+    default: {
+        build: jest.fn(),
+    },
 }));
 
 const mockReq = (token?: string, userId = '123') =>
@@ -36,7 +52,10 @@ const mockNext = () => jest.fn();
 describe('tokenLongVerify (unit)', () => {
     const config = getConfig();
 
-    const validToken = jwt.sign({}, config.jwtLongSecret, {
+    let blacklistMock: any;
+    let userServiceMock: any;
+
+    const validToken = jwt.sign({ purpose: 'refresh' }, config.jwtLongSecret, {
         algorithm: config.jwtAlgorithm as jwt.Algorithm,
         issuer: config.jwtIssuer,
         audience: config.jwtAudience,
@@ -44,23 +63,30 @@ describe('tokenLongVerify (unit)', () => {
         subject: '123',
     });
 
-    it('calls next() on valid token', () => {
+    beforeEach(() => {
+        blacklistMock = { isBlacklisted: jest.fn().mockResolvedValue(false) };
+        userServiceMock = { get: jest.fn().mockResolvedValue({ userId: 123 }) };
+        (TokenBlacklistBuilder.build as jest.Mock).mockReturnValue(blacklistMock);
+        (UserServiceBuilder.build as jest.Mock).mockReturnValue(userServiceMock);
+    });
+
+    it('calls next() on valid token', async () => {
         const req = mockReq(validToken);
         const res = mockRes();
         const next = mockNext();
 
-        tokenLongVerify(req, res, next);
+        await tokenLongVerify(req, res, next);
 
         expect(next).toHaveBeenCalled();
         expect(res.status).not.toHaveBeenCalled();
     });
 
-    it(' returns 400 if token is missing', () => {
+    it('returns 400 if token is missing', async () => {
         const req = mockReq(undefined);
         const res = mockRes();
         const next = mockNext();
 
-        tokenLongVerify(req, res, next);
+        await tokenLongVerify(req, res, next);
 
         expect(res.status).toHaveBeenCalledWith(HttpCode.BAD_REQUEST);
         expect(res.json).toHaveBeenCalledWith({
@@ -71,18 +97,18 @@ describe('tokenLongVerify (unit)', () => {
         expect(next).not.toHaveBeenCalled();
     });
 
-    it('returns 400 if token length is too short', () => {
+    it('returns 400 if token length is too short', async () => {
         const req = mockReq('abc');
         const res = mockRes();
         const next = mockNext();
 
-        tokenLongVerify(req, res, next);
+        await tokenLongVerify(req, res, next);
 
         expect(res.status).toHaveBeenCalledWith(HttpCode.BAD_REQUEST);
         expect(next).not.toHaveBeenCalled();
     });
 
-    it('returns 401 if secret is wrong', () => {
+    it('returns 400 if secret is wrong', async () => {
         const badToken = jwt.sign({}, 'wrong_secret', {
             algorithm: 'HS256',
             issuer: config.jwtIssuer,
@@ -95,13 +121,13 @@ describe('tokenLongVerify (unit)', () => {
         const res = mockRes();
         const next = mockNext();
 
-        tokenLongVerify(req, res, next);
+        await tokenLongVerify(req, res, next);
 
         expect(res.status).toHaveBeenCalledWith(HttpCode.BAD_REQUEST);
         expect(next).not.toHaveBeenCalled();
     });
 
-    it(' returns 400 if sub does not match userId', () => {
+    it('returns 400 if sub does not match userId', async () => {
         const badToken = jwt.sign({}, config.jwtLongSecret, {
             algorithm: 'HS256',
             issuer: config.jwtIssuer,
@@ -114,33 +140,9 @@ describe('tokenLongVerify (unit)', () => {
         const res = mockRes();
         const next = mockNext();
 
-        tokenLongVerify(req, res, next);
+        await tokenLongVerify(req, res, next);
 
         expect(res.status).toHaveBeenCalledWith(HttpCode.BAD_REQUEST);
         expect(next).not.toHaveBeenCalled();
     });
-
-    // it(' returns 401 if token is expired', () => {
-    //     const expiredToken = jwt.sign({}, config.jwtLongSecret, {
-    //         algorithm: config.jwtAlgorithm as jwt.Algorithm,
-    //         issuer: config.jwtIssuer,
-    //         audience: config.jwtAudience,
-    //         expiresIn: '-10s',
-    //         subject: '123',
-    //     });
-    //
-    //     const req = mockReq(expiredToken);
-    //     const res = mockRes();
-    //     const next = mockNext();
-    //
-    //     tokenLongVerify(req, res, next);
-    //
-    //     expect(res.status).toHaveBeenCalledWith(HttpCode.BAD_REQUEST);
-    //     expect(res.json).toHaveBeenCalledWith({
-    //         data: {},
-    //         errors: [{ errorCode: ErrorCode.TOKEN_LONG_INVALID_ERROR, payload: undefined }],
-    //         status: ResponseStatusType.INTERNAL,
-    //     });
-    //     expect(next).not.toHaveBeenCalled();
-    // });
 });

@@ -1,11 +1,10 @@
 import argon2 from 'argon2';
 import cryptoModule from 'crypto';
-import { ErrorCode, HttpCode, IUserClient } from 'tenpercent/shared';
+import { IUserClient } from 'tenpercent/shared';
 
 import Logger from 'helper/logger/Logger';
 import { IUser } from 'interfaces/IUser';
 import { IUserServer } from 'interfaces/IUserServer';
-import { ValidationError } from 'src/utils/errors/ValidationError';
 
 const _logger = Logger.Of('UserServiceUtils');
 
@@ -16,18 +15,10 @@ export default class UserServiceUtils {
 
     public static async verifyPassword(dbPassword: string, userPassword: string): Promise<boolean> {
         try {
-            const result = await argon2.verify(dbPassword, userPassword);
-            if (!result) {
-                throw new ValidationError({
-                    message: 'Password verification failed',
-                    errorCode: ErrorCode.AUTH_ERROR,
-                    statusCode: HttpCode.UNAUTHORIZED,
-                });
-            }
-            return result;
+            return await argon2.verify(dbPassword, userPassword);
         } catch (e) {
             _logger.error(`Password verify failed due reason: ${(e as { message: string }).message}`);
-            throw e;
+            return false;
         }
     }
     public static async hashPassword(password: string, salt: Buffer): Promise<string | undefined> {

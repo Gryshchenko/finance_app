@@ -57,15 +57,14 @@ export default class PasswordChangingService extends LoggerBase implements IPass
                     statusCode: HttpCode.NOT_FOUND,
                 });
             }
-
             const hashOldPasswordFromDB = user.passwordHash;
             const isPasswordSame = await UserServiceUtils.verifyPassword(hashOldPasswordFromDB, oldPassword);
             if (!isPasswordSame) {
                 throw new ValidationError({
                     message: 'Password compare failed',
-                    errorCode: ErrorCode.AUTH_ERROR,
+                    errorCode: ErrorCode.PASSWORD_ERROR,
                     statusCode: HttpCode.BAD_REQUEST,
-                    payload: { field: 'password', reason: 'invalid' },
+                    payload: { field: 'password', reason: 'validation:passwordWrong' },
                 });
             }
 

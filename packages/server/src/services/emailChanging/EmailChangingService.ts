@@ -33,6 +33,18 @@ export default class EmailChangingService extends LoggerBase implements IEmailCh
         this._logger.info(`Email change requested for userId ${userId}`);
         try {
             const record = await this._dataAccess.getByUserId(userId, email);
+            const user = await this._userService.getUserIdByMail(email);
+            if (user) {
+                throw new ValidationError({
+                    message: `Email ${email} is already in use`,
+                    errorCode: ErrorCode.EMAIL_CONFIRMATION_ERROR,
+                    statusCode: HttpCode.BAD_REQUEST,
+                    payload: {
+                        field: 'email',
+                        reason: 'validation:emailAlreadyInUse',
+                    },
+                });
+            }
             const expiresAt = ConfirmationHelper.createExpiresAt(CHANGE_CODE_EXPIRES_IN);
             const confirmationCode = ConfirmationHelper.generateCode();
             if (!record) {
@@ -55,6 +67,18 @@ export default class EmailChangingService extends LoggerBase implements IEmailCh
         try {
             const record = await this._dataAccess.getByUserId(userId, email);
 
+            const user = await this._userService.getUserIdByMail(email);
+            if (user) {
+                throw new ValidationError({
+                    message: `Email ${email} is already in use`,
+                    errorCode: ErrorCode.EMAIL_CONFIRMATION_ERROR,
+                    statusCode: HttpCode.BAD_REQUEST,
+                    payload: {
+                        field: 'email',
+                        reason: 'validation:emailAlreadyInUse',
+                    },
+                });
+            }
             if (!record) {
                 throw new ValidationError({
                     message: `No pending email change found for userId ${userId}`,
@@ -96,13 +120,21 @@ export default class EmailChangingService extends LoggerBase implements IEmailCh
         try {
             const record = await this._dataAccess.getByUserId(userId, email);
 
+            if (!record) {
+                throw new ValidationError({
+                    message: 'Sending confirmation code failed, no pending email change request',
+                    errorCode: ErrorCode.EMAIL_CONFIRMATION_ERROR,
+                    statusCode: HttpCode.BAD_REQUEST,
+                    payload: {
+                        field: 'newEmail',
+                        reason: 'validation:noPendingRequest',
+                    },
+                });
+            }
+
             const expiresAt = ConfirmationHelper.createExpiresAt(CHANGE_CODE_EXPIRES_IN);
             const confirmationCode = ConfirmationHelper.generateCode();
-            if (!record) {
-                await this._dataAccess.create(userId, email, confirmationCode, expiresAt);
-            } else {
-                await this._dataAccess.refresh(userId, email, confirmationCode, expiresAt);
-            }
+            await this._dataAccess.refresh(userId, email, confirmationCode, expiresAt);
             this._logger.info(`Refresh confirmation code email change send for userId ${userId}`);
             return true;
         } catch (e) {

@@ -27,7 +27,8 @@ afterAll(async () => {
     for (const id of userIds) {
         await deleteUserAfterTest(id, db);
     }
-    (server as { close: () => void }).close();
+    (server as any).closeAllConnections();
+    await new Promise<void>((resolve) => (server as { close: (cb: () => void) => void }).close(resolve));
 });
 
 describe('POST /user/:userId/profile/password-change — request password change', () => {

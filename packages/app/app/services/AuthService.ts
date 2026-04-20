@@ -26,6 +26,8 @@ export class AuthService {
 
     protected _userId: number | null = null;
 
+    public isAuthorized: boolean | null = false;
+
     private serialization(user: IUserClient & IExtra): string | null {
         try {
             return JSON.stringify(user);
@@ -174,6 +176,7 @@ export class AuthService {
                 tokenLong,
                 email,
             });
+            this.isAuthorized = true;
             return true;
         } catch (e) {
             this._logger.error(`Auth failed due reason:`, (e as { message: string }).message);
@@ -186,6 +189,7 @@ export class AuthService {
             this._logger.info('Start logout process');
             this._userId = null;
             this._token = null;
+            this.isAuthorized = false;
             await this.cleanCredentialStore();
             this._logger.info('Logout process success finished');
             return true;
@@ -227,7 +231,7 @@ export class AuthService {
                 email,
                 status,
                 userId,
-                tokenLong,
+                tokenLong: tokenLong as string,
                 token,
             });
         }

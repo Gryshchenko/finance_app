@@ -1,5 +1,5 @@
 import jwt, { Algorithm, DecodeOptions, JwtPayload } from 'jsonwebtoken';
-import { RoleType, ErrorCode, HttpCode, Time, Utils } from 'tenpercent/shared';
+import { ErrorCode, HttpCode, RoleType, Time, Utils } from 'tenpercent/shared';
 
 import { IUser } from 'interfaces/IUser';
 import { JwtPayloadCustom, TokenPurpose } from 'services/auth/passport-setup';
@@ -64,14 +64,21 @@ export default class AuthService extends LoggerBase implements IAuthService {
             if (!userForCheck) {
                 throw new ValidationError({
                     message: 'User not found or invalid credentials provided',
-                    errorCode: ErrorCode.AUTH_ERROR,
-                    statusCode: HttpCode.UNAUTHORIZED,
+                    errorCode: ErrorCode.CREDENTIALS_ERROR,
+                    statusCode: HttpCode.BAD_REQUEST,
                 });
             }
 
             this._logger.info(`User found: userID ${userForCheck.userId}`);
 
-            await UserServiceUtils.verifyPassword(userForCheck.passwordHash, password);
+            const isPassVerify = await UserServiceUtils.verifyPassword(userForCheck.passwordHash, password);
+            if (!isPassVerify) {
+                throw new ValidationError({
+                    message: 'Password verification failed',
+                    errorCode: ErrorCode.CREDENTIALS_ERROR,
+                    statusCode: HttpCode.BAD_REQUEST,
+                });
+            }
 
             this._logger.info('Password verification successful');
 

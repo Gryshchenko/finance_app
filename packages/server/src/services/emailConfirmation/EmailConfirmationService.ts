@@ -29,6 +29,18 @@ export default class EmailConfirmationService extends LoggerBase implements IEma
         this._logger.info(`Email change requested for userId ${userId}`);
         try {
             const record = await this._dataAccess.getByUserId(userId, email);
+            const user = await this.userService.getUserIdByMail(email);
+            if (user) {
+                throw new ValidationError({
+                    message: `Email ${email} is already in use`,
+                    errorCode: ErrorCode.EMAIL_CONFIRMATION_ERROR,
+                    statusCode: HttpCode.BAD_REQUEST,
+                    payload: {
+                        field: 'email',
+                        reason: 'validation:emailAlreadyInUse',
+                    },
+                });
+            }
             const expiresAt = ConfirmationHelper.createExpiresAt(CHANGE_CODE_EXPIRES_IN);
             const confirmationCode = ConfirmationHelper.generateCode();
             if (!record) {
@@ -78,6 +90,18 @@ export default class EmailConfirmationService extends LoggerBase implements IEma
         try {
             const record = await this._dataAccess.getByUserId(userId, email);
 
+            const user = await this.userService.getUserIdByMail(email);
+            if (user) {
+                throw new ValidationError({
+                    message: `Email ${email} is already in use`,
+                    errorCode: ErrorCode.EMAIL_CONFIRMATION_ERROR,
+                    statusCode: HttpCode.BAD_REQUEST,
+                    payload: {
+                        field: 'confirmationCode',
+                        reason: 'validation:emailAlreadyInUse',
+                    },
+                });
+            }
             if (!record) {
                 throw new ValidationError({
                     message: `No pending email change found for userId ${userId}`,

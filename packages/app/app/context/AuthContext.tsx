@@ -105,7 +105,7 @@ export const AuthProvider: FC<PropsWithChildren<AuthProviderProps>> = ({ childre
                         status,
                         userId,
                         token,
-                        tokenLong,
+                        tokenLong: tokenLong as string,
                     });
                     if (!result) {
                         return {
@@ -135,7 +135,7 @@ export const AuthProvider: FC<PropsWithChildren<AuthProviderProps>> = ({ childre
                 const result = await doAuthorize({
                     userId,
                     token,
-                    tokenLong,
+                    tokenLong: tokenLong as string,
                     email: userEmail,
                     status,
                 });
@@ -145,7 +145,6 @@ export const AuthProvider: FC<PropsWithChildren<AuthProviderProps>> = ({ childre
                 return { ...response, data: null, status: ResponseStatusType.OK, errors: undefined };
             }
             case GeneralApiProblemKind.BadData: {
-                // Return as-is — LoginScreen maps payload.field → field error highlight
                 return response;
             }
             default: {

@@ -54,7 +54,7 @@ export const LoginScreen: FC<LoginScreenProps> = (_props) => {
             handleChange('email', '');
             handleChange('password', '');
         } else if (response.kind === GeneralApiProblemKind.BadData) {
-            const { fieldErrors, hasNonFieldErrors } = parseServerErrors(response.errors);
+            const { fieldErrors, nonFieldErrors } = parseServerErrors(response.errors);
             const formFields = new Set(['email', 'password']);
 
             for (const [field, reason] of Object.entries(fieldErrors)) {
@@ -62,13 +62,15 @@ export const LoginScreen: FC<LoginScreenProps> = (_props) => {
                 if (formFields.has(field)) {
                     setErrors((prev) => ({ ...prev, [field]: key }));
                 } else {
-                    ToastService.error({ message: key });
+                    ToastService.error({ message: 'errorCode:UNKNOWN_ERROR' });
                 }
             }
 
-            if (hasNonFieldErrors) {
-                ToastService.error({ message: 'errorCode:UNKNOWN_ERROR' });
-            }
+            nonFieldErrors?.forEach((key: TxKeyPath) => {
+                if (key) {
+                    ToastService.error({ message: key });
+                }
+            });
         }
     }
 
@@ -153,7 +155,7 @@ const $forgotPassword: ThemedStyle<TextStyle> = ({ typography, colors }) => ({
     color: colors.textDim,
     fontFamily: typography.fonts.funnelSans.normal,
     textAlign: 'right',
-    marginTop: -20,
+    marginTop: -10,
 });
 
 const $textField: ThemedStyle<ViewStyle> = () => ({

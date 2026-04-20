@@ -25,6 +25,8 @@ afterAll((done) => {
     });
     userIds = [];
     // @ts-expect-error is necessary
+    server.closeAllConnections();
+    // @ts-expect-error is necessary
     server.close(done);
 });
 
@@ -53,6 +55,8 @@ describe('Profile', () => {
                 publicName,
                 locale,
                 currencyId: expect.any(Number),
+                email: expect.any(String),
+                userId: expect.any(Number),
             });
         });
 
