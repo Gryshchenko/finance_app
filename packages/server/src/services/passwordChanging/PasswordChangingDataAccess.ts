@@ -41,11 +41,10 @@ export default class PasswordChangingDataAccess extends LoggerBase implements IP
             const query = trx || this._db.engine();
             const data = await query<IPasswordChanging>('password_changing')
                 .insert({ userId, passwordHash, salt, confirmationCode, expiresAt }, ['*'])
-                .onConflict(['userId', 'passwordHash'])
-                .merge(['salt', 'confirmationCode', 'expiresAt', 'confirmed']);
+                .returning(['*']);
 
             this._logger.info(`Password change request created for userId ${userId}`);
-            return data[0];
+            return data[0] as IPasswordChanging;
         } catch (e) {
             this._logger.error(
                 `Error creating password change request for userId ${userId}: ${(e as { message: string }).message}`,

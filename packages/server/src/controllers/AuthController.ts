@@ -7,7 +7,7 @@ import { IUser } from 'interfaces/IUser';
 import AuthServiceBuilder from 'services/auth/AuthServiceBuilder';
 import OAuthServiceBuilder from 'services/oauth/OAuthServiceBuilder';
 import { OAuthProviderType } from 'services/oauth/providers/IOAuthProvider';
-import PasswordForgetServiceBuilder from 'services/passwordForget/PasswordForgetServiceBuilder';
+import ForgotPasswordServiceBuilder from 'services/forgotPassword/ForgotPasswordServiceBuilder';
 import UserServiceUtils from 'services/user/UserServiceUtils';
 import { BaseError } from 'src/utils/errors/BaseError';
 import { CustomError } from 'src/utils/errors/CustomError';
@@ -101,7 +101,7 @@ export class AuthController {
     }
     public static async forget(req: Request, res: Response) {
         try {
-            await PasswordForgetServiceBuilder.build().request(req.body.email.toLowerCase());
+            await ForgotPasswordServiceBuilder.build().request(req.body.email.toLowerCase());
         } catch (e: unknown) {
             AuthController.logger.error(`Forget password failed: ${(e as { message: string }).message}`);
         } finally {
@@ -111,7 +111,7 @@ export class AuthController {
 
     public static async forgetRefresh(req: Request, res: Response) {
         try {
-            await PasswordForgetServiceBuilder.build().refresh(req.body.email.toLowerCase());
+            await ForgotPasswordServiceBuilder.build().refresh(req.body.email.toLowerCase());
         } catch (e: unknown) {
             AuthController.logger.error(`Forget password refresh failed: ${(e as { message: string }).message}`);
         } finally {
@@ -122,7 +122,7 @@ export class AuthController {
     public static async forgetConfirm(req: Request, res: Response) {
         const responseBuilder = new ResponseBuilder();
         try {
-            const { resetToken, userId } = await PasswordForgetServiceBuilder.build().confirm(
+            const { resetToken, userId } = await ForgotPasswordServiceBuilder.build().confirm(
                 req.body.email.toLowerCase(),
                 Number(req.body.confirmationCode),
             );
@@ -171,7 +171,7 @@ export class AuthController {
         try {
             const user = req.user;
             const userId = Number(user?.userId);
-            await PasswordForgetServiceBuilder.build().forgetChange(req.body.newPassword, userId);
+            await ForgotPasswordServiceBuilder.build().forgetChange(req.body.newPassword, userId);
             const token = extractToken(req.headers.authorization);
             await AuthServiceBuilder.build().logout(token as string);
             res.status(HttpCode.NO_CONTENT).send();

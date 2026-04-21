@@ -1,4 +1,4 @@
-export interface IPasswordForget {
+export interface IForgotPassword {
     id: number;
     userId: number;
     email: string;
