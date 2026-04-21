@@ -3,6 +3,7 @@ import { Image, ImageProps, ImageStyle, StyleProp, TextStyle, View, ViewStyle } 
 import { translate } from '@/i18n/translate';
 import { useAppTheme } from '@/theme/context';
 import type { ThemedStyle } from '@/theme/types';
+import { typography } from '@/theme/typography';
 
 import { Button, ButtonProps } from './buttons/Button';
 import { Text, TextProps } from './Text';
@@ -117,11 +118,7 @@ interface EmptyStatePresetItem {
  * @returns {JSX.Element} The rendered `EmptyState` component.
  */
 export function EmptyState(props: EmptyStateProps) {
-    const {
-        theme,
-        themed,
-        theme: { spacing },
-    } = useAppTheme();
+    const { theme, themed } = useAppTheme();
 
     const EmptyStatePresets = {
         generic: {
@@ -163,75 +160,98 @@ export function EmptyState(props: EmptyStateProps) {
     const isContentPresent = !!(content || contentTx);
     const isButtonPresent = !!(button || buttonTx);
 
-    const $containerStyles = [$containerStyleOverride];
-    const $imageStyles = [
-        $image,
-        (isHeadingPresent || isContentPresent || isButtonPresent) && { marginBottom: spacing.xxxs },
-        $imageStyleOverride,
-        ImageProps?.style,
-    ];
-    const $headingStyles = [
-        themed($heading),
-        isImagePresent && { marginTop: spacing.xxxs },
-        (isContentPresent || isButtonPresent) && { marginBottom: spacing.xxxs },
-        $headingStyleOverride,
-        HeadingTextProps?.style,
-    ];
-    const $contentStyles = [
-        themed($content),
-        (isImagePresent || isHeadingPresent) && { marginTop: spacing.xxxs },
-        isButtonPresent && { marginBottom: spacing.xxxs },
-        $contentStyleOverride,
-        ContentTextProps?.style,
-    ];
-    const $buttonStyles = [
-        (isImagePresent || isHeadingPresent || isContentPresent) && { marginTop: spacing.xl },
-        $buttonStyleOverride,
-        ButtonProps?.style,
-    ];
-
     return (
-        <View style={$containerStyles}>
+        <View style={[$container, $containerStyleOverride]}>
             {isImagePresent && (
-                <Image source={imageSource} {...ImageProps} style={$imageStyles} tintColor={theme.colors.palette.neutral900} />
-            )}
-
-            {isHeadingPresent && (
-                <Text
-                    preset="subheading"
-                    text={heading}
-                    tx={headingTx}
-                    txOptions={headingTxOptions}
-                    {...HeadingTextProps}
-                    style={$headingStyles}
+                <Image
+                    source={imageSource}
+                    {...ImageProps}
+                    style={[$image, $imageStyleOverride, ImageProps?.style]}
+                    tintColor={theme.colors.palette.grey400}
                 />
             )}
 
-            {isContentPresent && (
-                <Text text={content} tx={contentTx} txOptions={contentTxOptions} {...ContentTextProps} style={$contentStyles} />
+            {(isHeadingPresent || isContentPresent) && (
+                <View style={themed($textBlock)}>
+                    {isHeadingPresent && (
+                        <Text
+                            text={heading}
+                            tx={headingTx}
+                            txOptions={headingTxOptions}
+                            {...HeadingTextProps}
+                            style={[themed($heading), $headingStyleOverride, HeadingTextProps?.style]}
+                        />
+                    )}
+                    {isContentPresent && (
+                        <Text
+                            text={content}
+                            tx={contentTx}
+                            txOptions={contentTxOptions}
+                            {...ContentTextProps}
+                            style={[themed($content), $contentStyleOverride, ContentTextProps?.style]}
+                        />
+                    )}
+                </View>
             )}
 
             {isButtonPresent && (
                 <Button
+                    preset="reversed"
                     onPress={buttonOnPress}
                     text={button}
                     tx={buttonTx}
                     txOptions={buttonTxOptions}
                     textStyle={$buttonTextStyleOverride}
                     {...ButtonProps}
-                    style={$buttonStyles}
+                    style={[themed($buttonStyle), $buttonStyleOverride, ButtonProps?.style]}
                 />
             )}
         </View>
     );
 }
 
-const $image: ImageStyle = { alignSelf: 'center' };
-const $heading: ThemedStyle<TextStyle> = ({ spacing }) => ({
-    textAlign: 'center',
-    paddingHorizontal: spacing.lg,
+const $container: ViewStyle = {
+    alignItems: 'center',
+    justifyContent: 'center',
+};
+
+const $image: ImageStyle = {
+    alignSelf: 'center',
+    width: 64,
+    height: 64,
+    marginBottom: 24,
+    resizeMode: 'contain',
+};
+
+const $textBlock: ThemedStyle<ViewStyle> = ({ spacing }) => ({
+    alignItems: 'center',
+    gap: spacing.xs,
+    marginBottom: spacing.xl,
 });
-const $content: ThemedStyle<TextStyle> = ({ spacing }) => ({
+
+const $heading: ThemedStyle<TextStyle> = ({ colors }) => ({
+    fontFamily: typography.fonts.funnelSans.medium,
+    fontSize: 18,
+    lineHeight: 28,
+    fontWeight: '500',
+    color: colors.palette.neutral900,
     textAlign: 'center',
-    paddingHorizontal: spacing.lg,
+    textTransform: 'uppercase',
+});
+
+const $content: ThemedStyle<TextStyle> = ({ colors }) => ({
+    fontFamily: typography.primary.normal,
+    fontSize: 12,
+    lineHeight: 16,
+    fontWeight: '400',
+    color: colors.textDim,
+    textAlign: 'center',
+    letterSpacing: 0.3,
+});
+
+const $buttonStyle: ThemedStyle<ViewStyle> = ({ colors }) => ({
+    width: '100%',
+    borderRadius: 0,
+    backgroundColor: colors.palette.neutral900,
+    paddingVertical: 16,
 });

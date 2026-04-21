@@ -1,5 +1,5 @@
 import { ErrorInfo } from 'react';
-import { ScrollView, TextStyle, View, ViewStyle } from 'react-native';
+import { TextStyle, View, ViewStyle } from 'react-native';
 
 import { Button } from '@/components/buttons/Button';
 import { Icon } from '@/components/Icon';
@@ -7,76 +7,96 @@ import { Screen } from '@/components/Screen';
 import { Text } from '@/components/Text';
 import { useAppTheme } from '@/theme/context';
 import type { ThemedStyle } from '@/theme/types';
+import { typography } from '@/theme/typography';
 
 export interface ErrorDetailsProps {
     error: Error;
     errorInfo: ErrorInfo | null;
     onReset(): void;
+    onGoBack?: () => void;
 }
 
-/**
- * Renders the error details screen.
- * @param {ErrorDetailsProps} props - The props for the `ErrorDetails` component.
- * @returns {JSX.Element} The rendered `ErrorDetails` component.
- */
 export function ErrorDetails(props: ErrorDetailsProps) {
-    const { themed } = useAppTheme();
+    const {
+        themed,
+        theme: { colors },
+    } = useAppTheme();
+
     return (
         <Screen preset="fixed" safeAreaEdges={['top', 'bottom']} contentContainerStyle={themed($contentContainer)}>
-            <View style={$topSection}>
-                <Icon icon="ladybug" size={64} />
-                <Text style={themed($heading)} preset="subheading" tx="errorScreen:title" />
-                <Text tx="errorScreen:friendlySubtitle" />
+            <View style={themed($iconContainer)}>
+                <Icon icon="ladybug" size={64} color={colors.palette.neutral900} />
             </View>
 
-            <ScrollView style={themed($errorSection)} contentContainerStyle={themed($errorSectionContentContainer)}>
-                <Text style={themed($errorContent)} weight="bold" text={`${props.error}`.trim()} />
-                <Text selectable style={themed($errorBacktrace)} text={`${props.errorInfo?.componentStack ?? ''}`.trim()} />
-            </ScrollView>
+            <Text style={themed($heading)} tx="errorScreen:title" />
+            <Text style={themed($subtitle)} tx="errorScreen:friendlySubtitle" />
 
-            <Button preset="reversed" style={themed($resetButton)} onPress={props.onReset} tx="errorScreen:reset" />
+            <View style={$buttonStack}>
+                <Button preset="reversed" style={themed($primaryButton)} onPress={props.onReset} tx="errorScreen:reset" />
+                {props.onGoBack && (
+                    <Button preset="default" style={themed($secondaryButton)} onPress={props.onGoBack} tx="errorScreen:goBack" />
+                )}
+            </View>
         </Screen>
     );
 }
 
 const $contentContainer: ThemedStyle<ViewStyle> = ({ spacing }) => ({
-    alignItems: 'center',
-    paddingHorizontal: spacing.lg,
-    paddingTop: spacing.xl,
     flex: 1,
+    alignItems: 'center',
+    justifyContent: 'center',
+    paddingHorizontal: spacing.lg,
 });
 
-const $topSection: ViewStyle = {
-    flex: 1,
+const $iconContainer: ThemedStyle<ViewStyle> = ({ colors, spacing }) => ({
+    borderWidth: 1,
+    borderColor: colors.palette.grey300,
+    backgroundColor: colors.palette.grey200,
+    padding: spacing.lg,
+    marginBottom: spacing.xl,
     alignItems: 'center',
-};
+    justifyContent: 'center',
+});
 
 const $heading: ThemedStyle<TextStyle> = ({ colors, spacing }) => ({
-    color: colors.error,
-    marginBottom: spacing.md,
+    fontFamily: typography.fonts.funnelSans.medium,
+    fontSize: 16,
+    lineHeight: 24,
+    fontWeight: '500',
+    color: colors.palette.neutral900,
+    textAlign: 'center',
+    marginBottom: spacing.xs,
 });
 
-const $errorSection: ThemedStyle<ViewStyle> = ({ colors, spacing }) => ({
-    flex: 2,
-    backgroundColor: colors.separator,
-    marginVertical: spacing.md,
-    borderRadius: 6,
-});
-
-const $errorSectionContentContainer: ThemedStyle<ViewStyle> = ({ spacing }) => ({
-    padding: spacing.md,
-});
-
-const $errorContent: ThemedStyle<TextStyle> = ({ colors }) => ({
-    color: colors.error,
-});
-
-const $errorBacktrace: ThemedStyle<TextStyle> = ({ colors, spacing }) => ({
-    marginTop: spacing.md,
+const $subtitle: ThemedStyle<TextStyle> = ({ colors, spacing }) => ({
+    fontFamily: typography.primary.normal,
+    fontSize: 12,
+    lineHeight: 16,
+    fontWeight: '400',
     color: colors.textDim,
+    textAlign: 'center',
+    letterSpacing: 0.3,
+    maxWidth: 280,
+    marginBottom: spacing.lg,
 });
 
-const $resetButton: ThemedStyle<ViewStyle> = ({ colors, spacing }) => ({
-    backgroundColor: colors.error,
-    paddingHorizontal: spacing.xxl,
+const $buttonStack: ViewStyle = {
+    width: '100%',
+    gap: 8,
+};
+
+const $primaryButton: ThemedStyle<ViewStyle> = ({ colors }) => ({
+    width: '100%',
+    borderRadius: 0,
+    backgroundColor: colors.palette.neutral900,
+    paddingVertical: 16,
+});
+
+const $secondaryButton: ThemedStyle<ViewStyle> = ({ colors }) => ({
+    width: '100%',
+    borderRadius: 0,
+    backgroundColor: colors.transparent,
+    borderWidth: 1,
+    borderColor: colors.palette.grey300,
+    paddingVertical: 16,
 });

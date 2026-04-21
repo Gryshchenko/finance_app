@@ -1,7 +1,7 @@
 import { useState } from 'react';
-import { Platform, Pressable, TextStyle, View, ViewStyle } from 'react-native';
+import { Pressable, TextStyle, View, ViewStyle } from 'react-native';
 import DateTimePicker, { DateTimePickerEvent } from '@react-native-community/datetimepicker';
-import { DateFormat, Time } from 'tenpercent/shared';
+import { DateFormat, Time, DateTime } from 'tenpercent/shared';
 
 import { FieldModal } from '@/components/FieldModal';
 import { Text, TextProps } from '@/components/Text';
@@ -59,65 +59,72 @@ export const IgniteDatePicker: React.FC<IgniteDatePickerProps> = ({
     helper,
     helperTxOptions,
 }) => {
-    const { themed } = useAppTheme();
+    const { themed, theme } = useAppTheme();
 
-    // Seed the picker with local-time Date so the spinner shows the right clock value
     const nowUTC = Time.getISODateNowUTC();
     const [tempDate, setTempDate] = useState<Date>(value ? Time.utcToLocalDate(value) : Time.utcToLocalDate(nowUTC));
 
-    // currentDate: local-time Date used by the native picker
     const currentDate = value ? Time.utcToLocalDate(value) : Time.utcToLocalDate(nowUTC);
-    // formattedDate: shown on the trigger button — always in device local timezone
-    const formattedDate = value ? Time.formatLocalDate(value, DateFormat.DATE_WITH_TIME_SECONDS) : placeholder;
+    const formattedDate = value ? Time.formatLocalDate(value, DateFormat.DD_MM_YYYY_DOT) : placeholder;
 
     const presetStyles = $fieldPresets[preset];
     const $inputText = [...presetStyles.input];
 
-    // Android: native dialog, auto-closes on select
-    const handleAndroidChange = (_event: DateTimePickerEvent, selectedDate?: Date) => {
-        if (_event.type === 'set' && selectedDate) {
-            // Convert local Date back to UTC ISO before notifying the caller
-            onChange(Time.localDateToUTC(selectedDate));
-        }
-    };
-
-    // iOS: spinner in modal, user picks then taps Done
-    const handleIOSChange = (_event: DateTimePickerEvent, selectedDate?: Date) => {
+    const handleSpinnerChange = (_event: DateTimePickerEvent, selectedDate?: Date) => {
         if (selectedDate) setTempDate(selectedDate);
     };
 
-    if (Platform.OS === 'android') {
-        return (
-            <FieldModal
-                preset={preset}
-                labelTx={'common:date'}
-                style={style}
-                disabled={disabled}
-                status={status}
-                helper={helper}
-                helperTx={helperTx}
-                helperTxOptions={helperTxOptions}
-                HelperTextProps={HelperTextProps}
-                renderTrigger={() => <Text style={themed($inputText)}>{formattedDate}</Text>}
-                renderContent={(close) => (
-                    <DateTimePicker
-                        disabled={disabled}
-                        value={currentDate}
-                        mode={iosModeMap[mode]}
-                        display="default"
-                        onChange={(event, date) => {
-                            close();
-                            handleAndroidChange(event, date);
-                        }}
-                        minimumDate={minimumDate}
-                        maximumDate={maximumDate}
-                    />
-                )}
-            />
-        );
-    }
+    const renderContent = (close: () => void) => {
+        const todayDate = DateTime.now().startOf('day').toJSDate();
+        const yesterdayDate = DateTime.now().startOf('day').minus({ days: 1 }).toJSDate();
 
-    // iOS — spinner inside FieldModal with Done/Cancel header
+        const selectQuick = (date: Date) => {
+            close();
+            onChange(Time.localDateToUTC(date));
+        };
+
+        const handleConfirm = () => {
+            close();
+            onChange(Time.localDateToUTC(tempDate));
+        };
+
+        return (
+            <View>
+                <View style={themed($modalHeader)}>
+                    <Pressable onPress={close} hitSlop={8}>
+                        <Text style={themed($modalCancelText)}>{translate('common:cancel')}</Text>
+                    </Pressable>
+                    <Pressable onPress={handleConfirm} hitSlop={8}>
+                        <Text style={themed($modalDoneText)}>{translate('common:ok')}</Text>
+                    </Pressable>
+                </View>
+
+                {mode !== DatePickerType.Time && (
+                    <View style={themed($quickRow)}>
+                        <Pressable style={themed($quickButton)} onPress={() => selectQuick(todayDate)}>
+                            <Text style={themed($quickButtonText)} tx="common:today" />
+                        </Pressable>
+                        <Pressable style={themed($quickButton)} onPress={() => selectQuick(yesterdayDate)}>
+                            <Text style={themed($quickButtonText)} tx="common:yesterday" />
+                        </Pressable>
+                    </View>
+                )}
+
+                <DateTimePicker
+                    disabled={disabled}
+                    value={tempDate}
+                    mode={iosModeMap[mode]}
+                    display="spinner"
+                    onChange={handleSpinnerChange}
+                    minimumDate={minimumDate}
+                    maximumDate={maximumDate}
+                    textColor={theme.colors.text}
+                    accentColor={theme.colors.textDim}
+                />
+            </View>
+        );
+    };
+
     return (
         <FieldModal
             preset={preset}
@@ -131,58 +138,55 @@ export const IgniteDatePicker: React.FC<IgniteDatePickerProps> = ({
             HelperTextProps={HelperTextProps}
             onOpen={() => setTempDate(currentDate)}
             renderTrigger={() => <Text style={themed($inputText)}>{formattedDate}</Text>}
-            renderContent={(close) => {
-                const handleConfirm = () => {
-                    close();
-                    // Convert local Date chosen in the spinner back to UTC ISO
-                    onChange(Time.localDateToUTC(tempDate));
-                };
-
-                return (
-                    <View>
-                        <View style={themed($modalHeader)}>
-                            <Pressable onPress={close}>
-                                <Text style={themed($modalCancelText)}>{translate('common:cancel')}</Text>
-                            </Pressable>
-                            <Pressable onPress={handleConfirm}>
-                                <Text style={themed($modalDoneText)}>{translate('common:ok')}</Text>
-                            </Pressable>
-                        </View>
-                        <DateTimePicker
-                            disabled={disabled}
-                            value={tempDate}
-                            mode={iosModeMap[mode]}
-                            display="spinner"
-                            onChange={handleIOSChange}
-                            minimumDate={minimumDate}
-                            maximumDate={maximumDate}
-                        />
-                    </View>
-                );
-            }}
+            renderContent={renderContent}
         />
     );
 };
 
-/* ── DatePicker-specific styles ── */
+/* ── styles ── */
 
-const $modalHeader: ThemedStyle<ViewStyle> = () => ({
+const $modalHeader: ThemedStyle<ViewStyle> = ({ colors, spacing }) => ({
     flexDirection: 'row',
     justifyContent: 'space-between',
-    paddingHorizontal: 20,
-    paddingVertical: 14,
+    paddingHorizontal: spacing.lg,
+    paddingVertical: spacing.md,
     borderBottomWidth: 1,
-    borderBottomColor: '#e5e5e5',
+    borderBottomColor: colors.border,
 });
 
-const $modalCancelText: ThemedStyle<TextStyle> = () => ({
-    color: '#9CA3AF',
+const $modalCancelText: ThemedStyle<TextStyle> = ({ colors }) => ({
+    color: colors.text,
     fontSize: 16,
     fontWeight: '500',
 });
 
-const $modalDoneText: ThemedStyle<TextStyle> = () => ({
-    color: '#1a1a1a',
+const $modalDoneText: ThemedStyle<TextStyle> = ({ colors }) => ({
+    color: colors.text,
     fontSize: 16,
     fontWeight: '600',
+});
+
+const $quickRow: ThemedStyle<ViewStyle> = ({ spacing }) => ({
+    flexDirection: 'row',
+    gap: spacing.xs,
+    paddingHorizontal: spacing.lg,
+    paddingVertical: spacing.sm,
+});
+
+const $quickButton: ThemedStyle<ViewStyle> = ({ colors, spacing }) => ({
+    flex: 1,
+    alignItems: 'center',
+    paddingVertical: spacing.sm,
+    borderWidth: 1,
+    borderColor: colors.palette.grey300,
+    backgroundColor: colors.transparent,
+});
+
+const $quickButtonText: ThemedStyle<TextStyle> = ({ colors, typography }) => ({
+    fontFamily: typography.primary.medium,
+    fontSize: 12,
+    lineHeight: 16,
+    letterSpacing: 1.2,
+    textTransform: 'uppercase',
+    color: colors.text,
 });

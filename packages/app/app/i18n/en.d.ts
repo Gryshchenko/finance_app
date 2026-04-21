@@ -522,6 +522,8 @@ declare const en: {
         warning: string;
         ok: string;
         cancel: string;
+        today: string;
+        yesterday: string;
         back: string;
         logOut: string;
         signUp: string;
@@ -598,6 +600,7 @@ declare const en: {
         title: string;
         friendlySubtitle: string;
         reset: string;
+        goBack: string;
         traceTitle: string;
     };
     emptyStateComponent: {

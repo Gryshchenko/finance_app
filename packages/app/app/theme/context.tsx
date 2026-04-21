@@ -2,9 +2,14 @@ import { createContext, FC, PropsWithChildren, useCallback, useContext, useEffec
 import { StyleProp, useColorScheme } from 'react-native';
 import { DarkTheme as NavDarkTheme, DefaultTheme as NavDefaultTheme, Theme as NavTheme } from '@react-navigation/native';
 
+import { SecureStorage } from '@/services/SecureStorage';
+import { StorageKey } from '@/types/StorageKey';
+
 import { setImperativeTheming } from './context.utils';
 import { darkTheme, lightTheme } from './theme';
 import type { AllowedStylesT, ImmutableThemeContextModeT, Theme, ThemeContextModeT, ThemedFnT, ThemedStyle } from './types';
+
+const themeStorage = new SecureStorage();
 
 export interface ThemeContextType {
     navigationTheme: NavTheme;
@@ -33,7 +38,17 @@ export const ThemeProvider: FC<PropsWithChildren<ThemeProviderProps>> = ({ child
     // The operating system theme:
     const systemColorScheme = useColorScheme();
     // Our saved theme context: can be "light", "dark", or undefined (system theme)
-    const [themeScheme, setThemeScheme] = useState<ThemeContextModeT>();
+    const [themeScheme, setThemeScheme] = useState<ThemeContextModeT>(undefined);
+    const [isReady, setIsReady] = useState(false);
+
+    useEffect(() => {
+        themeStorage.get(StorageKey.themeContext).then((saved) => {
+            if (saved === 'dark' || saved === 'light') {
+                setThemeScheme(saved);
+            }
+            setIsReady(true);
+        });
+    }, []);
 
     /**
      * This function is used to set the theme context and is exported from the useAppTheme() hook.
@@ -41,12 +56,14 @@ export const ThemeProvider: FC<PropsWithChildren<ThemeProviderProps>> = ({ child
      *  - setThemeContextOverride("light") sets the app theme to light no matter what the system theme is.
      *  - setThemeContextOverride(undefined) the app will follow the operating system theme.
      */
-    const setThemeContextOverride = useCallback(
-        (newTheme: ThemeContextModeT) => {
-            setThemeScheme(newTheme);
-        },
-        [setThemeScheme],
-    );
+    const setThemeContextOverride = useCallback((newTheme: ThemeContextModeT) => {
+        if (newTheme) {
+            void themeStorage.save(StorageKey.themeContext, newTheme);
+        } else {
+            void themeStorage.remove(StorageKey.themeContext);
+        }
+        setThemeScheme(newTheme);
+    }, []);
 
     /**
      * initialContext is the theme context passed in from the app.tsx file and always takes precedence.
@@ -103,6 +120,8 @@ export const ThemeProvider: FC<PropsWithChildren<ThemeProviderProps>> = ({ child
         setThemeContextOverride,
         themed,
     };
+
+    if (!isReady) return null;
 
     return <ThemeContext.Provider value={value}>{children}</ThemeContext.Provider>;
 };

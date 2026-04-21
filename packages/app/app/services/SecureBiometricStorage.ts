@@ -1,55 +1,15 @@
 import { AuthenticationType } from 'expo-local-authentication';
 import * as LocalAuthentication from 'expo-local-authentication';
-import * as SecureStore from 'expo-secure-store';
 
-import { Logger } from '@/utils/logger/Logger';
+import { SecureStorage } from '@/services/SecureStorage';
 
-export type SecureKey = string;
-
-export interface ISecureBiometricStorage {
-    save(key: SecureKey, value: string): Promise<void>;
-    get(key: SecureKey, requireBiometric?: boolean): Promise<string | null>;
-    remove(key: SecureKey): Promise<void>;
+export interface IBiometricStorage {
     isBiometricAvailable(): Promise<boolean>;
     supportedAuthenticationTypes(): Promise<AuthenticationType[]>;
+    authenticate(options?: LocalAuthentication.LocalAuthenticationOptions): Promise<boolean>;
 }
 
-export class SecureBiometricStorage implements ISecureBiometricStorage {
-    protected _logger: Logger = Logger.Of('SecureBiometricStorage');
-    async save(key: SecureKey, value: string) {
-        try {
-            await SecureStore.setItemAsync(key, value);
-        } catch (e) {
-            this._logger.error(`Failed to save key ${key}:`, e);
-            throw e;
-        }
-    }
-
-    async get(key: SecureKey, requireBiometric = false): Promise<string | null> {
-        if (requireBiometric) {
-            const success = await this.authenticate();
-            if (!success) {
-                this._logger.warn('Biometric authentication failed');
-                return null;
-            }
-        }
-
-        try {
-            return await SecureStore.getItemAsync(key);
-        } catch (e) {
-            this._logger.error(`Failed to get key ${key}:`, e);
-            return null;
-        }
-    }
-
-    async remove(key: SecureKey) {
-        try {
-            await SecureStore.deleteItemAsync(key);
-        } catch (e) {
-            this._logger.error(`Failed to delete key ${key}:`, e);
-        }
-    }
-
+export class SecureBiometricStorage extends SecureStorage implements IBiometricStorage {
     async isBiometricAvailable(): Promise<boolean> {
         try {
             const hasHardware = await LocalAuthentication.hasHardwareAsync();

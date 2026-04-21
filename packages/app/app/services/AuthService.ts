@@ -2,7 +2,7 @@ import { IUserClient, ErrorCode, Utils, UserStatus } from 'tenpercent/shared';
 
 import { buildGeneralApiBadData, GeneralApiProblem, GeneralApiProblemKind } from '@/services/api/apiProblem';
 import { LoginService } from '@/services/LoginService';
-import { SecureBiometricStorage } from '@/services/SecureBiometricStorage';
+import { SecureStorage } from '@/services/SecureStorage';
 import { SecureStorageKey } from '@/types/SecureStorageKey';
 import { ErrorUtils } from '@/utils/errors/ErrorUtils';
 import { ValidationError } from '@/utils/errors/ValidationError';
@@ -66,7 +66,7 @@ export class AuthService {
 
     public async isCredentialStored(): Promise<boolean> {
         try {
-            const storage = new SecureBiometricStorage();
+            const storage = new SecureStorage();
             const key = await storage.get(SecureStorageKey.AuthCredential);
             if (!key) {
                 return false;
@@ -87,7 +87,7 @@ export class AuthService {
                     errorCode: ErrorCode.CLIENT_UNKNOWN_ERROR,
                 });
             }
-            const storage = new SecureBiometricStorage();
+            const storage = new SecureStorage();
             await storage.save(SecureStorageKey.AuthCredential, userStr);
         } catch (e) {
             this._logger.error('Secure storage set failed', (e as { message: string }).message);
@@ -96,7 +96,7 @@ export class AuthService {
 
     public async getCredentialFromSecureStore(): Promise<(IUserClient & IExtra) | null> {
         try {
-            const storage = new SecureBiometricStorage();
+            const storage = new SecureStorage();
             const key = await storage.get(SecureStorageKey.AuthCredential);
             if (!key) {
                 return null;
@@ -122,7 +122,7 @@ export class AuthService {
 
     public async cleanCredentialStore(): Promise<void> {
         try {
-            const storage = new SecureBiometricStorage();
+            const storage = new SecureStorage();
             await storage.remove(SecureStorageKey.AuthCredential);
         } catch (e) {
             this._logger.error('Secure storage cleanup failed', (e as { message: string }).message);

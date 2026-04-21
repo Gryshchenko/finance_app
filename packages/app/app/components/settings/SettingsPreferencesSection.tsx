@@ -3,7 +3,8 @@ import { ICurrency } from 'tenpercent/shared';
 import { LanguageOption } from '@/components/settings/settingsLocales';
 import { SettingsPickerRow } from '@/components/settings/SettingsPickerRow';
 import { SettingsSection } from '@/components/settings/SettingsSection';
-// import { SettingsSwitchRow } from '@/components/settings/SettingsSwitchRow';
+import { SettingsSwitchRow } from '@/components/settings/SettingsSwitchRow';
+import { useAppTheme } from '@/theme/context';
 
 interface Props {
     currencyList: ICurrency[];
@@ -28,8 +29,7 @@ export function SettingsPreferencesSection({
     onCurrencyChange,
     onLanguageChange,
 }: Props) {
-    // const [notificationsEnabled, setNotificationsEnabled] = useState(true);
-    // const [darkModeEnabled, setDarkModeEnabled] = useState(false);
+    const { themeContext, setThemeContextOverride } = useAppTheme();
 
     return (
         <SettingsSection titleTx="settingsScreen:preferences">
@@ -61,7 +61,14 @@ export function SettingsPreferencesSection({
             {/*    value={notificationsEnabled}*/}
             {/*    onToggle={setNotificationsEnabled}*/}
             {/*/>*/}
-            {/*<SettingsSwitchRow labelTx="settingsScreen:darkMode" value={darkModeEnabled} onToggle={setDarkModeEnabled} isLast />*/}
+            <SettingsSwitchRow
+                labelTx="settingsScreen:darkMode"
+                value={themeContext === 'dark'}
+                onToggle={() => {
+                    setThemeContextOverride(themeContext === 'dark' ? 'light' : 'dark');
+                }}
+                isLast
+            />
         </SettingsSection>
     );
 }
