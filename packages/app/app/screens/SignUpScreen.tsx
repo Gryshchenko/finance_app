@@ -2,6 +2,7 @@ import { ComponentType, FC, useEffect, useMemo, useRef, useState } from 'react';
 // eslint-disable-next-line no-restricted-imports
 import { Switch, TextInput, TextStyle, View, ViewStyle } from 'react-native';
 import { MaterialIcons } from '@expo/vector-icons';
+import { KeyboardAwareScrollView } from 'react-native-keyboard-controller';
 import { ErrorCode, Utils } from 'tenpercent/shared';
 
 import { Button } from '@/components/buttons/Button';
@@ -22,11 +23,12 @@ import { buildSignUpSchema } from '@/schems/validationSchemas';
 import { GeneralApiProblemKind } from '@/services/api/apiProblem';
 import { useAppTheme } from '@/theme/context';
 import type { ThemedStyle } from '@/theme/types';
+import { AppPath } from '@/types/AppPath';
 import detectLanguage from '@/utils/detectLanguage';
 import { Logger } from '@/utils/logger/Logger';
 import { ValidationTypes } from '@/utils/validation';
 
-interface SignUpScreenProps extends AppStackScreenProps<'signUp'> {}
+interface SignUpScreenProps extends AppStackScreenProps<AppPath.SignUp> {}
 
 export const SignUpScreen: FC<SignUpScreenProps> = (_props) => {
     const authPasswordInput = useRef<TextInput>(null);
@@ -89,7 +91,7 @@ export const SignUpScreen: FC<SignUpScreenProps> = (_props) => {
     } = useAppTheme();
 
     function goBack() {
-        navigation.navigate({ name: 'login', params: undefined });
+        navigation.navigate({ name: AppPath.Login, params: undefined });
     }
 
     async function signUp() {
@@ -164,68 +166,69 @@ export const SignUpScreen: FC<SignUpScreenProps> = (_props) => {
     );
 
     return (
-        <Screen preset="auto" contentContainerStyle={themed($screenContentContainer)} safeAreaEdges={['top', 'bottom']}>
+        <Screen preset="fixed" contentContainerStyle={themed($screenContentContainer)} safeAreaEdges={['top', 'bottom']}>
             <HeaderTitle subLogoText={'signUpScreen:signup'} />
+            <Text tx={'signUpScreen:title'} preset="default" style={themed($title)} />
+            <Text tx={'signUpScreen:subTitle'} preset="default" style={themed($subTitle)} />
 
-            <Text tx={'signUpScreen:title'} preset="heading" style={themed($title)} />
-            <Text tx={'signUpScreen:subTitle'} preset="heading" style={themed($subTitle)} />
+            <KeyboardAwareScrollView bottomOffset={62}>
+                <TextField
+                    value={String(form.publicName)}
+                    onChangeText={(v) => handleChange('publicName', v)}
+                    containerStyle={themed($textField)}
+                    autoCapitalize="none"
+                    autoCorrect={false}
+                    keyboardType="default"
+                    labelTx="common:publicNameFieldLabel"
+                    placeholderTx="common:publicNameFieldPlaceholder"
+                    helperTx={errors.publicName}
+                    status={errors.publicName ? 'error' : undefined}
+                    onSubmitEditing={() => authPasswordInput.current?.focus()}
+                />
+                <TextField
+                    value={String(form.email)}
+                    onChangeText={(v) => handleChange('email', v)}
+                    containerStyle={themed($textField)}
+                    autoCapitalize="none"
+                    autoComplete="email"
+                    autoCorrect={false}
+                    keyboardType="email-address"
+                    labelTx="common:emailFieldLabel"
+                    placeholderTx="common:emailFieldPlaceholder"
+                    helperTx={errors.email}
+                    status={errors.email ? 'error' : undefined}
+                    onSubmitEditing={() => authPasswordInput.current?.focus()}
+                />
 
-            <TextField
-                value={String(form.publicName)}
-                onChangeText={(v) => handleChange('publicName', v)}
-                containerStyle={themed($textField)}
-                autoCapitalize="none"
-                autoCorrect={false}
-                keyboardType="default"
-                labelTx="common:publicNameFieldLabel"
-                placeholderTx="common:publicNameFieldPlaceholder"
-                helperTx={errors.publicName}
-                status={errors.publicName ? 'error' : undefined}
-                onSubmitEditing={() => authPasswordInput.current?.focus()}
-            />
-            <TextField
-                value={String(form.email)}
-                onChangeText={(v) => handleChange('email', v)}
-                containerStyle={themed($textField)}
-                autoCapitalize="none"
-                autoComplete="email"
-                autoCorrect={false}
-                keyboardType="email-address"
-                labelTx="common:emailFieldLabel"
-                placeholderTx="common:emailFieldPlaceholder"
-                helperTx={errors.email}
-                status={errors.email ? 'error' : undefined}
-                onSubmitEditing={() => authPasswordInput.current?.focus()}
-            />
-
-            <TextField
-                ref={authPasswordInput}
-                value={String(form.password)}
-                onChangeText={(v) => handleChange('password', v)}
-                containerStyle={themed($textField)}
-                autoCapitalize="none"
-                autoComplete="password"
-                autoCorrect={false}
-                helperTx={errors.password}
-                status={errors.password ? 'error' : undefined}
-                secureTextEntry={isAuthPasswordHidden}
-                labelTx="common:passwordFieldLabel"
-                placeholderTx="common:passwordFieldPlaceholder"
-                RightAccessory={PasswordRightAccessory}
-            />
-            <LanguageDropdown
-                value={String(form.locale)}
-                disabled={false}
-                helperTx={errors.locale}
-                status={errors.locale ? 'error' : undefined}
-                onChange={(v) => handleChange('locale', v.locale)}
-            />
-            <CurrencyDropdown
-                value={String(form.currency)}
-                helperTx={errors.currency}
-                status={errors.currency ? 'error' : undefined}
-                onChange={(v) => handleChange('currency', v.currencyCode)}
-            />
+                <TextField
+                    ref={authPasswordInput}
+                    value={String(form.password)}
+                    onChangeText={(v) => handleChange('password', v)}
+                    containerStyle={themed($textField)}
+                    autoCapitalize="none"
+                    autoComplete="password"
+                    autoCorrect={false}
+                    helperTx={errors.password}
+                    status={errors.password ? 'error' : undefined}
+                    secureTextEntry={isAuthPasswordHidden}
+                    labelTx="common:passwordFieldLabel"
+                    placeholderTx="common:passwordFieldPlaceholder"
+                    RightAccessory={PasswordRightAccessory}
+                />
+                <LanguageDropdown
+                    value={String(form.locale)}
+                    disabled={false}
+                    helperTx={errors.locale}
+                    status={errors.locale ? 'error' : undefined}
+                    onChange={(v) => handleChange('locale', v.locale)}
+                />
+                <CurrencyDropdown
+                    value={String(form.currency)}
+                    helperTx={errors.currency}
+                    status={errors.currency ? 'error' : undefined}
+                    onChange={(v) => handleChange('currency', v.currencyCode)}
+                />
+            </KeyboardAwareScrollView>
 
             {isBiometricAvailable && (
                 <View style={themed($biometricRow)}>

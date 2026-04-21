@@ -13,7 +13,7 @@ import { OverviewTabParamList } from '@/navigators/OverviewNavigator';
 import { SettingsPath } from '@/navigators/SettingsStackNavigator';
 import { settingsChangePasswordConfirmSchema } from '@/schems/validationSchemas';
 import { $timer } from '@/screens/SignUpConfirmationScreen';
-import { buildGeneralApiBaseHandler, GeneralApiProblemKind, parseServerErrors } from '@/services/api/apiProblem';
+import { buildGeneralApiBaseHandler, GeneralApiProblemKind, handleBadDataResponse } from '@/services/api/apiProblem';
 import { ChangePasswordService } from '@/services/ChangePasswordService';
 import ToastService from '@/services/ToastService';
 import { useAppTheme } from '@/theme/context';
@@ -66,13 +66,7 @@ export const SettingsChangePasswordConfirmation: FC = function SettingsChangePas
             ToastService.success({ title: 'common:success', message: 'settingsChangePasswordConfirmScreen:successMessage' });
             navigation.navigate(OverviewPath.Settings, { screen: SettingsPath.Settings });
         } else if (response.kind === GeneralApiProblemKind.BadData) {
-            const { fieldErrors, hasNonFieldErrors } = parseServerErrors(response.errors);
-            if (Object.keys(fieldErrors).length > 0) {
-                setErrors(fieldErrors as any);
-            }
-            if (hasNonFieldErrors) {
-                ToastService.error({ title: 'common:error', message: 'settingsChangePasswordScreen:updateFailed' });
-            }
+            handleBadDataResponse(response.errors, setErrors);
         } else {
             buildGeneralApiBaseHandler(response);
         }
@@ -85,13 +79,7 @@ export const SettingsChangePasswordConfirmation: FC = function SettingsChangePas
         if (response.kind === GeneralApiProblemKind.Ok) {
             startTimer();
         } else if (response.kind === GeneralApiProblemKind.BadData) {
-            const { fieldErrors, hasNonFieldErrors } = parseServerErrors(response.errors);
-            if (Object.keys(fieldErrors).length > 0) {
-                setErrors(fieldErrors as any);
-            }
-            if (hasNonFieldErrors) {
-                ToastService.error({ title: 'common:error', message: 'settingsChangePasswordScreen:updateFailed' });
-            }
+            handleBadDataResponse(response.errors, setErrors);
         } else {
             buildGeneralApiBaseHandler(response);
         }

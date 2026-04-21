@@ -9,10 +9,9 @@ import { useAppQuery, useInvalidateQuery } from '@/hooks/useAppQuery';
 import { useEditView } from '@/hooks/useEditView';
 import { ITransactionClient } from '@/interfaces/ITransactionClient';
 import { buildTransactionCreateSchema } from '@/schems/validationSchemas';
-import { buildGeneralApiBaseHandler, GeneralApiProblemKind, parseServerErrors } from '@/services/api/apiProblem';
+import { buildGeneralApiBaseHandler, GeneralApiProblemKind, handleBadDataResponse } from '@/services/api/apiProblem';
 import { ExchangeService } from '@/services/ExchangeService';
 import { InvalidationGroups, QueryKeys, QueryStaleTimes } from '@/services/QueryCacheService';
-import ToastService from '@/services/ToastService';
 import { TransactionService } from '@/services/TransactionService';
 import { OverviewPath } from '@/types/OverviewPath';
 import { Logger } from '@/utils/logger/Logger';
@@ -94,13 +93,7 @@ export const TransactionCreate: FC<IProps> = function TransactionCreate(_props: 
             await invalidateQuery(InvalidationGroups.transaction());
             navigation.getParent()?.navigate(OverviewPath.Dashboard);
         } else if (response.kind === GeneralApiProblemKind.BadData) {
-            const { fieldErrors, hasNonFieldErrors } = parseServerErrors(response.errors);
-            if (Object.keys(fieldErrors).length > 0) {
-                setErrors(fieldErrors as any);
-            }
-            if (hasNonFieldErrors) {
-                ToastService.error({ message: 'errorCode:UNKNOWN_ERROR' });
-            }
+            handleBadDataResponse(response.errors, setErrors);
         } else {
             buildGeneralApiBaseHandler(response);
         }

@@ -13,9 +13,8 @@ import { OverviewTabParamList } from '@/navigators/OverviewNavigator';
 import { SettingsPath } from '@/navigators/SettingsStackNavigator';
 import { settingsChangeEmailConfirmationShema } from '@/schems/validationSchemas';
 import { $timer } from '@/screens/SignUpConfirmationScreen';
-import { buildGeneralApiBaseHandler, GeneralApiProblemKind, parseServerErrors } from '@/services/api/apiProblem';
+import { buildGeneralApiBaseHandler, GeneralApiProblemKind, handleBadDataResponse } from '@/services/api/apiProblem';
 import { ChangeEmailService } from '@/services/ChangeEmailService';
-import ToastService from '@/services/ToastService';
 import { useAppTheme } from '@/theme/context';
 import type { ThemedStyle } from '@/theme/types';
 import { OverviewPath } from '@/types/OverviewPath';
@@ -70,13 +69,7 @@ export const SettingsChangeEmailConfirmation: FC<Props> = function SettingsChang
         if (response.kind === GeneralApiProblemKind.Ok) {
             navigation.navigate(OverviewPath.Settings, { screen: SettingsPath.Settings });
         } else if (response.kind === GeneralApiProblemKind.BadData) {
-            const { fieldErrors, hasNonFieldErrors } = parseServerErrors(response.errors);
-            if (Object.keys(fieldErrors).length > 0) {
-                setErrors(fieldErrors as any);
-            }
-            if (hasNonFieldErrors) {
-                ToastService.error({ title: 'common:error', message: 'settingsChangeEmailScreen:updateFailed' });
-            }
+            handleBadDataResponse(response.errors, setErrors);
         } else {
             buildGeneralApiBaseHandler(response);
         }
@@ -90,13 +83,7 @@ export const SettingsChangeEmailConfirmation: FC<Props> = function SettingsChang
             handleChange('confirmationCode', '');
             startTimer();
         } else if (response.kind === GeneralApiProblemKind.BadData) {
-            const { fieldErrors, hasNonFieldErrors } = parseServerErrors(response.errors);
-            if (Object.keys(fieldErrors).length > 0) {
-                setErrors(fieldErrors as any);
-            }
-            if (hasNonFieldErrors) {
-                ToastService.error({ title: 'common:error', message: 'settingsChangeEmailScreen:updateFailed' });
-            }
+            handleBadDataResponse(response.errors, setErrors);
         } else {
             buildGeneralApiBaseHandler(response);
         }

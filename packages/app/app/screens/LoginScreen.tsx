@@ -11,16 +11,14 @@ import { Text } from '@/components/Text';
 import { TextField, type TextFieldAccessoryProps } from '@/components/TextField';
 import { useAuth } from '@/context/AuthContext';
 import { useEditView } from '@/hooks/useEditView';
-import { TxKeyPath } from '@/i18n';
-import { hasTranslate } from '@/i18n/translate';
 import type { AppStackScreenProps } from '@/navigators/AppNavigator';
 import { loginSchema } from '@/schems/validationSchemas';
-import { GeneralApiProblemKind, parseServerErrors } from '@/services/api/apiProblem';
-import ToastService from '@/services/ToastService';
+import { GeneralApiProblemKind, handleBadDataResponse } from '@/services/api/apiProblem';
 import { useAppTheme } from '@/theme/context';
 import type { ThemedStyle } from '@/theme/types';
+import { AppPath } from '@/types/AppPath';
 
-interface LoginScreenProps extends AppStackScreenProps<'Login'> {}
+interface LoginScreenProps extends AppStackScreenProps<AppPath.Login> {}
 
 export const LoginScreen: FC<LoginScreenProps> = (_props) => {
     const authPasswordInput = useRef<TextInput>(null);
@@ -28,7 +26,7 @@ export const LoginScreen: FC<LoginScreenProps> = (_props) => {
     const [isAuthPasswordHidden, setIsAuthPasswordHidden] = useState<boolean>(true);
     const { doLogin } = useAuth();
     const { form, handleChange, save, errors, setErrors } = useEditView<{ email: string; password: string }>(
-        { email: 'andy@test.com', password: 'Qwerty!2345' },
+        { email: 'andy@test.com', password: 'Qwerty!2345#' },
         loginSchema,
     );
 
@@ -38,7 +36,7 @@ export const LoginScreen: FC<LoginScreenProps> = (_props) => {
     } = useAppTheme();
 
     function signUp() {
-        navigation.navigate({ name: 'signUp', params: undefined });
+        navigation.navigate({ name: AppPath.SignUp, params: undefined });
     }
 
     async function login() {
@@ -54,23 +52,7 @@ export const LoginScreen: FC<LoginScreenProps> = (_props) => {
             handleChange('email', '');
             handleChange('password', '');
         } else if (response.kind === GeneralApiProblemKind.BadData) {
-            const { fieldErrors, nonFieldErrors } = parseServerErrors(response.errors);
-            const formFields = new Set(['email', 'password']);
-
-            for (const [field, reason] of Object.entries(fieldErrors)) {
-                const key: TxKeyPath = hasTranslate(reason) ? reason : 'errorCode:UNKNOWN_ERROR';
-                if (formFields.has(field)) {
-                    setErrors((prev) => ({ ...prev, [field]: key }));
-                } else {
-                    ToastService.error({ message: 'errorCode:UNKNOWN_ERROR' });
-                }
-            }
-
-            nonFieldErrors?.forEach((key: TxKeyPath) => {
-                if (key) {
-                    ToastService.error({ message: key });
-                }
-            });
+            handleBadDataResponse(response.errors, setErrors, new Set(['email', 'password']));
         }
     }
 
@@ -126,7 +108,7 @@ export const LoginScreen: FC<LoginScreenProps> = (_props) => {
                 RightAccessory={PasswordRightAccessory}
             />
 
-            <Pressable>
+            <Pressable onPress={() => navigation.navigate({ name: AppPath.ForgotPasswordRequest, params: undefined })}>
                 <Text tx={'loginScreen:forgotPassword'} style={themed($forgotPassword)} />
             </Pressable>
 

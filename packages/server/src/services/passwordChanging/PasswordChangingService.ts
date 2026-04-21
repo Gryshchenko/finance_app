@@ -140,6 +140,7 @@ export default class PasswordChangingService extends LoggerBase implements IPass
                     errorCode: ErrorCode.PROFILE_PASSWORD_VERIFICATION_CODE_EXPIRED_ERROR,
                     payload: {
                         field: 'confirmationCode',
+                        reason: 'validation:codeExpired',
                     },
                 });
             }

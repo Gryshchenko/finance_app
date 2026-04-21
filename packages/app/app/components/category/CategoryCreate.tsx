@@ -6,7 +6,7 @@ import { CategoryFields } from '@/components/category/CategoryFields';
 import { useInvalidateQuery } from '@/hooks/useAppQuery';
 import { useEditView } from '@/hooks/useEditView';
 import { categoryCreateSchema } from '@/schems/validationSchemas';
-import { buildGeneralApiBaseHandler, GeneralApiProblemKind, parseServerErrors } from '@/services/api/apiProblem';
+import { buildGeneralApiBaseHandler, GeneralApiProblemKind, handleBadDataResponse } from '@/services/api/apiProblem';
 import { CategoryService } from '@/services/CategoryService';
 import { InvalidationGroups } from '@/services/QueryCacheService';
 import ToastService from '@/services/ToastService';
@@ -43,13 +43,7 @@ export const CategoryCreate: FC = function CategoryCreate(_props) {
             await invalidateQuery(InvalidationGroups.category());
             navigation.getParent()?.navigate(OverviewPath.Dashboard);
         } else if (response.kind === GeneralApiProblemKind.BadData) {
-            const { fieldErrors, hasNonFieldErrors } = parseServerErrors(response.errors);
-            if (Object.keys(fieldErrors).length > 0) {
-                setErrors(fieldErrors as any);
-            }
-            if (hasNonFieldErrors) {
-                ToastService.error({ message: 'errorCode:UNKNOWN_ERROR' });
-            }
+            handleBadDataResponse(response.errors, setErrors);
         } else {
             buildGeneralApiBaseHandler(response);
         }

@@ -123,6 +123,44 @@ const buildSignUpSchema = (locales: string[], currencies: string[]) => {
     });
 };
 
+const forgotPasswordRequestSchema = Yup.object({
+    email: Yup.string()
+        .required(translationsKeys.valueRequired)
+        .max(50, translationsKeys.valueTooLong)
+        .email(translationsKeys.emailInvalided),
+});
+
+const forgotPasswordConfirmSchema = Yup.object({
+    email: Yup.string()
+        .required(translationsKeys.valueRequired)
+        .max(50, translationsKeys.valueTooLong)
+        .email(translationsKeys.emailInvalided),
+    confirmationCode: Yup.string()
+        .min(6, translationsKeys.valueTooShort)
+        .max(8, translationsKeys.valueTooLong)
+        .required(translationsKeys.codeInvalided),
+});
+
+const forgotPasswordChangeSchema = Yup.object({
+    newPassword: Yup.string()
+        .required(translationsKeys.valueRequired)
+        .min(5, translationsKeys.passwordMinLength)
+        .max(50, translationsKeys.valueTooLong)
+        .matches(/[A-Z]/, translationsKeys.passwordUppercase)
+        .matches(/[a-z]/, translationsKeys.passwordLowercase)
+        .matches(/[0-9]/, translationsKeys.passwordNumber)
+        .matches(/[!@#$%^&*(),.?":{}|<>]/, translationsKeys.passwordSpecial)
+        .equals([Yup.ref('repeatPassword')], translationsKeys.codeInvalided),
+    repeatPassword: Yup.string()
+        .required(translationsKeys.valueRequired)
+        .min(5, translationsKeys.passwordMinLength)
+        .max(50, translationsKeys.valueTooLong)
+        .matches(/[A-Z]/, translationsKeys.passwordUppercase)
+        .matches(/[a-z]/, translationsKeys.passwordLowercase)
+        .matches(/[0-9]/, translationsKeys.passwordNumber)
+        .matches(/[!@#$%^&*(),.?":{}|<>]/, translationsKeys.passwordSpecial),
+});
+
 const categoryEdit = {
     categoryName: Yup.string().min(3, translationsKeys.valueTooShort).max(50, translationsKeys.valueTooLong).notRequired(),
     currencyId: Yup.number().notRequired(),
@@ -285,4 +323,7 @@ export {
     settingsChangePasswordConfirmSchema,
     loginSchema,
     buildSignUpSchema,
+    forgotPasswordChangeSchema,
+    forgotPasswordRequestSchema,
+    forgotPasswordConfirmSchema,
 };

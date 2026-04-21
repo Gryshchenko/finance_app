@@ -73,10 +73,6 @@ export default class EmailChangingService extends LoggerBase implements IEmailCh
                     message: `Email ${email} is already in use`,
                     errorCode: ErrorCode.EMAIL_CONFIRMATION_ERROR,
                     statusCode: HttpCode.BAD_REQUEST,
-                    payload: {
-                        field: 'email',
-                        reason: 'validation:emailAlreadyInUse',
-                    },
                 });
             }
             if (!record) {
@@ -125,10 +121,6 @@ export default class EmailChangingService extends LoggerBase implements IEmailCh
                     message: 'Sending confirmation code failed, no pending email change request',
                     errorCode: ErrorCode.EMAIL_CONFIRMATION_ERROR,
                     statusCode: HttpCode.BAD_REQUEST,
-                    payload: {
-                        field: 'newEmail',
-                        reason: 'validation:noPendingRequest',
-                    },
                 });
             }
 

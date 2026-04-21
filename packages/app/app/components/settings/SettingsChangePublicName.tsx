@@ -11,7 +11,7 @@ import { useEditView } from '@/hooks/useEditView';
 import { OverviewTabParamList } from '@/navigators/OverviewNavigator';
 import { SettingsPath } from '@/navigators/SettingsStackNavigator';
 import { settingsChangePublicNameShema } from '@/schems/validationSchemas';
-import { buildGeneralApiBaseHandler, GeneralApiProblemKind, parseServerErrors } from '@/services/api/apiProblem';
+import { buildGeneralApiBaseHandler, GeneralApiProblemKind, handleBadDataResponse } from '@/services/api/apiProblem';
 import { ProfileService } from '@/services/ProfileService';
 import { InvalidationGroups } from '@/services/QueryCacheService';
 import ToastService from '@/services/ToastService';
@@ -48,13 +48,7 @@ export const SettingsChangePublicName: FC<Props> = function SettingsChangePublic
             await invalidateQuery(InvalidationGroups.profile());
             navigation.goBack();
         } else if (response.kind === GeneralApiProblemKind.BadData) {
-            const { fieldErrors, hasNonFieldErrors } = parseServerErrors(response.errors);
-            if (Object.keys(fieldErrors).length > 0) {
-                setErrors(fieldErrors as any);
-            }
-            if (hasNonFieldErrors) {
-                ToastService.error({ title: 'common:error', message: 'common:updateAccountFailed' });
-            }
+            handleBadDataResponse(response.errors, setErrors);
         } else {
             buildGeneralApiBaseHandler(response);
         }

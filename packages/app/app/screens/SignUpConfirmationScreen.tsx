@@ -13,13 +13,13 @@ import { useAuth } from '@/context/AuthContext';
 import { useEditView } from '@/hooks/useEditView';
 import type { AppStackScreenProps } from '@/navigators/AppNavigator';
 import { signUpConfirmationShema } from '@/schems/validationSchemas';
-import { buildGeneralApiBaseHandler, GeneralApiProblemKind, parseServerErrors } from '@/services/api/apiProblem';
+import { buildGeneralApiBaseHandler, GeneralApiProblemKind, handleBadDataResponse } from '@/services/api/apiProblem';
 import { EmailConfirmationService } from '@/services/EmailConfirmationService';
-import ToastService from '@/services/ToastService';
 import { useAppTheme } from '@/theme/context';
 import type { ThemedStyle } from '@/theme/types';
+import { AppPath } from '@/types/AppPath';
 
-interface SignUpConfirmationScreenProps extends AppStackScreenProps<'signUpConfirmation'> {}
+interface SignUpConfirmationScreenProps extends AppStackScreenProps<AppPath.SignUpConfirmation> {}
 
 export const SignUpConfirmationScreen: FC<SignUpConfirmationScreenProps> = () => {
     const { form, handleChange, save, errors, setErrors } = useEditView<{ confirmationCode: string | null }>(
@@ -67,13 +67,7 @@ export const SignUpConfirmationScreen: FC<SignUpConfirmationScreenProps> = () =>
                 break;
             }
             case GeneralApiProblemKind.BadData: {
-                const { fieldErrors, hasNonFieldErrors } = parseServerErrors(response.errors);
-                if (Object.keys(fieldErrors).length > 0) {
-                    setErrors(fieldErrors as any);
-                }
-                if (hasNonFieldErrors) {
-                    ToastService.error({ title: 'common:error', message: 'settingsChangeEmailScreen:updateFailed' });
-                }
+                handleBadDataResponse(response.errors, setErrors);
                 break;
             }
             default: {
@@ -97,13 +91,7 @@ export const SignUpConfirmationScreen: FC<SignUpConfirmationScreenProps> = () =>
                 break;
             }
             case GeneralApiProblemKind.BadData: {
-                const { fieldErrors, hasNonFieldErrors } = parseServerErrors(response.errors);
-                if (Object.keys(fieldErrors).length > 0) {
-                    setErrors(fieldErrors as any);
-                }
-                if (hasNonFieldErrors) {
-                    ToastService.error({ title: 'common:error', message: 'signUpScreen:updateFailed' });
-                }
+                handleBadDataResponse(response.errors, setErrors);
                 break;
             }
             default: {
@@ -131,6 +119,7 @@ export const SignUpConfirmationScreen: FC<SignUpConfirmationScreenProps> = () =>
                         }}
                     />
                 </KeyboardAwareScrollView>
+                <View style={$spacer} />
                 <View style={themed($screen)}>
                     {resendTimer > 0 && (
                         <View style={$timerRow}>
@@ -236,3 +225,6 @@ const $timerHelper: ThemedStyle<TextStyle> = ({ colors, typography }) => ({
     fontSize: 14,
     fontFamily: typography.primary.medium,
 });
+const $spacer: ViewStyle = {
+    flex: 1,
+};

@@ -10,7 +10,7 @@ import { useEditView } from '@/hooks/useEditView';
 import { translate } from '@/i18n/translate';
 import { buildTransactionEditSchema } from '@/schems/validationSchemas';
 import AlertService from '@/services/AlertService';
-import { buildGeneralApiBaseHandler, GeneralApiProblemKind, parseServerErrors } from '@/services/api/apiProblem';
+import { buildGeneralApiBaseHandler, GeneralApiProblemKind, handleBadDataResponse } from '@/services/api/apiProblem';
 import { InvalidationGroups } from '@/services/QueryCacheService';
 import ToastService from '@/services/ToastService';
 import { TransactionService } from '@/services/TransactionService';
@@ -50,13 +50,7 @@ export const TransactionEdit: FC<ITransactionPros> = function TransactionEdit(_p
             await invalidateQuery(InvalidationGroups.transaction(form.transactionId));
             navigation.getParent()?.navigate(OverviewPath.Dashboard);
         } else if (response.kind === GeneralApiProblemKind.BadData) {
-            const { fieldErrors, hasNonFieldErrors } = parseServerErrors(response.errors);
-            if (Object.keys(fieldErrors).length > 0) {
-                setErrors(fieldErrors as any);
-            }
-            if (hasNonFieldErrors) {
-                ToastService.error({ title: 'common:error', message: 'transactionScreen:updateFailed' });
-            }
+            handleBadDataResponse(response.errors, setErrors);
         } else {
             buildGeneralApiBaseHandler(response);
         }

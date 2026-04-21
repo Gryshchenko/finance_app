@@ -10,9 +10,8 @@ import { useEditView } from '@/hooks/useEditView';
 import { OverviewTabParamList } from '@/navigators/OverviewNavigator';
 import { SettingsPath } from '@/navigators/SettingsStackNavigator';
 import { settingsChangeEmailShema } from '@/schems/validationSchemas';
-import { buildGeneralApiBaseHandler, GeneralApiProblemKind, parseServerErrors } from '@/services/api/apiProblem';
+import { buildGeneralApiBaseHandler, GeneralApiProblemKind, handleBadDataResponse } from '@/services/api/apiProblem';
 import { ChangeEmailService } from '@/services/ChangeEmailService';
-import ToastService from '@/services/ToastService';
 import { useAppTheme } from '@/theme/context';
 import type { ThemedStyle } from '@/theme/types';
 import { OverviewPath } from '@/types/OverviewPath';
@@ -43,13 +42,7 @@ export const SettingsChangeEmail: FC<Props> = function SettingsChangeEmail(props
                 params: { email: form.email!, originEmail },
             });
         } else if (response.kind === GeneralApiProblemKind.BadData) {
-            const { fieldErrors, hasNonFieldErrors } = parseServerErrors(response.errors);
-            if (Object.keys(fieldErrors).length > 0) {
-                setErrors(fieldErrors as any);
-            }
-            if (hasNonFieldErrors) {
-                ToastService.error({ title: 'common:error', message: 'settingsChangeEmailScreen:updateFailed' });
-            }
+            handleBadDataResponse(response.errors, setErrors);
         } else {
             buildGeneralApiBaseHandler(response);
         }

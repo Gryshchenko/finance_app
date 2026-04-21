@@ -33,7 +33,7 @@ export default class PasswordForgetService extends LoggerBase implements IPasswo
         try {
             const userId = await this._userService.getUserIdByMail(email);
             if (!userId) {
-                this._logger.info(`Password forget: email not found, silently ignoring`);
+                this._logger.error(`Password forget: email not found, silently ignoring`);
                 return;
             }
 
@@ -55,7 +55,7 @@ export default class PasswordForgetService extends LoggerBase implements IPasswo
         try {
             const record = await this._dataAccess.getActiveByEmail(email);
             if (!record) {
-                this._logger.info(`Password forget refresh: no active request found, silently ignoring`);
+                this._logger.error(`Password forget refresh: no active request found, silently ignoring`);
                 return;
             }
 

@@ -138,6 +138,32 @@ export function parseServerErrors(errors: IResponseError[] | undefined): {
     return { fieldErrors, nonFieldErrors };
 }
 
+export function handleBadDataResponse(
+    errors: IResponseError[] | undefined,
+
+    setErrors?: (errors: any) => void,
+    knownFields?: Set<string>,
+): void {
+    const { fieldErrors, nonFieldErrors } = parseServerErrors(errors);
+
+    const formErrors: Record<string, TxKeyPath> = {};
+    for (const [field, reason] of Object.entries(fieldErrors)) {
+        if (!knownFields || knownFields.has(field)) {
+            formErrors[field] = reason;
+        } else {
+            ToastService.error({ message: reason });
+        }
+    }
+
+    if (setErrors && Object.keys(formErrors).length > 0) {
+        setErrors(formErrors);
+    }
+
+    for (const key of nonFieldErrors) {
+        ToastService.error({ message: key });
+    }
+}
+
 export function buildGeneralApiBaseHandler(
     problem: GeneralApiProblem,
     handler: (text: TxKeyPath) => void = (text: TxKeyPath) => ToastService.error({ message: text }),

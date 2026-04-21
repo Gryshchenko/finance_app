@@ -35,10 +35,6 @@ export default class EmailConfirmationService extends LoggerBase implements IEma
                     message: `Email ${email} is already in use`,
                     errorCode: ErrorCode.EMAIL_CONFIRMATION_ERROR,
                     statusCode: HttpCode.BAD_REQUEST,
-                    payload: {
-                        field: 'email',
-                        reason: 'validation:emailAlreadyInUse',
-                    },
                 });
             }
             const expiresAt = ConfirmationHelper.createExpiresAt(CHANGE_CODE_EXPIRES_IN);
@@ -96,10 +92,6 @@ export default class EmailConfirmationService extends LoggerBase implements IEma
                     message: `Email ${email} is already in use`,
                     errorCode: ErrorCode.EMAIL_CONFIRMATION_ERROR,
                     statusCode: HttpCode.BAD_REQUEST,
-                    payload: {
-                        field: 'confirmationCode',
-                        reason: 'validation:emailAlreadyInUse',
-                    },
                 });
             }
             if (!record) {

@@ -1,5 +1,6 @@
 const en = {
     errorCode: {
+        RESET_PASSWORD_ERROR: 'We couldn’t reset your password.',
         FORBIDDEN_ERROR: 'Access is forbidden.',
         REJECTED_ERROR: 'The request was rejected.',
         SERVER_ERROR: 'A server error occurred.',
@@ -24,6 +25,7 @@ const en = {
         TOKEN_PAYLOAD_ERROR: 'Something is wrong with your session. Please sign in again.',
         TOKEN_LONG_INVALID_ERROR: 'Your session token is no longer valid. Please sign in again.',
         TOKEN_RESET_INVALID_ERROR: 'Your password reset link is invalid or has expired.',
+        PASSWORD_ERROR: 'Your current password is incorrect.',
 
         SIGNUP_CATCH_ERROR: 'We hit a snag during sign-up.',
         SIGNUP_CREATE_INITIAL_DATA_ERROR: 'We couldn’t finish setting up your account.',
@@ -135,6 +137,8 @@ const en = {
         passwordFieldLabel: 'Password',
         emailFieldPlaceholder: 'Enter your email address',
         passwordFieldPlaceholder: 'Enter your password here',
+        passwordNewFieldPlaceholder: 'Enter your new password here',
+        repeatPasswordFieldPlaceholder: 'Repeat your password here',
         publicNameFieldLabel: 'Public name',
         publicNameFieldPlaceholder: 'Enter your public name (e.g. Alex)',
         confirmationCodeFieldLabel: 'Confirmation code',
@@ -321,6 +325,7 @@ const en = {
         currentPassword: 'Current Password',
         newPassword: 'New Password',
         updateFailed: 'Could not update password. Please try again.',
+        successMessage: 'Password changed successfully. Please sign in again.',
     },
     settingsChangePasswordConfirmScreen: {
         name: 'Change Password',
@@ -329,6 +334,32 @@ const en = {
         confirmButton: 'Confirm',
         resendButton: 'Resend code',
         successMessage: 'Password changed successfully. Please sign in again.',
+    },
+    forgotPasswordScreen: {
+        name: 'Reset Password',
+        description: 'Enter your new password and repeat it to confirm the change.',
+        newPassword: 'New Password',
+        repeatPassword: 'Repeat Password',
+        updateFailed: 'Could not update password. Please try again.',
+        sessionExpired: 'Something went wrong. Please start the password reset process again.',
+        timerHelper: 'Resend code in:',
+        confirmButton: 'Confirm',
+        resendButton: 'Resend code',
+        successMessage: 'Password changed successfully. Please sign in again.',
+    },
+    forgotPasswordRequestScreen: {
+        name: 'Forgot Password',
+        description: 'Enter your email address and we will send you a code to reset your password.',
+        emailInput: 'Email',
+        requestFailed: 'Could not send the reset code. Please try again.',
+        successMessage: 'A reset code has been sent to your email.',
+    },
+    forgotPasswordConfirmScreen: {
+        name: 'Check your email',
+        description: 'Enter the code we sent to your email to reset your password.',
+        timerHelper: 'Resend code in:',
+        confirmButton: 'Confirm',
+        resendButton: 'Resend code',
     },
 };
 

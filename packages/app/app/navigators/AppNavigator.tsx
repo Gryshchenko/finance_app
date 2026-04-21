@@ -12,11 +12,15 @@ import Config from '@/config';
 import { useAuth } from '@/context/AuthContext';
 import { OverviewNavigator, OverviewTabParamList } from '@/navigators/OverviewNavigator';
 import { ErrorBoundary } from '@/screens/ErrorScreen/ErrorBoundary';
+import { ForgotPasswordChangeScreen } from '@/screens/ForgotPasswordChangeScreen';
+import { ForgotPasswordConfirmScreen } from '@/screens/ForgotPasswordConfirmScreen';
+import { ForgotPasswordRequestScreen } from '@/screens/ForgotPasswordRequestScreen';
 import { LoginScreen } from '@/screens/LoginScreen';
 import { SignUpConfirmationScreen } from '@/screens/SignUpConfirmationScreen';
 import { SignUpScreen } from '@/screens/SignUpScreen';
 import ToastService from '@/services/ToastService';
 import { useAppTheme } from '@/theme/context';
+import { AppPath } from '@/types/AppPath';
 
 import { navigationRef, useBackButtonHandler } from './navigationUtilities';
 
@@ -30,10 +34,13 @@ import { navigationRef, useBackButtonHandler } from './navigationUtilities';
  *   https://reactnavigation.org/docs/typescript/#organizing-types
  */
 export interface AppStackParamList extends ParamListBase {
-    login: undefined;
-    signUp: undefined;
-    signUpConfirmation: undefined;
-    overview: NavigatorScreenParams<OverviewTabParamList>;
+    [AppPath.Login]: undefined;
+    [AppPath.SignUp]: undefined;
+    [AppPath.SignUpConfirmation]: undefined;
+    [AppPath.ForgotPasswordRequest]: undefined;
+    [AppPath.ForgotPasswordConfirm]: { email: string };
+    [AppPath.ForgotPasswordChange]: undefined;
+    [AppPath.Overview]: NavigatorScreenParams<OverviewTabParamList>;
 }
 
 type ScreenConfig = {
@@ -61,23 +68,26 @@ const AppStack = () => {
     } = useAppTheme();
 
     const getInitialRoute = () => {
-        if (!isAuthenticated) return 'login';
-        return isUserConfirmed ? 'overview' : 'signUpConfirmation';
+        if (!isAuthenticated) return AppPath.Login;
+        return isUserConfirmed ? AppPath.Overview : AppPath.SignUpConfirmation;
     };
 
     const getScreens = (): ScreenConfig[] => {
         if (!isAuthenticated) {
             return [
-                { name: 'login', component: LoginScreen },
-                { name: 'signUp', component: SignUpScreen },
+                { name: AppPath.Login, component: LoginScreen },
+                { name: AppPath.SignUp, component: SignUpScreen },
+                { name: AppPath.ForgotPasswordChange, component: ForgotPasswordChangeScreen },
+                { name: AppPath.ForgotPasswordRequest, component: ForgotPasswordRequestScreen },
+                { name: AppPath.ForgotPasswordConfirm, component: ForgotPasswordConfirmScreen },
             ];
         }
 
         if (!isUserConfirmed) {
-            return [{ name: 'signUpConfirmation', component: SignUpConfirmationScreen }];
+            return [{ name: AppPath.SignUpConfirmation, component: SignUpConfirmationScreen }];
         }
 
-        return [{ name: 'overview', component: OverviewNavigator }];
+        return [{ name: AppPath.Overview, component: OverviewNavigator }];
     };
 
     return (

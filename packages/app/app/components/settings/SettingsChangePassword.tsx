@@ -1,17 +1,18 @@
-import { FC } from 'react';
+import { ComponentType, FC, useMemo, useState } from 'react';
 import { View, ViewStyle, TextStyle } from 'react-native';
 import { NavigationProp, useNavigation } from '@react-navigation/native';
 
 import { EditButtons } from '@/components/buttons/EditButtons';
+import { PressableIcon } from '@/components/Icon';
 import { Text } from '@/components/Text';
-import { TextField } from '@/components/TextField';
+import { TextField, type TextFieldAccessoryProps } from '@/components/TextField';
 import { useEditView } from '@/hooks/useEditView';
 import { OverviewTabParamList } from '@/navigators/OverviewNavigator';
 import { SettingsPath } from '@/navigators/SettingsStackNavigator';
 import { settingsChangePasswordSchema } from '@/schems/validationSchemas';
-import { buildGeneralApiBaseHandler, GeneralApiProblemKind, parseServerErrors } from '@/services/api/apiProblem';
+import { buildGeneralApiBaseHandler, GeneralApiProblemKind, handleBadDataResponse } from '@/services/api/apiProblem';
 import { ChangePasswordService } from '@/services/ChangePasswordService';
-import ToastService from '@/services/ToastService';
+import { colors } from '@/theme/colors';
 import { useAppTheme } from '@/theme/context';
 import type { ThemedStyle } from '@/theme/types';
 import { OverviewPath } from '@/types/OverviewPath';
@@ -24,6 +25,8 @@ interface Form {
 export const SettingsChangePassword: FC = function SettingsChangePassword() {
     const { themed } = useAppTheme();
     const navigation = useNavigation<NavigationProp<OverviewTabParamList>>();
+    const [isPasswordHidden, setIsPasswordHidden] = useState<boolean>(true);
+    const [isNewPasswordHidden, setIsNewPasswordHidden] = useState<boolean>(true);
     const { form, handleChange, save, errors, setErrors } = useEditView<Partial<Form>>(
         { password: '', newPassword: '' },
         settingsChangePasswordSchema,
@@ -38,13 +41,7 @@ export const SettingsChangePassword: FC = function SettingsChangePassword() {
                 screen: SettingsPath.ChangePasswordConfirm,
             });
         } else if (response.kind === GeneralApiProblemKind.BadData) {
-            const { fieldErrors, hasNonFieldErrors } = parseServerErrors(response.errors);
-            if (Object.keys(fieldErrors).length > 0) {
-                setErrors(fieldErrors as any);
-            }
-            if (hasNonFieldErrors) {
-                ToastService.error({ title: 'common:error', message: 'settingsChangePasswordScreen:updateFailed' });
-            }
+            handleBadDataResponse(response.errors, setErrors);
         } else {
             buildGeneralApiBaseHandler(response);
         }
@@ -56,6 +53,36 @@ export const SettingsChangePassword: FC = function SettingsChangePassword() {
         await handlePatch();
     };
 
+    const PasswordRightAccessory: ComponentType<TextFieldAccessoryProps> = useMemo(
+        () =>
+            function PasswordRightAccessory(props: TextFieldAccessoryProps) {
+                return (
+                    <PressableIcon
+                        icon={isPasswordHidden ? 'view' : 'hidden'}
+                        color={colors.palette.neutral800}
+                        containerStyle={props.style}
+                        size={20}
+                        onPress={() => setIsPasswordHidden(!isPasswordHidden)}
+                    />
+                );
+            },
+        [isPasswordHidden],
+    );
+    const PasswordRightAccessoryRepeat: ComponentType<TextFieldAccessoryProps> = useMemo(
+        () =>
+            function PasswordRightAccessory(props: TextFieldAccessoryProps) {
+                return (
+                    <PressableIcon
+                        icon={isNewPasswordHidden ? 'view' : 'hidden'}
+                        color={colors.palette.neutral800}
+                        containerStyle={props.style}
+                        size={20}
+                        onPress={() => setIsNewPasswordHidden(!isNewPasswordHidden)}
+                    />
+                );
+            },
+        [isNewPasswordHidden],
+    );
     return (
         <View style={$container}>
             <Text tx="settingsChangePasswordScreen:description" style={themed($description)} />
@@ -63,20 +90,24 @@ export const SettingsChangePassword: FC = function SettingsChangePassword() {
                 preset={'underline'}
                 focusOnMount={true}
                 labelTx={'settingsChangePasswordScreen:currentPassword'}
+                placeholderTx="common:passwordFieldPlaceholder"
                 value={form.password ?? ''}
                 helperTx={errors?.password}
                 status={errors?.password ? 'error' : undefined}
-                secureTextEntry
+                secureTextEntry={isPasswordHidden}
                 onChangeText={(v) => handleChange('password', v)}
+                RightAccessory={PasswordRightAccessory}
             />
             <TextField
                 preset={'underline'}
                 labelTx={'settingsChangePasswordScreen:newPassword'}
+                placeholderTx="common:passwordNewFieldPlaceholder"
                 value={form.newPassword ?? ''}
                 helperTx={errors?.newPassword}
                 status={errors?.newPassword ? 'error' : undefined}
-                secureTextEntry
+                secureTextEntry={isNewPasswordHidden}
                 onChangeText={(v) => handleChange('newPassword', v)}
+                RightAccessory={PasswordRightAccessoryRepeat}
             />
             <View style={$spacer} />
             <EditButtons

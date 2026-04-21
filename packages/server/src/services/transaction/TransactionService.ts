@@ -343,7 +343,7 @@ export default class TransactionService extends LoggerBase implements ITransacti
                         errorCode: ErrorCode.ACCOUNT_ERROR,
                         payload: {
                             field: 'targetAccountId',
-                            reason: 'not_found',
+                            reason: 'validation:valueRequired',
                         },
                     });
                 }
