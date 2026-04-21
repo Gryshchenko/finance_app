@@ -1,4 +1,4 @@
-import { ErrorCode, HttpCode, Time } from 'tenpercent/shared';
+import { ErrorCode, HttpCode, Time, UserStatus } from 'tenpercent/shared';
 
 import { IDBTransaction } from 'interfaces/IDatabaseConnection';
 import { ConfirmationHelper } from 'services/confirmation/ConfirmationHelper';
@@ -102,7 +102,7 @@ export default class EmailChangingService extends LoggerBase implements IEmailCh
             ConfirmationHelper.validateCode(record.confirmationCode, confirmationCode);
 
             await this._dataAccess.confirm(userId, trx);
-            await this._userService.patch(userId, { email: record.email }, trx);
+            await this._userService.patch(userId, { email: record.email, status: UserStatus.ACTIVE }, trx);
 
             this._logger.info(`Email change confirmed for userId ${userId}, new email: ${record.email}`);
             return true;
