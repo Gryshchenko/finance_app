@@ -26,7 +26,7 @@ export const LoginScreen: FC<LoginScreenProps> = (_props) => {
     const [isAuthPasswordHidden, setIsAuthPasswordHidden] = useState<boolean>(true);
     const { doLogin } = useAuth();
     const { form, handleChange, save, errors, setErrors } = useEditView<{ email: string; password: string }>(
-        { email: 'andy@test.com', password: 'Qwerty!2345#' },
+        { email: 'andy@test.com', password: 'Qwerty!23456#' },
         loginSchema,
     );
 

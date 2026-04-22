@@ -140,27 +140,27 @@ export const StatsBar: FC<StatsBarProps> = ({ tiles }) => {
 
 const $grid: ThemedStyle<ViewStyle> = ({ colors }) => ({
     borderWidth: 1,
-    borderColor: colors.palette.grey300,
+    borderColor: colors.border,
     overflow: 'hidden',
     flexDirection: 'row',
     flexWrap: 'wrap',
 });
 
-const $tile: ThemedStyle<ViewStyle> = () => ({
+const $tile: ThemedStyle<ViewStyle> = ({ colors }) => ({
     width: '50%',
-    backgroundColor: '#ffffff',
+    backgroundColor: colors.background,
     padding: 16,
     gap: 4,
 });
 
 const $tileBorderRight: ThemedStyle<ViewStyle> = ({ colors }) => ({
     borderRightWidth: 1,
-    borderRightColor: colors.palette.grey300,
+    borderRightColor: colors.border,
 });
 
 const $tileBorderTop: ThemedStyle<ViewStyle> = ({ colors }) => ({
     borderTopWidth: 1,
-    borderTopColor: colors.palette.grey300,
+    borderTopColor: colors.border,
 });
 
 const $tileLabel: ThemedStyle<TextStyle> = ({ colors, typography }) => ({

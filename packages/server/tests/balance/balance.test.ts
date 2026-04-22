@@ -255,7 +255,7 @@ describe('POST /balance', () => {
                     accountName: `Test EURO ${currency}`,
                     amount: newAmount,
                     currencyId: Number(currencyId),
-                    iconId: 'someIcons',
+                    iconId: 'wallet',
                 })
                 .expect(HttpCode.OK);
             return res.body.data;
@@ -268,7 +268,7 @@ describe('POST /balance', () => {
                     accountName: `Test EURO ${currency}`,
                     amount: newAmount,
                     currencyId,
-                    iconId: 'test_icon',
+                    iconId: 'wallet',
                 })
                 .expect(HttpCode.NOT_FOUND);
         };

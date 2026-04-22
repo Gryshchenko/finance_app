@@ -11,6 +11,7 @@ interface IOptions {
     onlyASCII: boolean;
     escapeHTML: boolean;
     optional: boolean;
+    allowedValues: string[];
 }
 
 export function createSignupValidationRules(field: string, type: string, options: Partial<IOptions> = {}) {
@@ -57,6 +58,12 @@ export function createSignupValidationRules(field: string, type: string, options
                 .matches(/^[a-zA-Z]{2}-[a-zA-Z]{2}$/, 'i')
                 .withMessage(`Field ${field} must be in locale format (e.g., en-US)`);
         }
+    }
+
+    if (options.allowedValues && options.allowedValues.length > 0) {
+        validatorChain = validatorChain
+            .isIn(options.allowedValues)
+            .withMessage(`Field ${field} must be one of the supported values`);
     }
 
     if (options.max && type !== 'number') {

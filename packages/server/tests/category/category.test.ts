@@ -56,7 +56,7 @@ describe('Category', () => {
                 .send({
                     currencyId: 1,
                     categoryName: name,
-                    iconId: 'test_icon',
+                    iconId: 'wallet',
                 })
                 .expect(HttpCode.OK);
             expect(categoryId).toBeTruthy();
@@ -114,7 +114,7 @@ describe('Category', () => {
                 .send({
                     currencyId: 1,
                     categoryName: name,
-                    iconId: 'test_icon',
+                    iconId: 'wallet',
                 })
                 .expect(HttpCode.OK);
             expect(categoryId).toBeTruthy();
@@ -224,7 +224,7 @@ describe('Category', () => {
             .send({
                 currencyId: 1,
                 categoryName: 'Test 1',
-                iconId: 'test_icon',
+                iconId: 'wallet',
             })
             .expect(HttpCode.OK);
         const transactions = [

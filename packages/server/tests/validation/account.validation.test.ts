@@ -30,7 +30,7 @@ const validCreate = {
     currencyId: 1,
     accountName: 'ValidName',
     amount: 100,
-    iconId: 'icon_wallet',
+    iconId: 'wallet',
 };
 
 beforeAll(async () => {
@@ -64,7 +64,7 @@ describe('POST /user/:userId/account/ — body validation', () => {
         await agent
             .post(url())
             .set('authorization', authorization)
-            .send({ accountName: 'Test', amount: 0, iconId: 'icon_x' })
+            .send({ accountName: 'Test', amount: 0, iconId: 'wallet' })
             .expect(HttpCode.BAD_REQUEST);
     });
 
@@ -72,7 +72,7 @@ describe('POST /user/:userId/account/ — body validation', () => {
         await agent
             .post(url())
             .set('authorization', authorization)
-            .send({ currencyId: 1, amount: 0, iconId: 'icon_x' })
+            .send({ currencyId: 1, amount: 0, iconId: 'wallet' })
             .expect(HttpCode.BAD_REQUEST);
     });
 
@@ -80,7 +80,7 @@ describe('POST /user/:userId/account/ — body validation', () => {
         await agent
             .post(url())
             .set('authorization', authorization)
-            .send({ currencyId: 1, accountName: 'Test', iconId: 'icon_x' })
+            .send({ currencyId: 1, accountName: 'Test', iconId: 'wallet' })
             .expect(HttpCode.BAD_REQUEST);
     });
 
@@ -148,7 +148,15 @@ describe('POST /user/:userId/account/ — body validation', () => {
     });
 
     // iconId constraints
-    it('400 — iconId too short (< 3 chars)', async () => {
+    it('400 — iconId is not a supported icon value', async () => {
+        await agent
+            .post(url())
+            .set('authorization', authorization)
+            .send({ ...validCreate, iconId: 'invalid_icon' })
+            .expect(HttpCode.BAD_REQUEST);
+    });
+
+    it('400 — iconId unknown short string', async () => {
         await agent
             .post(url())
             .set('authorization', authorization)
@@ -156,7 +164,7 @@ describe('POST /user/:userId/account/ — body validation', () => {
             .expect(HttpCode.BAD_REQUEST);
     });
 
-    it('400 — iconId too long (> 128 chars)', async () => {
+    it('400 — iconId unknown long string', async () => {
         await agent
             .post(url())
             .set('authorization', authorization)
@@ -254,11 +262,11 @@ describe('PATCH /user/:userId/account/:accountId — body & param validation', (
     });
 
     // iconId
-    it('400 — iconId too short', async () => {
+    it('400 — iconId is not a supported icon value', async () => {
         await agent
             .patch(url(existingAccountId))
             .set('authorization', authorization)
-            .send({ iconId: 'ab' })
+            .send({ iconId: 'invalid_icon' })
             .expect(HttpCode.BAD_REQUEST);
     });
 

@@ -52,12 +52,14 @@ export const TransactionCreate: FC<IProps> = function TransactionCreate(_props: 
     const { form, handleChange, save, errors, setErrors } = useEditView<Partial<ITransactionClient>>(
         {
             amount: 0,
-            amountInCurrency: 0,
             currencyId: defaultCurrencyId,
             createdAt: Time.getISODateNowUTC(),
             ...data,
         },
-        buildTransactionCreateSchema(),
+        buildTransactionCreateSchema({
+            sourceCurrencyId: data?.sourceCurrencyId,
+            currencyId: defaultCurrencyId,
+        }),
     );
 
     const hasDifferentCurrencies =

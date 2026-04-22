@@ -90,3 +90,15 @@ export type CategoryIconType =
     | TechIcon
     | VIPIcon
     | 'add';
+
+export const VALID_ICON_IDS: string[] = [
+    ...Object.values(AccountIcon),
+    ...Object.values(IncomeIcon),
+    ...Object.values(SpendIcon),
+    ...Object.values(TransportIcon),
+    ...Object.values(LeisureIcon),
+    ...Object.values(HealthIcon),
+    ...Object.values(TechIcon),
+    ...Object.values(VIPIcon),
+    'add',
+];

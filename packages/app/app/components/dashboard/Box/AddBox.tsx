@@ -39,5 +39,5 @@ export function AddBox({ onPress }: AddBoxProps) {
 const $boxDefault: ThemedStyle<ViewStyle> = ({ colors }) => ({
     borderStyle: 'dashed',
     borderColor: colors.palette.grey400,
-    backgroundColor: colors.palette.grey300,
+    backgroundColor: colors.background,
 });

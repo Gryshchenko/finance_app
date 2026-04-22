@@ -266,7 +266,7 @@ const $sectionHeaderText: ThemedStyle<TextStyle> = ({ colors }) => ({
 /* ── Transaction card ── */
 
 const $card: ThemedStyle<ViewStyle> = ({ colors }) => ({
-    backgroundColor: '#ffffff',
+    backgroundColor: colors.background,
     borderWidth: 1,
     borderColor: colors.separator,
     padding: 15,

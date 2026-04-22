@@ -32,8 +32,8 @@ let authorization: string;
 let existingIncomeId: number;
 let existingCategoryId: number;
 
-const validIncome = { currencyId: 1, incomeName: 'ValidIncome', iconId: 'icon_income' };
-const validCategory = { currencyId: 1, categoryName: 'ValidCategory', iconId: 'icon_category' };
+const validIncome = { currencyId: 1, incomeName: 'ValidIncome', iconId: 'bnb' };
+const validCategory = { currencyId: 1, categoryName: 'ValidCategory', iconId: 'wallet' };
 
 beforeAll(async () => {
     const port = Math.floor(generateSecureRandom() * (65535 - 1024) + 1024);
@@ -68,7 +68,7 @@ describe('POST /user/:userId/income/ — body validation', () => {
         await agent
             .post(url())
             .set('authorization', authorization)
-            .send({ currencyId: 1, iconId: 'icon_x' })
+            .send({ currencyId: 1, iconId: 'bnb' })
             .expect(HttpCode.BAD_REQUEST);
     });
 
@@ -76,7 +76,7 @@ describe('POST /user/:userId/income/ — body validation', () => {
         await agent
             .post(url())
             .set('authorization', authorization)
-            .send({ incomeName: 'Test', iconId: 'icon_x' })
+            .send({ incomeName: 'Test', iconId: 'bnb' })
             .expect(HttpCode.BAD_REQUEST);
     });
 
@@ -116,7 +116,15 @@ describe('POST /user/:userId/income/ — body validation', () => {
             .expect(HttpCode.BAD_REQUEST);
     });
 
-    it('400 — iconId too short (< 3)', async () => {
+    it('400 — iconId is not a supported icon value', async () => {
+        await agent
+            .post(url())
+            .set('authorization', authorization)
+            .send({ ...validIncome, iconId: 'invalid_icon' })
+            .expect(HttpCode.BAD_REQUEST);
+    });
+
+    it('400 — iconId unknown short string', async () => {
         await agent
             .post(url())
             .set('authorization', authorization)
@@ -124,7 +132,7 @@ describe('POST /user/:userId/income/ — body validation', () => {
             .expect(HttpCode.BAD_REQUEST);
     });
 
-    it('400 — iconId too long (> 128)', async () => {
+    it('400 — iconId unknown long string', async () => {
         await agent
             .post(url())
             .set('authorization', authorization)
@@ -214,11 +222,11 @@ describe('PATCH /user/:userId/income/:incomeId — body & param validation', () 
             .expect(HttpCode.BAD_REQUEST);
     });
 
-    it('400 — iconId too short', async () => {
+    it('400 — iconId is not a supported icon value', async () => {
         await agent
             .patch(url(existingIncomeId))
             .set('authorization', authorization)
-            .send({ iconId: 'ab' })
+            .send({ iconId: 'invalid_icon' })
             .expect(HttpCode.BAD_REQUEST);
     });
 
@@ -287,7 +295,7 @@ describe('POST /user/:userId/category/ — body validation', () => {
         await agent
             .post(url())
             .set('authorization', authorization)
-            .send({ currencyId: 1, iconId: 'icon_x' })
+            .send({ currencyId: 1, iconId: 'bnb' })
             .expect(HttpCode.BAD_REQUEST);
     });
 
@@ -295,7 +303,7 @@ describe('POST /user/:userId/category/ — body validation', () => {
         await agent
             .post(url())
             .set('authorization', authorization)
-            .send({ categoryName: 'Test', iconId: 'icon_x' })
+            .send({ categoryName: 'Test', iconId: 'bnb' })
             .expect(HttpCode.BAD_REQUEST);
     });
 
@@ -335,7 +343,15 @@ describe('POST /user/:userId/category/ — body validation', () => {
             .expect(HttpCode.BAD_REQUEST);
     });
 
-    it('400 — iconId too short (< 3)', async () => {
+    it('400 — iconId is not a supported icon value', async () => {
+        await agent
+            .post(url())
+            .set('authorization', authorization)
+            .send({ ...validCategory, iconId: 'invalid_icon' })
+            .expect(HttpCode.BAD_REQUEST);
+    });
+
+    it('400 — iconId unknown short string', async () => {
         await agent
             .post(url())
             .set('authorization', authorization)
@@ -343,7 +359,7 @@ describe('POST /user/:userId/category/ — body validation', () => {
             .expect(HttpCode.BAD_REQUEST);
     });
 
-    it('400 — iconId too long (> 128)', async () => {
+    it('400 — iconId unknown long string', async () => {
         await agent
             .post(url())
             .set('authorization', authorization)
@@ -419,11 +435,11 @@ describe('PATCH /user/:userId/category/:categoryId — body & param validation',
             .expect(HttpCode.BAD_REQUEST);
     });
 
-    it('400 — iconId too short', async () => {
+    it('400 — iconId is not a supported icon value', async () => {
         await agent
             .patch(url(existingCategoryId))
             .set('authorization', authorization)
-            .send({ iconId: 'ab' })
+            .send({ iconId: 'invalid_icon' })
             .expect(HttpCode.BAD_REQUEST);
     });
 

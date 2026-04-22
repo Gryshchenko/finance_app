@@ -1,4 +1,4 @@
-import { ErrorCode } from 'tenpercent/shared';
+import { ErrorCode, VALID_ICON_IDS } from 'tenpercent/shared';
 
 import { createSignupValidationRules } from 'src/utils/validation/routesInputValidation';
 
@@ -24,8 +24,7 @@ const createIncomeValidationRules = [
         max: 128,
     }),
     ...createSignupValidationRules('iconId', 'string', {
-        min: 3,
-        max: 128,
+        allowedValues: VALID_ICON_IDS,
     }),
     ...createSignupValidationRules('currencyId', 'number', {
         min: Number.MIN_SAFE_INTEGER,
@@ -40,9 +39,8 @@ const patchIncomeValidationRules = [
         max: 128,
     }),
     ...createSignupValidationRules('iconId', 'string', {
-        min: 3,
-        max: 128,
         optional: true,
+        allowedValues: VALID_ICON_IDS,
     }),
     ...createSignupValidationRules('status', 'number', {
         optional: true,

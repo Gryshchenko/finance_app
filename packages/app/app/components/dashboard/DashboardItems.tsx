@@ -1,110 +1,15 @@
-import { ComponentType } from 'react';
 import Animated from 'react-native-reanimated';
 import { DropProvider } from 'react-native-reanimated-dnd';
-import { IAccountListItem, ICategoryStats, IIncomeStats, IStatsResponse, StatsPeriod, Time } from 'tenpercent/shared';
 
-import { boxDataItemAdapter } from '@/components/dashboard/Box/boxDataItemAdapter';
 import { useDragOverlay } from '@/components/dashboard/Box/DragOverlayContext';
-import { ItemType } from '@/components/dashboard/Box/ItemBox';
-import DashboardAccount from '@/components/dashboard/DashboardAccount';
-import DashboardCategory from '@/components/dashboard/DashboardCategory';
+import DashboardAccountsItem from '@/components/dashboard/DashboardAccountsItem';
+import DashboardCategoriesItem from '@/components/dashboard/DashboardCategoriesItem';
 import DashboardDraggableItem from '@/components/dashboard/DashboardDraggableItem';
-import DashboardIncome from '@/components/dashboard/DashboardIncome';
-import DashboardItem, { IDashboardItem } from '@/components/dashboard/DashboardItem';
-import { useAppQuery } from '@/hooks/useAppQuery';
-import { IBoxDataItem } from '@/interfaces/IBoxDataItem';
-import { fetchAccounts } from '@/screens/AccountScreens/AccountsScreen';
-import { GeneralApiProblemKind } from '@/services/api/apiProblem';
-import { CategoryService } from '@/services/CategoryService';
-import { IncomeService } from '@/services/IncomeService';
-import { QueryKeys, QueryStaleTimes } from '@/services/QueryCacheService';
+import DashboardIncomesItem from '@/components/dashboard/DashboardIncomesItem';
 import { spacing } from '@/theme/spacing';
-import { BoxDataItemType } from '@/types/BoxDataItemType';
-import { Logger } from '@/utils/logger/Logger';
-
-export async function fetchIncomes(): Promise<IStatsResponse<IIncomeStats>> {
-    try {
-        const incomeService = IncomeService.instance();
-        const from = Time.toMonthStart(Time.getISODateNowUTC());
-        const to = Time.getISODateNowUTC();
-        if (!from || !to) {
-            throw new Error(`Invalid date range for fetching income stats: from ${from}, to ${to}`); // This should never happen, but we want to be safe
-        }
-        const response = await incomeService.doGetIncomeWithStats({
-            from,
-            to,
-            period: StatsPeriod.Month,
-        });
-        switch (response.kind) {
-            case GeneralApiProblemKind.Ok: {
-                return response.data as IStatsResponse<IIncomeStats>;
-            }
-            default: {
-                return {
-                    from,
-                    to,
-                    items: [],
-                    total: 0,
-                };
-            }
-        }
-    } catch (e) {
-        Logger.Of('FetchIncomes').error(`Fetch income failed due reason: ${(e as { message: string }).message}`);
-        return {
-            from: '',
-            to: '',
-            items: [],
-            total: 0,
-        };
-    }
-}
-
-export async function fetchCategories(): Promise<IStatsResponse<ICategoryStats>> {
-    try {
-        const from = Time.toMonthStart(Time.getISODateNowUTC());
-        const to = Time.getISODateNowUTC();
-        if (!from || !to) {
-            throw new Error(`Invalid date range for fetching income stats: from ${from}, to ${to}`); // This should never happen, but we want to be safe
-        }
-        const categoriesService = CategoryService.instance();
-        const response = await categoriesService.doGetCategoriesWithStats({
-            from,
-            to,
-            period: StatsPeriod.Month,
-        });
-        switch (response.kind) {
-            case GeneralApiProblemKind.Ok: {
-                return response.data as IStatsResponse<ICategoryStats>;
-            }
-            default: {
-                return {
-                    from: '',
-                    to: '',
-                    items: [],
-                    total: 0,
-                };
-            }
-        }
-    } catch (e) {
-        Logger.Of('FetchCategories').error(`Fetch categories failed due reason: ${(e as { message: string }).message}`);
-        return {
-            from: '',
-            to: '',
-            items: [],
-            total: 0,
-        };
-    }
-}
 
 export default function DashboardItems() {
     const { scrollHandler, scrollRef, onOverlayLayout, dragSessionId } = useDragOverlay();
-    const incomes = useAppQuery<IStatsResponse<IIncomeStats>>(QueryKeys.incomesStats(), fetchIncomes, {
-        staleTime: QueryStaleTimes.dashboard,
-    });
-    const accounts = useAppQuery<IAccountListItem[]>(QueryKeys.accounts(), fetchAccounts, { staleTime: QueryStaleTimes.list });
-    const categories = useAppQuery<IStatsResponse<ICategoryStats>>(QueryKeys.categoriesStats(), fetchCategories, {
-        staleTime: QueryStaleTimes.dashboard,
-    });
     return (
         <DropProvider key={dragSessionId}>
             <DashboardDraggableItem />
@@ -117,57 +22,9 @@ export default function DashboardItems() {
                 }}
                 contentContainerStyle={{ gap: spacing.md, marginTop: spacing.lg }}
             >
-                {/*
-                 * Incomes section — IncomeBox items are draggable sources only;
-                 * nothing can be dropped onto them.  No drag type should auto-expand
-                 * this grid, so acceptedDragTypes is an empty array.
-                 */}
-                <DashboardItem
-                    id={'incomes'}
-                    isExpanded={true}
-                    acceptedDragTypes={[]}
-                    keyGetter={(item: IBoxDataItem<unknown>): string => {
-                        if (item.type === BoxDataItemType.Default) {
-                            return String((item.data as IIncomeStats)?.incomeId);
-                        }
-                        return 'new-incomes';
-                    }}
-                    Item={DashboardIncome as ComponentType<IDashboardItem<unknown>>}
-                    items={boxDataItemAdapter<IIncomeStats>(incomes.data?.items ?? [])}
-                />
-                {/*
-                 * Accounts section — AccountBox accepts Account drops (transfer)
-                 * and Income drops (income transaction).  Both types may auto-expand.
-                 */}
-                <DashboardItem
-                    id={'accounts'}
-                    isExpanded={true}
-                    acceptedDragTypes={[ItemType.Account, ItemType.Income]}
-                    keyGetter={(item: IBoxDataItem<unknown>): string => {
-                        if (item.type === BoxDataItemType.Default) {
-                            return String((item.data as IAccountListItem)?.accountId);
-                        }
-                        return 'new-accounts';
-                    }}
-                    Item={DashboardAccount as ComponentType<IDashboardItem<unknown>>}
-                    items={boxDataItemAdapter<IAccountListItem>(accounts.data ?? [])}
-                />
-                {/*
-                 * Categories section — CategoryBox accepts only Account drops (expense).
-                 * Only an Account drag should trigger auto-expand here.
-                 */}
-                <DashboardItem
-                    id={'categories'}
-                    acceptedDragTypes={[ItemType.Account]}
-                    keyGetter={(item: IBoxDataItem<unknown>): string => {
-                        if (item.type === BoxDataItemType.Default) {
-                            return String((item.data as ICategoryStats)?.categoryId);
-                        }
-                        return 'new-categories';
-                    }}
-                    Item={DashboardCategory as ComponentType<IDashboardItem<unknown>>}
-                    items={boxDataItemAdapter<ICategoryStats>(categories.data?.items ?? [])}
-                />
+                <DashboardIncomesItem />
+                <DashboardAccountsItem />
+                <DashboardCategoriesItem />
             </Animated.ScrollView>
         </DropProvider>
     );

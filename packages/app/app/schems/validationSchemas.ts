@@ -166,29 +166,36 @@ const categoryEdit = {
     currencyId: Yup.number().notRequired(),
 };
 
-const buildTransactionCreateSchema = () => {
+const buildTransactionCreateSchema = ({
+    sourceCurrencyId,
+    currencyId,
+}: {
+    sourceCurrencyId: number | undefined;
+    currencyId: number;
+}) => {
     const now = new Date();
     const twentyYearsAgo = new Date();
     twentyYearsAgo.setFullYear(twentyYearsAgo.getFullYear() - 20);
+
     const transactionsCreate = {
-        transactionType: Yup.number()
-            .min(Number.MIN_VALUE, translationsKeys.valueTooShort)
-            .max(Number.MAX_VALUE, translationsKeys.valueTooLong)
+        ...(currencyId !== sourceCurrencyId
+            ? {
+                  amountInCurrency: Yup.number()
+                      .min(Number.MIN_VALUE, translationsKeys.valueTooShort)
+                      .max(Number.MAX_VALUE, translationsKeys.valueTooLong),
+                  sourceCurrencyId: Yup.number()
+                      .min(Number.MIN_VALUE, translationsKeys.valueTooShort)
+                      .max(Number.MAX_VALUE, translationsKeys.valueTooLong),
+              }
+            : {}),
+        transactionTypeId: Yup.number()
+            .oneOf([TransactionType.Expense, TransactionType.Income, TransactionType.Transafer], translationsKeys.valueRequired)
             .required(),
         amount: Yup.number()
             .min(Number.MIN_VALUE, translationsKeys.valueTooShort)
             .max(Number.MAX_VALUE, translationsKeys.valueTooLong),
-        amountInCurrency: Yup.number()
-            .min(Number.MIN_VALUE, translationsKeys.valueTooShort)
-            .max(Number.MAX_VALUE, translationsKeys.valueTooLong),
-        description: Yup.string()
-            .required(translationsKeys.valueRequired)
-            .min(3, translationsKeys.valueTooShort)
-            .max(150, translationsKeys.valueTooLong),
+        description: Yup.string().notRequired().min(3, translationsKeys.valueTooShort).max(150, translationsKeys.valueTooLong),
         currencyId: Yup.number()
-            .min(Number.MIN_VALUE, translationsKeys.valueTooShort)
-            .max(Number.MAX_VALUE, translationsKeys.valueTooLong),
-        sourceCurrencyId: Yup.number()
             .min(Number.MIN_VALUE, translationsKeys.valueTooShort)
             .max(Number.MAX_VALUE, translationsKeys.valueTooLong),
         createdAt: Yup.date().min(twentyYearsAgo, translationsKeys.valueTooShort).max(now, translationsKeys.valueTooLong),
