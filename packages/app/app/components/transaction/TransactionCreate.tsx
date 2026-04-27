@@ -51,7 +51,7 @@ export const TransactionCreate: FC<IProps> = function TransactionCreate(_props: 
 
     const { form, handleChange, save, errors, setErrors } = useEditView<Partial<ITransactionClient>>(
         {
-            amount: 0,
+            amount: '',
             currencyId: defaultCurrencyId,
             createdAt: Time.getISODateNowUTC(),
             ...data,
@@ -86,7 +86,7 @@ export const TransactionCreate: FC<IProps> = function TransactionCreate(_props: 
             categoryId: form.categoryId,
             currencyId: form.currencyId,
             transactionTypeId: form.transactionTypeId,
-            amount: form.amount,
+            amount: Number(form.amount),
             createdAt: form.createdAt,
             targetAccountId: form.targetAccountId,
             description: form.description,

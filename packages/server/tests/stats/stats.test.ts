@@ -88,7 +88,7 @@ describe('Stats', () => {
                 currencyId,
                 100,
                 1,
-                Time.getISODate(new Date(date)),
+                Time.jsDateToUTCISO(new Date(date)),
             );
             expanseResultIds.push(...ide);
             const randomIncomesIndex = generateRandomNumber(0, incomeIds.length - 1);
@@ -102,7 +102,7 @@ describe('Stats', () => {
                 currencyId,
                 100,
                 1,
-                Time.getISODate(new Date(date)),
+                Time.jsDateToUTCISO(new Date(date)),
             );
             incomesResultIds.push(...idi);
             const idt = await createTransferTransactions(
@@ -114,13 +114,13 @@ describe('Stats', () => {
                 currencyId,
                 100,
                 1,
-                Time.getISODate(new Date(date)),
+                Time.jsDateToUTCISO(new Date(date)),
             );
             transferResultIds.push(...idt);
         }
         const data = await getCategoriesWithStats(agent, userId, authorization, {
-            from: Time.getISODate(new Date(from)),
-            to: Time.getISODate(new Date(to)),
+            from: Time.jsDateToUTCISO(new Date(from)),
+            to: Time.jsDateToUTCISO(new Date(to)),
             period: StatsPeriod.Month,
         });
         expect(data.to).toEqual(to);
@@ -188,13 +188,13 @@ describe('Stats', () => {
         expect(Utils.roundNumber(summary2.transfer_total)).toEqual(Utils.roundNumber(sumBefore - 50));
 
         await patchTransaction(agent, userId, authorization, incomesResultIds[0], {
-            createdAt: Time.getISODate(new Date('2025-11-01T11:00:00')),
+            createdAt: Time.jsDateToUTCISO(new Date('2025-11-01T11:00:00')),
         });
         await patchTransaction(agent, userId, authorization, transferResultIds[0], {
-            createdAt: Time.getISODate(new Date('2025-11-01T11:00:00')),
+            createdAt: Time.jsDateToUTCISO(new Date('2025-11-01T11:00:00')),
         });
         await patchTransaction(agent, userId, authorization, expanseResultIds[0], {
-            createdAt: Time.getISODate(new Date('2025-11-01T11:00:00')),
+            createdAt: Time.jsDateToUTCISO(new Date('2025-11-01T11:00:00')),
         });
 
         const summary3 = await getSummary(agent, userId, authorization, {

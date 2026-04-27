@@ -1,6 +1,6 @@
 import { FC } from 'react';
 import { StyleProp, TextStyle, View, ViewStyle } from 'react-native';
-import { IAccount, ICurrency } from 'tenpercent/shared';
+import { ICurrency } from 'tenpercent/shared';
 
 import { CurrencyField } from '@/components/CurrencyField';
 import { GeneralDetailView } from '@/components/GeneralDetailView';
@@ -9,12 +9,13 @@ import { TextField } from '@/components/TextField';
 import { CurrencyDropdown } from '@/components/Toggle/CurrencyDropdown';
 import { useCurrency } from '@/context/CurrencyContext';
 import { TxKeyPath } from '@/i18n';
+import { IAccountClient } from '@/interfaces/IAccountClient';
 import { useAppTheme } from '@/theme/context';
 import { ThemedStyle } from '@/theme/types';
 
 interface IProps {
-    form: Partial<IAccount>;
-    errors?: Partial<Record<keyof IAccount, TxKeyPath>>;
+    form: Partial<IAccountClient>;
+    errors?: Partial<Record<keyof IAccountClient, TxKeyPath>>;
     handleChange?: (key: string, value: string | number) => void;
     isView: boolean;
     isEdit: boolean;

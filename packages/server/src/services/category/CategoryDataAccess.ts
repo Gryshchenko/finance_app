@@ -1,4 +1,4 @@
-import { ICategory, IGetStatsProperties, ICategoryStats, DateFormat, Time } from 'tenpercent/shared';
+import { ICategory, IGetStatsProperties, ICategoryStats, Time } from 'tenpercent/shared';
 
 import { ICreateCategory } from 'interfaces/ICreateCategory';
 import { IDatabaseConnection, IDBTransaction } from 'interfaces/IDatabaseConnection';
@@ -41,10 +41,7 @@ export default class CategoryDataAccess extends LoggerBase implements ICategoryD
                 .leftJoin('daily_categories_stats as dcs', function () {
                     this.on('categories.categoryId', '=', 'dcs.categoryId')
                         .andOnVal('dcs.userId', '=', userId)
-                        .andOnBetween('dcs.date', [
-                            Time.formatDate(from, DateFormat.YYYY_MM_DD),
-                            Time.formatDate(to, DateFormat.YYYY_MM_DD),
-                        ]);
+                        .andOnBetween('dcs.date', [from, to]);
                 })
                 .where('categories.userId', userId)
                 .groupBy(

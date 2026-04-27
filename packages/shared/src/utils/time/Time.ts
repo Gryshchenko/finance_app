@@ -27,10 +27,10 @@ class Time {
     public static utc(): DateTime<boolean> {
         return DateTime.utc();
     }
-    public static getISODate(date: Date): string {
+    public static jsDateToUTCISO(date: Date): string {
         return DateTime.fromJSDate(date).toUTC().toISO();
     }
-    public static getISODateNow(): string {
+    public static getNowISOLocal(): string {
         return DateTime.now().toISO();
     }
     public static getISODateNowUTC(): string {
@@ -40,11 +40,15 @@ class Time {
     public static toJSDate(time: string): Date {
         return DateTime.fromISO(time).toJSDate();
     }
+
+    public static toUTCISO(time: string): string {
+        return DateTime.fromISO(time, { zone: 'utc' }).toJSDate().toISOString();
+    }
     public static fromJSDateUTC(time: Date): string {
         const dt = DateTime.fromJSDate(time, { zone: 'utc' });
         return dt.toUTC().toISO();
     }
-    public static fromISO(isoString: string, throwOnInvalid = true): DateTime {
+    public static fromUTCISO(isoString: string, throwOnInvalid = true): DateTime {
         const dt = DateTime.fromISO(isoString, { zone: 'utc' });
 
         if (!dt.isValid) {
@@ -103,7 +107,7 @@ class Time {
         return `${minutes}:${secStr}`;
     }
 
-    public static formatDate(isoString: string, format: DateFormat): string {
+    public static formatUTCDate(isoString: string, format: DateFormat): string {
         const dt = DateTime.fromISO(isoString, { zone: 'utc' });
         if (!dt.isValid) {
             throw new Error(`Invalid ISO date: ${dt}, explanation: ${dt.invalidExplanation}`);
@@ -145,32 +149,37 @@ class Time {
         }
         return dt;
     }
-    /**
-     * * >= start of day (inclusive)
-     */
-    public static toInclusiveFrom(dateISO: string): string | null {
+    public static toDayInclusiveStart(dateISO: string): string | null {
         return Time.parseISO(dateISO).startOf('day').toISO();
     }
 
-    /**
-     * < start of next day (exclusive)
-     */
-    public static toExclusiveTo(dateISO: string): string | null {
+    public static toDayExclusiveEnd(dateISO: string): string | null {
         return Time.parseISO(dateISO).plus({ days: 1 }).startOf('day').toISO();
     }
 
-    /**
-     * >= start of month (inclusive)
-     */
     public static toMonthStart(dateISO: string): string | null {
         return Time.parseISO(dateISO).startOf('month').toISO();
     }
 
-    /**
-     * < start of next month (exclusive)
-     */
     public static toMonthEndExclusive(dateISO: string): string | null {
         return Time.parseISO(dateISO).startOf('month').plus({ months: 1 }).toISO();
+    }
+
+    public static toPreviousMonthStart(dateISO: string): string | null {
+        return Time.parseISO(dateISO).startOf('month').minus({ months: 1 }).toISO();
+    }
+
+    public static toPreviousMonthEndExclusive(dateISO: string): string | null {
+        return Time.parseISO(dateISO).startOf('month').toISO();
+    }
+
+    public static getDaysInMonth(dateISO: string): number {
+        const dt = DateTime.fromISO(dateISO);
+        return dt.daysInMonth;
+    }
+    public static getCurrentDayInMonth(dateISO: string): number {
+        const dt = DateTime.fromISO(dateISO);
+        return dt.day;
     }
 }
 

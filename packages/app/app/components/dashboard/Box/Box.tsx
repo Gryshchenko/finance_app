@@ -1,5 +1,5 @@
 import { JSX, useEffect, useRef, useState, ReactNode } from 'react';
-import { View, ViewStyle } from 'react-native';
+import { Pressable, View, ViewStyle } from 'react-native';
 import { Draggable, Droppable } from 'react-native-reanimated-dnd';
 
 import { BoxDraggableItem, IBoxDraggableItem } from '@/components/dashboard/Box/BoxDraggableItem';
@@ -104,89 +104,91 @@ export function Box(props: IBoxProps) {
                     resetDragState();
                 }}
             >
-                <Draggable
-                    collisionAlgorithm={'intersect'}
-                    onDragStart={(data) => {
-                        wasDragged.current = false;
-                        // Notify context which item type is being dragged so that
-                        // DashboardExpandableGrid can validate acceptedDragTypes.
-                        setDraggingItemType(type);
-                        // Start a short timer — if the drag ends before it fires
-                        // and nothing moved, we treat the gesture as a tap.
-                        tapTimerRef.current = setTimeout(() => {
-                            tapTimerRef.current = null;
-                            if (!wasDragged.current) {
-                                onTap?.();
-                            }
-                        }, 300);
-                        onDragStart?.(data);
-                    }}
-                    onDragEnd={(data) => {
-                        // If the timer is still pending the drag ended in < 300 ms.
-                        // We cancel the timer and handle the tap here so it only
-                        // fires once (not once in the timer + once here).
-                        const timerWasPending = !!tapTimerRef.current;
-                        if (tapTimerRef.current) {
-                            clearTimeout(tapTimerRef.current);
-                            tapTimerRef.current = null;
-                        }
-                        if (!wasDragged.current && timerWasPending) {
-                            onTap?.();
-                        }
-                        wasDragged.current = false;
-                        // Clear the dragging type so DashboardExpandableGrid can
-                        // close any grids that were auto-opened during this drag.
-                        setDraggingItemType(undefined);
-                        onDragEnd?.(data);
-                        setInitialDragPosition(initialOffset.current.x, initialOffset.current.y - DASH_BOARD_BOX_SIZE);
-                    }}
-                    onDragging={(data) => {
-                        // First movement cancels tap detection.
-                        if (!wasDragged.current) {
-                            wasDragged.current = true;
-                            if (tapTimerRef.current) {
-                                clearTimeout(tapTimerRef.current);
-                                tapTimerRef.current = null;
-                            }
-                        }
-
-                        setDraggedElementId(data.itemData.id);
-                        initialOffset.current.x = data.x;
-                        initialOffset.current.y = data.y;
-
-                        initiateItemDrag({
-                            element: <BoxDraggableItem {...BoxDraggableItemProps} />,
-                            id: data.itemData.id,
-                            type: data.itemData.type,
-                        });
-                        updateDragPosition(data.tx + data.x, data.ty + data.y - DASH_BOARD_BOX_SIZE);
-                        onDragging?.(data);
-                    }}
-                    draggableId={droppableId}
-                    dragDisabled={!isDraggable}
-                    data={{ id, type, payload }}
-                >
-                    <BoxDraggableItem
-                        ref={viewRef}
-                        {...BoxDraggableItemProps}
-                        styles={{
-                            ...BoxDraggableItemProps.styles,
-                            box: [
-                                isDragging ? themed($opacity) : undefined,
-                                ...(BoxDraggableItemProps.styles?.box ?? []),
-                                isDragOver ? themed($dragOver) : undefined,
-                            ],
-                        }}
-                    />
-                </Draggable>
-                {isDragging && (
-                    <BoxDraggableItem
-                        {...BoxDraggableItemProps}
-                        styles={{
-                            ...BoxDraggableItemProps.styles,
-                            box: [themed($dragging), ...(BoxDraggableItemProps.styles?.box ?? [])],
-                        }}
-                    />
+                {isDraggable ? (
+                    <>
+                        <Draggable
+                            collisionAlgorithm={'intersect'}
+                            onDragStart={(data) => {
+                                wasDragged.current = false;
+                                setDraggingItemType(type);
+                                tapTimerRef.current = setTimeout(() => {
+                                    tapTimerRef.current = null;
+                                    if (!wasDragged.current) {
+                                        onTap?.();
+                                    }
+                                }, 300);
+                                onDragStart?.(data);
+                            }}
+                            onDragEnd={(data) => {
+                                const timerWasPending = !!tapTimerRef.current;
+                                if (tapTimerRef.current) {
+                                    clearTimeout(tapTimerRef.current);
+                                    tapTimerRef.current = null;
+                                }
+                                if (!wasDragged.current && timerWasPending) {
+                                    onTap?.();
+                                }
+                                wasDragged.current = false;
+                                setDraggingItemType(undefined);
+                                onDragEnd?.(data);
+                                setInitialDragPosition(initialOffset.current.x, initialOffset.current.y - DASH_BOARD_BOX_SIZE);
+                            }}
+                            onDragging={(data) => {
+                                if (!wasDragged.current) {
+                                    wasDragged.current = true;
+                                    if (tapTimerRef.current) {
+                                        clearTimeout(tapTimerRef.current);
+                                        tapTimerRef.current = null;
+                                    }
+                                }
+                                setDraggedElementId(data.itemData.id);
+                                initialOffset.current.x = data.x;
+                                initialOffset.current.y = data.y;
+                                initiateItemDrag({
+                                    element: <BoxDraggableItem {...BoxDraggableItemProps} />,
+                                    id: data.itemData.id,
+                                    type: data.itemData.type,
+                                });
+                                updateDragPosition(data.tx + data.x, data.ty + data.y - DASH_BOARD_BOX_SIZE);
+                                onDragging?.(data);
+                            }}
+                            draggableId={droppableId}
+                            data={{ id, type, payload }}
+                        >
+                            <BoxDraggableItem
+                                ref={viewRef}
+                                {...BoxDraggableItemProps}
+                                styles={{
+                                    ...BoxDraggableItemProps.styles,
+                                    box: [
+                                        isDragging ? themed($opacity) : undefined,
+                                        ...(BoxDraggableItemProps.styles?.box ?? []),
+                                        isDragOver ? themed($dragOver) : undefined,
+                                    ],
+                                }}
+                            />
+                        </Draggable>
+                        {isDragging && (
+                            <BoxDraggableItem
+                                {...BoxDraggableItemProps}
+                                styles={{
+                                    ...BoxDraggableItemProps.styles,
+                                    box: [themed($dragging), ...(BoxDraggableItemProps.styles?.box ?? [])],
+                                }}
+                            />
+                        )}
+                    </>
+                ) : (
+                    <Pressable onPress={onTap}>
+                        <BoxDraggableItem
+                            ref={viewRef}
+                            {...BoxDraggableItemProps}
+                            styles={{
+                                ...BoxDraggableItemProps.styles,
+                                box: [...(BoxDraggableItemProps.styles?.box ?? []), isDragOver ? themed($dragOver) : undefined],
+                            }}
+                        />
+                    </Pressable>
                 )}
             </Droppable>
             {children}

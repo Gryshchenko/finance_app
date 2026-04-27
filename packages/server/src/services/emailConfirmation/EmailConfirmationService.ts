@@ -90,7 +90,7 @@ export default class EmailConfirmationService extends LoggerBase implements IEma
                 });
             }
 
-            if (Time.getISODate(record.expiresAt) < Time.getISODateNowUTC()) {
+            if (Time.jsDateToUTCISO(record.expiresAt) < Time.getISODateNowUTC()) {
                 throw new ValidationError({
                     message: `No pending email change found for userId ${userId}`,
                     errorCode: ErrorCode.EMAIL_CONFIRMATION_ERROR,

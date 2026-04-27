@@ -20,11 +20,21 @@ export default class Logger {
     }
 
     private log(level: 'info' | 'warn' | 'error' | 'debug', message: string, data?: unknown) {
+        let extra: Record<string, unknown> = {};
+        if (data !== null && data !== undefined) {
+            if (typeof data === 'object' && typeof (data as Record<string, unknown>).toJSON === 'function') {
+                extra = (data as { toJSON: () => Record<string, unknown> }).toJSON();
+            } else if (typeof data === 'object') {
+                extra = { ...(data as Record<string, unknown>) };
+            } else {
+                extra = { data };
+            }
+        }
         baseLogger[level](
             {
                 module: this._module,
                 ...this._context,
-                ...(typeof data === 'object' ? { ...data } : {}),
+                ...extra,
             },
             message,
         );

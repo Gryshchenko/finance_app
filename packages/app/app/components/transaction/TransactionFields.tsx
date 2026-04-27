@@ -132,7 +132,7 @@ export const TransactionFields: FC<IProps> = function TransactionFields(_props) 
                                     }
                                 },
                                 currency: getCurrencySymbol(form.sourceCurrencyId!),
-                                value: String(form.amountInCurrency!),
+                                value: form.amountInCurrency!,
                                 editable: !isView,
                                 helperTx: errors?.amountInCurrency,
                                 labelTx: 'common:amount',
@@ -148,7 +148,7 @@ export const TransactionFields: FC<IProps> = function TransactionFields(_props) 
                                 focusOnMount: false,
                                 onChangeCleaned: (v: string) => handleChange?.('amount', v),
                                 currency: getCurrencySymbol(form.currencyId!),
-                                value: String(form.amount!),
+                                value: form.amount!,
                                 editable: !isView,
                                 helperTx: errors?.amount,
                                 labelTx: ' ',
@@ -199,7 +199,9 @@ export const TransactionFields: FC<IProps> = function TransactionFields(_props) 
                     value={form.createdAt!}
                     helperTx={errors?.createdAt}
                     status={errors?.createdAt ? 'error' : undefined}
-                    onChange={(v) => handleChange?.('createdAt', v)}
+                    onChange={(v) => {
+                        handleChange?.('createdAt', v);
+                    }}
                 />
 
                 <TextField

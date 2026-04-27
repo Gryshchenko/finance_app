@@ -8,6 +8,7 @@ import { TransactionFields } from '@/components/transaction/TransactionFields';
 import { useInvalidateQuery } from '@/hooks/useAppQuery';
 import { useEditView } from '@/hooks/useEditView';
 import { translate } from '@/i18n/translate';
+import { ITransactionClient } from '@/interfaces/ITransactionClient';
 import { buildTransactionEditSchema } from '@/schems/validationSchemas';
 import AlertService from '@/services/AlertService';
 import { buildGeneralApiBaseHandler, GeneralApiProblemKind, handleBadDataResponse } from '@/services/api/apiProblem';
@@ -17,14 +18,14 @@ import { TransactionService } from '@/services/TransactionService';
 import { OverviewPath } from '@/types/OverviewPath';
 
 interface ITransactionPros {
-    data: Partial<ITransaction> | undefined;
+    data: Partial<ITransactionClient> | undefined;
 }
 
 export const TransactionEdit: FC<ITransactionPros> = function TransactionEdit(_props) {
     const { data } = _props;
     const navigation = useNavigation();
     const invalidateQuery = useInvalidateQuery();
-    const { form, handleChange, save, errors, setErrors } = useEditView<Partial<ITransaction>>(
+    const { form, handleChange, save, errors, setErrors } = useEditView<Partial<ITransactionClient>>(
         data!,
         buildTransactionEditSchema(),
     );
@@ -37,7 +38,7 @@ export const TransactionEdit: FC<ITransactionPros> = function TransactionEdit(_p
             incomeId: form.incomeId,
             categoryId: form.categoryId,
             currencyId: form.currencyId,
-            amount: form.amount,
+            amount: Number(form.amount),
             createdAt: form.createdAt,
             targetAccountId: form.targetAccountId,
             description: form.description,

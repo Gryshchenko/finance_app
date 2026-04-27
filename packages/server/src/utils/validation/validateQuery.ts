@@ -48,7 +48,7 @@ const validateQuery = (schema: Record<string, string>) => {
             }
         });
         if (errors.length) {
-            Logger.Of('validateQuery').error(`Validate query failed due reason`, errors);
+            Logger.Of('validateQuery').error(`Validate query failed due reason`, { errors });
             return res.status(HttpCode.BAD_REQUEST).json(
                 new ResponseBuilder()
                     .setStatus(ResponseStatusType.INTERNAL)

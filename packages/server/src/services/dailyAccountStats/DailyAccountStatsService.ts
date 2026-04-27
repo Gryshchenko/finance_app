@@ -29,11 +29,27 @@ export interface IDailyAccountStatsService {
         accountId: number,
         trx?: IDBTransaction,
     ) => Promise<boolean>;
+    summary: (
+        userId: number,
+        id: number,
+        from: string,
+        to: string,
+    ) => Promise<{ id: number; totalIncome: number; totalExpanse: number }>;
 }
 
 export class DailyAccountStatsService extends LoggerBase implements IDailyAccountStatsService {
     constructor(private readonly dataAccess: IDailyAccountStatsDataAccess) {
         super();
+    }
+    async summary(
+        userId: number,
+        id: number,
+        from: string,
+        to: string,
+    ): Promise<{ id: number; totalIncome: number; totalExpanse: number }> {
+        const fromDate: string = statsValidateDate(from);
+        const toDate: string = statsValidateDate(to);
+        return this.dataAccess.summary(userId, id, fromDate, toDate);
     }
 
     async updateTotal(

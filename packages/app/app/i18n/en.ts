@@ -58,6 +58,7 @@ const en = {
         CLIENT_AUTH_ERROR: 'A client authentication error occurred. Please sign in again.',
     },
     validation: {
+        date: 'Invalid date',
         sameEmail: 'Same email address',
         samePassword: 'Same password',
         unsupportedLanguage: 'Invalid language',

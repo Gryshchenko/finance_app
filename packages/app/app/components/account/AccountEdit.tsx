@@ -7,6 +7,7 @@ import { AccountFields } from '@/components/account/AccountFields';
 import { EmptyState } from '@/components/EmptyState';
 import { useInvalidateQuery } from '@/hooks/useAppQuery';
 import { useEditView } from '@/hooks/useEditView';
+import { IAccountClient } from '@/interfaces/IAccountClient';
 import { accountEditSchema } from '@/schems/validationSchemas';
 import { AccountService } from '@/services/AccountService';
 import { buildGeneralApiBaseHandler, GeneralApiProblemKind, handleBadDataResponse } from '@/services/api/apiProblem';
@@ -15,14 +16,14 @@ import ToastService from '@/services/ToastService';
 import { OverviewPath } from '@/types/OverviewPath';
 
 interface IAccountPros {
-    data: Partial<IAccount> | undefined;
+    data: Partial<IAccountClient> | undefined;
 }
 
 export const AccountEdit: FC<IAccountPros> = function AccountEdit(_props) {
     const { data } = _props;
     const navigation = useNavigation();
     const invalidateQuery = useInvalidateQuery();
-    const { form, handleChange, save, errors, setErrors } = useEditView<Partial<IAccount>>(data!, accountEditSchema);
+    const { form, handleChange, save, errors, setErrors } = useEditView<Partial<IAccountClient>>(data!, accountEditSchema);
 
     const handlePatch = async () => {
         const accountService = AccountService.instance();
@@ -31,7 +32,7 @@ export const AccountEdit: FC<IAccountPros> = function AccountEdit(_props) {
 
         const response = await accountService.doPatchAccount(form.accountId!, {
             accountName: form.accountName!,
-            amount: form.amount!,
+            amount: Number(form.amount!),
             iconId: form.iconId,
         });
         if (response.kind === GeneralApiProblemKind.Ok) {

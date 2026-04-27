@@ -1,28 +1,71 @@
 import { FC } from 'react';
 import { TextStyle, View, ViewStyle } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
-import { IPagination, ITransactionListItem } from 'tenpercent/shared';
+import { IEntityStats, IPagination, ITransactionListItem, StatsPeriod, Time, TransactionType } from 'tenpercent/shared';
 
 import { EmptyState } from '@/components/EmptyState';
 import { Text } from '@/components/Text';
 import TransactionSectionList, { fetchTransactionType } from '@/components/transaction/TransactionSectionList';
 import { TransactionStatsBar } from '@/components/transaction/TransactionStatsBar';
+import { useAppQuery } from '@/hooks/useAppQuery';
 import { translate } from '@/i18n/translate';
+import { GeneralApiProblemKind } from '@/services/api/apiProblem';
+import { QueryKeys, QueryStaleTimes } from '@/services/QueryCacheService';
+import { StatsService } from '@/services/StatsService';
 import { useAppTheme } from '@/theme/context';
 import { ThemedStyle } from '@/theme/types';
+import { Logger } from '@/utils/logger/Logger';
 
 interface ITransactionsPros {
-    data: IPagination<ITransactionListItem> | undefined;
+    data: {
+        transactions: IPagination<ITransactionListItem> | undefined;
+        entityId: number;
+        transactionType: TransactionType;
+    };
     fetch?: fetchTransactionType;
     onPress?: (id: number, name: string) => void;
 }
+export async function fetchStats(entityId: number, type: TransactionType): Promise<IEntityStats | null> {
+    try {
+        const statsService = StatsService.instance();
+        const response = await statsService.entityStats({
+            to: Time.getISODateNowUTC() as string,
+            from: Time.toMonthStart(Time.getISODateNowUTC()) as string,
+            period: StatsPeriod.Month,
+            entityId,
+            type,
+        });
+        switch (response.kind) {
+            case GeneralApiProblemKind.Ok: {
+                return response.data as IEntityStats;
+            }
+            default: {
+                return null;
+            }
+        }
+    } catch (e) {
+        Logger.Of('Transactions').error(`Fetch entityStats failed due reason: ${(e as { message: string }).message}`);
+        return null;
+    }
+}
 
 export const Transactions: FC<ITransactionsPros> = function Transactions(_props) {
-    const { data, fetch, onPress } = _props;
-    const navigation = useNavigation();
     const { themed } = useAppTheme();
+    const {
+        data: { transactions, transactionType, entityId },
+        fetch,
+        onPress,
+    } = _props;
+    const navigation = useNavigation();
+    useAppQuery<IEntityStats | null>(
+        QueryKeys.entityStats(entityId, transactionType),
+        async () => fetchStats(entityId, transactionType),
+        {
+            staleTime: QueryStaleTimes.transactions,
+        },
+    );
 
-    if (!data || data?.data?.length <= 0) {
+    if (!transactions || transactions?.data?.length <= 0) {
         return <EmptyState style={themed([$containerStyleOverride])} buttonOnPress={() => navigation.goBack()} />;
     }
 
@@ -36,7 +79,7 @@ export const Transactions: FC<ITransactionsPros> = function Transactions(_props)
                 <Text style={themed([$headerLabel])} text={translate('transactionScreen:recentActivity' as const)} />
             </View>
 
-            <TransactionSectionList onPress={onPress} transactions={data.data} fetch={fetch} />
+            <TransactionSectionList onPress={onPress} transactions={transactions.data} fetch={fetch} />
         </View>
     );
 };

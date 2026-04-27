@@ -14,7 +14,7 @@ import { OverviewPath } from '@/types/OverviewPath';
 import { ValidationError } from '@/utils/errors/ValidationError';
 import { Logger } from '@/utils/logger/Logger';
 
-export async function fetchIncome(id: number): Promise<IIncome | undefined> {
+export async function fetchIncome(id: number): Promise<IIncome | null> {
     try {
         if (Utils.isNull(id)) {
             throw new ValidationError({
@@ -28,12 +28,12 @@ export async function fetchIncome(id: number): Promise<IIncome | undefined> {
                 return response.data as IIncome;
             }
             default: {
-                return undefined;
+                return null;
             }
         }
     } catch (e) {
         Logger.Of('FetchIncomes').error(`Fetch incomeId ${id}  failed due reason: ${(e as { message: string }).message}`);
-        return undefined;
+        return null;
     }
 }
 
@@ -42,7 +42,7 @@ type Props = NativeStackScreenProps<OverviewTabParamList, IncomePath.IncomeView>
 export const IncomeViewScreen = function IncomeViewScreen(_props: Props) {
     const params = _props?.route?.params as { id: number; name: string };
     const navigation = useNavigation();
-    const { isError, data, isPending } = useAppQuery<IIncome | undefined>(
+    const { isError, data, isPending } = useAppQuery<IIncome | null>(
         QueryKeys.income(params?.id),
         () => fetchIncome(params?.id),
         { staleTime: QueryStaleTimes.detail },

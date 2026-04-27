@@ -1,4 +1,4 @@
-import { ErrorCode, HttpCode, ISummary, StatsPeriod, TransactionType } from 'tenpercent/shared';
+import { ErrorCode, HttpCode, IEntityStats, ISummary, StatsPeriod, Time, TransactionType } from 'tenpercent/shared';
 
 import { LoggerBase } from 'helper/logger/LoggerBase';
 import { IDBTransaction } from 'interfaces/IDatabaseConnection';
@@ -9,6 +9,7 @@ import { IDailyStatsService } from 'services/dailyStats/DailyStatsService';
 import { IDailyTransferStatsService } from 'services/dailyTransferStats/DailyTransferStatsService';
 import { CustomError } from 'src/utils/errors/CustomError';
 import { DBError } from 'src/utils/errors/DBError';
+import { ValidationError } from 'src/utils/errors/ValidationError';
 import { StatsTransactionType } from 'types/StatsTransactionType';
 
 type ISODateString = string;
@@ -101,7 +102,6 @@ interface DeleteTransferCommand {
     trx?: IDBTransaction;
 }
 
-// Unions
 type CreateStatsCommand = CreateExpenseCommand | CreateIncomeCommand | CreateTransferCommand;
 type PatchStatsCommand = PatchExpenseCommand | PatchIncomeCommand | PatchTransferCommand;
 type DeleteStatsCommand = DeleteExpenseCommand | DeleteIncomeCommand | DeleteTransferCommand;
@@ -112,6 +112,7 @@ export interface IStatsOrchestratorService {
     create(command: CreateStatsCommand): Promise<boolean>;
     patch(command: PatchStatsCommand): Promise<boolean>;
     delete(command: DeleteStatsCommand): Promise<boolean>;
+    entityStats(userId: number, type: TransactionType, id: number, from: string, to: string): Promise<IEntityStats>;
 }
 
 export default class StatsOrchestratorService extends LoggerBase implements IStatsOrchestratorService {
@@ -219,7 +220,7 @@ export default class StatsOrchestratorService extends LoggerBase implements ISta
             default: {
                 throw new CustomError({
                     statusCode: HttpCode.BAD_REQUEST,
-                    errorCode: ErrorCode.TRANSACTION_ERROR,
+                    errorCode: ErrorCode.STATS_ERROR,
                     message: 'Transaction unsupported create transaction type',
                 });
             }
@@ -369,7 +370,7 @@ export default class StatsOrchestratorService extends LoggerBase implements ISta
             default: {
                 throw new CustomError({
                     statusCode: HttpCode.BAD_REQUEST,
-                    errorCode: ErrorCode.TRANSACTION_ERROR,
+                    errorCode: ErrorCode.STATS_ERROR,
                     message: 'Transaction unsupported create transaction type',
                 });
             }
@@ -425,13 +426,86 @@ export default class StatsOrchestratorService extends LoggerBase implements ISta
             default: {
                 throw new CustomError({
                     statusCode: HttpCode.BAD_REQUEST,
-                    errorCode: ErrorCode.TRANSACTION_ERROR,
+                    errorCode: ErrorCode.STATS_ERROR,
                     message: 'Transaction unsupported create transaction type',
                 });
             }
         }
     }
-    public summary(userId: number, from: string, to: string, period: StatsPeriod): Promise<ISummary> {
-        return this._dailyStatsService.summary(userId, from, to, period);
+    public async summary(userId: number, from: string, to: string, period: StatsPeriod): Promise<ISummary> {
+        return await this._dailyStatsService.summary(userId, from, to, period);
+    }
+    public async entityStats(userId: number, type: TransactionType, id: number, from: string, to: string): Promise<IEntityStats> {
+        const startDate = Time.toMonthStart(from);
+        const endDate = to;
+        if (!startDate) {
+            throw new ValidationError({
+                message: `From date is invalid: ${from}`,
+                errorCode: ErrorCode.STATS_ERROR,
+                payload: {
+                    field: 'from',
+                    reason: 'validation:date',
+                },
+            });
+        }
+        if (!endDate) {
+            throw new ValidationError({
+                message: `To date is invalid: ${to}`,
+                errorCode: ErrorCode.STATS_ERROR,
+                payload: {
+                    field: 'to',
+                    reason: 'validation:date',
+                },
+            });
+        }
+        const prevStartDate = Time.toPreviousMonthStart(from);
+        const prevEndDate = Time.toPreviousMonthEndExclusive(to);
+        if (!prevStartDate || !prevEndDate) {
+            throw new ValidationError({
+                message: `Invalid date properties from: ${startDate}, to: ${prevEndDate} `,
+                errorCode: ErrorCode.STATS_ERROR,
+                payload: {
+                    field: 'from',
+                    reason: 'validation:date',
+                },
+            });
+        }
+        switch (type) {
+            case TransactionType.Income: {
+                const current = await this._dailyIncomeStatsService.summary(userId, id, startDate, endDate);
+                const previous = await this._dailyIncomeStatsService.summary(userId, id, prevStartDate, prevEndDate);
+                return {
+                    spendMTD: 100,
+                    forecast: 100,
+                    vsLastMonthPct: Math.abs(current.total - previous.total),
+                    budgetPct: 100,
+                };
+            }
+            case TransactionType.Expense: {
+                const current = await this._dailyAccountStatsService.summary(userId, id, startDate, endDate);
+                const previous = await this._dailyAccountStatsService.summary(userId, id, prevStartDate, prevEndDate);
+                return {
+                    spendMTD: current.totalExpanse,
+                    forecast: (current.totalExpanse / Time.getCurrentDayInMonth(startDate)) * Time.getDaysInMonth(startDate),
+                    vsLastMonthPct: Math.abs(current.totalExpanse - previous.totalExpanse),
+                    budgetPct: 100,
+                };
+            }
+            case TransactionType.Transafer: {
+                return {
+                    spendMTD: 100,
+                    forecast: 100,
+                    vsLastMonthPct: 100,
+                    budgetPct: 100,
+                };
+            }
+            default: {
+                throw new ValidationError({
+                    statusCode: HttpCode.BAD_REQUEST,
+                    errorCode: ErrorCode.STATS_ERROR,
+                    message: `Transaction unsupported create transaction type: ${type}`,
+                });
+            }
+        }
     }
 }

@@ -8,11 +8,38 @@ export interface IDailyIncomeStatsDataAccess {
     updateTotal(userId: number, date: string, incomeId: number, amount: number, trx?: IDBTransaction): Promise<boolean>;
     addToScore: (userId: number, date: string, amount: number, incomeId: number, trx?: IDBTransaction) => Promise<boolean>;
     subtractFromScore: (userId: number, date: string, amount: number, incomeId: number, trx?: IDBTransaction) => Promise<boolean>;
+    summary: (userId: number, id: number, from: string, to: string) => Promise<{ id: number; total: number }>;
 }
 
 export class DailyIncomeStatsDataAccess extends LoggerBase implements IDailyIncomeStatsDataAccess {
     constructor(private readonly _db: IDatabaseConnection) {
         super();
+    }
+
+    async summary(userId: number, id: number, from: string, to: string): Promise<{ id: number; total: number }> {
+        try {
+            const fromConverted = Time.toUTCISO(from);
+            const toConverted = Time.toUTCISO(to);
+            this._logger.info(
+                `Fetching summary for userId: ${userId}, incomeId: ${id}, from: ${fromConverted}, to: ${toConverted}`,
+            );
+            const result = await this._db
+                .engine()('daily_incomes_stats')
+                .where({ userId, incomeId: id })
+                .andWhereBetween('date', [fromConverted, toConverted])
+                .sum({ total: this._db.engine().raw('amount_total') })
+                .first();
+            const total = result?.total || 0;
+            this._logger.info(`Successfully fetched summary for userId: ${userId}, incomeId: ${id}`);
+            return { id, total };
+        } catch (e) {
+            this._logger.error(
+                `Failed to fetch summary for userId: ${userId}, incomeId: ${id}. Error: ${(e as { message: string }).message}`,
+            );
+            throw new DBError({
+                message: `Failed to fetch summary due to a database error: ${(e as { message: string }).message}`,
+            });
+        }
     }
 
     public async addToScore(

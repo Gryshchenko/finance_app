@@ -76,6 +76,7 @@ export default memo(function DashboardAccount(props: IDashboardItem<IAccountList
                                                 targetAccountId: inWorkDropItem.id,
                                                 currencyId: item.currencyId,
                                                 sourceCurrencyId: inWorkDropItem.payload?.currencyId,
+                                                transactionType: TransactionType.Transafer,
                                             },
                                         },
                                     });
@@ -91,6 +92,7 @@ export default memo(function DashboardAccount(props: IDashboardItem<IAccountList
                                             incomeId: inWorkDropItem.id,
                                             currencyId: item.currencyId,
                                             sourceCurrencyId: inWorkDropItem.payload?.currencyId,
+                                            transactionType: TransactionType.Income,
                                         },
                                     },
                                 });
@@ -110,7 +112,7 @@ export default memo(function DashboardAccount(props: IDashboardItem<IAccountList
         default: {
             return (
                 <AddBox
-                    onPress={() => {
+                    onTap={() => {
                         navigation.getParent()?.navigate(OverviewPath.Accounts, {
                             screen: AccountsPath.AccountsCreate,
                         });

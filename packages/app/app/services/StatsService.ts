@@ -1,4 +1,4 @@
-import { ISummary, StatsPeriod } from 'tenpercent/shared';
+import { IEntityStats, ISummary, StatsPeriod, TransactionType } from 'tenpercent/shared';
 
 import { ApiAbstract } from '@/services/api/apiAbstract';
 import { GeneralApiProblem, GeneralApiProblemKind } from '@/services/api/apiProblem';
@@ -28,6 +28,39 @@ export class StatsService extends ApiAbstract {
                 this._logger.info(`Fetching stats successfully`);
             } else {
                 this._logger.info(`Fetching stats failed: ${response.kind}`);
+            }
+            return response;
+        });
+    }
+    public async entityStats({
+        from,
+        to,
+        period,
+        type,
+        entityId,
+    }: {
+        from: string;
+        to: string;
+        period: StatsPeriod;
+        entityId: number;
+        type: TransactionType;
+    }): Promise<
+        | {
+              kind: GeneralApiProblemKind.Ok;
+              data: IEntityStats | undefined;
+          }
+        | GeneralApiProblem
+    > {
+        return this.withErrorHandler(async () => {
+            this._logger.info(`Start fetching entityStats from=${from} to=${to} period=${period} type=${type}`);
+            const userId = this._authService.userId;
+            const response = await this.authGet(
+                `/user/${userId}/stats/entityStats/${entityId}?from=${from}&to=${to}&period=${period}&type=${type}`,
+            );
+            if (response.kind === GeneralApiProblemKind.Ok) {
+                this._logger.info(`Fetching entityStats successfully`);
+            } else {
+                this._logger.info(`Fetching entityStats failed: ${response.kind}`);
             }
             return response;
         });

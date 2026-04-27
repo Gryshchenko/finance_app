@@ -87,7 +87,7 @@ export default class EmailChangingService extends LoggerBase implements IEmailCh
                 });
             }
 
-            if (Time.getISODate(record.expiresAt) < Time.getISODateNowUTC()) {
+            if (Time.jsDateToUTCISO(record.expiresAt) < Time.getISODateNowUTC()) {
                 throw new ValidationError({
                     message: `No pending email change found for userId ${userId}`,
                     errorCode: ErrorCode.EMAIL_CONFIRMATION_ERROR,

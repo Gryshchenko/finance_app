@@ -62,7 +62,7 @@ const getSubtitleCategory = (transaction: ITransactionListItem): string => {
 
 const getFormattedTime = (createdAt: string): string => {
     try {
-        return Time.formatDate(createdAt, DateFormat.TIME_ONLY);
+        return Time.formatUTCDate(createdAt, DateFormat.TIME_ONLY);
     } catch {
         return '';
     }
@@ -78,7 +78,7 @@ const formatAmount = (amount: number, typeId: TransactionType, currencySymbol: s
 
 const formatSectionDate = (dateStr: string): string => {
     try {
-        return Time.formatDate(dateStr, DateFormat.SHORT_WITH_TIME).split(' ').slice(0, 2).join(' ');
+        return Time.formatUTCDate(dateStr, DateFormat.SHORT_WITH_TIME).split(' ').slice(0, 2).join(' ');
     } catch {
         return dateStr;
     }
@@ -108,7 +108,7 @@ function mergeSections<T>(a: SectionType<T>[], b: SectionType<T>[]): SectionType
 
 const groupByDate = (transactions: ITransactionListItem[]): SectionType<ITransactionListItem>[] => {
     const groupedByDate = transactions?.reduce((acc: Record<string, unknown[]>, tx) => {
-        const date = Time.formatDate(tx.createdAt, DateFormat.YYYY_MM_DD);
+        const date = Time.formatUTCDate(tx.createdAt, DateFormat.YYYY_MM_DD);
         if (!acc[date]) acc[date] = [];
         acc[date].push(tx);
         return acc;

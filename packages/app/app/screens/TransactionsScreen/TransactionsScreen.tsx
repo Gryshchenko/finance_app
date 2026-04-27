@@ -1,6 +1,6 @@
 import { ParamListBase, useNavigation } from '@react-navigation/native';
 import { NativeStackScreenProps } from '@react-navigation/native-stack';
-import { IPagination, ITransactionListItem, TransactionFieldType } from 'tenpercent/shared';
+import { IPagination, ITransactionListItem, TransactionFieldType, TransactionType } from 'tenpercent/shared';
 
 import { EditButton } from '@/components/buttons/EditButton';
 import { Transactions } from '@/components/transaction/Transactions';
@@ -23,7 +23,7 @@ export async function fetchTransactions(
     type: TransactionFieldType | undefined,
     cursor: number,
     limit: number,
-): Promise<IPagination<ITransactionListItem> | undefined> {
+): Promise<IPagination<ITransactionListItem> | null> {
     try {
         const transactionsService = TransactionService.instance();
         const response = await transactionsService.doGetTransactions({
@@ -37,12 +37,12 @@ export async function fetchTransactions(
                 return response.data as IPagination<ITransactionListItem>;
             }
             default: {
-                return undefined;
+                return null;
             }
         }
     } catch (e) {
         Logger.Of('FetchTransactions').error(`Fetch transactions failed due reason: ${(e as { message: string }).message}`);
-        return undefined;
+        return null;
     }
 }
 
@@ -54,16 +54,16 @@ export const TransactionsScreen = function TransactionsScreen(_props: Props) {
         name: string;
         type: TransactionFieldType;
         path: OverviewPath;
+        transactionType: TransactionType;
     };
     const navigation = useNavigation();
-    const { id, type, name, path } = params;
-    const { isError, data, isPending } = useAppQuery<IPagination<ITransactionListItem> | undefined>(
+    const { id, type, name, path, transactionType } = params;
+    const { isError, data, isPending } = useAppQuery<IPagination<ITransactionListItem> | null>(
         QueryKeys.transactions(id, type),
         async () => fetchTransactions(id, type, 0, 10),
         { staleTime: QueryStaleTimes.transactions },
     );
     const getScreenForEditPath = (path: OverviewPath) => {
-        console.log(`Get screen for edit path: ${path}`);
         switch (path) {
             case OverviewPath.Accounts:
                 return AccountsPath.AccountEdit;
@@ -76,7 +76,6 @@ export const TransactionsScreen = function TransactionsScreen(_props: Props) {
                 return undefined;
         }
     };
-
     return (
         <GenericListScreen
             name={translate('transactionScreen:title', { name })}
@@ -89,7 +88,11 @@ export const TransactionsScreen = function TransactionsScreen(_props: Props) {
                         params: { id, name, type, path },
                     });
                 },
-                data,
+                data: {
+                    transactions: data,
+                    entityId: id,
+                    transactionType,
+                },
                 fetch: async ({ cursor, limit }) => await fetchTransactions(id, type, cursor, limit),
             }}
             onBack={() => {
@@ -100,7 +103,6 @@ export const TransactionsScreen = function TransactionsScreen(_props: Props) {
                 <EditButton
                     onPress={() => {
                         const screen = getScreenForEditPath(path);
-                        console.log(screen, params);
                         if (!screen) return;
                         navigation.getParent()?.navigate(path, {
                             screen: screen,

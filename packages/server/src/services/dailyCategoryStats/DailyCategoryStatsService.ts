@@ -13,11 +13,17 @@ export interface IDailyCategoryStatsService {
         categoryId: number,
         trx?: IDBTransaction,
     ) => Promise<boolean>;
+    summary: (userId: number, id: number, from: string, to: string) => Promise<{ id: number; total: number }>;
 }
 
 export class DailyCategoryStatsService extends LoggerBase implements IDailyCategoryStatsService {
     constructor(private readonly dataAccess: IDailyCategoryStatsDataAccess) {
         super();
+    }
+    async summary(userId: number, id: number, from: string, to: string): Promise<{ id: number; total: number }> {
+        const fromDate: string = statsValidateDate(from);
+        const toDate: string = statsValidateDate(to);
+        return this.dataAccess.summary(userId, id, fromDate, toDate);
     }
 
     async updateTotal(userId: number, date: string, categoryId: number, amount: number, trx?: IDBTransaction): Promise<boolean> {

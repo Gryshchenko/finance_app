@@ -23,6 +23,7 @@ export const QueryKeys = {
     transactions: (entityId?: number, entityType?: string) =>
         entityId != null ? (['transactions', entityId, entityType] as const) : (['transactions'] as const),
     currencies: () => ['currencies'] as const,
+    entityStats: (entityId: number, entityType: number) => ['entityStats', entityId, entityType] as const,
 
     // ── Dashboard / summary ───────────────────────────────────────────────
     stats: () => ['stats'] as const,

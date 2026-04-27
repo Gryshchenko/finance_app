@@ -1,4 +1,4 @@
-import { IIncome, AccountStatusType, DateFormat, Time, IIncomeStats, IGetStatsProperties } from 'tenpercent/shared';
+import { IIncome, AccountStatusType, Time, IIncomeStats, IGetStatsProperties } from 'tenpercent/shared';
 
 import { ICreateIncome } from 'interfaces/ICreateIncome';
 import { IDatabaseConnection, IDBTransaction } from 'interfaces/IDatabaseConnection';
@@ -31,6 +31,7 @@ export default class IncomeDataAccess extends LoggerBase implements IIncomeDataA
         this._logger.info(`Retrieving income stats for user: ${userId}`);
         try {
             const { from, to } = properties;
+            console.log(2222, from, to);
             const data = await this._db
                 .engine()('incomes')
                 .select(
@@ -44,10 +45,7 @@ export default class IncomeDataAccess extends LoggerBase implements IIncomeDataA
                 .leftJoin('daily_incomes_stats as dis', function () {
                     this.on('incomes.incomeId', '=', 'dis.incomeId')
                         .andOnVal('dis.userId', '=', userId)
-                        .andOnBetween('dis.date', [
-                            Time.formatDate(from, DateFormat.YYYY_MM_DD),
-                            Time.formatDate(to, DateFormat.YYYY_MM_DD),
-                        ]);
+                        .andOnBetween('dis.date', [from, to]);
                 })
                 .where('incomes.userId', userId)
                 .groupBy('incomes.incomeId', 'incomes.userId', 'incomes.incomeName', 'incomes.currencyId');

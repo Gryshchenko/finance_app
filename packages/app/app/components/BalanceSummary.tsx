@@ -13,12 +13,12 @@ import { ThemedStyle } from '@/theme/types';
 import { CurrencyUtils } from '@/utils/CurrencyUtils';
 import { Logger } from '@/utils/logger/Logger';
 
-export async function fetchStats(): Promise<ISummary | undefined> {
+export async function fetchStats(): Promise<ISummary | null> {
     try {
         const statsService = StatsService.instance();
         const response = await statsService.doGetStats({
-            to: Time.toMonthEndExclusive(Time.getISODateNow()) as string,
-            from: Time.toMonthStart(Time.getISODateNow()) as string,
+            to: Time.toMonthEndExclusive(Time.getISODateNowUTC()) as string,
+            from: Time.toMonthStart(Time.getISODateNowUTC()) as string,
             period: StatsPeriod.Month,
         });
         switch (response.kind) {
@@ -26,16 +26,16 @@ export async function fetchStats(): Promise<ISummary | undefined> {
                 return response.data as ISummary;
             }
             default: {
-                return undefined;
+                return null;
             }
         }
     } catch (e) {
         Logger.Of('BalanceSummary').error(`Fetch stats failed due reason: ${(e as { message: string }).message}`);
-        return undefined;
+        return null;
     }
 }
 
-export async function fetchBalance(): Promise<IBalance | undefined> {
+export async function fetchBalance(): Promise<IBalance | null> {
     try {
         const statsService = BalanceService.instance();
         const response = await statsService.doGetBalance();
@@ -44,20 +44,20 @@ export async function fetchBalance(): Promise<IBalance | undefined> {
                 return response.data as IBalance;
             }
             default: {
-                return undefined;
+                return null;
             }
         }
     } catch (e) {
         Logger.Of('BalanceSummary').error(`Fetch stats failed due reason: ${(e as { message: string }).message}`);
-        return undefined;
+        return null;
     }
 }
 
 export const BalanceSummary: React.FC = () => {
-    const { data: statsData } = useAppQuery<ISummary | undefined>(QueryKeys.stats(), fetchStats, {
+    const { data: statsData } = useAppQuery<ISummary | null>(QueryKeys.stats(), fetchStats, {
         staleTime: QueryStaleTimes.dashboard,
     });
-    const { data: balanceData } = useAppQuery<IBalance | undefined>(QueryKeys.balance(), fetchBalance, {
+    const { data: balanceData } = useAppQuery<IBalance | null>(QueryKeys.balance(), fetchBalance, {
         staleTime: QueryStaleTimes.dashboard,
     });
     const { themed } = useAppTheme();

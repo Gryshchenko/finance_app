@@ -18,7 +18,7 @@ export class Utils {
     public static objectToString(value: Record<string, unknown>): string | undefined {
         try {
             return JSON.stringify(value);
-        } catch (e) {
+        } catch {
             return undefined;
         }
     }
@@ -28,7 +28,7 @@ export class Utils {
                 return value;
             }
             return JSON.parse(value);
-        } catch (e) {
+        } catch {
             return undefined;
         }
     }

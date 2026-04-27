@@ -14,7 +14,7 @@ import { OverviewPath } from '@/types/OverviewPath';
 import { ValidationError } from '@/utils/errors/ValidationError';
 import { Logger } from '@/utils/logger/Logger';
 
-export async function fetchCategory(id: number): Promise<ICategory | undefined> {
+export async function fetchCategory(id: number): Promise<ICategory | null> {
     try {
         if (Utils.isNull(id)) {
             throw new ValidationError({
@@ -28,12 +28,12 @@ export async function fetchCategory(id: number): Promise<ICategory | undefined> 
                 return response.data as ICategory;
             }
             default: {
-                return undefined;
+                return null;
             }
         }
     } catch (e) {
         Logger.Of('FetchCategorys').error(`Fetch categoryId ${id}  failed due reason: ${(e as { message: string }).message}`);
-        return undefined;
+        return null;
     }
 }
 
@@ -42,7 +42,7 @@ type Props = NativeStackScreenProps<OverviewTabParamList, CategoriesPath.Categor
 export const CategoryViewScreen = function CategoryViewScreen(_props: Props) {
     const params = _props?.route?.params as { id: number; name: string };
     const navigation = useNavigation();
-    const { isError, data, isPending } = useAppQuery<ICategory | undefined>(
+    const { isError, data, isPending } = useAppQuery<ICategory | null>(
         QueryKeys.category(params?.id),
         () => fetchCategory(params?.id),
         { staleTime: QueryStaleTimes.detail },

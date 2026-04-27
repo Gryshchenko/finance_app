@@ -5,6 +5,7 @@ import { AccountIcon, IAccount, Utils } from 'tenpercent/shared';
 import { AccountFields } from '@/components/account/AccountFields';
 import { useInvalidateQuery } from '@/hooks/useAppQuery';
 import { useEditView } from '@/hooks/useEditView';
+import { IAccountClient } from '@/interfaces/IAccountClient';
 import { accountCreateSchema } from '@/schems/validationSchemas';
 import { AccountService } from '@/services/AccountService';
 import { buildGeneralApiBaseHandler, GeneralApiProblemKind, handleBadDataResponse } from '@/services/api/apiProblem';
@@ -15,11 +16,11 @@ import { OverviewPath } from '@/types/OverviewPath';
 export const AccountCreate: FC = function AccountCreate(_props) {
     const navigation = useNavigation();
     const invalidateQuery = useInvalidateQuery();
-    const { form, handleChange, save, errors, setErrors } = useEditView<Partial<IAccount>>(
+    const { form, handleChange, save, errors, setErrors } = useEditView<Partial<IAccountClient>>(
         {
             accountName: '',
             currencyId: 1,
-            amount: 0,
+            amount: '',
             iconId: AccountIcon.Wallet,
         },
         accountCreateSchema,
@@ -38,7 +39,7 @@ export const AccountCreate: FC = function AccountCreate(_props) {
         const response = await accountService.doCreateAccount({
             accountName: form.accountName!,
             currencyId: form.currencyId!,
-            amount: form.amount ?? 0,
+            amount: Number(form.amount ?? 0),
             iconId: form.iconId ?? AccountIcon.Wallet,
         });
         if (response.kind === GeneralApiProblemKind.Ok) {

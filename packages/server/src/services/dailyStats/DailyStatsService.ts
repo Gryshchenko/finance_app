@@ -51,7 +51,7 @@ export default class DailyStatsService extends LoggerBase implements IDailyStats
         const day: string = statsValidateDate(date);
         return await this._dailyStatsDataAccess.updateTotal(userId, day, category, amount, trx);
     }
-    public addToScore(
+    public async addToScore(
         userId: number,
         date: string,
         income_total: number,
@@ -60,9 +60,9 @@ export default class DailyStatsService extends LoggerBase implements IDailyStats
         trx?: IDBTransaction,
     ): Promise<boolean> {
         const day: string = statsValidateDate(date);
-        return this._dailyStatsDataAccess.addToScore(userId, day, income_total, expense_total, transfer_total, trx);
+        return await this._dailyStatsDataAccess.addToScore(userId, day, income_total, expense_total, transfer_total, trx);
     }
-    public subtractFromScore(
+    public async subtractFromScore(
         userId: number,
         date: string,
         income_total: number,
@@ -71,15 +71,15 @@ export default class DailyStatsService extends LoggerBase implements IDailyStats
         trx?: IDBTransaction,
     ): Promise<boolean> {
         const day: string = statsValidateDate(date);
-        return this._dailyStatsDataAccess.subtractFromScore(userId, day, income_total, expense_total, transfer_total, trx);
+        return await this._dailyStatsDataAccess.subtractFromScore(userId, day, income_total, expense_total, transfer_total, trx);
     }
-    public summary(userId: number, from: string, to: string, period: StatsPeriod): Promise<ISummary> {
+    public async summary(userId: number, from: string, to: string, period: StatsPeriod): Promise<ISummary> {
         const dayFrom: string = statsValidateDate(from);
         const datTo: string = statsValidateDate(to);
-        return this._dailyStatsDataAccess.summary(
+        return await this._dailyStatsDataAccess.summary(
             userId,
-            Time.formatDate(dayFrom, DateFormat.YYYY_MM_dd),
-            Time.formatDate(datTo, DateFormat.YYYY_MM_dd),
+            Time.formatUTCDate(dayFrom, DateFormat.YYYY_MM_dd),
+            Time.formatUTCDate(datTo, DateFormat.YYYY_MM_dd),
             period,
         );
     }

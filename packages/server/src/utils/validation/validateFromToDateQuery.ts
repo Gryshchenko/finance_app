@@ -9,39 +9,38 @@ import { ValidationError } from 'src/utils/errors/ValidationError';
 const validateFromToDateQuery = (schema: Record<string, string>) => {
     return (req: Request, res: Response, next: NextFunction) => {
         try {
-            console.log(req.query?.from, req.query?.to);
             let from: DateTime | null = null;
             let to: DateTime | null = null;
             const now = Time.utc();
 
             if (schema['from']) {
-                from = Time.fromISO(String(req.query?.from), true);
+                from = Time.fromUTCISO(String(req.query?.from), true);
                 if (from?.toSeconds() > now?.toSeconds()) {
                     throw new ValidationError({
-                        message: '"from" should not be greater than current time',
-                        payload: { reason: null, field: 'from' },
+                        message: `"from" should not be greater than current time: ${req.query?.from}`,
+                        payload: { reason: 'validation:date', field: 'from' },
                     });
                 }
             }
 
             if (schema['to']) {
-                to = Time.fromISO(String(req.query?.to), true);
+                to = Time.fromUTCISO(String(req.query?.to), true);
                 if (to?.toSeconds() > now?.toSeconds()) {
                     throw new ValidationError({
-                        message: '"to" should not be greater than current time',
-                        payload: { reason: null, field: 'to' },
+                        message: `"to" should not be greater than current time: ${req.query?.to}`,
+                        payload: { reason: 'validation:date', field: 'to' },
                     });
                 }
             }
 
             if (from && to && from?.toSeconds() > to?.toSeconds()) {
                 throw new ValidationError({
-                    message: '"from" should not be greater than "to"',
+                    message: `"from" should not be greater than "to", from: ${req.query?.from}, to: ${req.query?.to}`,
                 });
             }
         } catch (e) {
             const error = e as BaseError;
-            Logger.Of('validateQuery').error(`Validate query failed due reason`, error.message);
+            Logger.Of('validateFromToDateQuery').error(`Validate query failed due reason`, error.toJSON());
             return res.status(HttpCode.BAD_REQUEST).json(
                 new ResponseBuilder()
                     .setStatus(ResponseStatusType.INTERNAL)

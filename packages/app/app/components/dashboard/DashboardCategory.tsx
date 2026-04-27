@@ -35,6 +35,7 @@ export default memo(function DashboardCategory(props: IDashboardItem<ICategorySt
                                 name: item.categoryName,
                                 path: OverviewPath.Categories,
                                 type: TransactionFieldType.Category,
+                                transactionType: TransactionType.Expense,
                             },
                         });
                     }}
@@ -81,7 +82,7 @@ export default memo(function DashboardCategory(props: IDashboardItem<ICategorySt
         default:
             return (
                 <AddBox
-                    onPress={() => {
+                    onTap={() => {
                         navigation.getParent()?.navigate(OverviewPath.Categories, {
                             screen: CategoriesPath.CategoriesCreate,
                         });

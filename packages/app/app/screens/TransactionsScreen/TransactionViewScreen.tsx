@@ -13,7 +13,7 @@ import { TransactionService } from '@/services/TransactionService';
 import { TransactionPath } from '@/types/TransactionPath';
 import { Logger } from '@/utils/logger/Logger';
 
-export async function fetchTransaction(id: number | string): Promise<ITransaction | undefined> {
+export async function fetchTransaction(id: number | string): Promise<ITransaction | null> {
     try {
         const transactionsService = TransactionService.instance();
         const response = await transactionsService.doGetTransaction({
@@ -24,12 +24,12 @@ export async function fetchTransaction(id: number | string): Promise<ITransactio
                 return response.data as ITransaction;
             }
             default: {
-                return undefined;
+                return null;
             }
         }
     } catch (e) {
         Logger.Of('FetchTransaction').error(`Fetch transaction failed due reason: ${(e as { message: string }).message}`);
-        return undefined;
+        return null;
     }
 }
 
@@ -39,7 +39,7 @@ export const TransactionViewScreen = function TransactionsScreen(_props: Props) 
     const params = _props?.route?.params as { id: number; name: string; path: DashboardPath };
     const navigation = useNavigation();
     const { id, name, path } = params;
-    const { isError, data, isPending } = useAppQuery<ITransaction | undefined>(
+    const { isError, data, isPending } = useAppQuery<ITransaction | null>(
         QueryKeys.transaction(id),
         async () => fetchTransaction(id),
         { staleTime: QueryStaleTimes.detail },

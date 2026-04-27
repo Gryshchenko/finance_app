@@ -43,7 +43,9 @@ export default class Translations {
             const langAnswer = await Utils.to(Translations.loadLanguage(languageCode, loader));
             error = langAnswer[0];
             if (error) {
-                Translations.LOGGER.warn(`Can't load translation for language #{languageCode} Error: ${JSON.stringify(error)}`);
+                Translations.LOGGER.warn(`Can't load translation for language #{languageCode}`, {
+                    error: error instanceof Error ? error.message : String(error),
+                });
             } else {
                 Translations.LANG_CODE = languageCode;
                 Translations.DATA = langAnswer[1] as Record<string, string>;
