@@ -23,6 +23,7 @@ import { useAppTheme } from '@/theme/context';
 import { AppPath } from '@/types/AppPath';
 
 import { navigationRef, useBackButtonHandler } from './navigationUtilities';
+import { ResetOnBlur } from './ResetOnBlur';
 
 /**
  * This type allows TypeScript to know what routes are defined in this navigator
@@ -60,6 +61,37 @@ export type AppStackScreenProps<T extends keyof AppStackParamList> = NativeStack
 // Documentation: https://reactnavigation.org/docs/stack-navigator/
 const Stack = createNativeStackNavigator<AppStackParamList>();
 
+const LoginScreenTab = () => (
+    <ResetOnBlur>
+        <LoginScreen />
+    </ResetOnBlur>
+);
+const ForgotPasswordChangeScreenTab = () => (
+    <ResetOnBlur>
+        <ForgotPasswordChangeScreen />
+    </ResetOnBlur>
+);
+const ForgotPasswordRequestScreenTab = () => (
+    <ResetOnBlur>
+        <ForgotPasswordRequestScreen />
+    </ResetOnBlur>
+);
+const ForgotPasswordConfirmScreenTab = () => (
+    <ResetOnBlur>
+        <ForgotPasswordConfirmScreen />
+    </ResetOnBlur>
+);
+const SignUpConfirmationScreenTab = () => (
+    <ResetOnBlur>
+        <SignUpConfirmationScreen />
+    </ResetOnBlur>
+);
+const OverviewNavigatorTab = () => (
+    <ResetOnBlur>
+        <OverviewNavigator />
+    </ResetOnBlur>
+);
+
 const AppStack = () => {
     const { isAuthenticated, isUserConfirmed } = useAuth();
 
@@ -75,19 +107,19 @@ const AppStack = () => {
     const getScreens = (): ScreenConfig[] => {
         if (!isAuthenticated) {
             return [
-                { name: AppPath.Login, component: LoginScreen },
+                { name: AppPath.Login, component: LoginScreenTab },
                 { name: AppPath.SignUp, component: SignUpScreen },
-                { name: AppPath.ForgotPasswordChange, component: ForgotPasswordChangeScreen },
-                { name: AppPath.ForgotPasswordRequest, component: ForgotPasswordRequestScreen },
-                { name: AppPath.ForgotPasswordConfirm, component: ForgotPasswordConfirmScreen },
+                { name: AppPath.ForgotPasswordChange, component: ForgotPasswordChangeScreenTab },
+                { name: AppPath.ForgotPasswordRequest, component: ForgotPasswordRequestScreenTab },
+                { name: AppPath.ForgotPasswordConfirm, component: ForgotPasswordConfirmScreenTab },
             ];
         }
 
         if (!isUserConfirmed) {
-            return [{ name: AppPath.SignUpConfirmation, component: SignUpConfirmationScreen }];
+            return [{ name: AppPath.SignUpConfirmation, component: SignUpConfirmationScreenTab }];
         }
 
-        return [{ name: AppPath.Overview, component: OverviewNavigator }];
+        return [{ name: AppPath.Overview, component: OverviewNavigatorTab }];
     };
 
     return (

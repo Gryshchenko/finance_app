@@ -15,6 +15,7 @@ import { OverviewPath } from '@/types/OverviewPath';
 import { TransactionPath } from '@/types/TransactionPath';
 
 import { AppStackParamList, AppStackScreenProps } from './AppNavigator';
+import { ResetOnBlur } from './ResetOnBlur';
 
 export type OverviewTabParamList = {
     dashboard: NavigatorScreenParams<DashboardStackParamList>;
@@ -36,6 +37,37 @@ export type MainTabScreenProps<T extends keyof OverviewTabParamList> = Composite
 >;
 
 const Tab = createBottomTabNavigator<OverviewTabParamList>();
+
+const DashboardTab = () => (
+    <ResetOnBlur>
+        <DashboardStackNavigator />
+    </ResetOnBlur>
+);
+const TransactionsTab = () => (
+    <ResetOnBlur>
+        <HistoryStackNavigator />
+    </ResetOnBlur>
+);
+const AccountsTab = () => (
+    <ResetOnBlur>
+        <AccountsStackNavigator />
+    </ResetOnBlur>
+);
+const CategoriesTab = () => (
+    <ResetOnBlur>
+        <CategoriesStackNavigator />
+    </ResetOnBlur>
+);
+const IncomesTab = () => (
+    <ResetOnBlur>
+        <IncomesStackNavigator />
+    </ResetOnBlur>
+);
+const SettingsTab = () => (
+    <ResetOnBlur>
+        <SettingsStackNavigator />
+    </ResetOnBlur>
+);
 
 // /**
 //  * Center "Add" tab button — black square with white "+" icon, matching code.html design.
@@ -79,7 +111,7 @@ export function OverviewNavigator() {
             >
                 <Tab.Screen
                     name="dashboard"
-                    component={DashboardStackNavigator}
+                    component={DashboardTab}
                     listeners={({ navigation }) => ({
                         tabPress: (event) => {
                             event.preventDefault();
@@ -90,7 +122,7 @@ export function OverviewNavigator() {
 
                 <Tab.Screen
                     name="transactions"
-                    component={HistoryStackNavigator}
+                    component={TransactionsTab}
                     listeners={({ navigation }) => ({
                         tabPress: (event) => {
                             event.preventDefault();
@@ -101,7 +133,7 @@ export function OverviewNavigator() {
 
                 <Tab.Screen
                     name="accounts"
-                    component={AccountsStackNavigator}
+                    component={AccountsTab}
                     listeners={({ navigation }) => ({
                         tabPress: (event) => {
                             event.preventDefault();
@@ -111,7 +143,7 @@ export function OverviewNavigator() {
                 />
                 <Tab.Screen
                     name="categories"
-                    component={CategoriesStackNavigator}
+                    component={CategoriesTab}
                     listeners={({ navigation }) => ({
                         tabPress: (event) => {
                             event.preventDefault();
@@ -121,7 +153,7 @@ export function OverviewNavigator() {
                 />
                 <Tab.Screen
                     name="incomes"
-                    component={IncomesStackNavigator}
+                    component={IncomesTab}
                     listeners={({ navigation }) => ({
                         tabPress: (event) => {
                             event.preventDefault();
@@ -131,7 +163,7 @@ export function OverviewNavigator() {
                 />
                 <Tab.Screen
                     name="settings"
-                    component={SettingsStackNavigator}
+                    component={SettingsTab}
                     listeners={({ navigation }) => ({
                         tabPress: (event) => {
                             event.preventDefault();

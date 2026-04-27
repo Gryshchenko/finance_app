@@ -11,8 +11,6 @@ export enum DateFormat {
     YYYY_MM_DD = 'yyyy-MM-dd',
     /** 27/09/2025 */
     DD_MM_YYYY_SLASH = 'dd/MM/yyyy',
-    /** 2025.09.27 */
-    YYYY_MM_dd = 'yyyy-MM-dd',
     /** 2025-09-17 */
     DD_MM_YYYY_DOT = 'dd.MM.yyyy',
     /** 27 September 2025 */

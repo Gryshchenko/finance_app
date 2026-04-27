@@ -78,8 +78,8 @@ export default class DailyStatsService extends LoggerBase implements IDailyStats
         const datTo: string = statsValidateDate(to);
         return await this._dailyStatsDataAccess.summary(
             userId,
-            Time.formatUTCDate(dayFrom, DateFormat.YYYY_MM_dd),
-            Time.formatUTCDate(datTo, DateFormat.YYYY_MM_dd),
+            Time.formatUTCDate(dayFrom, DateFormat.YYYY_MM_DD),
+            Time.formatUTCDate(datTo, DateFormat.YYYY_MM_DD),
             period,
         );
     }
