@@ -43,6 +43,25 @@ const getTypeKey = (typeId: TransactionType): string => {
     }
 };
 
+const getTransactionTitle = (transaction: ITransactionListItem): string => {
+    switch (transaction.transactionTypeId) {
+        case TransactionType.Expense:
+            return translate('transactionScreen:fromTo', {
+                from: transaction.accountName ?? '-',
+                to: transaction.categoryName ?? '-',
+            });
+        case TransactionType.Income:
+            return transaction.incomeName ?? '-';
+        case TransactionType.Transafer:
+            return translate('transactionScreen:fromTo', {
+                from: transaction.accountName ?? '-',
+                to: transaction.targetAccountName ?? '-',
+            });
+        default:
+            return '-';
+    }
+};
+
 const getTransactionLabel = (transaction: ITransactionListItem): string => {
     switch (transaction.transactionTypeId) {
         case TransactionType.Expense:
@@ -162,6 +181,7 @@ const TransactionSectionList = forwardRef<SectionList<ITransactionListItem>, Pro
             if (!transaction) return null;
             const { transactionId, amount, currencyId, transactionTypeId, createdAt } = transaction;
             const label = getTransactionLabel(transaction);
+            const title = getTransactionTitle(transaction);
             const category = getSubtitleCategory(transaction);
             const time = getFormattedTime(createdAt);
             const incomeType = isIncome(transactionTypeId);
@@ -183,7 +203,7 @@ const TransactionSectionList = forwardRef<SectionList<ITransactionListItem>, Pro
                         {/* Name + subtitle */}
                         <View style={$labelContainer}>
                             <Text style={themed([$transactionName])} numberOfLines={1} ellipsizeMode="tail">
-                                {label}
+                                {title}
                             </Text>
                             <View style={$subtitleRow}>
                                 <Text style={themed([$subtitleText])}>{category}</Text>

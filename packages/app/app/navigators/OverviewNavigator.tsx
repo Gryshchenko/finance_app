@@ -38,11 +38,7 @@ export type MainTabScreenProps<T extends keyof OverviewTabParamList> = Composite
 
 const Tab = createBottomTabNavigator<OverviewTabParamList>();
 
-const DashboardTab = () => (
-    <ResetOnBlur>
-        <DashboardStackNavigator />
-    </ResetOnBlur>
-);
+const DashboardTab = () => <DashboardStackNavigator />;
 const TransactionsTab = () => (
     <ResetOnBlur>
         <HistoryStackNavigator />

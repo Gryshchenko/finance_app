@@ -13,7 +13,6 @@ import { buildGeneralApiBaseHandler, GeneralApiProblemKind, handleBadDataRespons
 import { ExchangeService } from '@/services/ExchangeService';
 import { InvalidationGroups, QueryKeys, QueryStaleTimes } from '@/services/QueryCacheService';
 import { TransactionService } from '@/services/TransactionService';
-import { OverviewPath } from '@/types/OverviewPath';
 import { Logger } from '@/utils/logger/Logger';
 
 interface IProps {
@@ -81,19 +80,19 @@ export const TransactionCreate: FC<IProps> = function TransactionCreate(_props: 
     const handleCreate = async () => {
         const transactionService = TransactionService.instance();
         const response = await transactionService.doCreateTransaction({
-            accountId: form.accountId,
-            incomeId: form.incomeId,
-            categoryId: form.categoryId,
-            currencyId: form.currencyId,
-            transactionTypeId: form.transactionTypeId,
+            accountId: Number(form.accountId),
+            incomeId: Number(form.incomeId),
+            categoryId: Number(form.categoryId),
+            currencyId: Number(form.currencyId),
+            transactionTypeId: Number(form.transactionTypeId),
             amount: Number(form.amount),
             createdAt: form.createdAt,
-            targetAccountId: form.targetAccountId,
+            targetAccountId: Number(form.targetAccountId),
             description: form.description,
         });
         if (response.kind === GeneralApiProblemKind.Ok) {
             await invalidateQuery(InvalidationGroups.transaction());
-            navigation.getParent()?.navigate(OverviewPath.Dashboard);
+            // navigation.getParent()?.navigate(OverviewPath.Dashboard);
         } else if (response.kind === GeneralApiProblemKind.BadData) {
             handleBadDataResponse(response.errors, setErrors);
         } else {

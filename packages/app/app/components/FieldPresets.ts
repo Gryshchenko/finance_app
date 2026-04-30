@@ -122,7 +122,7 @@ const $underlineInputWrapper: ThemedStyle<ViewStyle> = ({ colors }) => ({
     borderColor: colors.border,
     backgroundColor: 'transparent',
     overflow: 'hidden',
-    height: 54,
+    height: 38,
 });
 
 const $underlineInput: ThemedStyle<TextStyle> = ({ colors, typography }) => ({
@@ -240,4 +240,5 @@ export const $borderNoFocusStyle: ThemedStyle<ViewStyle> = ({ colors }) => ({
 export const $helperStyle: ThemedStyle<TextStyle> = ({ spacing }) => ({
     marginTop: spacing.xxxs,
     fontSize: 10,
+    lineHeight: 16,
 });

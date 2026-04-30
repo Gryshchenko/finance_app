@@ -7,9 +7,11 @@ import { AccountFields } from '@/components/account/AccountFields';
 import { EmptyState } from '@/components/EmptyState';
 import { useInvalidateQuery } from '@/hooks/useAppQuery';
 import { useEditView } from '@/hooks/useEditView';
+import { translate } from '@/i18n/translate';
 import { IAccountClient } from '@/interfaces/IAccountClient';
 import { accountEditSchema } from '@/schems/validationSchemas';
 import { AccountService } from '@/services/AccountService';
+import AlertService from '@/services/AlertService';
 import { buildGeneralApiBaseHandler, GeneralApiProblemKind, handleBadDataResponse } from '@/services/api/apiProblem';
 import { InvalidationGroups } from '@/services/QueryCacheService';
 import ToastService from '@/services/ToastService';
@@ -54,6 +56,29 @@ export const AccountEdit: FC<IAccountPros> = function AccountEdit(_props) {
         if (!isValid) return;
         await handlePatch();
     };
+    const handleDelete = async () => {
+        const accountService = AccountService.instance();
+        if (!form.accountId) return;
+
+        const response = await accountService.doDeleteAccount(form.accountId);
+        if (response.kind === GeneralApiProblemKind.Ok) {
+            ToastService.info({
+                title: 'common:info',
+                message: 'common:deleteAccountSuccess',
+            });
+            await invalidateQuery(InvalidationGroups.account(form.accountId));
+            navigation.getParent()?.navigate(OverviewPath.Dashboard);
+        } else {
+            ToastService.error({
+                title: 'common:error',
+                message: 'common:deleteAccountFailed',
+            });
+        }
+    };
+
+    const onDelete = () => {
+        AlertService.confirm(translate('common:deleteAccountTitle'), translate('common:deleteAccountMessage'), handleDelete);
+    };
     if (!data) {
         return (
             <EmptyState
@@ -76,6 +101,7 @@ export const AccountEdit: FC<IAccountPros> = function AccountEdit(_props) {
             cancel={() => {
                 navigation.goBack();
             }}
+            onDelete={onDelete}
             handleSave={handleSave}
         />
     );

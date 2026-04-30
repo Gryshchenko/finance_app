@@ -47,7 +47,7 @@ export default class IncomeDataAccess extends LoggerBase implements IIncomeDataA
                         .andOnVal('dis.userId', '=', userId)
                         .andOnBetween('dis.date', [from, to]);
                 })
-                .where('incomes.userId', userId)
+                .where({ 'incomes.userId': userId, 'incomes.isDeleted': false })
                 .groupBy('incomes.incomeId', 'incomes.userId', 'incomes.incomeName', 'incomes.currencyId');
             if (data) {
                 this._logger.info(`Fetched ${data.length} incomes retrieved successfully for user: ${userId}`);
@@ -115,7 +115,7 @@ export default class IncomeDataAccess extends LoggerBase implements IIncomeDataA
         try {
             const data = await this.getIncomeBaseQuery()
                 .innerJoin('currencies', 'incomes.currencyId', 'currencies.currencyId')
-                .where({ userId, incomeId, status: AccountStatusType.Enable })
+                .where({ userId, incomeId, 'status': AccountStatusType.Enable, 'incomes.isDeleted': false })
                 .first();
 
             if (data) {

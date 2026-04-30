@@ -43,7 +43,7 @@ export default class CategoryDataAccess extends LoggerBase implements ICategoryD
                         .andOnVal('dcs.userId', '=', userId)
                         .andOnBetween('dcs.date', [from, to]);
                 })
-                .where('categories.userId', userId)
+                .where({ 'categories.userId': userId, 'categories.isDeleted': false })
                 .groupBy(
                     'categories.categoryId',
                     'categories.userId',

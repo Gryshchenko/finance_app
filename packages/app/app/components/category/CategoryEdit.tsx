@@ -7,7 +7,9 @@ import { CategoryFields } from '@/components/category/CategoryFields';
 import { EmptyState } from '@/components/EmptyState';
 import { useInvalidateQuery } from '@/hooks/useAppQuery';
 import { useEditView } from '@/hooks/useEditView';
+import { translate } from '@/i18n/translate';
 import { categoryEditSchema } from '@/schems/validationSchemas';
+import AlertService from '@/services/AlertService';
 import { buildGeneralApiBaseHandler, GeneralApiProblemKind, handleBadDataResponse } from '@/services/api/apiProblem';
 import { CategoryService } from '@/services/CategoryService';
 import { InvalidationGroups } from '@/services/QueryCacheService';
@@ -46,6 +48,33 @@ export const CategoryEdit: FC<ICategoryPros> = function CategoryEdit(_props) {
             buildGeneralApiBaseHandler(response);
         }
     };
+    const handleDelete = async () => {
+        const categoryService = CategoryService.instance();
+        if (!form.categoryId) return;
+
+        const response = await categoryService.doDeleteCategory(form.categoryId);
+        if (response.kind === GeneralApiProblemKind.Ok) {
+            ToastService.info({
+                title: 'common:info',
+                message: 'categoryScreen:deleteCategorySuccess',
+            });
+            await invalidateQuery(InvalidationGroups.category(form.categoryId));
+            navigation.getParent()?.navigate(OverviewPath.Dashboard);
+        } else {
+            ToastService.error({
+                title: 'common:error',
+                message: 'categoryScreen:deleteCategoryFailed',
+            });
+        }
+    };
+
+    const onDelete = () => {
+        AlertService.confirm(
+            translate('categoryScreen:deleteCategoryTitle'),
+            translate('categoryScreen:deleteCategoryMessage'),
+            handleDelete,
+        );
+    };
 
     const handleSave = async () => {
         const isValid = await save();
@@ -76,6 +105,7 @@ export const CategoryEdit: FC<ICategoryPros> = function CategoryEdit(_props) {
             cancel={() => {
                 navigation.goBack();
             }}
+            onDelete={onDelete}
             handleSave={handleSave}
         />
     );

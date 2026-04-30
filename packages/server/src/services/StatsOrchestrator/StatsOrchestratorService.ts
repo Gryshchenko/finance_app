@@ -458,6 +458,7 @@ export default class StatsOrchestratorService extends LoggerBase implements ISta
                 },
             });
         }
+
         const prevStartDate = Time.toPreviousMonthStart(from);
         const prevEndDate = Time.toPreviousMonthEndExclusive(to);
         if (!prevStartDate || !prevEndDate) {
@@ -475,8 +476,8 @@ export default class StatsOrchestratorService extends LoggerBase implements ISta
                 const current = await this._dailyIncomeStatsService.summary(userId, id, startDate, endDate);
                 const previous = await this._dailyIncomeStatsService.summary(userId, id, prevStartDate, prevEndDate);
                 return {
-                    spendMTD: 100,
-                    forecast: 100,
+                    spendMTD: current.total,
+                    forecast: null,
                     vsLastMonthPct: Math.abs(current.total - previous.total),
                     budgetPct: 100,
                 };

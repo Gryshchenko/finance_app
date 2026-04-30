@@ -2,92 +2,146 @@ import { TransactionType } from 'tenpercent/shared';
 import * as Yup from 'yup';
 
 const translationsKeys = {
+    // Generic fallbacks
     valueRequired: 'validation:valueRequired',
-    valueTooShort: 'validation:valueTooShort',
-    valueTooLong: 'validation:valueTooLong',
-    valueInvalidRange: 'validation:valueInvalidRange',
-    codeInvalided: 'validation:codeInvalided',
-    emailInvalided: 'validation:email',
+
+    // Names
+    nameRequired: 'validation:nameRequired',
+    nameTooShort: 'validation:nameTooShort',
+    nameTooLong: 'validation:nameTooLong',
+    publicNameTooLong: 'validation:publicNameTooLong',
+
+    // Amount
+    amountTooSmall: 'validation:amountTooSmall',
+    amountTooLarge: 'validation:amountTooLarge',
+
+    // Description
+    descriptionTooShort: 'validation:descriptionTooShort',
+    descriptionTooLong: 'validation:descriptionTooLong',
+
+    // Date
+    dateTooOld: 'validation:dateTooOld',
+    dateInFuture: 'validation:dateInFuture',
+
+    // Currency / Locale
+    currencyRequired: 'validation:currencyRequired',
+    currencyInvalid: 'validation:currencyInvalid',
+    unsupportedCurrency: 'validation:unsupportedCurrency',
+    localeRequired: 'validation:localeRequired',
+    unsupportedLanguage: 'validation:unsupportedLanguage',
+
+    // Icon
+    iconRequired: 'validation:iconRequired',
+
+    // Transaction selectors
+    transactionTypeRequired: 'validation:transactionTypeRequired',
+    accountRequired: 'validation:accountRequired',
+    targetAccountRequired: 'validation:targetAccountRequired',
+    categoryRequired: 'validation:categoryRequired',
+    incomeRequired: 'validation:incomeRequired',
+
+    // Confirmation code
+    codeRequired: 'validation:codeRequired',
+    codeTooShort: 'validation:codeTooShort',
+    codeTooLong: 'validation:codeTooLong',
+
+    // Email
+    emailRequired: 'validation:emailRequired',
+    emailTooLong: 'validation:emailTooLong',
+    emailInvalid: 'validation:email',
+
+    // Password
+    passwordRequired: 'validation:passwordRequired',
+    passwordTooLong: 'validation:passwordTooLong',
     passwordMinLength: 'validation:passwordMinLength',
     passwordUppercase: 'validation:passwordUppercase',
     passwordLowercase: 'validation:passwordLowercase',
     passwordNumber: 'validation:passwordNumber',
     passwordSpecial: 'validation:passwordSpecial',
-    unsupportedLanguage: 'validation:unsupportedLanguage',
-    unsupportedCurrency: 'validation:unsupportedCurrency',
+    newPasswordRequired: 'validation:newPasswordRequired',
+    currentPasswordRequired: 'validation:currentPasswordRequired',
+    repeatPasswordRequired: 'validation:repeatPasswordRequired',
+    passwordsDoNotMatch: 'validation:passwordsDoNotMatch',
 };
 
 const incomeCreate = {
     incomeName: Yup.string()
-        .required(translationsKeys.valueRequired)
-        .min(3, translationsKeys.valueTooShort)
-        .max(50, translationsKeys.valueTooLong),
+        .required(translationsKeys.nameRequired)
+        .min(3, translationsKeys.nameTooShort)
+        .max(50, translationsKeys.nameTooLong),
     currencyId: Yup.number()
-        .min(Number.MIN_VALUE, translationsKeys.valueTooShort)
-        .max(Number.MAX_VALUE, translationsKeys.valueTooLong),
-    iconId: Yup.string(),
+        .min(Number.MIN_VALUE, translationsKeys.currencyInvalid)
+        .max(Number.MAX_VALUE, translationsKeys.currencyInvalid)
+        .required(translationsKeys.currencyRequired),
+    iconId: Yup.string().required(translationsKeys.iconRequired),
 };
 
 const accountCreate = {
     amount: Yup.number()
-        .min(Number.MIN_VALUE, translationsKeys.valueTooShort)
-        .max(Number.MAX_VALUE, translationsKeys.valueTooLong),
+        .min(Number.MIN_VALUE, translationsKeys.amountTooSmall)
+        .max(Number.MAX_VALUE, translationsKeys.amountTooLarge),
     accountName: Yup.string()
-        .required(translationsKeys.valueRequired)
-        .min(3, translationsKeys.valueTooShort)
-        .max(50, translationsKeys.valueTooLong),
+        .required(translationsKeys.nameRequired)
+        .min(3, translationsKeys.nameTooShort)
+        .max(50, translationsKeys.nameTooLong),
     currencyId: Yup.number()
-        .min(Number.MIN_VALUE, translationsKeys.valueTooShort)
-        .max(Number.MAX_VALUE, translationsKeys.valueTooLong)
-        .required(),
+        .min(Number.MIN_VALUE, translationsKeys.currencyInvalid)
+        .max(Number.MAX_VALUE, translationsKeys.currencyInvalid)
+        .required(translationsKeys.currencyRequired),
 };
 const categoryCreate = {
     categoryName: Yup.string()
-        .required(translationsKeys.valueRequired)
-        .min(3, translationsKeys.valueTooShort)
-        .max(50, translationsKeys.valueTooLong),
+        .required(translationsKeys.nameRequired)
+        .min(3, translationsKeys.nameTooShort)
+        .max(50, translationsKeys.nameTooLong),
     currencyId: Yup.number()
-        .min(Number.MIN_VALUE, translationsKeys.valueTooShort)
-        .max(Number.MAX_VALUE, translationsKeys.valueTooLong)
-        .required(),
+        .min(Number.MIN_VALUE, translationsKeys.currencyInvalid)
+        .max(Number.MAX_VALUE, translationsKeys.currencyInvalid)
+        .required(translationsKeys.currencyRequired),
 };
 const incomeEdit = {
-    incomeName: Yup.string().min(3, translationsKeys.valueTooShort).max(50, translationsKeys.valueTooLong).notRequired(),
+    incomeName: Yup.string().min(3, translationsKeys.nameTooShort).max(50, translationsKeys.nameTooLong).notRequired(),
     currencyId: Yup.number().notRequired(),
 };
 const publicNameEdit = {
-    publicName: Yup.string().min(3, translationsKeys.valueTooShort).max(40, translationsKeys.valueTooLong).required(),
+    publicName: Yup.string()
+        .min(3, translationsKeys.nameTooShort)
+        .max(40, translationsKeys.publicNameTooLong)
+        .required(translationsKeys.nameRequired),
 };
 
 const emailEdit = {
     email: Yup.string()
-        .min(3, translationsKeys.valueTooShort)
-        .max(50, translationsKeys.valueTooLong)
-        .email(translationsKeys.emailInvalided)
-        .required(),
+        .min(3, translationsKeys.emailInvalid)
+        .max(50, translationsKeys.emailTooLong)
+        .email(translationsKeys.emailInvalid)
+        .required(translationsKeys.emailRequired),
 };
 
 const accountEdit = {
-    amount: Yup.number().min(0, translationsKeys.valueTooShort).notRequired(),
-    accountName: Yup.string().min(3, translationsKeys.valueTooShort).max(50, translationsKeys.valueTooLong).notRequired(),
+    amount: Yup.number()
+        .min(0, translationsKeys.amountTooSmall)
+        .max(Number.MAX_VALUE, translationsKeys.amountTooLarge)
+        .notRequired(),
+    accountName: Yup.string().min(3, translationsKeys.nameTooShort).max(50, translationsKeys.nameTooLong).notRequired(),
     currencyId: Yup.number().notRequired(),
 };
 const signUpConfirmation = {
     confirmationCode: Yup.string()
-        .min(6, translationsKeys.valueTooShort)
-        .max(8, translationsKeys.valueTooLong)
-        .required(translationsKeys.codeInvalided),
+        .min(6, translationsKeys.codeTooShort)
+        .max(8, translationsKeys.codeTooLong)
+        .required(translationsKeys.codeRequired),
 };
 
 const login = {
     email: Yup.string()
-        .required(translationsKeys.valueRequired)
-        .max(50, translationsKeys.valueTooLong)
-        .email(translationsKeys.emailInvalided),
+        .required(translationsKeys.emailRequired)
+        .max(50, translationsKeys.emailTooLong)
+        .email(translationsKeys.emailInvalid),
     password: Yup.string()
-        .required(translationsKeys.valueRequired)
+        .required(translationsKeys.passwordRequired)
         .min(5, translationsKeys.passwordMinLength)
-        .max(50, translationsKeys.valueTooLong)
+        .max(50, translationsKeys.passwordTooLong)
         .matches(/[A-Z]/, translationsKeys.passwordUppercase)
         .matches(/[a-z]/, translationsKeys.passwordLowercase)
         .matches(/[0-9]/, translationsKeys.passwordNumber)
@@ -97,72 +151,66 @@ const login = {
 const buildSignUpSchema = (locales: string[], currencies: string[]) => {
     return Yup.object({
         publicName: Yup.string()
-            .required(translationsKeys.valueRequired)
-            .min(3, translationsKeys.valueTooShort)
-            .max(50, translationsKeys.valueTooLong),
+            .required(translationsKeys.nameRequired)
+            .min(3, translationsKeys.nameTooShort)
+            .max(50, translationsKeys.nameTooLong),
         email: Yup.string()
-            .required(translationsKeys.valueRequired)
-            .max(50, translationsKeys.valueTooLong)
-            .email(translationsKeys.emailInvalided),
+            .required(translationsKeys.emailRequired)
+            .max(50, translationsKeys.emailTooLong)
+            .email(translationsKeys.emailInvalid),
         password: Yup.string()
-            .required(translationsKeys.valueRequired)
+            .required(translationsKeys.passwordRequired)
             .min(5, translationsKeys.passwordMinLength)
-            .max(50, translationsKeys.valueTooLong)
+            .max(50, translationsKeys.passwordTooLong)
             .matches(/[A-Z]/, translationsKeys.passwordUppercase)
             .matches(/[a-z]/, translationsKeys.passwordLowercase)
             .matches(/[0-9]/, translationsKeys.passwordNumber)
             .matches(/[!@#$%^&*(),.?":{}|<>]/, translationsKeys.passwordSpecial),
         locale:
             locales.length > 0
-                ? Yup.string().required(translationsKeys.valueRequired).oneOf(locales, translationsKeys.unsupportedLanguage)
-                : Yup.string().required(translationsKeys.valueRequired),
+                ? Yup.string().required(translationsKeys.localeRequired).oneOf(locales, translationsKeys.unsupportedLanguage)
+                : Yup.string().required(translationsKeys.localeRequired),
         currency:
             currencies.length > 0
-                ? Yup.string().required(translationsKeys.valueRequired).oneOf(currencies, translationsKeys.unsupportedCurrency)
-                : Yup.string().required(translationsKeys.valueRequired),
+                ? Yup.string().required(translationsKeys.currencyRequired).oneOf(currencies, translationsKeys.unsupportedCurrency)
+                : Yup.string().required(translationsKeys.currencyRequired),
     });
 };
 
 const forgotPasswordRequestSchema = Yup.object({
     email: Yup.string()
-        .required(translationsKeys.valueRequired)
-        .max(50, translationsKeys.valueTooLong)
-        .email(translationsKeys.emailInvalided),
+        .required(translationsKeys.emailRequired)
+        .max(50, translationsKeys.emailTooLong)
+        .email(translationsKeys.emailInvalid),
 });
 
 const forgotPasswordConfirmSchema = Yup.object({
     email: Yup.string()
-        .required(translationsKeys.valueRequired)
-        .max(50, translationsKeys.valueTooLong)
-        .email(translationsKeys.emailInvalided),
+        .required(translationsKeys.emailRequired)
+        .max(50, translationsKeys.emailTooLong)
+        .email(translationsKeys.emailInvalid),
     confirmationCode: Yup.string()
-        .min(6, translationsKeys.valueTooShort)
-        .max(8, translationsKeys.valueTooLong)
-        .required(translationsKeys.codeInvalided),
+        .min(6, translationsKeys.codeTooShort)
+        .max(8, translationsKeys.codeTooLong)
+        .required(translationsKeys.codeRequired),
 });
 
 const forgotPasswordChangeSchema = Yup.object({
     newPassword: Yup.string()
-        .required(translationsKeys.valueRequired)
+        .required(translationsKeys.newPasswordRequired)
         .min(5, translationsKeys.passwordMinLength)
-        .max(50, translationsKeys.valueTooLong)
-        .matches(/[A-Z]/, translationsKeys.passwordUppercase)
-        .matches(/[a-z]/, translationsKeys.passwordLowercase)
-        .matches(/[0-9]/, translationsKeys.passwordNumber)
-        .matches(/[!@#$%^&*(),.?":{}|<>]/, translationsKeys.passwordSpecial)
-        .equals([Yup.ref('repeatPassword')], translationsKeys.codeInvalided),
-    repeatPassword: Yup.string()
-        .required(translationsKeys.valueRequired)
-        .min(5, translationsKeys.passwordMinLength)
-        .max(50, translationsKeys.valueTooLong)
+        .max(50, translationsKeys.passwordTooLong)
         .matches(/[A-Z]/, translationsKeys.passwordUppercase)
         .matches(/[a-z]/, translationsKeys.passwordLowercase)
         .matches(/[0-9]/, translationsKeys.passwordNumber)
         .matches(/[!@#$%^&*(),.?":{}|<>]/, translationsKeys.passwordSpecial),
+    repeatPassword: Yup.string()
+        .required(translationsKeys.repeatPasswordRequired)
+        .oneOf([Yup.ref('newPassword')], translationsKeys.passwordsDoNotMatch),
 });
 
 const categoryEdit = {
-    categoryName: Yup.string().min(3, translationsKeys.valueTooShort).max(50, translationsKeys.valueTooLong).notRequired(),
+    categoryName: Yup.string().min(3, translationsKeys.nameTooShort).max(50, translationsKeys.nameTooLong).notRequired(),
     currencyId: Yup.number().notRequired(),
 };
 
@@ -181,46 +229,52 @@ const buildTransactionCreateSchema = ({
         ...(currencyId !== sourceCurrencyId
             ? {
                   amountInCurrency: Yup.number()
-                      .min(Number.MIN_VALUE, translationsKeys.valueTooShort)
-                      .max(Number.MAX_VALUE, translationsKeys.valueTooLong),
+                      .min(Number.MIN_VALUE, translationsKeys.amountTooSmall)
+                      .max(Number.MAX_VALUE, translationsKeys.amountTooLarge),
                   sourceCurrencyId: Yup.number()
-                      .min(Number.MIN_VALUE, translationsKeys.valueTooShort)
-                      .max(Number.MAX_VALUE, translationsKeys.valueTooLong),
+                      .min(Number.MIN_VALUE, translationsKeys.currencyInvalid)
+                      .max(Number.MAX_VALUE, translationsKeys.currencyInvalid),
               }
             : {}),
         transactionTypeId: Yup.number()
-            .oneOf([TransactionType.Expense, TransactionType.Income, TransactionType.Transafer], translationsKeys.valueRequired)
-            .required(),
+            .oneOf(
+                [TransactionType.Expense, TransactionType.Income, TransactionType.Transafer],
+                translationsKeys.transactionTypeRequired,
+            )
+            .required(translationsKeys.transactionTypeRequired),
         amount: Yup.number()
-            .min(Number.MIN_VALUE, translationsKeys.valueTooShort)
-            .max(Number.MAX_VALUE, translationsKeys.valueTooLong),
-        description: Yup.string().notRequired().min(3, translationsKeys.valueTooShort).max(150, translationsKeys.valueTooLong),
+            .min(Number.MIN_VALUE, translationsKeys.amountTooSmall)
+            .max(Number.MAX_VALUE, translationsKeys.amountTooLarge),
+        description: Yup.string()
+            .notRequired()
+            .min(3, translationsKeys.descriptionTooShort)
+            .max(150, translationsKeys.descriptionTooLong),
         currencyId: Yup.number()
-            .min(Number.MIN_VALUE, translationsKeys.valueTooShort)
-            .max(Number.MAX_VALUE, translationsKeys.valueTooLong),
-        createdAt: Yup.date().min(twentyYearsAgo, translationsKeys.valueTooShort).max(now, translationsKeys.valueTooLong),
-        accountId: Yup.string().when('transactionType', (transactionType, schema) => {
-            if ((transactionType as unknown as TransactionType) === TransactionType.Transafer)
-                return schema.required(translationsKeys.valueRequired);
-            if ((transactionType as unknown as TransactionType) === TransactionType.Expense)
-                return schema.required(translationsKeys.valueRequired);
-            if ((transactionType as unknown as TransactionType) === TransactionType.Income)
-                return schema.required(translationsKeys.valueRequired);
+            .min(Number.MIN_VALUE, translationsKeys.currencyInvalid)
+            .max(Number.MAX_VALUE, translationsKeys.currencyInvalid),
+        createdAt: Yup.date().min(twentyYearsAgo, translationsKeys.dateTooOld).max(now, translationsKeys.dateInFuture),
+        accountId: Yup.number().when('transactionTypeId', (transactionTypeId, schema) => {
+            if ((transactionTypeId as unknown as TransactionType) === TransactionType.Transafer)
+                return schema.required(translationsKeys.accountRequired);
+            if ((transactionTypeId as unknown as TransactionType) === TransactionType.Expense)
+                return schema.required(translationsKeys.accountRequired);
+            if ((transactionTypeId as unknown as TransactionType) === TransactionType.Income)
+                return schema.required(translationsKeys.accountRequired);
             return schema.notRequired();
         }),
-        targetAccountId: Yup.string().when('transactionType', {
+        targetAccountId: Yup.number().when('transactionTypeId', {
             is: TransactionType.Transafer,
-            then: (schema) => schema.required(translationsKeys.valueRequired),
+            then: (schema) => schema.required(translationsKeys.targetAccountRequired),
             otherwise: (schema) => schema.notRequired(),
         }),
-        categoryId: Yup.string().when('transactionType', {
+        categoryId: Yup.number().when('transactionTypeId', {
             is: TransactionType.Expense,
-            then: (schema) => schema.required(translationsKeys.valueRequired),
+            then: (schema) => schema.required(translationsKeys.categoryRequired),
             otherwise: (schema) => schema.notRequired(),
         }),
-        incomeId: Yup.string().when('transactionType', {
+        incomeId: Yup.number().when('transactionTypeId', {
             is: TransactionType.Income,
-            then: (schema) => schema.required(translationsKeys.valueRequired),
+            then: (schema) => schema.required(translationsKeys.incomeRequired),
             otherwise: (schema) => schema.notRequired(),
         }),
     };
@@ -232,49 +286,57 @@ const buildTransactionEditSchema = () => {
     twentyYearsAgo.setFullYear(twentyYearsAgo.getFullYear() - 20);
 
     const transactionEdit = {
-        transactionType: Yup.number().nullable(),
+        transactionTypeId: Yup.number()
+            .oneOf(
+                [TransactionType.Expense, TransactionType.Income, TransactionType.Transafer],
+                translationsKeys.transactionTypeRequired,
+            )
+            .nullable(),
         amount: Yup.number()
-            .min(0, translationsKeys.valueTooShort)
-            .max(Number.MAX_VALUE, translationsKeys.valueTooLong)
+            .min(0, translationsKeys.amountTooSmall)
+            .max(Number.MAX_VALUE, translationsKeys.amountTooLarge)
             .notRequired(),
 
-        description: Yup.string().min(3, translationsKeys.valueTooShort).max(150, translationsKeys.valueTooLong).notRequired(),
+        description: Yup.string()
+            .min(3, translationsKeys.descriptionTooShort)
+            .max(150, translationsKeys.descriptionTooLong)
+            .notRequired(),
 
         currencyId: Yup.number()
-            .min(0, translationsKeys.valueTooShort)
-            .max(Number.MAX_VALUE, translationsKeys.valueTooLong)
+            .min(0, translationsKeys.currencyInvalid)
+            .max(Number.MAX_VALUE, translationsKeys.currencyInvalid)
             .notRequired(),
 
         createdAt: Yup.date()
-            .min(twentyYearsAgo, translationsKeys.valueTooShort)
-            .max(now, translationsKeys.valueTooLong)
+            .min(twentyYearsAgo, translationsKeys.dateTooOld)
+            .max(now, translationsKeys.dateInFuture)
             .notRequired(),
 
-        accountId: Yup.string().when('transactionType', (transactionType, schema) => {
-            if ((transactionType as unknown as TransactionType) === TransactionType.Transafer)
-                return schema.required(translationsKeys.valueRequired);
-            if ((transactionType as unknown as TransactionType) === TransactionType.Expense)
-                return schema.required(translationsKeys.valueRequired);
-            if ((transactionType as unknown as TransactionType) === TransactionType.Income)
-                return schema.required(translationsKeys.valueRequired);
+        accountId: Yup.number().when('transactionTypeId', (transactionTypeId, schema) => {
+            if ((transactionTypeId as unknown as TransactionType) === TransactionType.Transafer)
+                return schema.required(translationsKeys.accountRequired);
+            if ((transactionTypeId as unknown as TransactionType) === TransactionType.Expense)
+                return schema.required(translationsKeys.accountRequired);
+            if ((transactionTypeId as unknown as TransactionType) === TransactionType.Income)
+                return schema.required(translationsKeys.accountRequired);
             return schema.notRequired();
         }),
 
-        targetAccountId: Yup.string().when('transactionType', {
+        targetAccountId: Yup.number().when('transactionTypeId', {
             is: TransactionType.Transafer,
-            then: (schema) => schema.required(translationsKeys.valueRequired),
+            then: (schema) => schema.required(translationsKeys.targetAccountRequired),
             otherwise: (schema) => schema.notRequired(),
         }),
 
-        categoryId: Yup.string().when('transactionType', {
+        categoryId: Yup.number().when('transactionTypeId', {
             is: TransactionType.Expense,
-            then: (schema) => schema.required(translationsKeys.valueRequired),
+            then: (schema) => schema.required(translationsKeys.categoryRequired),
             otherwise: (schema) => schema.notRequired(),
         }),
 
-        incomeId: Yup.string().when('transactionType', {
+        incomeId: Yup.number().when('transactionTypeId', {
             is: TransactionType.Income,
-            then: (schema) => schema.required(translationsKeys.valueRequired),
+            then: (schema) => schema.required(translationsKeys.incomeRequired),
             otherwise: (schema) => schema.notRequired(),
         }),
     };
@@ -300,9 +362,9 @@ const settingsChangeEmailShema = Yup.object(emailEdit);
 const settingsChangeEmailConfirmationShema = Yup.object(signUpConfirmation);
 
 const passwordChange = {
-    password: Yup.string().required(translationsKeys.valueRequired),
+    password: Yup.string().required(translationsKeys.currentPasswordRequired),
     newPassword: Yup.string()
-        .required(translationsKeys.valueRequired)
+        .required(translationsKeys.newPasswordRequired)
         .min(5, translationsKeys.passwordMinLength)
         .matches(/[A-Z]/, translationsKeys.passwordUppercase)
         .matches(/[a-z]/, translationsKeys.passwordLowercase)

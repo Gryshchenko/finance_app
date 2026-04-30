@@ -7,7 +7,9 @@ import { EmptyState } from '@/components/EmptyState';
 import { IncomeFields } from '@/components/income/IncomeFields';
 import { useInvalidateQuery } from '@/hooks/useAppQuery';
 import { useEditView } from '@/hooks/useEditView';
+import { translate } from '@/i18n/translate';
 import { incomeEditSchema } from '@/schems/validationSchemas';
+import AlertService from '@/services/AlertService';
 import { buildGeneralApiBaseHandler, GeneralApiProblemKind, handleBadDataResponse } from '@/services/api/apiProblem';
 import { IncomeService } from '@/services/IncomeService';
 import { InvalidationGroups } from '@/services/QueryCacheService';
@@ -45,6 +47,29 @@ export const IncomeEdit: FC<IIncomePros> = function IncomeEdit(_props) {
             buildGeneralApiBaseHandler(response);
         }
     };
+    const handleDelete = async () => {
+        const incomeService = IncomeService.instance();
+        if (!form.incomeId) return;
+
+        const response = await incomeService.doDeleteIncome(form.incomeId);
+        if (response.kind === GeneralApiProblemKind.Ok) {
+            ToastService.info({
+                title: 'common:info',
+                message: 'common:deleteAccountSuccess',
+            });
+            await invalidateQuery(InvalidationGroups.income(form.incomeId));
+            navigation.getParent()?.navigate(OverviewPath.Dashboard);
+        } else {
+            ToastService.error({
+                title: 'common:error',
+                message: 'common:deleteAccountFailed',
+            });
+        }
+    };
+
+    const onDelete = () => {
+        AlertService.confirm(translate('common:deleteAccountTitle'), translate('common:deleteAccountMessage'), handleDelete);
+    };
 
     const handleSave = async () => {
         const isValid = await save();
@@ -73,6 +98,7 @@ export const IncomeEdit: FC<IIncomePros> = function IncomeEdit(_props) {
             cancel={() => {
                 navigation.goBack();
             }}
+            onDelete={onDelete}
             handleSave={handleSave}
         />
     );

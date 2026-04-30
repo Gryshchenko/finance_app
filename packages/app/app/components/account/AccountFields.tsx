@@ -73,7 +73,7 @@ export const AccountFields: FC<IProps> = function AccountFields(_props) {
                 <CurrencyField
                     preset={'underline'}
                     labelTx={'common:amount'}
-                    value={String(form.amount)}
+                    value={String(form.amount ?? '')}
                     helperTx={errors?.amount}
                     status={errors?.amount ? 'error' : undefined}
                     editable={!isView}

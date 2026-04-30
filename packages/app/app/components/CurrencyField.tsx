@@ -53,7 +53,8 @@ export const CurrencyField: FC<ICurrencyField> = ({ value, onChangeCleaned, edit
     );
 };
 
-const $currencySymbol: ThemedStyle<TextStyle> = ({ colors }) => ({
+const $currencySymbol: ThemedStyle<TextStyle> = ({ colors, typography }) => ({
+    fontFamily: typography.fonts.funnelSans.semiBold,
     alignItems: 'center',
     color: colors.text,
     display: 'flex',
@@ -61,7 +62,7 @@ const $currencySymbol: ThemedStyle<TextStyle> = ({ colors }) => ({
     justifyContent: 'center',
 });
 const $leftAccessoryStyle: ThemedStyle<TextStyle> = () => ({
-    height: 40,
+    height: 37,
 });
 
 const $currencySymbolUnderlineBig: ThemedStyle<TextStyle> = ({ colors }) => ({

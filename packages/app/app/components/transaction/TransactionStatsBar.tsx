@@ -6,10 +6,6 @@ import { translate } from '@/i18n/translate';
 import { useAppTheme } from '@/theme/context';
 import { CurrencyUtils } from '@/utils/CurrencyUtils';
 
-// ---------------------------------------------------------------------------
-// Props
-// ---------------------------------------------------------------------------
-
 export interface TransactionStatsBarProps {
     /** Amount spent so far this month */
     spentMtd: number;
@@ -22,10 +18,6 @@ export interface TransactionStatsBarProps {
     /** ISO currency code, e.g. "USD" */
     currency: string;
 }
-
-// ---------------------------------------------------------------------------
-// Delta helpers
-// ---------------------------------------------------------------------------
 
 type DeltaDirection = 'up' | 'down' | 'flat' | 'none';
 
@@ -53,10 +45,6 @@ function computeDelta(current: number, previous: number): DeltaInfo {
     return { direction: 'flat', label: `0 %` };
 }
 
-// ---------------------------------------------------------------------------
-// Budget helpers
-// ---------------------------------------------------------------------------
-
 type BudgetStatus = 'ok' | 'warning' | 'critical' | 'over';
 
 /**
@@ -72,10 +60,6 @@ function getBudgetStatus(pct: number): BudgetStatus {
     return 'ok';
 }
 
-// ---------------------------------------------------------------------------
-// Mock data — replace with real API props when ready
-// ---------------------------------------------------------------------------
-
 const MOCK: TransactionStatsBarProps = {
     spentMtd: 1452.8,
     lastMonthSpent: 1660.0,
@@ -83,10 +67,6 @@ const MOCK: TransactionStatsBarProps = {
     budgetTotal: 3100.0,
     currency: 'USD',
 };
-
-// ---------------------------------------------------------------------------
-// Component
-// ---------------------------------------------------------------------------
 
 export const TransactionStatsBar: FC<Partial<TransactionStatsBarProps>> = function TransactionStatsBar(props) {
     const {
@@ -100,7 +80,6 @@ export const TransactionStatsBar: FC<Partial<TransactionStatsBarProps>> = functi
     const { theme } = useAppTheme();
     const { colors } = theme;
 
-    // ── Delta ────────────────────────────────────────────────────────────────
     const delta = useMemo(() => computeDelta(spentMtd, lastMonthSpent), [spentMtd, lastMonthSpent]);
 
     const deltaColor = useMemo(() => {
@@ -125,7 +104,6 @@ export const TransactionStatsBar: FC<Partial<TransactionStatsBarProps>> = functi
         }
     }, [delta.direction]);
 
-    // ── Budget ───────────────────────────────────────────────────────────────
     const budgetPct = useMemo(() => {
         if (!budgetTotal) return null;
         return Math.round((spentMtd / budgetTotal) * 100);
@@ -147,7 +125,6 @@ export const TransactionStatsBar: FC<Partial<TransactionStatsBarProps>> = functi
         }
     }, [budgetStatus, colors]);
 
-    // ── Tile definitions ─────────────────────────────────────────────────────
     const tiles = useMemo(
         (): StatTileConfig[] => [
             // ── Spent MTD ───────────────────────────────────────────────────────

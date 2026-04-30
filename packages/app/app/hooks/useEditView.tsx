@@ -24,7 +24,7 @@ export function useEditView<T extends object>(initialData: T, schema?: Yup.Objec
             const newErrors: Errors<T> = {};
             if (err.inner) {
                 err.inner.forEach((e: { path: keyof T; message: TxKeyPath }) => {
-                    if (e.path && initialData[e.path] !== undefined) newErrors[e.path] = e.message;
+                    if (e.path) newErrors[e.path] = e.message;
                 });
             }
             setErrors(newErrors);

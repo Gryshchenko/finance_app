@@ -17,7 +17,7 @@ export async function fetchStats(): Promise<ISummary | null> {
     try {
         const statsService = StatsService.instance();
         const response = await statsService.doGetStats({
-            to: Time.toMonthEndExclusive(Time.getISODateNowUTC()) as string,
+            to: Time.getISODateNowUTC() as string,
             from: Time.toMonthStart(Time.getISODateNowUTC()) as string,
             period: StatsPeriod.Month,
         });

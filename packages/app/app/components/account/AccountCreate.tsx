@@ -20,7 +20,7 @@ export const AccountCreate: FC = function AccountCreate(_props) {
         {
             accountName: '',
             currencyId: 1,
-            amount: '',
+            amount: undefined,
             iconId: AccountIcon.Wallet,
         },
         accountCreateSchema,

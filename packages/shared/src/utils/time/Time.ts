@@ -152,7 +152,7 @@ class Time {
     }
 
     public static toDayExclusiveEnd(dateISO: string): string | null {
-        return Time.parseISO(dateISO).plus({ days: 1 }).startOf('day').toISO();
+        return Time.parseISO(dateISO).plus({ days: 1 }).endOf('day').toISO();
     }
 
     public static toMonthStart(dateISO: string): string | null {
