@@ -486,32 +486,28 @@ describe('GET /user/:userId/transaction/:transactionId — param validation', ()
 describe('GET /user/:userId/transactions/ — query param validation', () => {
     const url = (q: string) => `/user/${userId}/transactions/?${q}`;
 
-    it('400 — missing cursor', async () => {
-        await agent.get(url('limit=10')).set('authorization', authorization).expect(HttpCode.BAD_REQUEST);
-    });
-
     it('400 — missing limit', async () => {
-        await agent.get(url('cursor=0')).set('authorization', authorization).expect(HttpCode.BAD_REQUEST);
-    });
-
-    it('400 — cursor is a string', async () => {
-        await agent.get(url('limit=10&cursor=abc')).set('authorization', authorization).expect(HttpCode.BAD_REQUEST);
+        await agent.get(url('')).set('authorization', authorization).expect(HttpCode.BAD_REQUEST);
     });
 
     it('400 — limit is a string', async () => {
-        await agent.get(url('limit=abc&cursor=0')).set('authorization', authorization).expect(HttpCode.BAD_REQUEST);
+        await agent.get(url('limit=abc')).set('authorization', authorization).expect(HttpCode.BAD_REQUEST);
     });
 
     it('400 — unknown query param', async () => {
-        await agent.get(url('limit=10&cursor=0&foo=bar')).set('authorization', authorization).expect(HttpCode.BAD_REQUEST);
+        await agent.get(url('limit=10&foo=bar')).set('authorization', authorization).expect(HttpCode.BAD_REQUEST);
     });
 
     it('400 — accountId is a string', async () => {
-        await agent.get(url('limit=10&cursor=0&accountId=abc')).set('authorization', authorization).expect(HttpCode.BAD_REQUEST);
+        await agent.get(url('limit=10&accountId=abc')).set('authorization', authorization).expect(HttpCode.BAD_REQUEST);
     });
 
-    it('200 — valid query returns paginated result', async () => {
-        const res = await agent.get(url('limit=10&cursor=0')).set('authorization', authorization);
+    it('400 — malformed cursor', async () => {
+        await agent.get(url('limit=10&cursor=!!!not-valid!!!')).set('authorization', authorization).expect(HttpCode.BAD_REQUEST);
+    });
+
+    it('200 — valid query without cursor returns first page', async () => {
+        const res = await agent.get(url('limit=10')).set('authorization', authorization);
         expect(res.status).toBe(HttpCode.OK);
         expect(res.body.data).toBeDefined();
     });

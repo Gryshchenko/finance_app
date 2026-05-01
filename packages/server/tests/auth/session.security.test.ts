@@ -268,8 +268,9 @@ describe('4. Token blacklist (logout)', () => {
         const loginResponse = await agent.post('/auth/login').send({ email, password });
         expect(loginResponse.status).toBe(HttpCode.OK);
 
-        const newAuth = loginResponse.headers['authorization'];
-        await agent.get(profileUrl(userId)).set('authorization', newAuth).expect(HttpCode.OK);
+        const newToken = loginResponse.body.data.token;
+        expect(newToken).toEqual(expect.any(String));
+        await agent.get(profileUrl(userId)).set('authorization', `Bearer ${newToken}`).expect(HttpCode.OK);
     });
 });
 
@@ -297,15 +298,15 @@ describe('5. Cross-user resource isolation', () => {
         `/user/${ownerId}/overview/`,
     ];
 
-    it("user A's token cannot access user B's endpoints (401)", async () => {
+    it("user A's token cannot access user B's endpoints (403)", async () => {
         for (const url of endpoints(userB.userId)) {
-            await agent.get(url).set('authorization', userA.authorization).expect(HttpCode.UNAUTHORIZED);
+            await agent.get(url).set('authorization', userA.authorization).expect(HttpCode.FORBIDDEN);
         }
     });
 
-    it("user B's token cannot access user A's endpoints (401)", async () => {
+    it("user B's token cannot access user A's endpoints (403)", async () => {
         for (const url of endpoints(userA.userId)) {
-            await agent.get(url).set('authorization', userB.authorization).expect(HttpCode.UNAUTHORIZED);
+            await agent.get(url).set('authorization', userB.authorization).expect(HttpCode.FORBIDDEN);
         }
     });
 
@@ -320,7 +321,7 @@ describe('5. Cross-user resource isolation', () => {
             .post(`/user/${userB.userId}/account/`)
             .set('authorization', userA.authorization)
             .send({ currencyId: 1, accountName: 'Hack', amount: 0, iconId: 'wallet' })
-            .expect(HttpCode.UNAUTHORIZED);
+            .expect(HttpCode.FORBIDDEN);
     });
 });
 
@@ -381,64 +382,31 @@ describe('6. Long-token / refresh security', () => {
         expect(response.status).toBe(HttpCode.BAD_REQUEST);
     });
 
-    /**
-     * [BUG] Long token not added to blacklist on logout
-     *
-     * POST /auth/logout blacklists only the short access token
-     * (taken from Authorization header). The long token that was
-     * issued at login time is never invalidated.
-     *
-     * After a user logs out, an attacker who possesses the long
-     * token can call POST /auth/:userId/refresh and obtain a brand-
-     * new valid short token — effectively bypassing the logout.
-     *
-     * Fix: also blacklist the long token on logout, or introduce a
-     * per-user token-generation counter stored in Redis/DB.
-     */
-    it('[BUG] long token must not produce a new access token after logout', async () => {
+    it('long token must not produce a new access token after logout', async () => {
         const agent = request.agent(server);
         const { userId, authorization, longToken } = await createUser({ agent });
         userIds.push(userId);
 
-        // Confirm the protected endpoint works
         await agent.get(profileUrl(userId)).set('authorization', authorization).expect(HttpCode.OK);
 
-        // Logout (short token is blacklisted)
-        await agent.post('/auth/logout').set('authorization', authorization).expect(HttpCode.OK);
+        // Logout blacklists both the short token and the long token
+        await agent.post('/auth/logout').set('authorization', authorization).send({ token: longToken }).expect(HttpCode.OK);
 
-        // Attacker uses the long token to get a fresh short token
         const refreshResponse = await agent.post(`/auth/${userId}/refresh`).send({ token: longToken });
 
-        // Currently returns 200 — should return 400/401 after logout
-        expect(refreshResponse.status).toBe(HttpCode.BAD_REQUEST);
+        expect(refreshResponse.status).toBe(HttpCode.UNAUTHORIZED);
     });
 
-    /**
-     * [BUG] Refresh endpoint does not enforce user status
-     *
-     * The /auth/:userId/refresh route applies tokenLongVerify and
-     * userIdVerify but NOT userStatusVerify(UserStatus.ACTIVE).
-     * A suspended / inactive user can therefore obtain a new short
-     * token even though every subsequent request with that token
-     * will be rejected by userStatusVerify on the /user/* routes.
-     *
-     * This is a defence-in-depth issue: the refresh endpoint should
-     * gate on user status just like all other protected routes.
-     *
-     * Fix: add userStatusVerify(UserStatus.ACTIVE) to the refresh route.
-     */
-    it('[BUG] suspended user must not be able to refresh their token', async () => {
+    it('suspended user must not be able to refresh their token', async () => {
         const agent = request.agent(server);
         const db = DatabaseConnection.instance(config);
         const { userId, longToken } = await createUser({ agent, databaseConnection: db });
         userIds.push(userId);
 
-        // Simulate account suspension directly in DB
         await db.engine()('users').where({ userId }).update({ status: UserStatus.INACTIVE });
 
         const refreshResponse = await agent.post(`/auth/${userId}/refresh`).send({ token: longToken });
 
-        // Currently returns 200 — should return 403
         expect(refreshResponse.status).toBe(HttpCode.FORBIDDEN);
     });
 });

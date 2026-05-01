@@ -66,18 +66,15 @@ export class TransactionController {
             const accountId = Utils.greaterThen0(Number(req.query.accountId)) ? Number(req.query.accountId) : undefined;
             const categoryId = Utils.greaterThen0(Number(req.query.categoryId)) ? Number(req.query.categoryId) : undefined;
             const incomeId = Utils.greaterThen0(Number(req.query.incomeId)) ? Number(req.query.incomeId) : undefined;
-            const orderBy: string | undefined = Utils.isNotEmpty(req.query?.orderBy as string)
-                ? (String(req.query?.orderBy) as string)
-                : undefined;
             const { data, limit, cursor } = await TransactionServiceBuilder.build().getTransactions({
                 userId: Number(req.user?.userId),
                 limit: Number(req.query.limit),
-                cursor: Number(req.query.cursor),
+                cursor: Utils.isNotEmpty(req.query.cursor as string) ? (req.query.cursor as string) : undefined,
                 accountId,
                 categoryId,
                 incomeId,
-                orderBy,
             });
+
             const transactionCount = data?.length ?? 0;
             if (Utils.isNull(data) || !Utils.greaterThen0(transactionCount)) {
                 res.status(HttpCode.OK).json(

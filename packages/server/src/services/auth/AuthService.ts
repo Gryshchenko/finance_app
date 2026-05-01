@@ -1,3 +1,4 @@
+import crypto from 'crypto';
 import jwt, { Algorithm, DecodeOptions, JwtPayload } from 'jsonwebtoken';
 import { ErrorCode, HttpCode, RoleType, Time, Utils } from 'tenpercent/shared';
 
@@ -123,6 +124,7 @@ export default class AuthService extends LoggerBase implements IAuthService {
             issuer: getConfig().jwtIssuer,
             audience: getConfig().jwtAudience,
             subject: String(userId),
+            jwtid: crypto.randomUUID(),
         });
     }
 

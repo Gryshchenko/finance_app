@@ -7,12 +7,33 @@ import { BaseError } from 'src/utils/errors/BaseError';
 import { DBError } from 'src/utils/errors/DBError';
 import { isBaseError } from 'src/utils/errors/isBaseError';
 import { NotFoundError } from 'src/utils/errors/NotFoundError';
-import { parseSortBy } from 'src/utils/validation/parseSortBy';
+import { ValidationError } from 'src/utils/errors/ValidationError';
 import { validateAllowedProperties } from 'src/utils/validation/validateAllowedProperties';
+
+interface ICursorData {
+    createdAt: string;
+    transactionId: number;
+}
+
+function encodeCursor(data: ICursorData): string {
+    return Buffer.from(JSON.stringify(data)).toString('base64');
+}
+
+function decodeCursor(cursor: string): ICursorData {
+    try {
+        const decoded = JSON.parse(Buffer.from(cursor, 'base64').toString('utf-8'));
+        if (typeof decoded?.createdAt !== 'string' || typeof decoded?.transactionId !== 'number') {
+            throw new Error();
+        }
+        return decoded;
+    } catch {
+        throw new ValidationError({ message: 'Invalid cursor format' });
+    }
+}
 
 export interface ITransactionDataAccess {
     createTransaction(transaction: ICreateTransaction, trx?: IDBTransaction): Promise<number>;
-    getTransactions(data: ITransactionListItemsRequest): Promise<IPagination<ITransactionListItem | null>>;
+    getTransactions(data: ITransactionListItemsRequest): Promise<IPagination<ITransactionListItem>>;
     getTransaction(userId: number, transactionId: number, trx?: IDBTransaction): Promise<ITransaction | undefined>;
     patchTransaction(userId: number, properties: Partial<ITransaction>, trx?: IDBTransaction): Promise<number>;
     deleteTransaction(userId: number, transactionId: number, trx?: IDBTransaction): Promise<boolean>;
@@ -66,8 +87,7 @@ export default class TransactionDataAccess extends LoggerBase implements ITransa
         accountId,
         categoryId,
         incomeId,
-        orderBy,
-    }: ITransactionListItemsRequest): Promise<IPagination<ITransactionListItem | null>> {
+    }: ITransactionListItemsRequest): Promise<IPagination<ITransactionListItem>> {
         try {
             const cleanFilters =
                 Object.fromEntries(
@@ -78,7 +98,6 @@ export default class TransactionDataAccess extends LoggerBase implements ITransa
                     }).filter(([_, value]) => value !== undefined),
                 ) ?? {};
             this._logger.info(`Fetching transactions {${Object.entries(cleanFilters).join(': ')}} for userId: ${userId}`);
-            const orderArr = parseSortBy(orderBy as string, ['amount', 'createdAt']);
 
             const query = this._db
                 .engine()('transactions')
@@ -104,16 +123,21 @@ export default class TransactionDataAccess extends LoggerBase implements ITransa
                     ...cleanFilters,
                     'transactions.isDeleted': false,
                 });
-
             if (cursor) {
-                query.andWhere('transactions.transactionId', '>', cursor);
-            }
-            if (Utils.isArrayNotEmpty(orderArr)) {
-                for (const { column, order } of orderArr) {
-                    query.orderBy(`transactions.${column}`, order);
-                }
+                const { createdAt: cursorCreatedAt, transactionId: cursorTransactionId } = decodeCursor(cursor);
+                query.andWhere(function () {
+                    this.where('transactions.createdAt', '<', cursorCreatedAt).orWhere(function () {
+                        this.where('transactions.createdAt', '=', cursorCreatedAt).andWhere(
+                            'transactions.transactionId',
+                            '<',
+                            cursorTransactionId,
+                        );
+                    });
+                });
             }
 
+            query.orderBy('transactions.createdAt', 'desc');
+            query.orderBy('transactions.transactionId', 'desc');
             query.limit(limit);
 
             const data = await query;
@@ -123,7 +147,11 @@ export default class TransactionDataAccess extends LoggerBase implements ITransa
             } else {
                 this._logger.info(`Fetched ${data.length} transactions for userId: ${userId}`);
             }
-            const nextCursor = data?.[data.length - 1]?.transactionId ?? null;
+
+            const lastItem = data[data.length - 1];
+            const nextCursor = lastItem
+                ? encodeCursor({ createdAt: lastItem.createdAt, transactionId: lastItem.transactionId })
+                : null;
 
             return {
                 data: Utils.greaterThen0(data?.length) ? data : [],

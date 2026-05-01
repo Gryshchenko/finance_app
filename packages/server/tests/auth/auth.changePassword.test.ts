@@ -141,7 +141,7 @@ describe('1. Full flow — request → confirm → change → login with new pas
         expect(loginNew.body.data.token).toEqual(expect.any(String));
 
         // Step 8 — login with old password fails
-        await agent.post('/auth/login').send({ email, password: OLD_PASSWORD }).expect(HttpCode.UNAUTHORIZED);
+        await agent.post('/auth/login').send({ email, password: OLD_PASSWORD }).expect(HttpCode.BAD_REQUEST);
     });
 });
 

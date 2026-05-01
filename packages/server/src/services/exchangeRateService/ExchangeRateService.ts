@@ -52,31 +52,35 @@ export default class ExchangeRateService extends LoggerBase implements IExchange
             const currenciesCodes = currencies.map((c) => c.currencyCode);
 
             for (const { currencyCode } of currencies) {
-                const currentRates = await this._exchangeRateDataAccess.gets(currencyCode);
-                const currentRatesArray = Array.isArray(currentRates) ? currentRates : [];
+                try {
+                    const currentRates = await this._exchangeRateDataAccess.gets(currencyCode);
+                    const currentRatesArray = Array.isArray(currentRates) ? currentRates : [];
 
-                if (currentRatesArray.length === 0) {
-                    this._logger.info(`No existing rates for ${currencyCode}, inserting new full set`);
-                    const rates = await this._rateProvider.getRates(currencyCode, currenciesCodes);
-                    await this.logAndStoreRates('insert', currencyCode, rates, this._exchangeRateDataAccess.post);
-                } else {
-                    const outdatedTargets = currentRatesArray
-                        .filter(
-                            (rate) =>
-                                Time.getDiff({
-                                    to: rate.updatedAt,
-                                    duration: TimeDuration.Hour,
-                                }) >= 12,
-                        )
-                        .map((rate) => rate.targetCurrency);
-
-                    if (outdatedTargets.length > 0) {
-                        this._logger.info(`Found ${outdatedTargets.length} outdated rates for ${currencyCode}, updating...`);
-                        const rates = await this._rateProvider.getRates(currencyCode, outdatedTargets);
-                        await this.logAndStoreRates('update', currencyCode, rates, this._exchangeRateDataAccess.patch);
+                    if (currentRatesArray.length === 0) {
+                        this._logger.info(`No existing rates for ${currencyCode}, inserting new full set`);
+                        const rates = await this._rateProvider.getRates(currencyCode, currenciesCodes);
+                        await this.logAndStoreRates('insert', currencyCode, rates, this._exchangeRateDataAccess.post);
                     } else {
-                        this._logger.info(`All rates for ${currencyCode} are up to date`);
+                        const outdatedTargets = currentRatesArray
+                            .filter(
+                                (rate) =>
+                                    Time.getDiff({
+                                        to: rate.updatedAt,
+                                        duration: TimeDuration.Hour,
+                                    }) >= 12,
+                            )
+                            .map((rate) => rate.targetCurrency);
+
+                        if (outdatedTargets.length > 0) {
+                            this._logger.info(`Found ${outdatedTargets.length} outdated rates for ${currencyCode}, updating...`);
+                            const rates = await this._rateProvider.getRates(currencyCode, outdatedTargets);
+                            await this.logAndStoreRates('update', currencyCode, rates, this._exchangeRateDataAccess.patch);
+                        } else {
+                            this._logger.info(`All rates for ${currencyCode} are up to date`);
+                        }
                     }
+                } catch (e) {
+                    this._logger.error(`Failed to process rates for ${currencyCode}: ${(e as { message: string }).message}`);
                 }
             }
         } catch (e) {

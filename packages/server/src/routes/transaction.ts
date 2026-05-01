@@ -35,12 +35,11 @@ transactionRouter.post(
 transactionsRouter.get(
     '/',
     validateQuery({
-        cursor: 'number',
+        cursor: 'string?',
         limit: 'number',
         accountId: 'number?',
         categoryId: 'number?',
         incomeId: 'number?',
-        orderBy: 'string?',
     }),
     TransactionController.getAll,
 );

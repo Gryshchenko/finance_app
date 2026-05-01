@@ -21,7 +21,7 @@ import { Logger } from '@/utils/logger/Logger';
 export async function fetchTransactions(
     id: number | undefined,
     type: TransactionFieldType | undefined,
-    cursor: number,
+    cursor: string | null | undefined,
     limit: number,
 ): Promise<IPagination<ITransactionListItem> | null> {
     try {
@@ -60,7 +60,7 @@ export const TransactionsScreen = function TransactionsScreen(_props: Props) {
     const { id, type, name, path, transactionType } = params;
     const { isError, data, isPending } = useAppQuery<IPagination<ITransactionListItem> | null>(
         QueryKeys.transactions(id, type),
-        async () => fetchTransactions(id, type, 0, 10),
+        async () => fetchTransactions(id, type, undefined, 10),
         { staleTime: QueryStaleTimes.transactions },
     );
     const getScreenForEditPath = (path: OverviewPath) => {
@@ -76,6 +76,7 @@ export const TransactionsScreen = function TransactionsScreen(_props: Props) {
                 return undefined;
         }
     };
+
     return (
         <GenericListScreen
             name={translate('transactionScreen:title', { name })}

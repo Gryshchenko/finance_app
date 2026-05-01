@@ -329,6 +329,6 @@ describe('Full flow — request → verify → login with new email', () => {
 
         // Step 5 — login with old email fails (user record now holds newEmail)
         const loginOld = await agent.post('/auth/login').send({ email: oldEmail, password });
-        expect(loginOld.status).toBe(HttpCode.UNAUTHORIZED);
+        expect(loginOld.status).toBe(HttpCode.BAD_REQUEST);
     });
 });

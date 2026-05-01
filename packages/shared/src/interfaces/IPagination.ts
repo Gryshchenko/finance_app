@@ -1,5 +1,5 @@
 export interface IPagination<T> {
     data: T[];
-    cursor: number;
+    cursor: string | null;
     limit: number;
 }

@@ -1,7 +1,9 @@
 import express from 'express';
+import { UserStatus } from 'tenpercent/shared';
 
 import tokenVerify, { tokenLongVerify, tokenResetVerify } from 'middleware/tokenVerify';
 import userIdVerify from 'middleware/userIdVerify';
+import userStatusVerify from 'middleware/userStatusVerify';
 import { AuthController } from 'src/controllers/AuthController';
 import {
     forgetPasswordValidationRules,
@@ -26,6 +28,7 @@ router.post(
     routesInputValidation(refreshTokenValidation),
     tokenLongVerify,
     userIdVerify,
+    userStatusVerify(UserStatus.ACTIVE),
     AuthController.refresh,
 );
 

@@ -71,7 +71,14 @@ export class AuthController {
                 });
             }
 
-            await AuthServiceBuilder.build().logout(token as string);
+            const authService = AuthServiceBuilder.build();
+            await authService.logout(token as string);
+
+            const longToken = req.body?.token;
+            if (longToken && typeof longToken === 'string') {
+                await authService.logout(longToken);
+            }
+
             AuthController.logger.info('Logout successful');
             res.status(HttpCode.OK).json(responseBuilder.setStatus(ResponseStatusType.OK).build());
         } catch (e) {

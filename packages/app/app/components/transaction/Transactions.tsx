@@ -79,7 +79,12 @@ export const Transactions: FC<ITransactionsPros> = function Transactions(_props)
                 <Text style={themed([$headerLabel])} text={translate('transactionScreen:recentActivity' as const)} />
             </View>
 
-            <TransactionSectionList onPress={onPress} transactions={transactions.data} fetch={fetch} />
+            <TransactionSectionList
+                onPress={onPress}
+                transactions={transactions.data}
+                initialCursor={transactions.cursor}
+                fetch={fetch}
+            />
         </View>
     );
 };

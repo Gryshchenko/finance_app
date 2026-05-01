@@ -151,23 +151,32 @@ async function createAllTransactions(
     const expenseIds = await createExpenseTransactions(agent, userId, authorization, accountId, categoryId, currencyId);
     return [...transferIds, ...incomeIds, ...expenseIds];
 }
-async function fetchTransactions(agent: Agent, userId: number, authorization: string, limit: number, cursor: number, query = '') {
+async function fetchTransactions(
+    agent: Agent,
+    userId: number,
+    authorization: string,
+    limit: number,
+    cursor?: string,
+    query = '',
+) {
+    const cursorParam = cursor ? `&cursor=${cursor}` : '';
     const {
         body: {
             data: { limit: resLimit, cursor: resCursor, data },
         },
     } = await agent
-        .get(`/user/${userId}/transactions/?limit=${limit}&cursor=${cursor}${query}`)
+        .get(`/user/${userId}/transactions/?limit=${limit}${cursorParam}${query}`)
         .set('authorization', authorization)
         .expect(HttpCode.OK);
     return { resLimit, resCursor, data };
 }
 
-async function fetchTransactionsAll(agent: Agent, userId: number, authorization: string, limit: number, cursor: number) {
+async function fetchTransactionsAll(agent: Agent, userId: number, authorization: string, limit: number, cursor?: string) {
+    const cursorParam = cursor ? `&cursor=${cursor}` : '';
     const {
         body: { data: all },
     } = await agent
-        .get(`/user/${userId}/transactions/?limit=${limit}&cursor=${cursor}`)
+        .get(`/user/${userId}/transactions/?limit=${limit}${cursorParam}`)
         .set('authorization', authorization)
         .expect(HttpCode.OK);
     return all;
@@ -175,7 +184,7 @@ async function fetchTransactionsAll(agent: Agent, userId: number, authorization:
 
 async function fetchTransactionsBad(agent: Agent, userId: number, authorization: string) {
     await agent
-        .get(`/user/${userId}/transactions/?limit=3&cursor=invalid_cursor`)
+        .get(`/user/${userId}/transactions/?limit=3&cursor=!!!not-valid-base64-json!!!`)
         .set('authorization', authorization)
         .expect(HttpCode.BAD_REQUEST);
 }

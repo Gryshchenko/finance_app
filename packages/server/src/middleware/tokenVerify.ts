@@ -137,7 +137,7 @@ export const tokenResetVerify = createTokenMiddleware({
     errorCode: ErrorCode.TOKEN_RESET_INVALID_ERROR,
     statusCode: HttpCode.UNAUTHORIZED,
     extractToken: (req) => extractToken(req.headers.authorization),
-    checkBlacklist: false,
+    checkBlacklist: true,
     lookupUser: false,
 });
 

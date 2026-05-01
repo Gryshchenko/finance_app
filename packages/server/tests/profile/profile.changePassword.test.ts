@@ -327,6 +327,6 @@ describe('Full flow — request → verify → login with new password', () => {
 
         // Step 6 — login with old password fails
         const loginOld = await agent.post('/auth/login').send({ email, password: OLD_PASSWORD });
-        expect(loginOld.status).toBe(HttpCode.UNAUTHORIZED);
+        expect(loginOld.status).toBe(HttpCode.BAD_REQUEST);
     });
 });

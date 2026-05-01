@@ -22,7 +22,7 @@ export class TransactionService extends ApiAbstract {
     }: {
         id?: number;
         type?: TransactionFieldType | undefined;
-        cursor?: number;
+        cursor?: string;
         limit?: number;
         orderBy?: string;
     }): Promise<
@@ -40,8 +40,8 @@ export class TransactionService extends ApiAbstract {
             if (field && id) {
                 params.append(field, String(id));
             }
-            if (cursor !== undefined) {
-                params.append('cursor', String(cursor));
+            if (cursor != null) {
+                params.append('cursor', cursor);
             }
             if (limit !== undefined) {
                 params.append('limit', String(limit));

@@ -15,8 +15,8 @@ type Props = NativeStackScreenProps<ParamListBase, string>;
 
 export const HistoryTransactionsScreen = function HistoryScreen(_props: Props) {
     const navigation = useNavigation();
-    const { isError, data, isPending } = useAppQuery<IPagination<ITransactionListItem> | undefined>(['transactions'], async () =>
-        fetchTransactions(undefined, undefined, 0, 10),
+    const { isError, data, isPending } = useAppQuery<IPagination<ITransactionListItem> | null>(['transactions'], async () =>
+        fetchTransactions(undefined, undefined, undefined, 10),
     );
 
     return (

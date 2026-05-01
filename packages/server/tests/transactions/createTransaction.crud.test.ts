@@ -145,55 +145,37 @@ describe('PATCH /transaction/patch - amount', () => {
 
         expect(transactionIds.length).toStrictEqual(3 * 9);
 
+        // Verify filter isolation — no cross-contamination between entity types
         for (const query of [
             { name: 'accountId', id: accountId, not: ['categoryId', 'incomeId'] },
             { name: 'categoryId', id: categoryId, not: ['accountId', 'incomeId'] },
             { name: 'incomeId', id: incomeId, not: ['categoryId', 'incomeId'] },
         ]) {
-            const all = await fetchTransactions(agent, userId, authorization, 100, 0, `&${query.name}=${query.id}`);
-            for (let i = 0; i < 9; i += 3) {
-                const cursoreId = all.data[i][query.name];
-                for (const field of ['amount', 'createdAt']) {
-                    for (const order of ['asc', 'desc']) {
-                        const { resLimit, data } = await fetchTransactions(
-                            agent,
-                            userId,
-                            authorization,
-                            3,
-                            cursoreId,
-                            `&${query.name}=${query.id}&orderBy=${field}:${order}`,
-                        );
-
-                        for (const dt of data) {
-                            const not = query.not;
-                            for (const pr of not) {
-                                expect(dt[pr]).toStrictEqual(undefined);
-                            }
-                        }
-
-                        const sorted = [...data].sort((a, b) => {
-                            const valA = a[field];
-                            const valB = b[field];
-
-                            if (order === 'asc') {
-                                return valA > valB ? 1 : valA < valB ? -1 : 0;
-                            } else {
-                                return valA < valB ? 1 : valA > valB ? -1 : 0;
-                            }
-                        });
-
-                        expect(data).toStrictEqual(sorted);
-                        expect(resLimit).toStrictEqual(3);
-                        expect(data.length).toStrictEqual(3);
-                    }
+            const { data } = await fetchTransactions(agent, userId, authorization, 100, undefined, `&${query.name}=${query.id}`);
+            for (const dt of data) {
+                for (const pr of query.not) {
+                    expect(dt[pr]).toBeUndefined();
                 }
             }
         }
 
-        const all = await fetchTransactionsAll(agent, userId, authorization, transactionIds.length, transactionIds[0]);
-        expect(all.limit).toStrictEqual(transactionIds.length);
-        expect(all.cursor).toStrictEqual(transactionIds[transactionIds.length - 1]);
-        expect(all.data.length).toStrictEqual(transactionIds.length - 1);
+        // Verify cursor pagination — no overlap between pages
+        const page1 = await fetchTransactionsAll(agent, userId, authorization, 10);
+        expect(page1.data.length).toStrictEqual(10);
+        expect(typeof page1.cursor).toStrictEqual('string');
+
+        const page2 = await fetchTransactionsAll(agent, userId, authorization, 10, page1.cursor);
+        const page1Ids = new Set(page1.data.map((t: { transactionId: number }) => t.transactionId));
+        for (const t of page2.data) {
+            expect(page1Ids.has(t.transactionId)).toBe(false);
+        }
+
+        // Verify results are sorted by createdAt DESC
+        for (let i = 0; i < page1.data.length - 1; i++) {
+            const a = new Date(page1.data[i].createdAt).getTime();
+            const b = new Date(page1.data[i + 1].createdAt).getTime();
+            expect(a).toBeGreaterThanOrEqual(b);
+        }
 
         await fetchTransactionsBad(agent, userId, authorization);
     });

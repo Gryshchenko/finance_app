@@ -20,12 +20,13 @@ export type fetchTransactionType = ({
     cursor,
     limit,
 }: {
-    cursor: number;
+    cursor: string | null;
     limit: number;
 }) => Promise<IPagination<ITransactionListItem> | undefined>;
 
 interface Props {
     transactions: ITransactionListItem[];
+    initialCursor?: string | null;
     fetch?: fetchTransactionType;
     onPress?: (id: number, name: string) => void;
 }
@@ -141,12 +142,11 @@ const groupByDate = (transactions: ITransactionListItem[]): SectionType<ITransac
 };
 
 const TransactionSectionList = forwardRef<SectionList<ITransactionListItem>, Props>(
-    ({ transactions, fetch, onPress: onPressHandler }, ref) => {
-        const defaultCursor = transactions?.[transactions?.length - 1]?.transactionId ?? 0;
+    ({ transactions, initialCursor, fetch, onPress: onPressHandler }, ref) => {
         const navigation = useNavigation();
         const { themed } = useAppTheme();
         const { getCurrencySymbol } = useCurrency();
-        const [cursor, setCursor] = useState<number | null>(defaultCursor);
+        const [cursor, setCursor] = useState<string | null>(initialCursor ?? null);
         const [sections, setSections] = useState<SectionType<ITransactionListItem>[]>(groupByDate(transactions));
 
         const loadMore = async () => {
@@ -231,7 +231,9 @@ const TransactionSectionList = forwardRef<SectionList<ITransactionListItem>, Pro
                 ref={ref}
                 onEndReached={() => loadMore()}
                 sections={sections}
-                keyExtractor={(item) => String(item.transactionId)}
+                keyExtractor={(item) => {
+                    return String(item.transactionId);
+                }}
                 renderItem={renderItem}
                 stickySectionHeadersEnabled={true}
                 onEndReachedThreshold={0.5}

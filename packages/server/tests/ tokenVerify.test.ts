@@ -1,16 +1,12 @@
 import { Request, Response, NextFunction } from 'express';
 import tokenVerify from '../src/middleware/tokenVerify';
-import { HttpCode } from 'tenpercent/shared';
-import { ResponseBuilderPreset } from '../src/helper/responseBuilder/ResponseBuilderPreset';
-import { ErrorCode } from 'tenpercent/shared';
+import { HttpCode, ErrorCode, ResponseStatusType } from 'tenpercent/shared';
 import TokenBlacklistBuilder from '../src/services/auth/TokenBlacklistBuilder';
-import { ResponseStatusType } from 'tenpercent/shared';
 
-// eslint-disable-next-line @typescript-eslint/no-require-imports
-const passport = require('passport');
+import jwt from 'jsonwebtoken';
 
-jest.mock('passport', () => ({
-    authenticate: jest.fn(),
+jest.mock('jsonwebtoken', () => ({
+    verify: jest.fn(),
 }));
 
 jest.mock('../src/services/auth/TokenBlacklistBuilder', () => ({
@@ -20,16 +16,42 @@ jest.mock('../src/services/auth/TokenBlacklistBuilder', () => ({
     },
 }));
 
+jest.mock('../src/services/user/UserServiceBuilder', () => {
+    const mockUserService = {
+        get: jest.fn(),
+    };
+    return {
+        __esModule: true,
+        default: {
+            build: jest.fn(() => mockUserService),
+        },
+        _mockUserService: mockUserService,
+    };
+});
+
+jest.mock('../src/config/config', () => ({
+    getConfig: jest.fn(() => ({
+        jwtSecret: 'test-secret',
+        jwtAlgorithm: 'HS256',
+        jwtIssuer: 'test-issuer',
+        jwtAudience: 'test-audience',
+    })),
+}));
+
+// eslint-disable-next-line @typescript-eslint/no-require-imports
+const { _mockUserService } = require('../src/services/user/UserServiceBuilder');
+
 describe('tokenVerify middleware', () => {
     let req: Partial<Request>;
     let res: Partial<Response>;
     let next: NextFunction;
 
-    let blacklistMock: any;
+    let blacklistMock: { isBlacklisted: jest.Mock };
 
     beforeEach(() => {
         req = {
             headers: { authorization: 'Bearer token123' },
+            params: {},
         };
         res = {
             status: jest.fn().mockReturnThis(),
@@ -43,16 +65,22 @@ describe('tokenVerify middleware', () => {
         };
 
         (TokenBlacklistBuilder.build as jest.Mock).mockReturnValue(blacklistMock);
+        jest.clearAllMocks();
+        (TokenBlacklistBuilder.build as jest.Mock).mockReturnValue(blacklistMock);
     });
 
     it('should return 401 if no token provided', async () => {
-        // @ts-expect-error its for tests
-        req.headers?.authorization = undefined;
+        req.headers = {};
 
         await tokenVerify(req as Request, res as Response, next);
 
         expect(res.status).toHaveBeenCalledWith(HttpCode.UNAUTHORIZED);
-        expect(res.json).toHaveBeenCalledWith(ResponseBuilderPreset.getAuthError());
+        expect(res.json).toHaveBeenCalledWith(
+            expect.objectContaining({
+                errors: [{ errorCode: ErrorCode.TOKEN_INVALID_ERROR }],
+                status: ResponseStatusType.INTERNAL,
+            }),
+        );
     });
 
     it('should return 401 if token is blacklisted', async () => {
@@ -63,28 +91,24 @@ describe('tokenVerify middleware', () => {
         expect(res.status).toHaveBeenCalledWith(HttpCode.UNAUTHORIZED);
         expect(res.json).toHaveBeenCalledWith(
             expect.objectContaining({
-                data: {},
                 errors: [{ errorCode: ErrorCode.TOKEN_INVALID_ERROR }],
                 status: ResponseStatusType.INTERNAL,
             }),
         );
     });
 
-    it('should return 503 if checking blacklist throws error', async () => {
+    it('should return 401 if checking blacklist throws error', async () => {
         blacklistMock.isBlacklisted.mockRejectedValueOnce(new Error('Redis down'));
 
         await tokenVerify(req as Request, res as Response, next);
 
-        expect(res.status).toHaveBeenCalledWith(HttpCode.SERVICE_UNAVAILABLE);
+        expect(res.status).toHaveBeenCalledWith(HttpCode.UNAUTHORIZED);
     });
 
     it('should call next if token is valid and not blacklisted', async () => {
         blacklistMock.isBlacklisted.mockResolvedValueOnce(false);
-
-        // Мокаємо passport.authenticate
-        (passport.authenticate as jest.Mock).mockImplementation((_strategy, _opts, cb) => {
-            return (_req: any, _res: any, _next: any) => cb(null, { userId: 1 }, null);
-        });
+        (jwt.verify as jest.Mock).mockReturnValueOnce({ sub: '1', purpose: 'access' });
+        _mockUserService.get.mockResolvedValueOnce({ userId: 1 });
 
         await tokenVerify(req as Request, res as Response, next);
 
@@ -92,11 +116,10 @@ describe('tokenVerify middleware', () => {
         expect(req.user).toEqual({ userId: 1 });
     });
 
-    it('should return 401 if passport fails authentication', async () => {
+    it('should return 401 if jwt verification fails', async () => {
         blacklistMock.isBlacklisted.mockResolvedValueOnce(false);
-
-        (passport.authenticate as jest.Mock).mockImplementation((_strategy, _opts, cb) => {
-            return (_req: any, _res: any, _next: any) => cb(null, false, { name: 'TokenExpiredError', message: 'Expired' });
+        (jwt.verify as jest.Mock).mockImplementationOnce(() => {
+            throw new Error('invalid signature');
         });
 
         await tokenVerify(req as Request, res as Response, next);
@@ -104,15 +127,27 @@ describe('tokenVerify middleware', () => {
         expect(res.status).toHaveBeenCalledWith(HttpCode.UNAUTHORIZED);
     });
 
-    it('should return 503 if passport returns error', async () => {
+    it('should return 401 if token purpose does not match', async () => {
         blacklistMock.isBlacklisted.mockResolvedValueOnce(false);
-
-        (passport.authenticate as jest.Mock).mockImplementation((_strategy, _opts, cb) => {
-            return (_req: any, _res: any, _next: any) => cb(new Error('System failure'), null, null);
-        });
+        (jwt.verify as jest.Mock).mockReturnValueOnce({ sub: '1', purpose: 'refresh' });
 
         await tokenVerify(req as Request, res as Response, next);
 
-        expect(res.status).toHaveBeenCalledWith(HttpCode.SERVICE_UNAVAILABLE);
+        expect(res.status).toHaveBeenCalledWith(HttpCode.UNAUTHORIZED);
+    });
+
+    it('should return 401 if user not found during lookup', async () => {
+        blacklistMock.isBlacklisted.mockResolvedValueOnce(false);
+        (jwt.verify as jest.Mock).mockReturnValueOnce({ sub: '999', purpose: 'access' });
+        _mockUserService.get.mockResolvedValueOnce(null);
+
+        await tokenVerify(req as Request, res as Response, next);
+
+        expect(res.status).toHaveBeenCalledWith(HttpCode.UNAUTHORIZED);
+        expect(res.json).toHaveBeenCalledWith(
+            expect.objectContaining({
+                errors: [{ errorCode: ErrorCode.TOKEN_PAYLOAD_ERROR }],
+            }),
+        );
     });
 });

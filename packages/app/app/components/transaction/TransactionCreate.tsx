@@ -13,6 +13,7 @@ import { buildGeneralApiBaseHandler, GeneralApiProblemKind, handleBadDataRespons
 import { ExchangeService } from '@/services/ExchangeService';
 import { InvalidationGroups, QueryKeys, QueryStaleTimes } from '@/services/QueryCacheService';
 import { TransactionService } from '@/services/TransactionService';
+import { OverviewPath } from '@/types/OverviewPath';
 import { Logger } from '@/utils/logger/Logger';
 
 interface IProps {
@@ -92,7 +93,7 @@ export const TransactionCreate: FC<IProps> = function TransactionCreate(_props: 
         });
         if (response.kind === GeneralApiProblemKind.Ok) {
             await invalidateQuery(InvalidationGroups.transaction());
-            // navigation.getParent()?.navigate(OverviewPath.Dashboard);
+            navigation.getParent()?.navigate(OverviewPath.Dashboard);
         } else if (response.kind === GeneralApiProblemKind.BadData) {
             handleBadDataResponse(response.errors, setErrors);
         } else {

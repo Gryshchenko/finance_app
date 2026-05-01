@@ -66,7 +66,7 @@ router.post(
 
 router.post(
     '/password-change/resend',
-    sanitizeRequestBody([]),
+    sanitizeRequestBody(['confirmationId']),
     validateQuery({}),
     ProfileController.refreshConfirmationCodeForPasswordChange,
 );
