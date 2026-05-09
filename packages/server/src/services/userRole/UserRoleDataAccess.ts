@@ -1,3 +1,5 @@
+import { ErrorCode } from 'tenpercent/shared';
+
 import { IDatabaseConnection, IDBTransaction } from 'interfaces/IDatabaseConnection';
 import { IUserRole } from 'interfaces/IUserRole';
 import { LoggerBase } from 'src/helper/logger/LoggerBase';
@@ -32,6 +34,7 @@ export default class UserRoleDataAccess extends LoggerBase implements IUserRoleD
             this._logger.error(`Error fetching user role for userId: ${userId} - ${(e as { message: string }).message}`);
             throw new DBError({
                 message: `Error fetching user role for userId: ${userId} - ${(e as { message: string }).message}`,
+                errorCode: ErrorCode.USER_ROLE_ERROR,
             });
         }
     }
@@ -54,6 +57,7 @@ export default class UserRoleDataAccess extends LoggerBase implements IUserRoleD
             this._logger.error(`Error updating user role for userId: ${userId} - ${(e as { message: string }).message}`);
             throw new DBError({
                 message: `Error updating user role for userId: ${userId} - ${(e as { message: string }).message}`,
+                errorCode: ErrorCode.USER_ROLE_ERROR,
             });
         }
     }
@@ -74,6 +78,7 @@ export default class UserRoleDataAccess extends LoggerBase implements IUserRoleD
             this._logger.error(`Error creating user role for userId: ${userId} - ${(e as { message: string }).message}`);
             throw new DBError({
                 message: `Error creating user role for userId: ${userId} - ${(e as { message: string }).message}`,
+                errorCode: ErrorCode.USER_ROLE_ERROR,
             });
         }
     }

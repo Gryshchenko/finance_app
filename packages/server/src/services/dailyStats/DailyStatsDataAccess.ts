@@ -1,4 +1,4 @@
-import { ISummary, StatsPeriod } from 'tenpercent/shared';
+import { ISummary, StatsPeriod, ErrorCode } from 'tenpercent/shared';
 
 import { IDatabaseConnection, IDBTransaction } from 'interfaces/IDatabaseConnection';
 import { LoggerBase } from 'src/helper/logger/LoggerBase';
@@ -73,6 +73,7 @@ export default class DailyStatsDataAccess extends LoggerBase implements IDailySt
             );
             throw new DBError({
                 message: `addToScore daily stats failed due to a database error: ${(e as { message: string }).message}`,
+                errorCode: ErrorCode.STATS_ERROR,
             });
         }
     }
@@ -110,6 +111,7 @@ export default class DailyStatsDataAccess extends LoggerBase implements IDailySt
             );
             throw new DBError({
                 message: `SubtractFromScore daily stats failed due to a database error: ${(e as { message: string }).message}`,
+                errorCode: ErrorCode.STATS_ERROR,
             });
         }
     }
@@ -141,6 +143,7 @@ export default class DailyStatsDataAccess extends LoggerBase implements IDailySt
             this._logger.error(`Failed get daily stats for userId: ${userId}. Error: ${(e as { message: string }).message}`);
             throw new DBError({
                 message: `Get daily stats failed due to a database error: ${(e as { message: string }).message}`,
+                errorCode: ErrorCode.STATS_ERROR,
             });
         }
     }
@@ -178,6 +181,7 @@ export default class DailyStatsDataAccess extends LoggerBase implements IDailySt
             this._logger.error(`Failed update daily stats for userId: ${userId}. Error: ${(e as { message: string }).message}`);
             throw new DBError({
                 message: `Update daily stats failed due to a database error: ${(e as { message: string }).message}`,
+                errorCode: ErrorCode.STATS_ERROR,
             });
         }
     }

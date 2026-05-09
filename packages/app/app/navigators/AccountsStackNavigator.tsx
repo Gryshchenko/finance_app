@@ -68,7 +68,7 @@ export interface AccountsStackParamList {
 
 function AccountsStackNavigator() {
     return (
-        <AccountsStack.Navigator screenOptions={{ headerShown: false }}>
+        <AccountsStack.Navigator screenOptions={{ headerShown: false, popToTopOnBlur: true }}>
             <AccountsStack.Screen name={AccountsPath.Accounts} component={AccountsScreen} />
             <AccountsStack.Screen name={AccountsPath.AccountsCreate} component={AccountCreateScreen} />
             <AccountsStack.Screen name={AccountsPath.AccountEdit} component={AccountEditScreen} />

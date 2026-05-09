@@ -107,7 +107,10 @@ export class AccountOrchestrationService extends LoggerBase {
 
     private async updateBalance(userId: number, currencyCode: string, amount: number, trx?: IDBTransaction): Promise<void> {
         if (Utils.isNull(currencyCode)) {
-            throw new DBError({ message: `Cant update balance for userId: ${userId} miss currency code` });
+            throw new DBError({
+                message: `Cant update balance for userId: ${userId} miss currency code`,
+                errorCode: ErrorCode.ACCOUNT_ERROR,
+            });
         }
         if (Utils.greaterThen0(amount)) {
             await this._balanceService.patch(userId, { amount, currencyCode: currencyCode }, trx);

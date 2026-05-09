@@ -20,7 +20,6 @@ export default memo(function DashboardIncome(props: IDashboardItem<IIncomeStats>
     const { BoxProps } = props;
     const container = props.item;
     const navigation = useNavigation();
-    console.log(container);
     switch (container.type) {
         case BoxDataItemType.Default: {
             const item = container.data as IIncomeStats;

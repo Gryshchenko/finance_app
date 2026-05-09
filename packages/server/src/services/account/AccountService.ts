@@ -1,10 +1,10 @@
-import { IAccount, Utils, IAccountListItem } from 'tenpercent/shared';
+import { IAccount, Utils, IAccountListItem, ErrorCode } from 'tenpercent/shared';
 
 import { LoggerBase } from 'helper/logger/LoggerBase';
 import { ICreateAccount } from 'interfaces/ICreateAccount';
 import { IDBTransaction } from 'interfaces/IDatabaseConnection';
 import { IAccountDataAccess } from 'services/account/AccountDataAccess';
-import { DBError } from 'src/utils/errors/DBError';
+import { NotFoundError } from 'src/utils/errors/NotFoundError';
 import { ValidationError } from 'src/utils/errors/ValidationError';
 import { validateAllowedProperties } from 'src/utils/validation/validateAllowedProperties';
 
@@ -36,7 +36,7 @@ export default class AccountService extends LoggerBase implements IAccountServic
         if (Utils.isArrayNotEmpty(accounts)) {
             return accounts[0];
         }
-        throw new DBError({ message: 'Account not created, result empty' });
+        throw new NotFoundError({ message: 'Account not created, result empty', errorCode: ErrorCode.ACCOUNT_ERROR });
     }
     async createAccounts(userId: number, accounts: ICreateAccount[], trx?: IDBTransaction): Promise<IAccount[]> {
         return await this._accountDataAccess.createAccounts(userId, accounts, trx);

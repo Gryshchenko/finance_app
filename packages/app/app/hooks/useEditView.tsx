@@ -9,6 +9,11 @@ export function useEditView<T extends object>(initialData: T, schema?: Yup.Objec
     const [form, setForm] = useState<Partial<T>>(initialData);
     const [errors, setErrors] = useState<Errors<T>>({});
 
+    const resetForm = (newData?: Partial<T>) => {
+        setForm(newData ?? initialData);
+        setErrors({});
+    };
+
     const handleChange = <K extends keyof T>(key: K, value: T[K]) => {
         setForm((prev) => ({ ...(prev ?? {}), [key]: value }));
         setErrors((prev) => ({ ...(prev ?? {}), [key]: undefined }));
@@ -46,5 +51,6 @@ export function useEditView<T extends object>(initialData: T, schema?: Yup.Objec
         errors,
         validate,
         setErrors,
+        resetForm,
     };
 }

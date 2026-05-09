@@ -45,6 +45,7 @@ export default class EmailConfirmationDataAccess extends LoggerBase implements I
             this._logger.error(`Error creating email  request for userId ${userId}: ${(e as { message: string }).message}`);
             throw new DBError({
                 message: `Error creating email  request for userId ${userId}: ${(e as { message: string }).message}`,
+                errorCode: ErrorCode.EMAIL_CONFIRMATION_ERROR,
             });
         }
     }
@@ -63,6 +64,7 @@ export default class EmailConfirmationDataAccess extends LoggerBase implements I
             this._logger.error(`Error fetching email  request for userId ${userId}: ${(e as { message: string }).message}`);
             throw new DBError({
                 message: `Error fetching email  request for userId ${userId}: ${(e as { message: string }).message}`,
+                errorCode: ErrorCode.EMAIL_CONFIRMATION_ERROR,
             });
         }
     }
@@ -91,6 +93,7 @@ export default class EmailConfirmationDataAccess extends LoggerBase implements I
             if (isBaseError(e)) throw e;
             throw new DBError({
                 message: `Error confirming email  for userId ${userId}: ${(e as { message: string }).message}`,
+                errorCode: ErrorCode.EMAIL_CONFIRMATION_ERROR,
             });
         }
     }
@@ -118,6 +121,7 @@ export default class EmailConfirmationDataAccess extends LoggerBase implements I
             if (isBaseError(e)) throw e;
             throw new DBError({
                 message: `Refresh confirmation code  failed for userId ${userId}: ${(e as { message: string }).message}`,
+                errorCode: ErrorCode.EMAIL_CONFIRMATION_ERROR,
             });
         }
     }

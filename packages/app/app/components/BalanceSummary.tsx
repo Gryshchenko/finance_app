@@ -82,16 +82,14 @@ export const BalanceSummary: React.FC = () => {
                 <View style={themed($statBlock)}>
                     <Text tx={'common:income'} style={themed($label)}></Text>
                     <Text style={themed($income)}>
-                        {income > 0 ? '+ ' : ''}
-                        {CurrencyUtils.formatWithDelimiter(income, defaultCurrency, 2, false)}
+                        {income > 0 ? ' +' : ''}
+                        {CurrencyUtils.formatWithDelimiter(income, defaultCurrency, 2, true)}
                     </Text>
                 </View>
 
                 <View style={themed($statBlock)}>
                     <Text tx={'common:expenses'} style={themed($label)}></Text>
-                    <Text style={themed($expenses)}>
-                        {CurrencyUtils.formatWithDelimiter(expenses, defaultCurrency, 2, false)}
-                    </Text>
+                    <Text style={themed($expenses)}>{CurrencyUtils.formatWithDelimiter(expenses, defaultCurrency, 2, true)}</Text>
                 </View>
             </View>
         </View>

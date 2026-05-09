@@ -28,6 +28,7 @@ export * from './interfaces/ISummary';
 export * from './interfaces/ITimeseries';
 export * from './interfaces/IBalance';
 export * from './interfaces/IEntityStats';
+export * from './interfaces/IRate';
 
 // --- Types ---
 export * from './types/AccountStatusType';

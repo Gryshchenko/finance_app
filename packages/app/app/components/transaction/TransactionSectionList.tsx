@@ -82,7 +82,7 @@ const getSubtitleCategory = (transaction: ITransactionListItem): string => {
 
 const getFormattedTime = (createdAt: string): string => {
     try {
-        return Time.formatUTCDate(createdAt, DateFormat.TIME_ONLY);
+        return Time.formatLocalDate(createdAt, DateFormat.TIME_ONLY);
     } catch {
         return '';
     }

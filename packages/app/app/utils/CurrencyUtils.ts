@@ -24,7 +24,8 @@ export class CurrencyUtils {
         if (!Number.isFinite(num) || num === 0) {
             return format(0, mask, { locale: en, rounding: 'truncate', currency });
         }
-        if (String(value).length > 6 && useShort) {
+
+        if (String(value).length > 8 && useShort) {
             return format(value, `$0a`, { locale: en, rounding: 'truncate', currency });
         }
 

@@ -28,7 +28,7 @@ export interface IncomesStackParamList {
 
 function IncomesStackNavigator() {
     return (
-        <IncomesStack.Navigator screenOptions={{ headerShown: false }}>
+        <IncomesStack.Navigator screenOptions={{ headerShown: false, popToTopOnBlur: true }}>
             <IncomesStack.Screen name={IncomePath.Incomes} component={IncomesScreen} />
             <IncomesStack.Screen name={IncomePath.IncomeCreate} component={IncomeCreateScreen} />
             <IncomesStack.Screen name={IncomePath.IncomeEdit} component={IncomeEditScreen} />

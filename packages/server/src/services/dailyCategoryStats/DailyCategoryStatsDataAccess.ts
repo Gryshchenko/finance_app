@@ -1,4 +1,4 @@
-import { Time } from 'tenpercent/shared';
+import { Time, ErrorCode } from 'tenpercent/shared';
 
 import { LoggerBase } from 'helper/logger/LoggerBase';
 import { IDatabaseConnection, IDBTransaction } from 'interfaces/IDatabaseConnection';
@@ -44,6 +44,7 @@ export class DailyCategoryStatsDataAccess extends LoggerBase implements IDailyCa
             );
             throw new DBError({
                 message: `Failed to fetch summary due to a database error: ${(e as { message: string }).message}`,
+                errorCode: ErrorCode.STATS_ERROR,
             });
         }
     }
@@ -79,6 +80,7 @@ export class DailyCategoryStatsDataAccess extends LoggerBase implements IDailyCa
             );
             throw new DBError({
                 message: `addToScore daily stats failed due to a database error: ${(e as { message: string }).message}`,
+                errorCode: ErrorCode.STATS_ERROR,
             });
         }
     }
@@ -114,6 +116,7 @@ export class DailyCategoryStatsDataAccess extends LoggerBase implements IDailyCa
             );
             throw new DBError({
                 message: `SubtractFromScore daily stats failed due to a database error: ${(e as { message: string }).message}`,
+                errorCode: ErrorCode.STATS_ERROR,
             });
         }
     }
@@ -142,6 +145,7 @@ export class DailyCategoryStatsDataAccess extends LoggerBase implements IDailyCa
             );
             throw new DBError({
                 message: `Update daily category stats failed due to a database error: ${(e as { message: string }).message}`,
+                errorCode: ErrorCode.STATS_ERROR,
             });
         }
     }

@@ -1,4 +1,4 @@
-import { ICurrency } from 'tenpercent/shared';
+import { ErrorCode, ICurrency } from 'tenpercent/shared';
 
 import { IDatabaseConnection } from 'interfaces/IDatabaseConnection';
 import { LoggerBase } from 'src/helper/logger/LoggerBase';
@@ -35,7 +35,10 @@ export default class CurrencyDataAccess extends LoggerBase implements ICurrencyD
             return data;
         } catch (e) {
             this._logger.error(`Error fetching currencies: ${(e as { message: string }).message}`);
-            throw new DBError({ message: `Error fetching currencies: ${(e as { message: string }).message}` });
+            throw new DBError({
+                message: `Error fetching currencies: ${(e as { message: string }).message}`,
+                errorCode: ErrorCode.CURRENCY_ERROR,
+            });
         }
     }
     protected async genericGet(
@@ -74,6 +77,7 @@ export default class CurrencyDataAccess extends LoggerBase implements ICurrencyD
             } else {
                 throw new NotFoundError({
                     message: `Currency  by property ${key} not found`,
+                    errorCode: ErrorCode.CURRENCY_ERROR,
                 });
             }
         } catch (e) {
@@ -81,6 +85,7 @@ export default class CurrencyDataAccess extends LoggerBase implements ICurrencyD
             throw new DBError({
                 message: `Error fetching currency by property ${key}: ${(e as { message: string }).message}`,
                 statusCode: isBaseError(e) ? (e as unknown as BaseError)?.getStatusCode() : undefined,
+                errorCode: isBaseError(e) ? (e as unknown as BaseError)?.getErrorCode() : ErrorCode.CURRENCY_ERROR,
             });
         }
     }

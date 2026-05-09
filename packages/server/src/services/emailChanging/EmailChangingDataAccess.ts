@@ -49,6 +49,7 @@ export default class EmailChangingDataAccess extends LoggerBase implements IEmai
             this._logger.error(`Error creating email change request for userId ${userId}: ${(e as { message: string }).message}`);
             throw new DBError({
                 message: `Error creating email change request for userId ${userId}: ${(e as { message: string }).message}`,
+                errorCode: ErrorCode.EMAIL_CHANGING_ERROR,
             });
         }
     }
@@ -67,6 +68,7 @@ export default class EmailChangingDataAccess extends LoggerBase implements IEmai
             this._logger.error(`Error fetching email change request for userId ${userId}: ${(e as { message: string }).message}`);
             throw new DBError({
                 message: `Error fetching email change request for userId ${userId}: ${(e as { message: string }).message}`,
+                errorCode: ErrorCode.EMAIL_CHANGING_ERROR,
             });
         }
     }
@@ -94,6 +96,7 @@ export default class EmailChangingDataAccess extends LoggerBase implements IEmai
             throw new DBError({
                 message: `Error confirming email change for userId ${userId}: ${(e as { message: string }).message}`,
                 statusCode: isBaseError(e) ? (e as unknown as BaseError)?.getStatusCode() : undefined,
+                errorCode: ErrorCode.EMAIL_CHANGING_ERROR,
             });
         }
     }
@@ -122,6 +125,7 @@ export default class EmailChangingDataAccess extends LoggerBase implements IEmai
             throw new DBError({
                 message: `Refresh confirmation code change failed for userId ${userId}: ${(e as { message: string }).message}`,
                 statusCode: isBaseError(e) ? (e as unknown as BaseError)?.getStatusCode() : undefined,
+                errorCode: ErrorCode.EMAIL_CHANGING_ERROR,
             });
         }
     }

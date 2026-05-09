@@ -51,6 +51,7 @@ export default class PasswordChangingDataAccess extends LoggerBase implements IP
             );
             throw new DBError({
                 message: `Error creating password change request for userId ${userId}: ${(e as { message: string }).message}`,
+                errorCode: ErrorCode.PASSWORD_CHANGING_ERROR,
             });
         }
     }
@@ -82,6 +83,7 @@ export default class PasswordChangingDataAccess extends LoggerBase implements IP
             );
             throw new DBError({
                 message: `Error fetching password change request for userId ${userId}: ${(e as { message: string }).message}`,
+                errorCode: ErrorCode.PASSWORD_CHANGING_ERROR,
             });
         }
     }
@@ -109,6 +111,7 @@ export default class PasswordChangingDataAccess extends LoggerBase implements IP
             throw new DBError({
                 message: `Error confirming password change for userId ${userId}: ${(e as { message: string }).message}`,
                 statusCode: isBaseError(e) ? (e as unknown as BaseError)?.getStatusCode() : undefined,
+                errorCode: ErrorCode.PASSWORD_CHANGING_ERROR,
             });
         }
     }
@@ -137,6 +140,7 @@ export default class PasswordChangingDataAccess extends LoggerBase implements IP
             throw new DBError({
                 message: `Refresh confirmation code change failed for userId ${userId}: ${(e as { message: string }).message}`,
                 statusCode: isBaseError(e) ? (e as unknown as BaseError)?.getStatusCode() : undefined,
+                errorCode: ErrorCode.PASSWORD_CHANGING_ERROR,
             });
         }
     }

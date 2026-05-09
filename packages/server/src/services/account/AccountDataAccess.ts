@@ -1,4 +1,4 @@
-import { IAccount, Time, Utils, AccountStatusType, IAccountListItem } from 'tenpercent/shared';
+import { IAccount, Time, Utils, AccountStatusType, IAccountListItem, ErrorCode } from 'tenpercent/shared';
 
 import { ICreateAccount } from 'interfaces/ICreateAccount';
 import { IDatabaseConnection, IDBTransaction } from 'interfaces/IDatabaseConnection';
@@ -54,6 +54,8 @@ export default class AccountDataAccess extends LoggerBase implements IAccountDat
         } catch (e) {
             this._logger.error(`Failed to create accounts for userId: ${userId}. Error: ${(e as { message: string }).message}`);
             throw new DBError({
+                statusCode: isBaseError(e) ? (e as unknown as BaseError)?.getStatusCode() : undefined,
+                errorCode: isBaseError(e) ? (e as unknown as BaseError)?.getErrorCode() : ErrorCode.ACCOUNT_ERROR,
                 message: `Account creation failed due to a database error: ${(e as { message: string }).message}`,
             });
         }
@@ -80,6 +82,7 @@ export default class AccountDataAccess extends LoggerBase implements IAccountDat
             throw new DBError({
                 message: `Fetching accounts failed due to a database error: ${(e as { message: string }).message}`,
                 statusCode: isBaseError(e) ? (e as unknown as BaseError)?.getStatusCode() : undefined,
+                errorCode: isBaseError(e) ? (e as unknown as BaseError)?.getErrorCode() : ErrorCode.ACCOUNT_ERROR,
             });
         }
     }
@@ -107,6 +110,7 @@ export default class AccountDataAccess extends LoggerBase implements IAccountDat
 
             if (!data) {
                 throw new NotFoundError({
+                    errorCode: ErrorCode.ACCOUNT_ERROR,
                     message: `Account with accountId: ${accountId} not found for userId: ${userId}`,
                 });
             } else {
@@ -121,6 +125,7 @@ export default class AccountDataAccess extends LoggerBase implements IAccountDat
             throw new DBError({
                 message: `Fetching account failed due to a database error: ${(e as { message: string }).message}`,
                 statusCode: isBaseError(e) ? (e as unknown as BaseError)?.getStatusCode() : undefined,
+                errorCode: isBaseError(e) ? (e as unknown as BaseError)?.getErrorCode() : ErrorCode.ACCOUNT_ERROR,
             });
         }
     }
@@ -128,7 +133,7 @@ export default class AccountDataAccess extends LoggerBase implements IAccountDat
     async patchAccount(userId: number, accountId: number, properties: Partial<IAccount>, trx?: IDBTransaction): Promise<number> {
         try {
             this._logger.info(`Patch accountId: ${accountId} for userId: ${userId}`);
-            const allowedProperties = {
+            const allowedProperties: Record<string, string | number | undefined | unknown> = {
                 accountName: properties.accountName,
                 amount: properties.amount,
                 iconId: properties.iconId,
@@ -139,11 +144,15 @@ export default class AccountDataAccess extends LoggerBase implements IAccountDat
             const allowedKeys = ['accountName', 'amount', 'iconId', 'updatedAt', 'status'];
             validateAllowedProperties(allowedProperties, allowedKeys);
             const properestForUpdate = getOnlyNotEmptyProperties(allowedProperties, allowedKeys);
+            if (properestForUpdate.amount !== undefined) {
+                properestForUpdate.amount = this._db.engine().raw('amount + ?', [properestForUpdate.amount]) as unknown;
+            }
             const query = trx || this._db.engine();
             const data = await query('accounts').update(properestForUpdate).where({ userId, accountId, isDeleted: false });
 
             if (!data) {
                 throw new NotFoundError({
+                    errorCode: ErrorCode.ACCOUNT_ERROR,
                     message: `Account with accountId: ${accountId} not found for userId: ${userId}`,
                 });
             } else {
@@ -158,6 +167,7 @@ export default class AccountDataAccess extends LoggerBase implements IAccountDat
             throw new DBError({
                 message: `Patch account failed due to a database error: ${(e as { message: string }).message}`,
                 statusCode: isBaseError(e) ? (e as unknown as BaseError)?.getStatusCode() : undefined,
+                errorCode: isBaseError(e) ? (e as unknown as BaseError)?.getErrorCode() : ErrorCode.ACCOUNT_ERROR,
             });
         }
     }
@@ -169,6 +179,7 @@ export default class AccountDataAccess extends LoggerBase implements IAccountDat
             const data = await query('accounts').update({ isDeleted: true }).where({ userId, accountId, isDeleted: false });
             if (!data) {
                 throw new NotFoundError({
+                    errorCode: ErrorCode.ACCOUNT_ERROR,
                     message: `Account with accountId: ${accountId} not found for userId: ${userId}`,
                 });
             }
@@ -180,6 +191,8 @@ export default class AccountDataAccess extends LoggerBase implements IAccountDat
             );
             throw new DBError({
                 message: `Delete account failed due to a database error: ${(e as { message: string }).message}`,
+                statusCode: isBaseError(e) ? (e as unknown as BaseError)?.getStatusCode() : undefined,
+                errorCode: isBaseError(e) ? (e as unknown as BaseError)?.getErrorCode() : ErrorCode.ACCOUNT_ERROR,
             });
         }
     }

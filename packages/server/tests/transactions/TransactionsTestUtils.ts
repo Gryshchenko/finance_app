@@ -1,6 +1,7 @@
-import { TransactionType } from 'tenpercent/shared';
+import { ITransaction, TransactionType } from 'tenpercent/shared';
 import { HttpCode } from 'tenpercent/shared';
 import { Agent } from 'supertest';
+import type { Response } from 'supertest';
 
 async function patchTransaction(
     agent: Agent,
@@ -31,11 +32,33 @@ async function getTransaction(
     userId: number,
     authorization: string,
     payload: Record<string, unknown>,
-): Promise<void> {
-    await agent
+): Promise<ITransaction> {
+    const {
+        body: { data },
+    } = await agent
         .get(`/user/${userId}/transaction/${payload.transactionId}`)
         .set('authorization', authorization)
-        .expect(HttpCode.NO_CONTENT);
+        .expect(HttpCode.OK);
+    return data;
+}
+
+async function tryCreateTransaction(
+    agent: Agent,
+    userId: number,
+    authorization: string,
+    payload: Record<string, unknown>,
+): Promise<Response> {
+    return agent.post(`/user/${userId}/transaction/`).set('authorization', authorization).send(payload);
+}
+
+async function tryPatchTransaction(
+    agent: Agent,
+    userId: number,
+    authorization: string,
+    id: number,
+    payload: Record<string, unknown>,
+): Promise<Response> {
+    return agent.patch(`/user/${userId}/transaction/${id}`).set('authorization', authorization).send(payload);
 }
 
 async function postTransaction(
@@ -53,6 +76,28 @@ async function postTransaction(
         .expect(HttpCode.CREATED);
     const { transactionId } = data;
     return transactionId;
+}
+
+async function createTransferTransaction(
+    agent: Agent,
+    userId: number,
+    authorization: string,
+    accountId: number,
+    targetAccountId: number,
+    currencyId: number,
+    amount = 100,
+    createdAt?: string,
+): Promise<number> {
+    const id = await postTransaction(agent, userId, authorization, {
+        accountId,
+        currencyId,
+        transactionTypeId: TransactionType.Transafer,
+        targetAccountId,
+        amount,
+        description: 'Test transfer',
+        createdAt,
+    });
+    return id;
 }
 
 async function createTransferTransactions(
@@ -82,6 +127,28 @@ async function createTransferTransactions(
     return transactionIds;
 }
 
+async function createIncomeTransaction(
+    agent: Agent,
+    userId: number,
+    authorization: string,
+    accountId: number,
+    incomeId: number,
+    currencyId: number,
+    amount = 100,
+    createdAt?: string,
+): Promise<number> {
+    const id = await postTransaction(agent, userId, authorization, {
+        accountId,
+        incomeId,
+        transactionTypeId: TransactionType.Income,
+        amount,
+        currencyId,
+        description: 'Test income',
+        createdAt,
+    });
+    return id;
+}
+
 async function createIncomeTransactions(
     agent: Agent,
     userId: number,
@@ -107,6 +174,29 @@ async function createIncomeTransactions(
         transactionIds.push(id);
     }
     return transactionIds;
+}
+
+async function createExpenseTransaction(
+    agent: Agent,
+    userId: number,
+    authorization: string,
+    accountId: number,
+    categoryId: number,
+    currencyId: number,
+    amount = 100,
+    createdAt?: string,
+): Promise<number> {
+    const id = await postTransaction(agent, userId, authorization, {
+        accountId,
+        categoryId,
+        transactionTypeId: TransactionType.Expense,
+        amount,
+        currencyId,
+        description: 'Test expense',
+        createdAt,
+    });
+
+    return id;
 }
 
 async function createExpenseTransactions(
@@ -196,8 +286,13 @@ export {
     createAllTransactions,
     createExpenseTransactions,
     createIncomeTransactions,
+    createIncomeTransaction,
     createTransferTransactions,
+    createTransferTransaction,
+    createExpenseTransaction,
     patchTransaction,
     getTransaction,
     deleteTransaction,
+    tryCreateTransaction,
+    tryPatchTransaction,
 };

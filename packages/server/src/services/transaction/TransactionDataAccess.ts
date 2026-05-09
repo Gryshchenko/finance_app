@@ -1,4 +1,12 @@
-import { ITransaction, Time, Utils, IPagination, ITransactionListItemsRequest, ITransactionListItem } from 'tenpercent/shared';
+import {
+    ITransaction,
+    Time,
+    Utils,
+    IPagination,
+    ITransactionListItemsRequest,
+    ITransactionListItem,
+    ErrorCode,
+} from 'tenpercent/shared';
 
 import { ICreateTransaction } from 'interfaces/ICreateTransaction';
 import { IDatabaseConnection, IDBTransaction } from 'interfaces/IDatabaseConnection';
@@ -76,6 +84,7 @@ export default class TransactionDataAccess extends LoggerBase implements ITransa
             );
             throw new DBError({
                 message: `Transaction creation failed due to a database error: ${(e as { message: string }).message}`,
+                errorCode: ErrorCode.TRANSACTION_ERROR,
             });
         }
     }
@@ -165,6 +174,7 @@ export default class TransactionDataAccess extends LoggerBase implements ITransa
             throw new DBError({
                 message: `Fetching transactions failed due to a database error: ${(e as { message: string }).message}`,
                 statusCode: isBaseError(e) ? (e as unknown as BaseError)?.getStatusCode() : undefined,
+                errorCode: ErrorCode.TRANSACTION_ERROR,
             });
         }
     }
@@ -198,6 +208,7 @@ export default class TransactionDataAccess extends LoggerBase implements ITransa
             if (!data) {
                 throw new NotFoundError({
                     message: `Transaction with transactionId: ${transactionId} not found for userId: ${userId}`,
+                    errorCode: ErrorCode.TRANSACTION_ERROR,
                 });
             } else {
                 this._logger.info(`Fetched transaction with transactionId: ${transactionId} for userId: ${userId}`);
@@ -214,6 +225,7 @@ export default class TransactionDataAccess extends LoggerBase implements ITransa
             throw new DBError({
                 message: `Fetching transaction failed due to a database error: ${(e as { message: string }).message}`,
                 statusCode: isBaseError(e) ? (e as unknown as BaseError)?.getStatusCode() : undefined,
+                errorCode: isBaseError(e) ? (e as unknown as BaseError)?.getErrorCode() : ErrorCode.TRANSACTION_ERROR,
             });
         }
     }
@@ -223,13 +235,32 @@ export default class TransactionDataAccess extends LoggerBase implements ITransa
         try {
             this._logger.info(`Patch transactionId: ${transactionId} for userId: ${userId}`);
             const query = trx || this._db.engine();
-            const data = await query('transactions')
-                .update(this.sanitizePatchTransactionPropeties(properties))
-                .where({ userId, transactionId, isDeleted: false });
+            const allowedProperties: Record<string, string | number | undefined | unknown> = {
+                accountId: properties.accountId,
+                incomeId: properties.incomeId,
+                categoryId: properties.categoryId,
+                amount: properties.amount,
+                description: properties.description,
+                targetAccountId: properties.targetAccountId,
+                createdAt: properties.createdAt,
+                updatedAt: Time.getISODateNowUTC(),
+            };
+            validateAllowedProperties(allowedProperties, [
+                'accountId',
+                'incomeId',
+                'categoryId',
+                'amount',
+                'description',
+                'targetAccountId',
+                'createdAt',
+                'updatedAt',
+            ]);
+            const data = await query('transactions').update(allowedProperties).where({ userId, transactionId, isDeleted: false });
 
             if (!data) {
                 throw new NotFoundError({
                     message: `Transaction with transactionId: ${transactionId} not found for userId: ${userId}`,
+                    errorCode: ErrorCode.TRANSACTION_ERROR,
                 });
             } else {
                 this._logger.info(`Transaction transactionId: ${transactionId} for userId: ${userId} patched successful`);
@@ -242,6 +273,7 @@ export default class TransactionDataAccess extends LoggerBase implements ITransa
             throw new DBError({
                 message: `Patch transaction failed due to a database error: ${(e as { message: string }).message}`,
                 statusCode: isBaseError(e) ? (e as unknown as BaseError)?.getStatusCode() : undefined,
+                errorCode: isBaseError(e) ? (e as unknown as BaseError)?.getErrorCode() : ErrorCode.TRANSACTION_ERROR,
             });
         }
     }
@@ -257,6 +289,7 @@ export default class TransactionDataAccess extends LoggerBase implements ITransa
             if (!data) {
                 throw new NotFoundError({
                     message: `Transaction with transactionId: ${transactionId} not found for userId: ${userId}`,
+                    errorCode: ErrorCode.TRANSACTION_ERROR,
                 });
             }
             this._logger.info(`Transaction transactionId: ${transactionId} for userId: ${userId} delete successful`);
@@ -268,6 +301,7 @@ export default class TransactionDataAccess extends LoggerBase implements ITransa
             throw new DBError({
                 message: `Delete transaction failed due to a database error: ${(e as { message: string }).message}`,
                 statusCode: isBaseError(e) ? (e as unknown as BaseError)?.getStatusCode() : undefined,
+                errorCode: isBaseError(e) ? (e as unknown as BaseError)?.getErrorCode() : ErrorCode.TRANSACTION_ERROR,
             });
         }
     }
@@ -295,31 +329,8 @@ export default class TransactionDataAccess extends LoggerBase implements ITransa
             throw new DBError({
                 message: `Delete transactions for accountId failed due to a database error: ${(e as { message: string }).message}`,
                 statusCode: isBaseError(e) ? (e as unknown as BaseError)?.getStatusCode() : undefined,
+                errorCode: ErrorCode.TRANSACTION_ERROR,
             });
         }
-    }
-
-    protected sanitizePatchTransactionPropeties(properties: Partial<ITransaction>): Partial<ITransaction> {
-        const allowedProperties = {
-            accountId: properties.accountId,
-            incomeId: properties.incomeId,
-            categoryId: properties.categoryId,
-            amount: properties.amount,
-            description: properties.description,
-            targetAccountId: properties.targetAccountId,
-            createdAt: properties.createdAt,
-            updatedAt: Time.getISODateNowUTC(),
-        };
-        validateAllowedProperties(allowedProperties, [
-            'accountId',
-            'incomeId',
-            'categoryId',
-            'amount',
-            'description',
-            'targetAccountId',
-            'createdAt',
-            'updatedAt',
-        ]);
-        return allowedProperties;
     }
 }

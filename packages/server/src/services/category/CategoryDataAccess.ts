@@ -1,4 +1,4 @@
-import { ICategory, IGetStatsProperties, ICategoryStats, Time } from 'tenpercent/shared';
+import { ICategory, IGetStatsProperties, ICategoryStats, Time, ErrorCode } from 'tenpercent/shared';
 
 import { ICreateCategory } from 'interfaces/ICreateCategory';
 import { IDatabaseConnection, IDBTransaction } from 'interfaces/IDatabaseConnection';
@@ -64,6 +64,7 @@ export default class CategoryDataAccess extends LoggerBase implements ICategoryD
             throw new DBError({
                 message: `Failed to retrieve categories stats for user: ${userId}. Error: ${(e as { message: string }).message}`,
                 statusCode: isBaseError(e) ? (e as unknown as BaseError)?.getStatusCode() : undefined,
+                errorCode: isBaseError(e) ? (e as unknown as BaseError)?.getErrorCode() : ErrorCode.CATEGORY_ERROR,
             });
         }
     }
@@ -94,6 +95,8 @@ export default class CategoryDataAccess extends LoggerBase implements ICategoryD
             this._logger.error(`Failed to create categories for user: ${userId}. Error: ${(e as { message: string }).message}`);
             throw new DBError({
                 message: `Failed to create categories for user: ${userId}. Error: ${(e as { message: string }).message}`,
+                statusCode: isBaseError(e) ? (e as unknown as BaseError)?.getStatusCode() : undefined,
+                errorCode: isBaseError(e) ? (e as unknown as BaseError)?.getErrorCode() : ErrorCode.CATEGORY_ERROR,
             });
         }
     }
@@ -117,6 +120,7 @@ export default class CategoryDataAccess extends LoggerBase implements ICategoryD
             throw new DBError({
                 message: `Failed to retrieve categories for user: ${userId}. Error: ${(e as { message: string }).message}`,
                 statusCode: isBaseError(e) ? (e as unknown as BaseError)?.getStatusCode() : undefined,
+                errorCode: isBaseError(e) ? (e as unknown as BaseError)?.getErrorCode() : ErrorCode.CATEGORY_ERROR,
             });
         }
     }
@@ -134,6 +138,7 @@ export default class CategoryDataAccess extends LoggerBase implements ICategoryD
                 this._logger.info(`Category ID ${categoryId} retrieved successfully for user: ${userId}`);
             } else {
                 throw new NotFoundError({
+                    errorCode: ErrorCode.CATEGORY_ERROR,
                     message: `Category ID ${categoryId} not found for user: ${userId}`,
                 });
             }
@@ -150,6 +155,7 @@ export default class CategoryDataAccess extends LoggerBase implements ICategoryD
             throw new DBError({
                 message: `Failed to retrieve category ID ${categoryId} for user: ${userId}. Error: ${(e as { message: string }).message}`,
                 statusCode: isBaseError(e) ? (e as unknown as BaseError)?.getStatusCode() : undefined,
+                errorCode: isBaseError(e) ? (e as unknown as BaseError)?.getErrorCode() : ErrorCode.CATEGORY_ERROR,
             });
         }
     }
@@ -170,6 +176,7 @@ export default class CategoryDataAccess extends LoggerBase implements ICategoryD
 
             if (!data) {
                 throw new NotFoundError({
+                    errorCode: ErrorCode.CATEGORY_ERROR,
                     message: `Category with categoryId: ${categoryId} not found for userId: ${userId}`,
                 });
             } else {
@@ -184,6 +191,7 @@ export default class CategoryDataAccess extends LoggerBase implements ICategoryD
             throw new DBError({
                 message: `Patch category failed due to a database error: ${(e as { message: string }).message}`,
                 statusCode: isBaseError(e) ? (e as unknown as BaseError)?.getStatusCode() : undefined,
+                errorCode: isBaseError(e) ? (e as unknown as BaseError)?.getErrorCode() : ErrorCode.CATEGORY_ERROR,
             });
         }
     }
@@ -195,6 +203,7 @@ export default class CategoryDataAccess extends LoggerBase implements ICategoryD
             const data = await query('categories').update({ isDeleted: true }).where({ userId, categoryId, isDeleted: false });
             if (!data) {
                 throw new NotFoundError({
+                    errorCode: ErrorCode.CATEGORY_ERROR,
                     message: `Category with categoryId: ${categoryId} not found for userId: ${userId}`,
                 });
             }
@@ -206,6 +215,8 @@ export default class CategoryDataAccess extends LoggerBase implements ICategoryD
             );
             throw new DBError({
                 message: `Delete category failed due to a database error: ${(e as { message: string }).message}`,
+                statusCode: isBaseError(e) ? (e as unknown as BaseError)?.getStatusCode() : undefined,
+                errorCode: isBaseError(e) ? (e as unknown as BaseError)?.getErrorCode() : ErrorCode.CATEGORY_ERROR,
             });
         }
     }

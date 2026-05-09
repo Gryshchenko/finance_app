@@ -1,3 +1,5 @@
+import { ErrorCode } from 'tenpercent/shared';
+
 import { IDatabaseConnection, IDBTransaction } from 'interfaces/IDatabaseConnection';
 import { IOAuthProviderRecord } from 'interfaces/IOAuthProvider';
 import { LoggerBase } from 'src/helper/logger/LoggerBase';
@@ -40,6 +42,7 @@ export default class OAuthDataAccess extends LoggerBase implements IOAuthDataAcc
             this._logger.error(`Error looking up OAuth provider: ${(e as { message: string }).message}`);
             throw new DBError({
                 message: `Error looking up OAuth provider: ${(e as { message: string }).message}`,
+                errorCode: ErrorCode.OAUTH_ERROR,
             });
         }
     }
@@ -53,6 +56,7 @@ export default class OAuthDataAccess extends LoggerBase implements IOAuthDataAcc
             this._logger.error(`Error looking up OAuth providers for userId: ${userId} - ${(e as { message: string }).message}`);
             throw new DBError({
                 message: `Error looking up OAuth providers for userId: ${userId} - ${(e as { message: string }).message}`,
+                errorCode: ErrorCode.OAUTH_ERROR,
             });
         }
     }
@@ -81,6 +85,7 @@ export default class OAuthDataAccess extends LoggerBase implements IOAuthDataAcc
             this._logger.error(`Error creating OAuth link: ${(e as { message: string }).message}`);
             throw new DBError({
                 message: `Error creating OAuth link: ${(e as { message: string }).message}`,
+                errorCode: ErrorCode.OAUTH_ERROR,
             });
         }
     }

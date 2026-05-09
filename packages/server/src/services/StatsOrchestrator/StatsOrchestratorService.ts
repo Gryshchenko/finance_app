@@ -163,7 +163,7 @@ export default class StatsOrchestratorService extends LoggerBase implements ISta
                 const allSucceeded = response.every((r) => r === true);
 
                 if (!allSucceeded) {
-                    throw new DBError({ message: 'Not all incomes stats updates succeeded' });
+                    throw new DBError({ message: 'Not all incomes stats updates succeeded', errorCode: ErrorCode.STATS_ERROR });
                 }
                 return true;
             }
@@ -184,7 +184,7 @@ export default class StatsOrchestratorService extends LoggerBase implements ISta
                 const allSucceeded = response.every((r) => r === true);
 
                 if (!allSucceeded) {
-                    throw new DBError({ message: 'Not all expanse stats updates succeeded' });
+                    throw new DBError({ message: 'Not all expanse stats updates succeeded', errorCode: ErrorCode.STATS_ERROR });
                 }
                 return true;
             }
@@ -213,7 +213,7 @@ export default class StatsOrchestratorService extends LoggerBase implements ISta
                 const allSucceeded = response.every((r) => r === true);
 
                 if (!allSucceeded) {
-                    throw new DBError({ message: 'Not all transfer stats updates succeeded' });
+                    throw new DBError({ message: 'Not all transfer stats updates succeeded', errorCode: ErrorCode.STATS_ERROR });
                 }
                 return true;
             }
@@ -268,7 +268,7 @@ export default class StatsOrchestratorService extends LoggerBase implements ISta
                     const allSucceeded = response.every((r) => r === true);
 
                     if (!allSucceeded) {
-                        throw new DBError({ message: 'Not all patch stats updates succeeded' });
+                        throw new DBError({ message: 'Not all patch stats updates succeeded', errorCode: ErrorCode.STATS_ERROR });
                     }
                 }
                 return true;
@@ -311,7 +311,7 @@ export default class StatsOrchestratorService extends LoggerBase implements ISta
                     const allSucceeded = response.every((r) => r === true);
 
                     if (!allSucceeded) {
-                        throw new DBError({ message: 'Not all patch stats updates succeeded' });
+                        throw new DBError({ message: 'Not all patch stats updates succeeded', errorCode: ErrorCode.STATS_ERROR });
                     }
                 }
                 return true;
@@ -362,7 +362,7 @@ export default class StatsOrchestratorService extends LoggerBase implements ISta
                     const allSucceeded = response.every((r) => r === true);
 
                     if (!allSucceeded) {
-                        throw new DBError({ message: 'Not all patch stats updates succeeded' });
+                        throw new DBError({ message: 'Not all patch stats updates succeeded', errorCode: ErrorCode.STATS_ERROR });
                     }
                 }
                 return true;
@@ -390,7 +390,10 @@ export default class StatsOrchestratorService extends LoggerBase implements ISta
                     const allSucceeded = response.every((r) => r === true);
 
                     if (!allSucceeded) {
-                        throw new DBError({ message: 'Not all delete stats updates succeeded' });
+                        throw new DBError({
+                            message: 'Not all delete stats updates succeeded',
+                            errorCode: ErrorCode.STATS_ERROR,
+                        });
                     }
                 }
                 return true;
@@ -405,7 +408,10 @@ export default class StatsOrchestratorService extends LoggerBase implements ISta
                     const allSucceeded = response.every((r) => r === true);
 
                     if (!allSucceeded) {
-                        throw new DBError({ message: 'Not all delete stats updates succeeded' });
+                        throw new DBError({
+                            message: 'Not all delete stats updates succeeded',
+                            errorCode: ErrorCode.STATS_ERROR,
+                        });
                     }
                 }
                 return true;
@@ -419,7 +425,7 @@ export default class StatsOrchestratorService extends LoggerBase implements ISta
                 const allSucceeded = response.every((r) => r === true);
 
                 if (!allSucceeded) {
-                    throw new DBError({ message: 'Not all delete stats updates succeeded' });
+                    throw new DBError({ message: 'Not all delete stats updates succeeded', errorCode: ErrorCode.STATS_ERROR });
                 }
                 return true;
             }

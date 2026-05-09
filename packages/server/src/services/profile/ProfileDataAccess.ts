@@ -1,4 +1,4 @@
-import { IProfilePatchRequest, Time } from 'tenpercent/shared';
+import { IProfilePatchRequest, Time, ErrorCode } from 'tenpercent/shared';
 
 import { ICreateProfile } from 'interfaces/ICreateProfile';
 import { IDatabaseConnection, IDBTransaction } from 'interfaces/IDatabaseConnection';
@@ -37,7 +37,10 @@ export default class ProfileDataService extends LoggerBase implements IProfileDa
             return response[0];
         } catch (e) {
             this._logger.error(`Profile creation error: ${(e as { message: string }).message}`);
-            throw new DBError({ message: `Profile creation error: ${(e as { message: string }).message}` });
+            throw new DBError({
+                message: `Profile creation error: ${(e as { message: string }).message}`,
+                errorCode: ErrorCode.PROFILE_ERROR,
+            });
         }
     }
 
@@ -64,7 +67,10 @@ export default class ProfileDataService extends LoggerBase implements IProfileDa
             return data || undefined;
         } catch (e) {
             this._logger.error(`Profile retrieval error: ${(e as { message: string }).message}`);
-            throw new DBError({ message: `Profile retrieval error: ${(e as { message: string }).message}` });
+            throw new DBError({
+                message: `Profile retrieval error: ${(e as { message: string }).message}`,
+                errorCode: ErrorCode.PROFILE_ERROR,
+            });
         }
     }
 
@@ -86,7 +92,10 @@ export default class ProfileDataService extends LoggerBase implements IProfileDa
             return true;
         } catch (e) {
             this._logger.error(`Profile patch error for userId: ${userId}: ${(e as { message: string }).message}`);
-            throw new DBError({ message: `Profile patch error for userId: ${userId}: ${(e as { message: string }).message}` });
+            throw new DBError({
+                message: `Profile patch error for userId: ${userId}: ${(e as { message: string }).message}`,
+                errorCode: ErrorCode.PROFILE_ERROR,
+            });
         }
     }
 }

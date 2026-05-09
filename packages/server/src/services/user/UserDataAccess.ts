@@ -50,6 +50,8 @@ export default class UserDataService extends LoggerBase implements IUserDataAcce
                 `Error retrieving authentication data for userId: ${userId} - ${(e as { message: string }).message}`,
             );
             throw new DBError({
+                statusCode: isBaseError(e) ? (e as unknown as BaseError)?.getStatusCode() : undefined,
+                errorCode: isBaseError(e) ? (e as unknown as BaseError)?.getErrorCode() : ErrorCode.USER_ERROR,
                 message: `Error retrieving authentication data for userId: ${userId} - ${(e as { message: string }).message}`,
             });
         }
@@ -70,6 +72,8 @@ export default class UserDataService extends LoggerBase implements IUserDataAcce
                 `Error retrieving authentication data for email: ${email} - ${(e as { message: string }).message}`,
             );
             throw new DBError({
+                statusCode: isBaseError(e) ? (e as unknown as BaseError)?.getStatusCode() : undefined,
+                errorCode: isBaseError(e) ? (e as unknown as BaseError)?.getErrorCode() : ErrorCode.USER_ERROR,
                 message: `Error retrieving authentication data for email: ${email} - ${(e as { message: string }).message}`,
             });
         }
@@ -87,7 +91,11 @@ export default class UserDataService extends LoggerBase implements IUserDataAcce
             return user;
         } catch (e) {
             this._logger.error(`Error fetching user by ID: ${userId} - ${(e as { message: string }).message}`);
-            throw new DBError({ message: `Error fetching user by ID: ${userId} - ${(e as { message: string }).message}` });
+            throw new DBError({
+                message: `Error fetching user by ID: ${userId} - ${(e as { message: string }).message}`,
+                statusCode: isBaseError(e) ? (e as unknown as BaseError)?.getStatusCode() : undefined,
+                errorCode: isBaseError(e) ? (e as unknown as BaseError)?.getErrorCode() : ErrorCode.USER_ERROR,
+            });
         }
     }
 
@@ -108,7 +116,11 @@ export default class UserDataService extends LoggerBase implements IUserDataAcce
             return data[0];
         } catch (e) {
             this._logger.error(`Error creating user with email: ${email} - ${(e as { message: string }).message}`);
-            throw new DBError({ message: `Error creating user with email: ${email} - ${(e as { message: string }).message}` });
+            throw new DBError({
+                message: `Error creating user with email: ${email} - ${(e as { message: string }).message}`,
+                statusCode: isBaseError(e) ? (e as unknown as BaseError)?.getStatusCode() : undefined,
+                errorCode: isBaseError(e) ? (e as unknown as BaseError)?.getErrorCode() : ErrorCode.USER_ERROR,
+            });
         }
     }
 
@@ -123,6 +135,8 @@ export default class UserDataService extends LoggerBase implements IUserDataAcce
             this._logger.error(`Error retrieving userId for email: ${email} - ${(e as { message: string }).message}`);
             throw new DBError({
                 message: `Error retrieving userId for email: ${email} - ${(e as { message: string }).message}`,
+                statusCode: isBaseError(e) ? (e as unknown as BaseError)?.getStatusCode() : undefined,
+                errorCode: isBaseError(e) ? (e as unknown as BaseError)?.getErrorCode() : ErrorCode.USER_ERROR,
             });
         }
     }
@@ -138,6 +152,8 @@ export default class UserDataService extends LoggerBase implements IUserDataAcce
             this._logger.error(`Error retrieving email for userId: ${userId} - ${(e as { message: string }).message}`);
             throw new DBError({
                 message: `Error retrieving email for userId: ${userId} - ${(e as { message: string }).message}`,
+                statusCode: isBaseError(e) ? (e as unknown as BaseError)?.getStatusCode() : undefined,
+                errorCode: isBaseError(e) ? (e as unknown as BaseError)?.getErrorCode() : ErrorCode.USER_ERROR,
             });
         }
     }
@@ -159,7 +175,11 @@ export default class UserDataService extends LoggerBase implements IUserDataAcce
             }
         } catch (e) {
             this._logger.error(`Error updating email for userId: ${userId} - ${(e as { message: string }).message}`);
-            throw new DBError({ message: `Error updating email for userId: ${userId} - ${(e as { message: string }).message}` });
+            throw new DBError({
+                message: `Error updating email for userId: ${userId} - ${(e as { message: string }).message}`,
+                statusCode: isBaseError(e) ? (e as unknown as BaseError)?.getStatusCode() : undefined,
+                errorCode: isBaseError(e) ? (e as unknown as BaseError)?.getErrorCode() : ErrorCode.USER_ERROR,
+            });
         }
     }
     public async updateUserPassword(userId: number, passwordHash: string, salt: string, trx?: IDBTransaction): Promise<boolean> {
@@ -182,6 +202,7 @@ export default class UserDataService extends LoggerBase implements IUserDataAcce
             this._logger.error(`Error updating password for userId: ${userId} - ${(e as { message: string }).message}`);
             throw new DBError({
                 message: `Error updating password for userId: ${userId} - ${(e as { message: string }).message}`,
+                errorCode: ErrorCode.USER_ERROR,
             });
         }
     }
@@ -223,6 +244,7 @@ export default class UserDataService extends LoggerBase implements IUserDataAcce
             throw new DBError({
                 message: `Error patch user for userId ${userId}: ${(e as { message: string }).message}`,
                 statusCode: isBaseError(e) ? (e as unknown as BaseError)?.getStatusCode() : undefined,
+                errorCode: ErrorCode.USER_ERROR,
             });
         }
     }

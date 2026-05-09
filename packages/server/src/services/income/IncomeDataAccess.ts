@@ -1,4 +1,4 @@
-import { IIncome, AccountStatusType, Time, IIncomeStats, IGetStatsProperties } from 'tenpercent/shared';
+import { IIncome, AccountStatusType, Time, IIncomeStats, IGetStatsProperties, ErrorCode } from 'tenpercent/shared';
 
 import { ICreateIncome } from 'interfaces/ICreateIncome';
 import { IDatabaseConnection, IDBTransaction } from 'interfaces/IDatabaseConnection';
@@ -31,7 +31,6 @@ export default class IncomeDataAccess extends LoggerBase implements IIncomeDataA
         this._logger.info(`Retrieving income stats for user: ${userId}`);
         try {
             const { from, to } = properties;
-            console.log(2222, from, to);
             const data = await this._db
                 .engine()('incomes')
                 .select(
@@ -62,6 +61,7 @@ export default class IncomeDataAccess extends LoggerBase implements IIncomeDataA
             throw new DBError({
                 message: `Failed to retrieve incomes stats for user: ${userId}. Error: ${(e as { message: string }).message}`,
                 statusCode: isBaseError(e) ? (e as unknown as BaseError)?.getStatusCode() : undefined,
+                errorCode: ErrorCode.INCOME_ERROR,
             });
         }
     }
@@ -87,6 +87,7 @@ export default class IncomeDataAccess extends LoggerBase implements IIncomeDataA
             this._logger.error(`Error creating incomes for userId ${userId}: ${(e as { message: string }).message}`);
             throw new DBError({
                 message: `Creating income failed due to a database error: ${(e as { message: string }).message}`,
+                errorCode: ErrorCode.INCOME_ERROR,
             });
         }
     }
@@ -105,6 +106,7 @@ export default class IncomeDataAccess extends LoggerBase implements IIncomeDataA
             this._logger.error(`Error fetching incomes for userId ${userId}: ${(e as { message: string }).message}`);
             throw new DBError({
                 message: `Fetching incomes failed due to a database error: ${(e as { message: string }).message}`,
+                errorCode: ErrorCode.INCOME_ERROR,
             });
         }
     }
@@ -123,6 +125,7 @@ export default class IncomeDataAccess extends LoggerBase implements IIncomeDataA
             } else {
                 throw new NotFoundError({
                     message: `No income found with ID ${incomeId} for userId ${userId}`,
+                    errorCode: ErrorCode.INCOME_ERROR,
                 });
             }
 
@@ -138,6 +141,7 @@ export default class IncomeDataAccess extends LoggerBase implements IIncomeDataA
             throw new DBError({
                 message: `Fetching income failed due to a database error: ${(e as { message: string }).message}`,
                 statusCode: isBaseError(e) ? (e as unknown as BaseError)?.getStatusCode() : undefined,
+                errorCode: ErrorCode.INCOME_ERROR,
             });
         }
     }
@@ -177,6 +181,8 @@ export default class IncomeDataAccess extends LoggerBase implements IIncomeDataA
             if (!data) {
                 throw new NotFoundError({
                     message: `Income with incomeId: ${incomeId} not found for userId: ${userId}`,
+
+                    errorCode: ErrorCode.INCOME_ERROR,
                 });
             } else {
                 this._logger.info(`Income incomeId: ${incomeId} for userId: ${userId} patched successful`);
@@ -190,6 +196,7 @@ export default class IncomeDataAccess extends LoggerBase implements IIncomeDataA
             throw new DBError({
                 message: `Patch income failed due to a database error: ${(e as { message: string }).message}`,
                 statusCode: isBaseError(e) ? (e as unknown as BaseError)?.getStatusCode() : undefined,
+                errorCode: ErrorCode.INCOME_ERROR,
             });
         }
     }
@@ -202,6 +209,8 @@ export default class IncomeDataAccess extends LoggerBase implements IIncomeDataA
             if (!data) {
                 throw new NotFoundError({
                     message: `Income with incomeId: ${incomeId} not found for userId: ${userId}`,
+
+                    errorCode: ErrorCode.INCOME_ERROR,
                 });
             }
             this._logger.info(`Income incomeId: ${incomeId} for userId: ${userId} delete successful`);
@@ -212,6 +221,8 @@ export default class IncomeDataAccess extends LoggerBase implements IIncomeDataA
             );
             throw new DBError({
                 message: `Delete income failed due to a database error: ${(e as { message: string }).message}`,
+                statusCode: isBaseError(e) ? (e as unknown as BaseError)?.getStatusCode() : undefined,
+                errorCode: isBaseError(e) ? (e as unknown as BaseError)?.getErrorCode() : ErrorCode.INCOME_ERROR,
             });
         }
     }

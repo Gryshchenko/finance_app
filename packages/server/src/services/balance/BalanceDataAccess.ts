@@ -1,4 +1,4 @@
-import { Time, Utils } from 'tenpercent/shared';
+import { ErrorCode, IBalance, Time, Utils } from 'tenpercent/shared';
 
 import { LoggerBase } from 'helper/logger/LoggerBase';
 import { IDatabaseConnection, IDBTransaction } from 'interfaces/IDatabaseConnection';
@@ -7,8 +7,6 @@ import { DBError } from 'src/utils/errors/DBError';
 import { isBaseError } from 'src/utils/errors/isBaseError';
 import { NotFoundError } from 'src/utils/errors/NotFoundError';
 import { validateAllowedProperties } from 'src/utils/validation/validateAllowedProperties';
-
-import { IBalance } from '../../../../shared/src/interfaces/IBalance';
 
 export interface IBalanceDataAccess {
     get(userId: number): Promise<IBalance>;
@@ -35,6 +33,7 @@ export default class BalanceDataAccess extends LoggerBase implements IBalanceDat
 
             if (!data) {
                 throw new NotFoundError({
+                    errorCode: ErrorCode.BALANCE_ERROR,
                     message: `Balance not found for userId: ${userId}`,
                 });
             } else {
@@ -47,6 +46,7 @@ export default class BalanceDataAccess extends LoggerBase implements IBalanceDat
             throw new DBError({
                 message: `Fetching balance failed due to a database error: ${(e as { message: string }).message}`,
                 statusCode: isBaseError(e) ? (e as unknown as BaseError)?.getStatusCode() : undefined,
+                errorCode: isBaseError(e) ? (e as unknown as BaseError)?.getErrorCode() : ErrorCode.BALANCE_ERROR,
             });
         }
     }
@@ -68,6 +68,7 @@ export default class BalanceDataAccess extends LoggerBase implements IBalanceDat
 
             if (Utils.isArrayEmpty(data)) {
                 throw new NotFoundError({
+                    errorCode: ErrorCode.BALANCE_ERROR,
                     message: `Balance not found for userId: ${userId}`,
                 });
             } else {
@@ -80,6 +81,7 @@ export default class BalanceDataAccess extends LoggerBase implements IBalanceDat
             throw new DBError({
                 message: `Post balance failed due to a database error: ${(e as { message: string }).message}`,
                 statusCode: isBaseError(e) ? (e as unknown as BaseError)?.getStatusCode() : undefined,
+                errorCode: isBaseError(e) ? (e as unknown as BaseError)?.getErrorCode() : ErrorCode.BALANCE_ERROR,
             });
         }
     }
@@ -106,6 +108,7 @@ export default class BalanceDataAccess extends LoggerBase implements IBalanceDat
 
             if (Utils.isArrayEmpty(data)) {
                 throw new NotFoundError({
+                    errorCode: ErrorCode.BALANCE_ERROR,
                     message: `Balance not found for userId: ${userId}`,
                 });
             } else {
@@ -118,6 +121,7 @@ export default class BalanceDataAccess extends LoggerBase implements IBalanceDat
             throw new DBError({
                 message: `Patch balance failed due to a database error: ${(e as { message: string }).message}`,
                 statusCode: isBaseError(e) ? (e as unknown as BaseError)?.getStatusCode() : undefined,
+                errorCode: isBaseError(e) ? (e as unknown as BaseError)?.getErrorCode() : ErrorCode.BALANCE_ERROR,
             });
         }
     }

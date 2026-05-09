@@ -1,3 +1,5 @@
+import { ErrorCode } from 'tenpercent/shared';
+
 import { IDatabaseConnection, IDBTransaction } from 'interfaces/IDatabaseConnection';
 import { IGroup } from 'interfaces/IGroup';
 import { LoggerBase } from 'src/helper/logger/LoggerBase';
@@ -26,6 +28,7 @@ export default class GroupDataAccess extends LoggerBase implements IGroupDataAcc
             this._logger.error(`Failed to create group for userId: ${userId}. Error: ${(e as { message: string }).message}`);
             throw new DBError({
                 message: `Creating group failed due to a database error: ${(e as { message: string }).message}`,
+                errorCode: ErrorCode.GROUP_ERROR,
             });
         }
     }

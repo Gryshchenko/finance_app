@@ -1,4 +1,4 @@
-import { Time } from 'tenpercent/shared';
+import { Time, ErrorCode } from 'tenpercent/shared';
 
 import { IDatabaseConnection } from 'interfaces/IDatabaseConnection';
 import { IForgotPassword } from 'interfaces/IForgotPassword';
@@ -35,6 +35,7 @@ export default class ForgotPasswordDataAccess extends LoggerBase implements IFor
             );
             throw new DBError({
                 message: `Error creating forgot password request for userId ${userId}: ${(e as { message: string }).message}`,
+                errorCode: ErrorCode.FORGOT_PASSWORD_ERROR,
             });
         }
     }
@@ -54,6 +55,7 @@ export default class ForgotPasswordDataAccess extends LoggerBase implements IFor
             this._logger.error(`Error fetching active forgot password request: ${(e as { message: string }).message}`);
             throw new DBError({
                 message: `Error fetching active forgot password request: ${(e as { message: string }).message}`,
+                errorCode: ErrorCode.FORGOT_PASSWORD_ERROR,
             });
         }
     }
@@ -72,6 +74,7 @@ export default class ForgotPasswordDataAccess extends LoggerBase implements IFor
             this._logger.error(`Error confirming forgot password request: ${(e as { message: string }).message}`);
             throw new DBError({
                 message: `Error confirming forgot password request: ${(e as { message: string }).message}`,
+                errorCode: ErrorCode.FORGOT_PASSWORD_ERROR,
             });
         }
     }
@@ -90,6 +93,7 @@ export default class ForgotPasswordDataAccess extends LoggerBase implements IFor
             this._logger.error(`Error refreshing confirmation code: ${(e as { message: string }).message}`);
             throw new DBError({
                 message: `Error refreshing confirmation code: ${(e as { message: string }).message}`,
+                errorCode: ErrorCode.FORGOT_PASSWORD_ERROR,
             });
         }
     }

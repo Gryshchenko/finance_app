@@ -1,11 +1,11 @@
+import { ErrorCode, IRate } from 'tenpercent/shared';
+
 import { IDatabaseConnection } from 'interfaces/IDatabaseConnection';
 import { LoggerBase } from 'src/helper/logger/LoggerBase';
 import { BaseError } from 'src/utils/errors/BaseError';
 import { DBError } from 'src/utils/errors/DBError';
 import { isBaseError } from 'src/utils/errors/isBaseError';
 import { NotFoundError } from 'src/utils/errors/NotFoundError';
-
-import { IRate } from '../../../../shared/src/interfaces/IRate';
 
 export interface IExchangeRateDataAccess {
     post(baseCurrency: string, targetCurrencies: Record<string, number>): Promise<boolean>;
@@ -45,6 +45,7 @@ export default class ExchangeRateDataAccess extends LoggerBase implements IExcha
             throw new DBError({
                 message: `Insert list of currencies rates for currency: ${baseCurrency} failed due reason: ${(e as { message: string }).message}`,
                 statusCode: isBaseError(e) ? (e as unknown as BaseError)?.getStatusCode() : undefined,
+                errorCode: ErrorCode.EXCHANGE_ERROR,
             });
         }
     }
@@ -87,6 +88,7 @@ export default class ExchangeRateDataAccess extends LoggerBase implements IExcha
             throw new DBError({
                 message: `Updating list of currencies rates for currency: ${baseCurrency} failed due reason: ${(e as { message: string }).message}`,
                 statusCode: isBaseError(e) ? (e as unknown as BaseError)?.getStatusCode() : undefined,
+                errorCode: ErrorCode.EXCHANGE_ERROR,
             });
         }
     }
@@ -107,6 +109,7 @@ export default class ExchangeRateDataAccess extends LoggerBase implements IExcha
             } else {
                 throw new NotFoundError({
                     message: `Currency with code ${baseCurrency} - ${targetCurrency} not found`,
+                    errorCode: ErrorCode.EXCHANGE_ERROR,
                 });
             }
         } catch (e) {
@@ -114,6 +117,7 @@ export default class ExchangeRateDataAccess extends LoggerBase implements IExcha
             throw new DBError({
                 message: `Fetch failed due reason: ${(e as { message: string }).message}`,
                 statusCode: isBaseError(e) ? (e as unknown as BaseError)?.getStatusCode() : undefined,
+                errorCode: ErrorCode.EXCHANGE_ERROR,
             });
         }
     }
@@ -132,6 +136,7 @@ export default class ExchangeRateDataAccess extends LoggerBase implements IExcha
             } else {
                 throw new NotFoundError({
                     message: `Rates with code ${baseCurrency}  not found`,
+                    errorCode: ErrorCode.EXCHANGE_ERROR,
                 });
             }
         } catch (e) {
@@ -139,6 +144,7 @@ export default class ExchangeRateDataAccess extends LoggerBase implements IExcha
             throw new DBError({
                 message: `Fetch failed due reason: ${(e as { message: string }).message}`,
                 statusCode: isBaseError(e) ? (e as unknown as BaseError)?.getStatusCode() : undefined,
+                errorCode: ErrorCode.EXCHANGE_ERROR,
             });
         }
     }

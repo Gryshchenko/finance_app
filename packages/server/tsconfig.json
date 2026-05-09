@@ -30,7 +30,7 @@
         "require": ["tsconfig-paths/register"]
     },
     "files": ["./types.d.ts"],
-    "include": ["src/**/*"],
+    "include": ["src/**/*", "tests/**/*"],
     "exclude": ["node_modules", "dist"],
     "types": ["node"],
     "references": [{ "path": "../shared" }]

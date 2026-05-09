@@ -1,9 +1,11 @@
-import { createUser, deleteUserAfterTest, generateSecureRandom } from '../TestsUtils.';
+import { createUser, deleteUserAfterTest, generateSecureRandom, getOverview } from '../TestsUtils.';
 import DatabaseConnection from '../../src/repositories/DatabaseConnection';
 import config from '../../src/config/dbConfig';
 import { ErrorCode, TransactionType } from 'tenpercent/shared';
 import { ResponseStatusType } from 'tenpercent/shared';
 import { HttpCode } from 'tenpercent/shared';
+import { getAccount } from '../account/AccountTestUtils';
+import { createIncomeTransaction, getTransaction, patchTransaction, tryPatchTransaction } from './TransactionsTestUtils';
 
 // eslint-disable-next-line @typescript-eslint/no-require-imports
 const request = require('supertest');
@@ -103,6 +105,213 @@ describe('POST /transaction/create - income', () => {
             expect(balance).toBe(String(num));
         });
     }
+
+    it(`patch transaction - change accountId`, async () => {
+        const agent = request.agent(server);
+        const databaseConnection = DatabaseConnection.instance(config);
+        const { userId, authorization } = await createUser({ agent, databaseConnection });
+        userIds.push(userId);
+
+        const { accounts, incomes } = await getOverview(agent, userId, authorization);
+        const incomeId = incomes[0].incomeId;
+        const accountId = accounts[0].accountId;
+        const accountIdPatch = accounts[1].accountId;
+        const currencyId = accounts[0].currencyId;
+
+        const accountBefore = await getAccount(agent, userId, authorization, accountId);
+
+        expect(accountBefore.amount).toStrictEqual(Number((0).toFixed(2)));
+
+        const id = await createIncomeTransaction(agent, userId, authorization, accountId, incomeId, currencyId, 100);
+
+        const accountAfterCreate = await getAccount(agent, userId, authorization, accountId);
+        expect(accountAfterCreate.amount).toStrictEqual(Number((100).toFixed(2)));
+
+        await patchTransaction(agent, userId, authorization, id, { accountId: accountIdPatch });
+
+        const accountAfter = await getAccount(agent, userId, authorization, accountId);
+        const accountPatch = await getAccount(agent, userId, authorization, accountIdPatch);
+
+        expect(accountAfter.amount).toStrictEqual(Number((0).toFixed(2)));
+        expect(accountPatch.amount).toStrictEqual(Number((100).toFixed(2)));
+    });
+
+    it(`patch transaction - change incomeId`, async () => {
+        const agent = request.agent(server);
+        const databaseConnection = DatabaseConnection.instance(config);
+        const { userId, authorization } = await createUser({ agent, databaseConnection });
+        userIds.push(userId);
+
+        const { accounts, incomes } = await getOverview(agent, userId, authorization);
+        const incomeId = incomes[0].incomeId;
+        const incomeIdPatch = incomes[0].incomeId;
+        const accountId = accounts[0].accountId;
+        const currencyId = accounts[0].currencyId;
+
+        const accountBefore = await getAccount(agent, userId, authorization, accountId);
+
+        expect(accountBefore.amount).toStrictEqual(Number((0).toFixed(2)));
+
+        const id = await createIncomeTransaction(agent, userId, authorization, accountId, incomeId, currencyId, 100);
+
+        const accountAfterCreate = await getAccount(agent, userId, authorization, accountId);
+
+        expect(accountAfterCreate.amount).toStrictEqual(Number((100).toFixed(2)));
+
+        await patchTransaction(agent, userId, authorization, id, { incomeId: incomeIdPatch });
+
+        const transactionAfterPatch = await getTransaction(agent, userId, authorization, { transactionId: id });
+
+        expect(transactionAfterPatch.incomeId).toStrictEqual(incomeIdPatch);
+
+        const accountAfter = await getAccount(agent, userId, authorization, accountId);
+
+        expect(accountAfter.amount).toStrictEqual(Number((100).toFixed(2)));
+    });
+
+    it('patch transaction - change amount', async () => {
+        const agent = request.agent(server);
+        const databaseConnection = DatabaseConnection.instance(config);
+        const { userId, authorization } = await createUser({ agent, databaseConnection });
+        userIds.push(userId);
+
+        const { accounts, incomes } = await getOverview(agent, userId, authorization);
+        const incomeId = incomes[0].incomeId;
+        const accountId = accounts[0].accountId;
+        const currencyId = accounts[0].currencyId;
+
+        const accountBefore = await getAccount(agent, userId, authorization, accountId);
+
+        expect(accountBefore.amount).toStrictEqual(Number((0).toFixed(2)));
+
+        const id = await createIncomeTransaction(agent, userId, authorization, accountId, incomeId, currencyId, 100);
+
+        const accountPath = await getAccount(agent, userId, authorization, accountId);
+
+        expect(accountPath.amount).toStrictEqual(Number((100).toFixed(2)));
+
+        await patchTransaction(agent, userId, authorization, id, { amount: 200 });
+
+        const accountAfter = await getAccount(agent, userId, authorization, accountId);
+
+        expect(accountAfter.amount).toStrictEqual(Number((200).toFixed(2)));
+    });
+
+    it('patch transaction - change amount and accountId simultaneously', async () => {
+        const agent = request.agent(server);
+        const databaseConnection = DatabaseConnection.instance(config);
+        const { userId, authorization } = await createUser({ agent, databaseConnection });
+        userIds.push(userId);
+
+        const { accounts, incomes } = await getOverview(agent, userId, authorization);
+        const incomeId = incomes[0].incomeId;
+        const accountId = accounts[0].accountId;
+        const accountIdPatch = accounts[1].accountId;
+        const currencyId = accounts[0].currencyId;
+
+        const accountBefore = await getAccount(agent, userId, authorization, accountId);
+        const accountPatchBefore = await getAccount(agent, userId, authorization, accountIdPatch);
+
+        const id = await createIncomeTransaction(agent, userId, authorization, accountId, incomeId, currencyId, 100);
+
+        await patchTransaction(agent, userId, authorization, id, { accountId: accountIdPatch, amount: 200 });
+
+        const accountAfter = await getAccount(agent, userId, authorization, accountId);
+        const accountPatch = await getAccount(agent, userId, authorization, accountIdPatch);
+
+        expect(accountAfter.amount).toStrictEqual(Number(accountBefore.amount.toFixed(2)));
+        expect(accountPatch.amount).toStrictEqual(Number((accountPatchBefore.amount + 200).toFixed(2)));
+    });
+
+    it('patch transaction - change metadata only (description) does not affect balance', async () => {
+        const agent = request.agent(server);
+        const databaseConnection = DatabaseConnection.instance(config);
+        const { userId, authorization } = await createUser({ agent, databaseConnection });
+        userIds.push(userId);
+
+        const { accounts, incomes } = await getOverview(agent, userId, authorization);
+        const incomeId = incomes[0].incomeId;
+        const accountId = accounts[0].accountId;
+        const currencyId = accounts[0].currencyId;
+
+        const id = await createIncomeTransaction(agent, userId, authorization, accountId, incomeId, currencyId, 100);
+        const accountAfterCreate = await getAccount(agent, userId, authorization, accountId);
+
+        await patchTransaction(agent, userId, authorization, id, {
+            description: 'Updated description',
+        });
+
+        const accountAfterPatch = await getAccount(agent, userId, authorization, accountId);
+        expect(accountAfterPatch.amount).toStrictEqual(accountAfterCreate.amount);
+    });
+
+    it('patch transaction - non-existent transactionId returns error', async () => {
+        const agent = request.agent(server);
+        const databaseConnection = DatabaseConnection.instance(config);
+        const { userId, authorization } = await createUser({ agent, databaseConnection });
+        userIds.push(userId);
+
+        const response = await tryPatchTransaction(agent, userId, authorization, 999999999, { amount: 200 });
+        expect(response.status).toBe(HttpCode.NOT_FOUND);
+
+        expect(response.body).toStrictEqual({
+            data: {},
+            errors: [{ errorCode: ErrorCode.TRANSACTION_ERROR }],
+            status: ResponseStatusType.INTERNAL,
+        });
+    });
+
+    it('patch transaction - cannot patch transaction of another user', async () => {
+        const agent = request.agent(server);
+        const databaseConnection = DatabaseConnection.instance(config);
+        const { userId: userId1, authorization: auth1 } = await createUser({ agent, databaseConnection });
+        const { userId: userId2, authorization: auth2 } = await createUser({ agent, databaseConnection });
+        userIds.push(userId1, userId2);
+
+        const { accounts: accounts1, incomes: incomes1 } = await getOverview(agent, userId1, auth1);
+
+        const id = await createIncomeTransaction(
+            agent,
+            userId1,
+            auth1,
+            accounts1[0].accountId,
+            incomes1[0].incomeId,
+            accounts1[0].currencyId,
+            100,
+        );
+
+        const crossUserResponse = await tryPatchTransaction(agent, userId2, auth2, id, { amount: 9999 });
+        expect(crossUserResponse.status).toBe(HttpCode.NOT_FOUND);
+    });
+
+    it('patch transaction - unknown properties returns UNEXPECTED_PROPERTY', async () => {
+        const agent = request.agent(server);
+        const databaseConnection = DatabaseConnection.instance(config);
+        const { userId, authorization } = await createUser({ agent, databaseConnection });
+        userIds.push(userId);
+
+        const { accounts, incomes } = await getOverview(agent, userId, authorization);
+
+        const id = await createIncomeTransaction(
+            agent,
+            userId,
+            authorization,
+            accounts[0].accountId,
+            incomes[0].incomeId,
+            accounts[0].currencyId,
+            100,
+        );
+
+        const response = await tryPatchTransaction(agent, userId, authorization, id, { amount: 200, unknownField: 'hack' });
+        expect(response.status).toBe(HttpCode.BAD_REQUEST);
+
+        expect(response.body).toStrictEqual({
+            data: {},
+            errors: [{ errorCode: ErrorCode.UNEXPECTED_PROPERTY, payload: expect.any(Object) }],
+            status: ResponseStatusType.INTERNAL,
+        });
+    });
+
     it('should not create new transaction - miss incomeId', async () => {
         const agent = request.agent(server);
 
