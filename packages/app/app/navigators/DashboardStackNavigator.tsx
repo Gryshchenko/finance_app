@@ -2,15 +2,15 @@ import { createNativeStackNavigator } from '@react-navigation/native-stack';
 
 import { DashboardScreen } from '@/screens/DashboardScreen/DashboardScreen';
 
-const DashboardStack = createNativeStackNavigator();
+const DashboardStack = createNativeStackNavigator<DashboardStackParamList>();
 
 export enum DashboardPath {
     Overview = 'overview',
 }
 
-export interface DashboardStackParamList {
+export type DashboardStackParamList = {
     overview: undefined;
-}
+};
 
 function DashboardStackNavigator() {
     return (

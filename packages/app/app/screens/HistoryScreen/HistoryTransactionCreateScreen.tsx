@@ -5,12 +5,12 @@ import { TransactionType } from 'tenpercent/shared';
 import { TransactionCreate } from '@/components/transaction/TransactionCreate';
 import { translate } from '@/i18n/translate';
 import { ITransactionClient } from '@/interfaces/ITransactionClient';
-import { OverviewTabParamList } from '@/navigators/OverviewNavigator';
+import { HistoryStackParamList } from '@/navigators/HistoryStackNavigator';
 import { GenericListScreen } from '@/screens/GenericListScreen';
 import { OverviewPath } from '@/types/OverviewPath';
 import { TransactionPath } from '@/types/TransactionPath';
 
-type Props = NativeStackScreenProps<OverviewTabParamList, TransactionPath.TransactionCreate>;
+type Props = NativeStackScreenProps<HistoryStackParamList, TransactionPath.TransactionCreate>;
 
 const getScreenTitle = (typeId?: number): string => {
     switch (typeId) {

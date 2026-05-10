@@ -22,7 +22,7 @@ export class TransactionService extends ApiAbstract {
     }: {
         id?: number;
         type?: TransactionFieldType | undefined;
-        cursor?: string;
+        cursor?: string | null;
         limit?: number;
         orderBy?: string;
     }): Promise<

@@ -1,6 +1,8 @@
 import { ComponentType, FC, useMemo, useRef, useState } from 'react';
 // eslint-disable-next-line no-restricted-imports
 import { Pressable, TextInput, TextStyle, ViewStyle } from 'react-native';
+import { useNavigation } from '@react-navigation/native';
+import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 
 import { Button } from '@/components/buttons/Button';
 import { HeaderTitle } from '@/components/HeaderTitle';
@@ -11,7 +13,7 @@ import { Text } from '@/components/Text';
 import { TextField, type TextFieldAccessoryProps } from '@/components/TextField';
 import { useAuth } from '@/context/AuthContext';
 import { useEditView } from '@/hooks/useEditView';
-import type { AppStackScreenProps } from '@/navigators/AppNavigator';
+import type { AppStackParamList, AppStackScreenProps } from '@/navigators/AppNavigator';
 import { loginSchema } from '@/schems/validationSchemas';
 import { GeneralApiProblemKind, handleBadDataResponse } from '@/services/api/apiProblem';
 import { useAppTheme } from '@/theme/context';
@@ -22,7 +24,7 @@ interface LoginScreenProps extends AppStackScreenProps<AppPath.Login> {}
 
 export const LoginScreen: FC<LoginScreenProps> = (_props) => {
     const authPasswordInput = useRef<TextInput>(null);
-    const { navigation } = _props;
+    const navigation = useNavigation<NativeStackNavigationProp<AppStackParamList>>();
     const [isAuthPasswordHidden, setIsAuthPasswordHidden] = useState<boolean>(true);
     const { doLogin } = useAuth();
     const { form, handleChange, save, errors, setErrors } = useEditView<{ email: string; password: string }>(

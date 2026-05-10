@@ -4,13 +4,14 @@ import { ITransaction } from 'tenpercent/shared';
 
 import { TransactionView } from '@/components/transaction/TransactionView';
 import { useAppQuery } from '@/hooks/useAppQuery';
-import { OverviewTabParamList } from '@/navigators/OverviewNavigator';
+import { DashboardPath } from '@/navigators/DashboardStackNavigator';
+import { HistoryStackParamList } from '@/navigators/HistoryStackNavigator';
 import { GenericListScreen } from '@/screens/GenericListScreen';
 import { fetchTransaction } from '@/screens/TransactionsScreen/TransactionViewScreen';
 import { OverviewPath } from '@/types/OverviewPath';
 import { TransactionPath } from '@/types/TransactionPath';
 
-type Props = NativeStackScreenProps<OverviewTabParamList, TransactionPath.TransactionView>;
+type Props = NativeStackScreenProps<HistoryStackParamList, TransactionPath.TransactionView>;
 
 export const HistoryTransactionViewScreen = function TransactionViewScreen(_props: Props) {
     const params = _props?.route?.params as { id: number; name: string };
@@ -26,7 +27,7 @@ export const HistoryTransactionViewScreen = function TransactionViewScreen(_prop
             isError={isError}
             isPending={isPending}
             props={{
-                data,
+                data: { data, path: DashboardPath.Overview },
             }}
             onBack={() => navigation.getParent()?.navigate(OverviewPath.Dashboard)}
             RenderComponent={TransactionView}

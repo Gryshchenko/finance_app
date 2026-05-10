@@ -6,12 +6,14 @@ import { HistoryTransactionsScreen } from '@/screens/HistoryScreen/HistoryTransa
 import { HistoryTransactionViewScreen } from '@/screens/HistoryScreen/HistoryTransactionViewScreen';
 import { TransactionPath } from '@/types/TransactionPath';
 
-const BalancesStack = createNativeStackNavigator();
+const BalancesStack = createNativeStackNavigator<HistoryStackParamList>();
 
-export interface HistoryStackParamList {
+export type HistoryStackParamList = {
     transactions: undefined;
-    transaction: { id: number };
-}
+    transactionView: { id: number; name: string };
+    transactionCreate: { payload: Record<string, unknown> } | undefined;
+    transactionEdit: { id: number; name: string; payload: string };
+};
 
 function HistoryStackNavigator() {
     return (

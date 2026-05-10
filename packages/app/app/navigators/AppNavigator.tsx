@@ -61,29 +61,29 @@ export type AppStackScreenProps<T extends keyof AppStackParamList> = NativeStack
 // Documentation: https://reactnavigation.org/docs/stack-navigator/
 const Stack = createNativeStackNavigator<AppStackParamList>();
 
-const LoginScreenTab = () => (
+const LoginScreenTab = (props: AppStackScreenProps<AppPath.Login>) => (
     <ResetOnBlur>
-        <LoginScreen />
+        <LoginScreen {...props} />
     </ResetOnBlur>
 );
-const ForgotPasswordChangeScreenTab = () => (
+const ForgotPasswordChangeScreenTab = (props: AppStackScreenProps<AppPath.ForgotPasswordChange>) => (
     <ResetOnBlur>
-        <ForgotPasswordChangeScreen />
+        <ForgotPasswordChangeScreen {...props} />
     </ResetOnBlur>
 );
-const ForgotPasswordRequestScreenTab = () => (
+const ForgotPasswordRequestScreenTab = (props: AppStackScreenProps<AppPath.ForgotPasswordRequest>) => (
     <ResetOnBlur>
-        <ForgotPasswordRequestScreen />
+        <ForgotPasswordRequestScreen {...props} />
     </ResetOnBlur>
 );
-const ForgotPasswordConfirmScreenTab = () => (
+const ForgotPasswordConfirmScreenTab = (props: AppStackScreenProps<AppPath.ForgotPasswordConfirm>) => (
     <ResetOnBlur>
-        <ForgotPasswordConfirmScreen />
+        <ForgotPasswordConfirmScreen {...props} />
     </ResetOnBlur>
 );
-const SignUpConfirmationScreenTab = () => (
+const SignUpConfirmationScreenTab = (props: AppStackScreenProps<AppPath.SignUpConfirmation>) => (
     <ResetOnBlur>
-        <SignUpConfirmationScreen />
+        <SignUpConfirmationScreen {...props} />
     </ResetOnBlur>
 );
 const OverviewNavigatorTab = () => (

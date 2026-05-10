@@ -424,8 +424,8 @@ export default class TransactionService extends LoggerBase implements ITransacti
                     userId,
                     trx,
                 });
-                await this._accountService.patchAccount(userId, accountId, { amount: transactionAmount * -1 }, trx);
-                await this._accountService.patchAccount(userId, targetAccountId, { amount: transactionAmount }, trx);
+                await this._accountService.patchAccount(userId, accountId, { amount: transactionAmount }, trx);
+                await this._accountService.patchAccount(userId, targetAccountId, { amount: transactionAmount * -1 }, trx);
             },
             'transfare',
         );

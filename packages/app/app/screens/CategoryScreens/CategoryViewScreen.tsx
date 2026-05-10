@@ -4,8 +4,7 @@ import { ICategory, Utils } from 'tenpercent/shared';
 
 import { CategoryView } from '@/components/category/CategoryView';
 import { useAppQuery } from '@/hooks/useAppQuery';
-import { CategoriesPath } from '@/navigators/CategoriesStackNavigator';
-import { OverviewTabParamList } from '@/navigators/OverviewNavigator';
+import { CategoriesPath, CategoriesStackParamList } from '@/navigators/CategoriesStackNavigator';
 import { GenericListScreen } from '@/screens/GenericListScreen';
 import { GeneralApiProblemKind } from '@/services/api/apiProblem';
 import { CategoryService } from '@/services/CategoryService';
@@ -14,7 +13,7 @@ import { OverviewPath } from '@/types/OverviewPath';
 import { ValidationError } from '@/utils/errors/ValidationError';
 import { Logger } from '@/utils/logger/Logger';
 
-export async function fetchCategory(id: number): Promise<ICategory | null> {
+export async function fetchCategory(id: number): Promise<ICategory | undefined> {
     try {
         if (Utils.isNull(id)) {
             throw new ValidationError({
@@ -28,21 +27,21 @@ export async function fetchCategory(id: number): Promise<ICategory | null> {
                 return response.data as ICategory;
             }
             default: {
-                return null;
+                return undefined;
             }
         }
     } catch (e) {
         Logger.Of('FetchCategorys').error(`Fetch categoryId ${id}  failed due reason: ${(e as { message: string }).message}`);
-        return null;
+        return undefined;
     }
 }
 
-type Props = NativeStackScreenProps<OverviewTabParamList, CategoriesPath.CategoryView>;
+type Props = NativeStackScreenProps<CategoriesStackParamList, CategoriesPath.CategoryView>;
 
 export const CategoryViewScreen = function CategoryViewScreen(_props: Props) {
     const params = _props?.route?.params as { id: number; name: string };
     const navigation = useNavigation();
-    const { isError, data, isPending } = useAppQuery<ICategory | null>(
+    const { isError, data, isPending } = useAppQuery<ICategory | undefined>(
         QueryKeys.category(params?.id),
         () => fetchCategory(params?.id),
         { staleTime: QueryStaleTimes.detail },

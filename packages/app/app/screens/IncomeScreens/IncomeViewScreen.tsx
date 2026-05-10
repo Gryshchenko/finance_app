@@ -4,8 +4,7 @@ import { IIncome, Utils } from 'tenpercent/shared';
 
 import { IncomeView } from '@/components/income/IncomeView';
 import { useAppQuery } from '@/hooks/useAppQuery';
-import { IncomePath } from '@/navigators/IncomesStackNavigator';
-import { OverviewTabParamList } from '@/navigators/OverviewNavigator';
+import { IncomePath, IncomesStackParamList } from '@/navigators/IncomesStackNavigator';
 import { GenericListScreen } from '@/screens/GenericListScreen';
 import { GeneralApiProblemKind } from '@/services/api/apiProblem';
 import { IncomeService } from '@/services/IncomeService';
@@ -14,7 +13,7 @@ import { OverviewPath } from '@/types/OverviewPath';
 import { ValidationError } from '@/utils/errors/ValidationError';
 import { Logger } from '@/utils/logger/Logger';
 
-export async function fetchIncome(id: number): Promise<IIncome | null> {
+export async function fetchIncome(id: number): Promise<IIncome | undefined> {
     try {
         if (Utils.isNull(id)) {
             throw new ValidationError({
@@ -28,21 +27,21 @@ export async function fetchIncome(id: number): Promise<IIncome | null> {
                 return response.data as IIncome;
             }
             default: {
-                return null;
+                return undefined;
             }
         }
     } catch (e) {
         Logger.Of('FetchIncomes').error(`Fetch incomeId ${id}  failed due reason: ${(e as { message: string }).message}`);
-        return null;
+        return undefined;
     }
 }
 
-type Props = NativeStackScreenProps<OverviewTabParamList, IncomePath.IncomeView>;
+type Props = NativeStackScreenProps<IncomesStackParamList, IncomePath.IncomeView>;
 
 export const IncomeViewScreen = function IncomeViewScreen(_props: Props) {
     const params = _props?.route?.params as { id: number; name: string };
     const navigation = useNavigation();
-    const { isError, data, isPending } = useAppQuery<IIncome | null>(
+    const { isError, data, isPending } = useAppQuery<IIncome | undefined>(
         QueryKeys.income(params?.id),
         () => fetchIncome(params?.id),
         { staleTime: QueryStaleTimes.detail },

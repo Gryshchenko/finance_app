@@ -6,11 +6,10 @@ import { DragOverlayProvider } from '@/components/dashboard/Box/DragOverlayConte
 import DashboardItems from '@/components/dashboard/DashboardItems';
 import { HeaderV2 } from '@/components/HeaderV2';
 import { Screen } from '@/components/Screen';
-import { DashboardPath } from '@/navigators/DashboardStackNavigator';
-import { OverviewTabParamList } from '@/navigators/OverviewNavigator';
+import { DashboardPath, DashboardStackParamList } from '@/navigators/DashboardStackNavigator';
 import { $styles } from '@/theme/styles';
 
-type Props = NativeStackScreenProps<OverviewTabParamList, DashboardPath.Overview>;
+type Props = NativeStackScreenProps<DashboardStackParamList, DashboardPath.Overview>;
 
 export const DashboardScreen = function IncomesScreen(_props: Props) {
     return (

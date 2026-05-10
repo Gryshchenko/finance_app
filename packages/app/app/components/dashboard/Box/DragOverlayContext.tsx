@@ -27,7 +27,7 @@ import { ItemType } from '@/components/dashboard/Box/ItemBox';
 import { Logger } from '@/utils/logger/Logger';
 
 // Use the public Animated.ScrollView type instead of an internal import path.
-type AnimatedScrollView = InstanceType<typeof Animated.ScrollView>;
+type AnimatedScrollView = React.ElementRef<typeof Animated.ScrollView>;
 
 export interface IDragOverlayLayout {
     width: number | null;

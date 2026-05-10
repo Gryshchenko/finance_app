@@ -8,6 +8,7 @@ import { TransactionFields } from '@/components/transaction/TransactionFields';
 import { useInvalidateQuery } from '@/hooks/useAppQuery';
 import { useEditView } from '@/hooks/useEditView';
 import { translate } from '@/i18n/translate';
+import { ITransactionClient } from '@/interfaces/ITransactionClient';
 import { DashboardPath } from '@/navigators/DashboardStackNavigator';
 import AlertService from '@/services/AlertService';
 import { GeneralApiProblemKind } from '@/services/api/apiProblem';
@@ -74,7 +75,16 @@ export const TransactionView: FC<ITransactionPros> = function TransactionView(_p
         return <EmptyState style={$containerStyleOverride} buttonOnPress={() => navigation.goBack()} />;
     }
 
-    return <TransactionFields edit={onEdit} form={form} isCreate={false} isView={true} isEdit={false} onDelete={onDelete} />;
+    return (
+        <TransactionFields
+            edit={onEdit}
+            form={form as Partial<ITransactionClient>}
+            isCreate={false}
+            isView={true}
+            isEdit={false}
+            onDelete={onDelete}
+        />
+    );
 };
 const $containerStyleOverride: StyleProp<ViewStyle> = {
     margin: 'auto',

@@ -4,13 +4,12 @@ import { IIncome } from 'tenpercent/shared';
 import { IncomeEdit } from '@/components/income/IncomeEdit';
 import { useAppQuery } from '@/hooks/useAppQuery';
 import { translate } from '@/i18n/translate';
-import { IncomePath } from '@/navigators/IncomesStackNavigator';
-import { OverviewTabParamList } from '@/navigators/OverviewNavigator';
+import { IncomePath, IncomesStackParamList } from '@/navigators/IncomesStackNavigator';
 import { GenericListScreen } from '@/screens/GenericListScreen';
 import { fetchIncome } from '@/screens/IncomeScreens/IncomeViewScreen';
 import { QueryKeys, QueryStaleTimes } from '@/services/QueryCacheService';
 
-type Props = NativeStackScreenProps<OverviewTabParamList, IncomePath.IncomeEdit>;
+type Props = NativeStackScreenProps<IncomesStackParamList, IncomePath.IncomeEdit>;
 
 export const IncomeEditScreen = function IncomeEditScreen(_props: Props) {
     const params = _props?.route?.params as { id: number; name: string; payload: string };

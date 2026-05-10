@@ -93,14 +93,14 @@ export const TransactionStatsBar: FC<Partial<TransactionStatsBarProps>> = functi
         }
     }, [delta.direction, colors]);
 
-    const deltaIcon = useMemo((): 'trending_up' | 'trending_down' | 'trending_flat' => {
+    const deltaIcon = useMemo((): 'trending-up' | 'trending-down' | 'trending-flat' => {
         switch (delta.direction) {
             case 'up':
-                return 'trending_up';
+                return 'trending-up';
             case 'down':
-                return 'trending_down';
+                return 'trending-down';
             default:
-                return 'trending_flat';
+                return 'trending-flat';
         }
     }, [delta.direction]);
 

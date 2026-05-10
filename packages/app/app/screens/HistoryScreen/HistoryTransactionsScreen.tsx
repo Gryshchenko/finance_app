@@ -15,7 +15,7 @@ type Props = NativeStackScreenProps<ParamListBase, string>;
 
 export const HistoryTransactionsScreen = function HistoryScreen(_props: Props) {
     const navigation = useNavigation();
-    const { isError, data, isPending } = useAppQuery<IPagination<ITransactionListItem> | null>(['transactions'], async () =>
+    const { isError, data, isPending } = useAppQuery<IPagination<ITransactionListItem> | undefined>(['transactions'], async () =>
         fetchTransactions(undefined, undefined, undefined, 10),
     );
 
@@ -25,7 +25,7 @@ export const HistoryTransactionsScreen = function HistoryScreen(_props: Props) {
             isError={isError}
             isPending={isPending}
             props={{
-                data,
+                data: { transactions: data, entityId: 0, transactionType: TransactionType.Expense },
                 fetch: async ({ cursor, limit }) => await fetchTransactions(undefined, undefined, cursor, limit),
                 onPress: (id: number, name: string) => {
                     navigation.getParent()?.navigate(OverviewPath.Transactions, {

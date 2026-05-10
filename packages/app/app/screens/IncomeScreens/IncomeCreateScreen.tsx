@@ -3,12 +3,11 @@ import { NativeStackScreenProps } from '@react-navigation/native-stack';
 
 import { IncomeCreate } from '@/components/income/IncomeCreate';
 import { translate } from '@/i18n/translate';
-import { IncomePath } from '@/navigators/IncomesStackNavigator';
-import { OverviewTabParamList } from '@/navigators/OverviewNavigator';
+import { IncomePath, IncomesStackParamList } from '@/navigators/IncomesStackNavigator';
 import { GenericListScreen } from '@/screens/GenericListScreen';
 import { OverviewPath } from '@/types/OverviewPath';
 
-type Props = NativeStackScreenProps<OverviewTabParamList, IncomePath.IncomeCreate>;
+type Props = NativeStackScreenProps<IncomesStackParamList, IncomePath.IncomeCreate>;
 
 export const IncomeCreateScreen = function IncomeCreateScreen(_props: Props) {
     const navigation = useNavigation();

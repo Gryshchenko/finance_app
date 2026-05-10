@@ -4,16 +4,16 @@ import { TransactionFieldType } from 'tenpercent/shared';
 import { AccountCreateScreen } from '@/screens/AccountScreens/AccountCreateScreen';
 import { AccountEditScreen } from '@/screens/AccountScreens/AccountEditScreen';
 import { AccountsScreen } from '@/screens/AccountScreens/AccountsScreen';
+import { AccountViewScreen } from '@/screens/AccountScreens/AccountViewScreen';
 import { TransactionCreateScreen } from '@/screens/TransactionsScreen/TransactionCreateScreen';
 import { TransactionEditScreen } from '@/screens/TransactionsScreen/TransactionEditScreen';
 import { TransactionsScreen } from '@/screens/TransactionsScreen/TransactionsScreen';
 import { OverviewPath } from '@/types/OverviewPath';
 import { TransactionPath } from '@/types/TransactionPath';
 
-const AccountsStack = createNativeStackNavigator();
-
 export enum AccountsPath {
     Accounts = 'accounts',
+    AccountView = 'accountView',
     AccountEdit = 'accountEdit',
     AccountsCreate = 'accountCreate',
 }
@@ -25,7 +25,7 @@ export enum AccountsPath {
  * Transaction screens are shared across navigators and keep their
  * TransactionPath string values as keys.
  */
-export interface AccountsStackParamList {
+export type AccountsStackParamList = {
     /** Main accounts list — no params required. */
     accounts: undefined;
 
@@ -64,12 +64,15 @@ export interface AccountsStackParamList {
         type: TransactionFieldType;
         path: OverviewPath;
     };
-}
+};
+
+const AccountsStack = createNativeStackNavigator<AccountsStackParamList>();
 
 function AccountsStackNavigator() {
     return (
-        <AccountsStack.Navigator screenOptions={{ headerShown: false, popToTopOnBlur: true }}>
+        <AccountsStack.Navigator screenOptions={{ headerShown: false }}>
             <AccountsStack.Screen name={AccountsPath.Accounts} component={AccountsScreen} />
+            <AccountsStack.Screen name={AccountsPath.AccountView} component={AccountViewScreen} />
             <AccountsStack.Screen name={AccountsPath.AccountsCreate} component={AccountCreateScreen} />
             <AccountsStack.Screen name={AccountsPath.AccountEdit} component={AccountEditScreen} />
 

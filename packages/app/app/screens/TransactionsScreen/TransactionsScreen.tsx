@@ -23,7 +23,7 @@ export async function fetchTransactions(
     type: TransactionFieldType | undefined,
     cursor: string | null | undefined,
     limit: number,
-): Promise<IPagination<ITransactionListItem> | null> {
+): Promise<IPagination<ITransactionListItem> | undefined> {
     try {
         const transactionsService = TransactionService.instance();
         const response = await transactionsService.doGetTransactions({
@@ -37,12 +37,12 @@ export async function fetchTransactions(
                 return response.data as IPagination<ITransactionListItem>;
             }
             default: {
-                return null;
+                return undefined;
             }
         }
     } catch (e) {
         Logger.Of('FetchTransactions').error(`Fetch transactions failed due reason: ${(e as { message: string }).message}`);
-        return null;
+        return undefined;
     }
 }
 
@@ -58,7 +58,7 @@ export const TransactionsScreen = function TransactionsScreen(_props: Props) {
     };
     const navigation = useNavigation();
     const { id, type, name, path, transactionType } = params;
-    const { isError, data, isPending } = useAppQuery<IPagination<ITransactionListItem> | null>(
+    const { isError, data, isPending } = useAppQuery<IPagination<ITransactionListItem> | undefined>(
         QueryKeys.transactions(id, type),
         async () => fetchTransactions(id, type, undefined, 10),
         { staleTime: QueryStaleTimes.transactions },

@@ -13,7 +13,7 @@ import { OverviewPath } from '@/types/OverviewPath';
 import { ValidationError } from '@/utils/errors/ValidationError';
 import { Logger } from '@/utils/logger/Logger';
 
-export async function fetchAccount(id: number): Promise<IAccount | null> {
+export async function fetchAccount(id: number): Promise<IAccount | undefined> {
     try {
         if (Utils.isNull(id)) {
             throw new ValidationError({
@@ -27,12 +27,12 @@ export async function fetchAccount(id: number): Promise<IAccount | null> {
                 return response.data as IAccount;
             }
             default: {
-                return null;
+                return undefined;
             }
         }
     } catch (e) {
         Logger.Of('FetchAccounts').error(`Fetch accountId ${id}  failed due reason: ${(e as { message: string }).message}`);
-        return null;
+        return undefined;
     }
 }
 
@@ -41,7 +41,7 @@ type Props = NativeStackScreenProps<AccountsStackParamList, AccountsPath.Account
 export const AccountViewScreen = function AccountViewScreen(_props: Props) {
     const params = _props?.route?.params as { id: number; name: string };
     const navigation = useNavigation();
-    const { isError, data, isPending } = useAppQuery<IAccount | null>(
+    const { isError, data, isPending } = useAppQuery<IAccount | undefined>(
         QueryKeys.account(params?.id),
         () => fetchAccount(params?.id),
         { staleTime: QueryStaleTimes.detail },

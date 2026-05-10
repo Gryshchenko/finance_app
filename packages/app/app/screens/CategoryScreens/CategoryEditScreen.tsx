@@ -4,13 +4,12 @@ import { ICategory } from 'tenpercent/shared';
 import { CategoryEdit } from '@/components/category/CategoryEdit';
 import { useAppQuery } from '@/hooks/useAppQuery';
 import { translate } from '@/i18n/translate';
-import { CategoriesPath } from '@/navigators/CategoriesStackNavigator';
-import { OverviewTabParamList } from '@/navigators/OverviewNavigator';
+import { CategoriesPath, CategoriesStackParamList } from '@/navigators/CategoriesStackNavigator';
 import { fetchCategory } from '@/screens/CategoryScreens/CategoryViewScreen';
 import { GenericListScreen } from '@/screens/GenericListScreen';
 import { QueryKeys, QueryStaleTimes } from '@/services/QueryCacheService';
 
-type Props = NativeStackScreenProps<OverviewTabParamList, CategoriesPath.CategoryEdit>;
+type Props = NativeStackScreenProps<CategoriesStackParamList, CategoriesPath.CategoryEdit>;
 
 export const CategoryEditScreen = function CategoryEditScreen(_props: Props) {
     const params = _props?.route?.params as { id: number; name: string; payload: string };
