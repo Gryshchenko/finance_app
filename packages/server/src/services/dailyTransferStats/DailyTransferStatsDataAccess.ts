@@ -1,5 +1,8 @@
+import { ErrorCode, Time } from 'tenpercent/shared';
+
 import { LoggerBase } from 'helper/logger/LoggerBase';
 import { IDatabaseConnection, IDBTransaction } from 'interfaces/IDatabaseConnection';
+import { DBError } from 'src/utils/errors/DBError';
 
 export interface IDailyTransferStatsDataAccess {
     updateTotal(
@@ -10,6 +13,8 @@ export interface IDailyTransferStatsDataAccess {
         amount: number,
         trx?: IDBTransaction,
     ): Promise<boolean>;
+
+    summary: (userId: number, id: number, from: string, to: string) => Promise<{ id: number; total: number }>;
 }
 
 export class DailyTransferStatsDataAccess extends LoggerBase implements IDailyTransferStatsDataAccess {
@@ -42,5 +47,32 @@ export class DailyTransferStatsDataAccess extends LoggerBase implements IDailyTr
         );
 
         return true;
+    }
+
+    async summary(userId: number, id: number, from: string, to: string): Promise<{ id: number; total: number }> {
+        try {
+            const fromConverted = Time.toUTCISO(from);
+            const toConverted = Time.toUTCISO(to);
+            this._logger.info(
+                `Fetching summary for userId: ${userId}, accountId: ${id}, from: ${fromConverted}, to: ${toConverted}`,
+            );
+            const result = await this.db
+                .engine()('daily_transfer_stats')
+                .where({ userId, accountId: id })
+                .andWhereBetween('date', [fromConverted, toConverted])
+                .sum({ total: this.db.engine().raw('amount_total') })
+                .first();
+            const total = result?.total || 0;
+            this._logger.info(`Successfully fetched summary for userId: ${userId}, accountId: ${id}`);
+            return { id, total };
+        } catch (e) {
+            this._logger.error(
+                `Failed to fetch summary for userId: ${userId}, accountId: ${id}. Error: ${(e as { message: string }).message}`,
+            );
+            throw new DBError({
+                message: `Failed to fetch summary due to a database error: ${(e as { message: string }).message}`,
+                errorCode: ErrorCode.STATS_ERROR,
+            });
+        }
     }
 }

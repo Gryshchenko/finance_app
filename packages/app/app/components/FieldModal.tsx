@@ -19,7 +19,7 @@ import {
 } from './FieldPresets';
 
 export type FieldModalProps = {
-    /** Visual preset — must match the TextField presets for consistency. */
+    /** Visual preset - must match the TextField presets for consistency. */
     preset?: FieldPresets;
     /** Whether the modal is open (controlled). If omitted the component manages its own state. */
     isOpen?: boolean;

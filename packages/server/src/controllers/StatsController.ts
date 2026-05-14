@@ -1,5 +1,5 @@
 import { Request, Response } from 'express';
-import { ErrorCode, StatsPeriod, HttpCode, ResponseStatusType, TransactionType } from 'tenpercent/shared';
+import { ErrorCode, StatsPeriod, HttpCode, ResponseStatusType, StatsType } from 'tenpercent/shared';
 
 import Logger from 'helper/logger/Logger';
 import ResponseBuilder from 'helper/responseBuilder/ResponseBuilder';
@@ -28,7 +28,7 @@ export class StatsController {
             const entityId = Number(req.params?.entityId);
             const from = String(req.query?.from);
             const to = String(req.query?.to);
-            const type = Number(req.query?.type) as TransactionType;
+            const type = String(req.query?.type) as StatsType;
             const entityStats = await StatsOrchestratorServiceBuilder.build().entityStats(
                 req.user?.userId as number,
                 type,

@@ -1,5 +1,5 @@
 /**
- * Validation tests — Transaction routes
+ * Validation tests - Transaction routes
  *
  * POST   /user/:userId/transaction/
  * PATCH  /user/:userId/transaction/:transactionId
@@ -65,7 +65,7 @@ afterAll((done) => {
     (server as { close: (cb: () => void) => void }).close(done);
 });
 
-// ─── POST /user/:userId/transaction/ — transaction type rules ─────────────────
+// ─── POST /user/:userId/transaction/ - transaction type rules ─────────────────
 
 describe('POST /user/:userId/transaction/ — transaction type validation', () => {
     const url = () => `/user/${userId}/transaction/`;

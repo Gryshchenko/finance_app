@@ -1,5 +1,5 @@
 /**
- * Validation tests — Auth routes
+ * Validation tests - Auth routes
  *
  * POST /auth/login
  * POST /auth/logout
@@ -49,64 +49,64 @@ afterAll((done) => {
 
 // ─── POST /auth/login ────────────────────────────────────────────────────────
 
-describe('POST /auth/login — body validation', () => {
+describe('POST /auth/login - body validation', () => {
     const url = '/auth/login';
 
     // missing fields
-    it('400 — missing email', async () => {
+    it('400 - missing email', async () => {
         await agent.post(url).send({ password: validPassword }).expect(HttpCode.BAD_REQUEST);
     });
 
-    it('400 — missing password', async () => {
+    it('400 - missing password', async () => {
         await agent.post(url).send({ email: validEmail }).expect(HttpCode.BAD_REQUEST);
     });
 
-    it('400 — empty body', async () => {
+    it('400 - empty body', async () => {
         await agent.post(url).send({}).expect(HttpCode.BAD_REQUEST);
     });
 
     // email rules
-    it('400 — email is not an email address', async () => {
+    it('400 - email is not an email address', async () => {
         await agent.post(url).send({ email: 'not-an-email', password: validPassword }).expect(HttpCode.BAD_REQUEST);
     });
 
-    it('400 — email exceeds 150 chars', async () => {
+    it('400 - email exceeds 150 chars', async () => {
         const longEmail = `${'a'.repeat(150)}@example.com`; // 37 chars
         await agent.post(url).send({ email: longEmail, password: validPassword }).expect(HttpCode.BAD_REQUEST);
     });
 
-    it('400 — email is a number', async () => {
+    it('400 - email is a number', async () => {
         await agent.post(url).send({ email: 123, password: validPassword }).expect(HttpCode.BAD_REQUEST);
     });
 
     // password rules
-    it('400 — password too short (< 5 chars)', async () => {
+    it('400 - password too short (< 5 chars)', async () => {
         await agent.post(url).send({ email: validEmail, password: 'Ab1!' }).expect(HttpCode.BAD_REQUEST);
     });
 
-    it('400 — password too long (> 30 chars)', async () => {
+    it('400 - password too long (> 30 chars)', async () => {
         await agent
             .post(url)
             .send({ email: validEmail, password: `ValidPass1!${'a'.repeat(25)}` })
             .expect(HttpCode.BAD_REQUEST);
     });
 
-    it('400 — password is a number', async () => {
+    it('400 - password is a number', async () => {
         await agent.post(url).send({ email: validEmail, password: 123456 }).expect(HttpCode.BAD_REQUEST);
     });
 
     // unknown fields
-    it('400 — extra unknown field in body', async () => {
+    it('400 - extra unknown field in body', async () => {
         await agent.post(url).send({ email: validEmail, password: validPassword, hack: true }).expect(HttpCode.BAD_REQUEST);
     });
 
     // query string
-    it('400 — unexpected query param', async () => {
+    it('400 - unexpected query param', async () => {
         await agent.post(`${url}?foo=bar`).send({ email: validEmail, password: validPassword }).expect(HttpCode.BAD_REQUEST);
     });
 
     // correct credentials
-    it('200 — valid credentials return token', async () => {
+    it('200 - valid credentials return token', async () => {
         const res = await agent.post(url).send({ email: validEmail, password: validPassword });
         expect(res.status).toBe(HttpCode.OK);
         expect(res.body.data.token).toEqual(expect.any(String));
@@ -115,37 +115,37 @@ describe('POST /auth/login — body validation', () => {
 
 // ─── POST /auth/logout ───────────────────────────────────────────────────────
 
-describe('POST /auth/logout — validation', () => {
-    it('401 — no authorization header', async () => {
+describe('POST /auth/logout - validation', () => {
+    it('401 - no authorization header', async () => {
         await agent.post('/auth/logout').expect(HttpCode.UNAUTHORIZED);
     });
 
-    it('400 — unexpected query param', async () => {
+    it('400 - unexpected query param', async () => {
         await agent.post('/auth/logout?foo=bar').set('authorization', authorization).expect(HttpCode.BAD_REQUEST);
     });
 });
 
 // ─── POST /auth/:userId/refresh ──────────────────────────────────────────────
 
-describe('POST /auth/:userId/refresh — body & param validation', () => {
+describe('POST /auth/:userId/refresh - body & param validation', () => {
     const url = (id: number | string) => `/auth/${id}/refresh`;
 
     // token field
-    it('400 — missing token field', async () => {
+    it('400 - missing token field', async () => {
         await agent.post(url(userId)).send({}).expect(HttpCode.BAD_REQUEST);
     });
 
-    it('400 — token is a number', async () => {
+    it('400 - token is a number', async () => {
         await agent.post(url(userId)).send({ token: 123 }).expect(HttpCode.BAD_REQUEST);
     });
 
-    it('400 — short-token used instead of long-token', async () => {
+    it('400 - short-token used instead of long-token', async () => {
         const shortToken = authorization.replace('Bearer ', '');
         await agent.post(url(userId)).send({ token: shortToken }).expect(HttpCode.BAD_REQUEST);
     });
 
     // path param :userId
-    it('400 — userId is a string', async () => {
+    it('400 - userId is a string', async () => {
         await agent.post(url('abc')).send({ token: longToken }).expect(HttpCode.BAD_REQUEST);
     });
 

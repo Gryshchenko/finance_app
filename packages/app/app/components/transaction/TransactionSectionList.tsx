@@ -13,6 +13,7 @@ import { TxKeyPath } from '@/i18n';
 import { translate } from '@/i18n/translate';
 import { useAppTheme } from '@/theme/context';
 import { ThemedStyle } from '@/theme/types';
+import { OverviewPath } from '@/types/OverviewPath';
 import { CurrencyUtils } from '@/utils/CurrencyUtils';
 import { Logger } from '@/utils/logger/Logger';
 
@@ -164,7 +165,12 @@ const TransactionSectionList = forwardRef<SectionList<ITransactionListItem>, Pro
         };
 
         if (!transactions || transactions?.length <= 0) {
-            return <EmptyState style={themed([$containerStyleOverride])} buttonOnPress={() => navigation.goBack()} />;
+            return (
+                <EmptyState
+                    style={themed([$containerStyleOverride])}
+                    buttonOnPress={() => navigation.getParent()?.navigate(OverviewPath.Dashboard)}
+                />
+            );
         }
 
         const onPress = (transactionId: number, transactionName: string) => {
@@ -218,7 +224,7 @@ const TransactionSectionList = forwardRef<SectionList<ITransactionListItem>, Pro
 
                         {/* Amount + chevron */}
                         <View style={$amountContainer}>
-                            <Text style={themed([$amountText, incomeType && $amountIncome])}>{amountText}</Text>
+                            <Text style={themed([$amountText, incomeType ? $amountIncome : $amountExpense])}>{amountText}</Text>
                             <Icon icon={'caretRight'} size={16} color="#888888" />
                         </View>
                     </View>
@@ -361,4 +367,8 @@ const $amountText: ThemedStyle<TextStyle> = ({ colors, typography }) => ({
 
 const $amountIncome: ThemedStyle<TextStyle> = () => ({
     color: '#27ae60',
+});
+
+const $amountExpense: ThemedStyle<TextStyle> = ({ colors }) => ({
+    color: colors.error,
 });

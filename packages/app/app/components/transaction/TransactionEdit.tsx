@@ -1,6 +1,6 @@
-import { FC } from 'react';
+import { FC, useCallback } from 'react';
 import { StyleProp, ViewStyle } from 'react-native';
-import { useNavigation } from '@react-navigation/native';
+import { useNavigation, useFocusEffect } from '@react-navigation/native';
 import { ITransaction } from 'tenpercent/shared';
 
 import { EmptyState } from '@/components/EmptyState';
@@ -25,9 +25,18 @@ export const TransactionEdit: FC<ITransactionPros> = function TransactionEdit(_p
     const { data } = _props;
     const navigation = useNavigation();
     const invalidateQuery = useInvalidateQuery();
-    const { form, handleChange, save, errors, setErrors } = useEditView<Partial<ITransactionClient>>(
+
+    const { form, handleChange, save, errors, setErrors, resetForm } = useEditView<Partial<ITransactionClient>>(
         data!,
         buildTransactionEditSchema(),
+    );
+
+    useFocusEffect(
+        useCallback(() => {
+            return () => {
+                resetForm(data!);
+            };
+        }, [data, resetForm]),
     );
 
     const handlePatch = async () => {
@@ -90,7 +99,12 @@ export const TransactionEdit: FC<ITransactionPros> = function TransactionEdit(_p
         await handlePatch();
     };
     if (!data) {
-        return <EmptyState style={$containerStyleOverride} buttonOnPress={() => navigation.goBack()} />;
+        return (
+            <EmptyState
+                style={$containerStyleOverride}
+                buttonOnPress={() => navigation.getParent()?.navigate(OverviewPath.Dashboard)}
+            />
+        );
     }
 
     return (

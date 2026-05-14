@@ -192,7 +192,7 @@ export const DragOverlayProvider: FC<PropsWithChildren> = ({ children }) => {
             if (!finished) return;
             completedCount += 1;
             if (completedCount >= 2) {
-                // Both done — cancel watchdog and clean up.
+                // Both done - cancel watchdog and clean up.
                 clearAnimationTimeout();
                 scheduleOnRN(cleanupDragSessionWithWatchdog);
             }

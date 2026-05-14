@@ -9,7 +9,7 @@ export interface IEmailNotificationPayload {
     tags: Record<string, unknown>;
 }
 
-// Union type — розширюється при додаванні нових каналів (SMS, Push тощо)
+// Union type - розширюється при додаванні нових каналів (SMS, Push тощо)
 export type NotificationPayload = IEmailNotificationPayload;
 
 export interface INotificationService {

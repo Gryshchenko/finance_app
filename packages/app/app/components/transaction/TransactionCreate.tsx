@@ -1,7 +1,6 @@
 import { FC } from 'react';
 import { useNavigation } from '@react-navigation/native';
-import { ITransaction, Time } from 'tenpercent/shared';
-import { IRate } from 'tenpercent/shared/dist/interfaces/IRate';
+import { IRate, ITransaction, Time } from 'tenpercent/shared';
 
 import { TransactionFields } from '@/components/transaction/TransactionFields';
 import { useCurrency } from '@/context/CurrencyContext';
@@ -49,13 +48,15 @@ export const TransactionCreate: FC<IProps> = function TransactionCreate(_props: 
     const navigation = useNavigation();
     const invalidateQuery = useInvalidateQuery();
 
+    const formInitial = {
+        amount: '',
+        currencyId: defaultCurrencyId,
+        createdAt: Time.getISODateNowUTC(),
+        ...data,
+    };
+
     const { form, handleChange, save, errors, setErrors } = useEditView<Partial<ITransactionClient>>(
-        {
-            amount: '',
-            currencyId: defaultCurrencyId,
-            createdAt: Time.getISODateNowUTC(),
-            ...data,
-        },
+        formInitial,
         buildTransactionCreateSchema({
             sourceCurrencyId: data?.sourceCurrencyId,
             currencyId: defaultCurrencyId,

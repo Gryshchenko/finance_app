@@ -1,6 +1,6 @@
 import { memo } from 'react';
 import { useNavigation } from '@react-navigation/native';
-import { CategoryIconType, IAccountListItem, TransactionFieldType, TransactionType, Utils } from 'tenpercent/shared';
+import { CategoryIconType, IAccountListItem, StatsType, TransactionFieldType, TransactionType, Utils } from 'tenpercent/shared';
 
 import { AccountBox } from '@/components/dashboard/Box/AccountBox';
 import { AddBox } from '@/components/dashboard/Box/AddBox';
@@ -35,6 +35,8 @@ export default memo(function DashboardAccount(props: IDashboardItem<IAccountList
                                 name: item.accountName,
                                 path: OverviewPath.Accounts,
                                 type: TransactionFieldType.Account,
+                                statsType: StatsType.Account,
+                                currencyId: item.currencyId,
                             },
                         });
                     }}
@@ -76,7 +78,6 @@ export default memo(function DashboardAccount(props: IDashboardItem<IAccountList
                                                 targetAccountId: inWorkDropItem.id,
                                                 currencyId: item.currencyId,
                                                 sourceCurrencyId: inWorkDropItem.payload?.currencyId,
-                                                transactionType: TransactionType.Transafer,
                                             },
                                         },
                                     });
@@ -92,7 +93,6 @@ export default memo(function DashboardAccount(props: IDashboardItem<IAccountList
                                             incomeId: inWorkDropItem.id,
                                             currencyId: item.currencyId,
                                             sourceCurrencyId: inWorkDropItem.payload?.currencyId,
-                                            transactionType: TransactionType.Income,
                                         },
                                     },
                                 });

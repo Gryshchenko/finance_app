@@ -9,7 +9,7 @@ export interface IConfirmationEmailNotification {
 }
 
 /**
- * App-level facade — знає шаблон, переклади та структуру листа підтвердження.
+ * App-level facade - знає шаблон, переклади та структуру листа підтвердження.
  * EmailConfirmationService не знає деталей: він просто викликає .send(email, code).
  */
 export default class ConfirmationEmailNotification implements IConfirmationEmailNotification {

@@ -1,6 +1,6 @@
 import { memo } from 'react';
 import { useNavigation } from '@react-navigation/native';
-import { CategoryIconType, ICategoryStats, TransactionFieldType, TransactionType, Utils } from 'tenpercent/shared';
+import { CategoryIconType, ICategoryStats, StatsType, TransactionFieldType, TransactionType, Utils } from 'tenpercent/shared';
 
 import { AddBox } from '@/components/dashboard/Box/AddBox';
 import { IDrag } from '@/components/dashboard/Box/Box';
@@ -28,14 +28,15 @@ export default memo(function DashboardCategory(props: IDashboardItem<ICategorySt
             return (
                 <CategoryBox
                     onTap={() => {
-                        navigation.getParent()?.navigate(OverviewPath.Categories, {
+                        navigation.getParent()?.navigate(OverviewPath.Transactions, {
                             screen: TransactionPath.Transactions,
                             params: {
                                 id: item.categoryId,
                                 name: item.categoryName,
                                 path: OverviewPath.Categories,
                                 type: TransactionFieldType.Category,
-                                transactionType: TransactionType.Expense,
+                                statsType: StatsType.Expense,
+                                currencyId: item.currencyId,
                             },
                         });
                     }}

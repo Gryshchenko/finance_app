@@ -1,5 +1,5 @@
 /**
- * Validation tests — Registration routes
+ * Validation tests - Registration routes
  *
  * POST /register/signup
  * POST /register/signup/:userId/email-confirmation/verify
@@ -38,7 +38,7 @@ afterAll((done) => {
 
 // ─── POST /register/signup ───────────────────────────────────────────────────
 
-describe('POST /register/signup — body validation', () => {
+describe('POST /register/signup - body validation', () => {
     const url = '/register/signup';
 
     const valid = {

@@ -1,4 +1,4 @@
-import { IEntityStats, ISummary, StatsPeriod, TransactionType } from 'tenpercent/shared';
+import { IEntityStats, ISummary, StatsPeriod, StatsType } from 'tenpercent/shared';
 
 import { ApiAbstract } from '@/services/api/apiAbstract';
 import { GeneralApiProblem, GeneralApiProblemKind } from '@/services/api/apiProblem';
@@ -36,14 +36,14 @@ export class StatsService extends ApiAbstract {
         from,
         to,
         period,
-        type,
+        statsType,
         entityId,
     }: {
         from: string;
         to: string;
         period: StatsPeriod;
         entityId: number;
-        type: TransactionType;
+        statsType: StatsType;
     }): Promise<
         | {
               kind: GeneralApiProblemKind.Ok;
@@ -52,10 +52,10 @@ export class StatsService extends ApiAbstract {
         | GeneralApiProblem
     > {
         return this.withErrorHandler(async () => {
-            this._logger.info(`Start fetching entityStats from=${from} to=${to} period=${period} type=${type}`);
+            this._logger.info(`Start fetching entityStats from=${from} to=${to} period=${period} type=${statsType}`);
             const userId = this._authService.userId;
             const response = await this.authGet(
-                `/user/${userId}/stats/entityStats/${entityId}?from=${from}&to=${to}&period=${period}&type=${type}`,
+                `/user/${userId}/stats/entityStats/${entityId}?from=${from}&to=${to}&period=${period}&type=${statsType}`,
             );
             if (response.kind === GeneralApiProblemKind.Ok) {
                 this._logger.info(`Fetching entityStats successfully`);

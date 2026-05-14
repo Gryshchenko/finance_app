@@ -1,4 +1,4 @@
-import { ErrorCode, HttpCode, IEntityStats, ISummary, StatsPeriod, Time, TransactionType } from 'tenpercent/shared';
+import { ErrorCode, HttpCode, IEntityStats, ISummary, StatsPeriod, StatsType, Time, TransactionType } from 'tenpercent/shared';
 
 import { LoggerBase } from 'helper/logger/LoggerBase';
 import { IDBTransaction } from 'interfaces/IDatabaseConnection';
@@ -112,7 +112,7 @@ export interface IStatsOrchestratorService {
     create(command: CreateStatsCommand): Promise<boolean>;
     patch(command: PatchStatsCommand): Promise<boolean>;
     delete(command: DeleteStatsCommand): Promise<boolean>;
-    entityStats(userId: number, type: TransactionType, id: number, from: string, to: string): Promise<IEntityStats>;
+    entityStats(userId: number, type: StatsType, id: number, from: string, to: string): Promise<IEntityStats>;
 }
 
 export default class StatsOrchestratorService extends LoggerBase implements IStatsOrchestratorService {
@@ -441,7 +441,7 @@ export default class StatsOrchestratorService extends LoggerBase implements ISta
     public async summary(userId: number, from: string, to: string, period: StatsPeriod): Promise<ISummary> {
         return await this._dailyStatsService.summary(userId, from, to, period);
     }
-    public async entityStats(userId: number, type: TransactionType, id: number, from: string, to: string): Promise<IEntityStats> {
+    public async entityStats(userId: number, type: StatsType, id: number, from: string, to: string): Promise<IEntityStats> {
         const startDate = Time.toMonthStart(from);
         const endDate = to;
         if (!startDate) {
@@ -478,39 +478,68 @@ export default class StatsOrchestratorService extends LoggerBase implements ISta
             });
         }
         switch (type) {
-            case TransactionType.Income: {
+            case StatsType.Income: {
                 const current = await this._dailyIncomeStatsService.summary(userId, id, startDate, endDate);
                 const previous = await this._dailyIncomeStatsService.summary(userId, id, prevStartDate, prevEndDate);
+                const vsLastMonthIncomePct =
+                    previous.total === 0
+                        ? current.total === 0
+                            ? 0
+                            : 100
+                        : Math.round(((current.total - previous.total) / previous.total) * 100);
+                return {
+                    incomeMTD: current.total,
+                    vsLastMonthIncomePct,
+                };
+            }
+            case StatsType.Expense: {
+                const current = await this._dailyCategoryStatsService.summary(userId, id, startDate, endDate);
+                const previous = await this._dailyCategoryStatsService.summary(userId, id, prevStartDate, prevEndDate);
+                const vsLastMonthSpendPct =
+                    previous.total === 0
+                        ? current.total === 0
+                            ? 0
+                            : 100
+                        : Math.round(((current.total - previous.total) / previous.total) * 100);
                 return {
                     spendMTD: current.total,
-                    forecast: null,
-                    vsLastMonthPct: Math.abs(current.total - previous.total),
+                    vsLastMonthSpendPct,
                     budgetPct: 100,
                 };
             }
-            case TransactionType.Expense: {
-                const current = await this._dailyAccountStatsService.summary(userId, id, startDate, endDate);
-                const previous = await this._dailyAccountStatsService.summary(userId, id, prevStartDate, prevEndDate);
+            case StatsType.Account:
+                const currentTransfer = await this._dailyTransferStatsService.summary(userId, id, startDate, endDate);
+                const currentAccount = await this._dailyAccountStatsService.summary(userId, id, startDate, endDate);
+                const previousAccount = await this._dailyAccountStatsService.summary(userId, id, prevStartDate, prevEndDate);
+                const currentIncome = await this._dailyIncomeStatsService.summary(userId, id, startDate, endDate);
+                const previousIncome = await this._dailyIncomeStatsService.summary(userId, id, prevStartDate, prevEndDate);
+                const vsLastMonthSpendPctAccount =
+                    previousAccount.totalExpanse === 0
+                        ? currentAccount.totalExpanse === 0
+                            ? 0
+                            : 100
+                        : Math.round(
+                              ((currentAccount.totalExpanse - previousAccount.totalExpanse) / previousAccount.totalExpanse) * 100,
+                          );
+                const vsLastMonthIncomePctAccount =
+                    previousIncome.total === 0
+                        ? currentIncome.total === 0
+                            ? 0
+                            : 100
+                        : Math.round(((currentIncome.total - previousIncome.total) / previousIncome.total) * 100);
                 return {
-                    spendMTD: current.totalExpanse,
-                    forecast: (current.totalExpanse / Time.getCurrentDayInMonth(startDate)) * Time.getDaysInMonth(startDate),
-                    vsLastMonthPct: Math.abs(current.totalExpanse - previous.totalExpanse),
-                    budgetPct: 100,
+                    spendMTD: currentAccount.totalExpanse,
+                    vsLastMonthSpendPct: vsLastMonthSpendPctAccount,
+                    transferMTD: currentTransfer.total,
+                    incomeMTD: currentIncome.total,
+                    vsLastMonthIncomePct: vsLastMonthIncomePctAccount,
+                    savingsRate: (currentIncome.total - currentAccount.totalExpanse) * 0.1,
                 };
-            }
-            case TransactionType.Transafer: {
-                return {
-                    spendMTD: 100,
-                    forecast: 100,
-                    vsLastMonthPct: 100,
-                    budgetPct: 100,
-                };
-            }
             default: {
                 throw new ValidationError({
                     statusCode: HttpCode.BAD_REQUEST,
                     errorCode: ErrorCode.STATS_ERROR,
-                    message: `Transaction unsupported create transaction type: ${type}`,
+                    message: `Transaction unsupported create stats type: ${type}`,
                 });
             }
         }

@@ -1,6 +1,9 @@
 export interface IEntityStats {
-    spendMTD: number;
-    vsLastMonthPct: number;
-    forecast: number | null;
-    budgetPct: number;
+    spendMTD?: number;
+    vsLastMonthSpendPct?: number;
+    budgetPct?: number;
+    transferMTD?: number;
+    incomeMTD?: number;
+    vsLastMonthIncomePct?: number;
+    savingsRate?: number;
 }

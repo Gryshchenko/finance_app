@@ -13,6 +13,7 @@ export interface IDailyTransferStatsService {
         amount: number,
         trx?: IDBTransaction,
     ): Promise<boolean>;
+    summary: (userId: number, id: number, from: string, to: string) => Promise<{ id: number; total: number }>;
 }
 
 export class DailyTransferStatsService extends LoggerBase implements IDailyTransferStatsService {
@@ -30,5 +31,10 @@ export class DailyTransferStatsService extends LoggerBase implements IDailyTrans
     ): Promise<boolean> {
         const day = Time.formatUTCDate(date, DateFormat.YYYY_MM_DD);
         return this.dataAccess.updateTotal(userId, day, accountId, targetAccountId, amount, trx);
+    }
+    async summary(userId: number, id: number, from: string, to: string): Promise<{ id: number; total: number }> {
+        const fromDate: string = Time.formatUTCDate(from, DateFormat.YYYY_MM_DD);
+        const toDate: string = Time.formatUTCDate(to, DateFormat.YYYY_MM_DD);
+        return this.dataAccess.summary(userId, id, fromDate, toDate);
     }
 }

@@ -1,9 +1,9 @@
 /**
- * Tests — Profile Email Change
+ * Tests - Profile Email Change
  *
- * POST /user/:userId/profile/email-change         — request change
- * POST /user/:userId/profile/email-change/verify  — confirm with code
- * POST /user/:userId/profile/email-change/resend  — resend code
+ * POST /user/:userId/profile/email-change         - request change
+ * POST /user/:userId/profile/email-change/verify  - confirm with code
+ * POST /user/:userId/profile/email-change/resend  - resend code
  */
 
 import { createUser, createUserNotVerify, deleteUserAfterTest, generateSecureRandom, generateRandomEmail } from '../TestsUtils.';
@@ -36,7 +36,7 @@ afterAll(async () => {
     await new Promise<void>((resolve) => (server as { close: (cb: () => void) => void }).close(resolve));
 });
 
-describe('POST /user/:userId/profile/email-change — request email change', () => {
+describe('POST /user/:userId/profile/email-change - request email change', () => {
     let agent: ReturnType<typeof request.agent>;
     let userId: number;
     let authorization: string;
@@ -49,7 +49,7 @@ describe('POST /user/:userId/profile/email-change — request email change', () 
         userIds.push(userId);
     });
 
-    it('200 — creates pending change and returns expiresAt', async () => {
+    it('200 - creates pending change and returns expiresAt', async () => {
         const newEmail = generateRandomEmail();
         const { body, status } = await agent
             .post(`/user/${userId}/profile/email-change`)
@@ -62,7 +62,7 @@ describe('POST /user/:userId/profile/email-change — request email change', () 
         });
     });
 
-    it('200 — pending record is written to email_changing table', async () => {
+    it('200 - pending record is written to email_changing table', async () => {
         const newEmail = generateRandomEmail();
         await agent
             .post(`/user/${userId}/profile/email-change`)
@@ -80,7 +80,7 @@ describe('POST /user/:userId/profile/email-change — request email change', () 
         expect(record.confirmationCode.toString()).toHaveLength(8);
     });
 
-    it('200 — repeated request for the same email overwrites the pending code', async () => {
+    it('200 - repeated request for the same email overwrites the pending code', async () => {
         const newEmail = generateRandomEmail();
 
         await agent
@@ -107,7 +107,7 @@ describe('POST /user/:userId/profile/email-change — request email change', () 
         expect(Number(count?.n)).toBe(1);
     });
 
-    it('403 — unverified user cannot request email change', async () => {
+    it('403 - unverified user cannot request email change', async () => {
         const unverifiedAgent = request.agent(server);
         const { userId: unverifiedId, authorization: unverifiedAuth } = await createUserNotVerify({ agent: unverifiedAgent });
         userIds.push(unverifiedId);
@@ -119,7 +119,7 @@ describe('POST /user/:userId/profile/email-change — request email change', () 
             .expect(HttpCode.FORBIDDEN);
     });
 
-    it('401 — unauthorized request is rejected', async () => {
+    it('401 - unauthorized request is rejected', async () => {
         await agent
             .post(`/user/${userId}/profile/email-change`)
             .send({ newEmail: generateRandomEmail() })
@@ -127,7 +127,7 @@ describe('POST /user/:userId/profile/email-change — request email change', () 
     });
 });
 
-describe('POST /user/:userId/profile/email-change/verify — confirm email change', () => {
+describe('POST /user/:userId/profile/email-change/verify - confirm email change', () => {
     let agent: ReturnType<typeof request.agent>;
     let userId: number;
     let authorization: string;
@@ -154,7 +154,7 @@ describe('POST /user/:userId/profile/email-change/verify — confirm email chang
         confirmationCode = record.confirmationCode;
     });
 
-    it('204 — correct code confirms the email change', async () => {
+    it('204 - correct code confirms the email change', async () => {
         await agent
             .post(`/user/${userId}/profile/email-change/verify`)
             .set('authorization', authorization)
@@ -162,17 +162,17 @@ describe('POST /user/:userId/profile/email-change/verify — confirm email chang
             .expect(HttpCode.NO_CONTENT);
     });
 
-    it('— email_changing record is marked confirmed after verify', async () => {
+    it('- email_changing record is marked confirmed after verify', async () => {
         const record = await db.engine()('email_changing').select('confirmed').where({ userId, email: newEmail }).first();
         expect(record.confirmed).toBe(true);
     });
 
-    it('— user email in users table is updated to newEmail', async () => {
+    it('- user email in users table is updated to newEmail', async () => {
         const user = await db.engine()('users').select('email').where({ userId }).first();
         expect(user.email).toBe(newEmail);
     });
 
-    it('400 — wrong confirmationCode is rejected', async () => {
+    it('400 - wrong confirmationCode is rejected', async () => {
         const agent2 = request.agent(server);
         const { userId: userId2, authorization: auth2 } = await createUser({ agent: agent2, databaseConnection: db });
         userIds.push(userId2);
@@ -198,7 +198,7 @@ describe('POST /user/:userId/profile/email-change/verify — confirm email chang
             .expect(HttpCode.BAD_REQUEST);
     });
 
-    it('400 — verify without a prior request returns error', async () => {
+    it('400 - verify without a prior request returns error', async () => {
         const agent3 = request.agent(server);
         const { userId: userId3, authorization: auth3 } = await createUser({ agent: agent3, databaseConnection: db });
         userIds.push(userId3);
@@ -210,7 +210,7 @@ describe('POST /user/:userId/profile/email-change/verify — confirm email chang
             .expect(HttpCode.BAD_REQUEST);
     });
 
-    it('401 — unauthorized request is rejected', async () => {
+    it('401 - unauthorized request is rejected', async () => {
         await agent
             .post(`/user/${userId}/profile/email-change/verify`)
             .send({ confirmationCode, newEmail })
@@ -218,7 +218,7 @@ describe('POST /user/:userId/profile/email-change/verify — confirm email chang
     });
 });
 
-describe('POST /user/:userId/profile/email-change/resend — resend confirmation code', () => {
+describe('POST /user/:userId/profile/email-change/resend - resend confirmation code', () => {
     let agent: ReturnType<typeof request.agent>;
     let userId: number;
     let authorization: string;

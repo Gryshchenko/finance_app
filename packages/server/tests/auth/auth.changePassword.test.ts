@@ -88,7 +88,7 @@ async function runForgetFlowUntilResetToken(agent: ReturnType<typeof request.age
     return confirmRes.body.data.resetToken as string;
 }
 
-describe('1. Full flow — request → confirm → change → login with new password', () => {
+describe('1. Full flow - request → confirm → change → login with new password', () => {
     it('new password works for login after change; old password does not', async () => {
         const agent = request.agent(server);
         const email = generateRandomEmail();
@@ -101,13 +101,13 @@ describe('1. Full flow — request → confirm → change → login with new pas
         });
         userIds.push(userId);
 
-        // Step 1 — logout
+        // Step 1 - logout
         await agent.post('/auth/logout').set('authorization', authorization).expect(HttpCode.OK);
 
-        // Step 2 — request password change
+        // Step 2 - request password change
         await agent.post('/auth/forget').send({ email }).expect(HttpCode.NO_CONTENT);
 
-        // Step 3 — get code from DB
+        // Step 3 - get code from DB
         const record = await db
             .engine()('password_forgot')
             .select('confirmationCode')
@@ -115,37 +115,37 @@ describe('1. Full flow — request → confirm → change → login with new pas
             .orderBy('id', 'desc')
             .first();
 
-        // Step 4 — confirm request
+        // Step 4 - confirm request
         const forgetConfirm = await agent
             .post('/auth/forget-confirm')
             .send({ confirmationCode: record.confirmationCode, email })
             .expect(HttpCode.OK);
         expect(forgetConfirm.body.data.resetToken).toEqual(expect.any(String));
 
-        // Step 5 — reset token rejected on regular endpoints
+        // Step 5 - reset token rejected on regular endpoints
         await agent
             .get(`/user/${userId}/profile`)
             .set('authorization', `Bearer ${forgetConfirm.body.data.resetToken}`)
             .expect(HttpCode.UNAUTHORIZED);
 
-        // Step 6 — change password
+        // Step 6 - change password
         await agent
             .post(`/auth/${forgetConfirm.body.data.userId}/forget-change`)
             .set('authorization', `Bearer ${forgetConfirm.body.data.resetToken}`)
             .send({ newPassword: NEW_PASSWORD })
             .expect(HttpCode.NO_CONTENT);
 
-        // Step 7 — login with new password succeeds
+        // Step 7 - login with new password succeeds
         const loginNew = await agent.post('/auth/login').send({ email, password: NEW_PASSWORD });
         expect(loginNew.status).toBe(HttpCode.OK);
         expect(loginNew.body.data.token).toEqual(expect.any(String));
 
-        // Step 8 — login with old password fails
+        // Step 8 - login with old password fails
         await agent.post('/auth/login').send({ email, password: OLD_PASSWORD }).expect(HttpCode.BAD_REQUEST);
     });
 });
 
-describe('2. POST /auth/forget — request endpoint', () => {
+describe('2. POST /auth/forget - request endpoint', () => {
     it('returns 204 for a non-existent email (does not leak user existence)', async () => {
         const agent = request.agent(server);
         await agent.post('/auth/forget').send({ email: 'nobody@nowhere.test' }).expect(HttpCode.NO_CONTENT);
@@ -172,7 +172,7 @@ describe('2. POST /auth/forget — request endpoint', () => {
     });
 });
 
-describe('3. POST /auth/forget-refresh — resend code', () => {
+describe('3. POST /auth/forget-refresh - resend code', () => {
     it('returns 204 for email with no active request (does not leak info)', async () => {
         const agent = request.agent(server);
         await agent.post('/auth/forget-refresh').send({ email: 'nobody@nowhere.test' }).expect(HttpCode.NO_CONTENT);

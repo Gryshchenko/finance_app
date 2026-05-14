@@ -1,4 +1,4 @@
-import { ICategoryStats, IStatsResponse, ISummary, StatsPeriod } from 'tenpercent/shared';
+import { ICategoryStats, IEntityStats, IStatsResponse, ISummary, StatsPeriod, StatsType } from 'tenpercent/shared';
 import { HttpCode } from 'tenpercent/shared';
 import { Agent } from 'supertest';
 
@@ -21,6 +21,29 @@ async function getSummary(
         .send(payload)
         .expect(HttpCode.OK);
     return data as ISummary;
+}
+
+async function getEntityStats(
+    agent: Agent,
+    userId: number,
+    authorization: string,
+    payload: {
+        id: number;
+        from: string;
+        to: string;
+        period: StatsPeriod;
+        type: StatsType;
+    },
+): Promise<IEntityStats> {
+    const { from, to, period, id, type } = payload;
+    const {
+        body: { data },
+    } = await agent
+        .get(`/user/${userId}/stats/entityStats/${id}?from=${from}&to=${to}&period=${period}&type=${type}`)
+        .set('authorization', authorization)
+        .send(payload)
+        .expect(HttpCode.OK);
+    return data as IEntityStats;
 }
 
 async function getIncomesWithStats(
@@ -75,4 +98,4 @@ async function getCategoriesWithStats(
     };
 }
 
-export { getCategoriesWithStats, getSummary, getIncomesWithStats };
+export { getCategoriesWithStats, getSummary, getIncomesWithStats, getEntityStats };

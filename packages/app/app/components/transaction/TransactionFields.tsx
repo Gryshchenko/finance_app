@@ -48,12 +48,14 @@ export const TransactionFields: FC<IProps> = function TransactionFields(_props) 
                             onChange={(v) => handleChange?.('accountId', v.accountId)}
                         />
                         <AccountDropdown
+                            labelTx={'transactionScreen:transferToAccount'}
+                            modalTitleTx={'transactionScreen:transferToAccount'}
                             preset={'underline'}
                             value={form.targetAccountId}
                             disabled={isView}
                             helperTx={errors?.targetAccountId}
                             status={errors?.targetAccountId ? 'error' : undefined}
-                            onChange={(v) => handleChange?.('targetAccountId', v.accountId)}
+                            onChange={(v) => handleChange?.('targetAccountId', v?.accountId)}
                         />
                     </>
                 );

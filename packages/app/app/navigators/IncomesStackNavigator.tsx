@@ -3,16 +3,12 @@ import { TransactionFieldType } from 'tenpercent/shared';
 
 import { IncomeCreateScreen } from '@/screens/IncomeScreens/IncomeCreateScreen';
 import { IncomeEditScreen } from '@/screens/IncomeScreens/IncomeEditScreen';
-import { IncomesScreen } from '@/screens/IncomeScreens/IncomesScreen';
-import { IncomeViewScreen } from '@/screens/IncomeScreens/IncomeViewScreen';
 import { TransactionCreateScreen } from '@/screens/TransactionsScreen/TransactionCreateScreen';
 import { TransactionEditScreen } from '@/screens/TransactionsScreen/TransactionEditScreen';
 import { TransactionsScreen } from '@/screens/TransactionsScreen/TransactionsScreen';
 import { TransactionPath } from '@/types/TransactionPath';
 
 export enum IncomePath {
-    Incomes = 'incomes',
-    IncomeView = 'incomeView',
     IncomeEdit = 'incomeEdit',
     IncomeCreate = 'incomeCreate',
     Transactions = 'transactions',
@@ -33,8 +29,6 @@ const IncomesStack = createNativeStackNavigator<IncomesStackParamList>();
 function IncomesStackNavigator() {
     return (
         <IncomesStack.Navigator screenOptions={{ headerShown: false }}>
-            <IncomesStack.Screen name={IncomePath.Incomes} component={IncomesScreen} />
-            <IncomesStack.Screen name={IncomePath.IncomeView} component={IncomeViewScreen} />
             <IncomesStack.Screen name={IncomePath.IncomeCreate} component={IncomeCreateScreen} />
             <IncomesStack.Screen name={IncomePath.IncomeEdit} component={IncomeEditScreen} />
             <IncomesStack.Screen name={TransactionPath.Transactions} component={TransactionsScreen} />

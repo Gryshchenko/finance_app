@@ -112,7 +112,7 @@ export const SignUpScreen: FC<SignUpScreenProps> = (_props) => {
                 handleChange('password', '');
                 // Biometric enrollment: triggers the native Face ID / fingerprint
                 // dialog. On iOS this also requests the NSFaceIDUsageDescription
-                // permission. We fire-and-forget — a failure is non-fatal.
+                // permission. We fire-and-forget - a failure is non-fatal.
                 if (enableBiometric && isBiometricAvailable) {
                     await enroll();
                 }

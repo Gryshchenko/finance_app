@@ -1,5 +1,5 @@
 /**
- * Validation tests — Profile routes
+ * Validation tests - Profile routes
  *
  * PATCH /user/:userId/profile/
  * POST  /user/:userId/profile/email-change
@@ -49,7 +49,7 @@ afterAll((done) => {
 
 // ─── PATCH /user/:userId/profile/ ────────────────────────────────────────────
 
-describe('PATCH /user/:userId/profile/ — body validation', () => {
+describe('PATCH /user/:userId/profile/ - body validation', () => {
     const url = () => `/user/${userId}/profile/`;
 
     // locale

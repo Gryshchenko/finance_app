@@ -15,6 +15,8 @@ type AccountDropdownProps = {
     filter?: (items: IAccountListItem[] | undefined) => IAccountListItem[];
     helperTx?: TxKeyPath;
     status?: 'error' | 'disabled';
+    labelTx?: TxKeyPath;
+    modalTitleTx?: TxKeyPath;
 };
 
 export const AccountDropdown: React.FC<AccountDropdownProps> = ({
@@ -26,6 +28,8 @@ export const AccountDropdown: React.FC<AccountDropdownProps> = ({
     filter,
     helperTx,
     status,
+    labelTx = 'common:accounts',
+    modalTitleTx = 'common:accounts',
 }) => {
     return (
         <Dropdown
@@ -35,8 +39,8 @@ export const AccountDropdown: React.FC<AccountDropdownProps> = ({
             style={style}
             onChange={onChange}
             value={value}
-            labelTx={'common:accounts'}
-            modalTitleTx={'common:accounts'}
+            labelTx={labelTx}
+            modalTitleTx={modalTitleTx}
             editable={!disabled}
             queryKey={'accounts'}
             fetcher={fetchAccounts}

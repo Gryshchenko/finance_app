@@ -75,23 +75,23 @@ export class Utils {
         return this.isNotEmpty(val) ? val : '';
     }
 
-    public static isNotEmpty(val: string): boolean {
+    public static isNotEmpty(val: string | null | undefined): val is string {
         return typeof val !== 'undefined' && val !== null && val.length > 0 && val !== undefined;
     }
 
-    public static isNotNull(value: unknown): boolean {
-        return value !== null && value !== 'undefined' && value !== undefined;
+    public static isNotNull<T>(value: T | null | undefined): value is T {
+        return value !== null && value !== ('undefined' as unknown) && value !== undefined;
     }
 
-    public static isNull(val: unknown): boolean {
+    public static isNull<T>(val: T | null | undefined): val is null | undefined {
         return typeof val === 'undefined' || val === null || val === undefined;
     }
 
-    public static isArrayNotEmpty(val: unknown[]): boolean {
+    public static isArrayNotEmpty<T>(val: T[] | null | undefined): val is T[] {
         return typeof val !== 'undefined' && val !== null && Array.isArray(val) && val.length > 0;
     }
 
-    public static isArrayEmpty(val: unknown[]): boolean {
+    public static isArrayEmpty<T>(val: T[] | null | undefined): val is [] | null | undefined {
         return typeof val === 'undefined' || val === null || (Array.isArray(val) && val.length === 0);
     }
 

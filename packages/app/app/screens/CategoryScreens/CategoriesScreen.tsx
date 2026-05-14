@@ -50,7 +50,12 @@ export const CategoriesScreen = function ExpensesScreen(_props: Props) {
                 onPress: (id: number, name: string) => {
                     navigation.getParent()?.navigate(OverviewPath.Categories, {
                         screen: TransactionPath.Transactions,
-                        params: { id, name, type: TransactionFieldType.Category, path: OverviewPath.Categories },
+                        params: {
+                            id,
+                            name,
+                            type: TransactionFieldType.Category,
+                            path: OverviewPath.Categories,
+                        },
                     });
                 },
             }}

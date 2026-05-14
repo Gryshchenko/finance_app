@@ -14,7 +14,7 @@ import { openLinkInBrowser } from '@/utils/openLinkInBrowser';
 
 const APP_VERSION = 'v1.0.0';
 
-// Placeholder URLs — replace with real endpoints before release
+// Placeholder URLs - replace with real endpoints before release
 const PRIVACY_POLICY_URL = '';
 const TERMS_OF_SERVICE_URL = '';
 
@@ -63,7 +63,7 @@ export const Settings: FC = function Settings() {
                     />
                     <SettingsRow
                         labelTx="settingsScreen:publicName"
-                        value={profile?.publicName ?? '—'}
+                        value={profile?.publicName ?? '-'}
                         icon="edit"
                         onPress={() => {
                             navigation.navigate(OverviewPath.Settings, {

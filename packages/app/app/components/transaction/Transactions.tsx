@@ -1,12 +1,12 @@
 import { FC } from 'react';
 import { TextStyle, View, ViewStyle } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
-import { IEntityStats, IPagination, ITransactionListItem, StatsPeriod, Time, TransactionType } from 'tenpercent/shared';
+import { IEntityStats, IPagination, ITransactionListItem, StatsPeriod, StatsType, Time } from 'tenpercent/shared';
 
 import { EmptyState } from '@/components/EmptyState';
 import { Text } from '@/components/Text';
 import TransactionSectionList, { fetchTransactionType } from '@/components/transaction/TransactionSectionList';
-import { TransactionStatsBar } from '@/components/transaction/TransactionStatsBar';
+import { TransactionStats } from '@/components/transaction/TransactionStats';
 import { useAppQuery } from '@/hooks/useAppQuery';
 import { translate } from '@/i18n/translate';
 import { GeneralApiProblemKind } from '@/services/api/apiProblem';
@@ -14,18 +14,20 @@ import { QueryKeys, QueryStaleTimes } from '@/services/QueryCacheService';
 import { StatsService } from '@/services/StatsService';
 import { useAppTheme } from '@/theme/context';
 import { ThemedStyle } from '@/theme/types';
+import { OverviewPath } from '@/types/OverviewPath';
 import { Logger } from '@/utils/logger/Logger';
 
 interface ITransactionsPros {
     data: {
         transactions: IPagination<ITransactionListItem> | undefined;
         entityId: number;
-        transactionType: TransactionType;
+        statsType: StatsType;
+        currencyId: number;
     };
     fetch?: fetchTransactionType;
     onPress?: (id: number, name: string) => void;
 }
-export async function fetchStats(entityId: number, type: TransactionType): Promise<IEntityStats | null> {
+export async function fetchStats(entityId: number, statsType: StatsType): Promise<IEntityStats | null> {
     try {
         const statsService = StatsService.instance();
         const response = await statsService.entityStats({
@@ -33,7 +35,7 @@ export async function fetchStats(entityId: number, type: TransactionType): Promi
             from: Time.toMonthStart(Time.getISODateNowUTC()) as string,
             period: StatsPeriod.Month,
             entityId,
-            type,
+            statsType,
         });
         switch (response.kind) {
             case GeneralApiProblemKind.Ok: {
@@ -52,27 +54,34 @@ export async function fetchStats(entityId: number, type: TransactionType): Promi
 export const Transactions: FC<ITransactionsPros> = function Transactions(_props) {
     const { themed } = useAppTheme();
     const {
-        data: { transactions, transactionType, entityId },
+        data: { transactions, statsType, entityId, currencyId },
         fetch,
         onPress,
     } = _props;
     const navigation = useNavigation();
-    useAppQuery<IEntityStats | null>(
-        QueryKeys.entityStats(entityId, transactionType),
-        async () => fetchStats(entityId, transactionType),
+    const { data: stats } = useAppQuery<IEntityStats | null>(
+        QueryKeys.entityStats(entityId, statsType),
+        async () => fetchStats(entityId, statsType),
         {
             staleTime: QueryStaleTimes.transactions,
         },
     );
 
     if (!transactions || transactions?.data?.length <= 0) {
-        return <EmptyState style={themed([$containerStyleOverride])} buttonOnPress={() => navigation.goBack()} />;
+        return (
+            <EmptyState
+                style={themed([$containerStyleOverride])}
+                buttonOnPress={() => navigation.getParent()?.navigate(OverviewPath.Dashboard)}
+            />
+        );
     }
+
+    console.log('stats', stats);
 
     return (
         <View style={themed([$container])}>
             <View style={$statsBarWrapper}>
-                <TransactionStatsBar />
+                <TransactionStats statsType={statsType} stats={stats} currencyId={currencyId} />
             </View>
 
             <View style={themed([$header])}>

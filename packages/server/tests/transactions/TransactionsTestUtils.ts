@@ -199,6 +199,20 @@ async function createExpenseTransaction(
     return id;
 }
 
+async function patchExpenseTransaction(
+    agent: Agent,
+    userId: number,
+    authorization: string,
+    id: number,
+    amount = 100,
+    createdAt?: string,
+): Promise<void> {
+    await patchTransaction(agent, userId, authorization, id, {
+        amount,
+        createdAt,
+    });
+}
+
 async function createExpenseTransactions(
     agent: Agent,
     userId: number,
@@ -290,6 +304,7 @@ export {
     createTransferTransactions,
     createTransferTransaction,
     createExpenseTransaction,
+    patchExpenseTransaction,
     patchTransaction,
     getTransaction,
     deleteTransaction,

@@ -1,6 +1,6 @@
 import { ParamListBase, useNavigation } from '@react-navigation/native';
 import { NativeStackScreenProps } from '@react-navigation/native-stack';
-import { IPagination, ITransactionListItem, TransactionFieldType, TransactionType } from 'tenpercent/shared';
+import { IPagination, ITransactionListItem, StatsType, TransactionFieldType } from 'tenpercent/shared';
 
 import { EditButton } from '@/components/buttons/EditButton';
 import { Transactions } from '@/components/transaction/Transactions';
@@ -54,10 +54,11 @@ export const TransactionsScreen = function TransactionsScreen(_props: Props) {
         name: string;
         type: TransactionFieldType;
         path: OverviewPath;
-        transactionType: TransactionType;
+        statsType: StatsType;
+        currencyId: number;
     };
     const navigation = useNavigation();
-    const { id, type, name, path, transactionType } = params;
+    const { id, type, name, path, statsType, currencyId } = params;
     const { isError, data, isPending } = useAppQuery<IPagination<ITransactionListItem> | undefined>(
         QueryKeys.transactions(id, type),
         async () => fetchTransactions(id, type, undefined, 10),
@@ -92,7 +93,8 @@ export const TransactionsScreen = function TransactionsScreen(_props: Props) {
                 data: {
                     transactions: data,
                     entityId: id,
-                    transactionType,
+                    statsType,
+                    currencyId,
                 },
                 fetch: async ({ cursor, limit }) => await fetchTransactions(id, type, cursor, limit),
             }}

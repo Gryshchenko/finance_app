@@ -5,7 +5,7 @@ export const QueryKeys = {
     transactions: (entityId?: number, entityType?: string) =>
         entityId != null ? (['transactions', entityId, entityType] as const) : (['transactions'] as const),
     currencies: () => ['currencies'] as const,
-    entityStats: (entityId: number, entityType: number) => ['entityStats', entityId, entityType] as const,
+    entityStats: (entityId: number, statsType: string) => ['entityStats', entityId, statsType] as const,
 
     stats: () => ['stats'] as const,
     balance: () => ['balance'] as const,
@@ -32,7 +32,7 @@ export const QueryStaleTimes = {
     static: 1000 * 60 * 60, // 1 hour
 
     /**
-     * Exchange rates — change every few minutes in production.
+     * Exchange rates - change every few minutes in production.
      * Keep reasonably fresh without hammering the exchange API.
      */
     rates: 1000 * 60 * 10, // 10 minutes
@@ -44,7 +44,7 @@ export const QueryStaleTimes = {
     dashboard: 1000 * 30, // 30 seconds
 
     /**
-     * Transaction lists — grow quickly; keep fresh so new items appear soon.
+     * Transaction lists - grow quickly; keep fresh so new items appear soon.
      */
     transactions: 1000 * 30, // 30 seconds
 
@@ -56,7 +56,7 @@ export const QueryStaleTimes = {
 
     /**
      * Entity detail screens (single account / income / category / transaction).
-     * User is actively looking at one record — longer cache is fine.
+     * User is actively looking at one record - longer cache is fine.
      */
     detail: 1000 * 60 * 2, // 2 minutes
 } as const;

@@ -22,7 +22,7 @@ type Props = {
     id: string;
     /**
      * Which draggable item types are allowed to auto-expand this grid on hover.
-     * If the currently dragged type is NOT in this list the grid stays closed —
+     * If the currently dragged type is NOT in this list the grid stays closed -
      * prevents meaningless auto-opens (e.g. dragging an Income over the Incomes
      * section where no item is droppable).
      *
@@ -45,7 +45,7 @@ export default function DashboardExpandableGrid({ rowHeight, rows, children, id,
     const height = useSharedValue(MIN_HEIGHT);
 
     // Tracks whether the grid was opened by drag-hover (not by manual pan gesture).
-    // We only auto-close grids that were auto-opened — never touch manually opened ones.
+    // We only auto-close grids that were auto-opened - never touch manually opened ones.
     const wasAutoOpenedByDragRef = useRef(false);
 
     // Timer that fires after HOVER_OPEN_DELAY_MS to auto-open during a drag.
@@ -137,7 +137,7 @@ export default function DashboardExpandableGrid({ rowHeight, rows, children, id,
         });
     }, [addZone, id]);
 
-    // Initial measurement — wait one frame so the layout pass has finished.
+    // Initial measurement - wait one frame so the layout pass has finished.
     useEffect(() => {
         setTimeout(measureZones, 0);
     }, [measureZones]);

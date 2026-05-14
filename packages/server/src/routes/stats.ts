@@ -15,7 +15,7 @@ statsRouter.get(
 
 statsRouter.get(
     '/entityStats/:entityId',
-    validateQuery({ from: 'date', to: 'date', period: 'string', type: 'number' }),
+    validateQuery({ from: 'date', to: 'date', period: 'string', type: 'string' }),
     validateFromToDateQuery({ from: 'date', to: 'date' }),
     StatsController.entityStats,
 );

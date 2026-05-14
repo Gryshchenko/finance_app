@@ -1,7 +1,7 @@
 import { createUser, deleteUserAfterTest, generateRandomNumber, generateSecureRandom } from '../TestsUtils.';
 import DatabaseConnection from '../../src/repositories/DatabaseConnection';
 import config from '../../src/config/dbConfig';
-import { HttpCode, ICategory, IIncome, StatsPeriod, Time, Utils } from 'tenpercent/shared';
+import { HttpCode, ICategory, IIncome, StatsPeriod, StatsType, Time, Utils } from 'tenpercent/shared';
 import {
     createExpenseTransaction,
     createExpenseTransactions,
@@ -10,9 +10,10 @@ import {
     createTransferTransaction,
     createTransferTransactions,
     deleteTransaction,
+    patchExpenseTransaction,
     patchTransaction,
 } from '../transactions/TransactionsTestUtils';
-import { getCategoriesWithStats, getIncomesWithStats, getSummary } from './StatsTestUtils';
+import { getCategoriesWithStats, getEntityStats, getIncomesWithStats, getSummary } from './StatsTestUtils';
 
 // eslint-disable-next-line @typescript-eslint/no-require-imports
 const request = require('supertest');
@@ -140,7 +141,7 @@ async function seedDecember(ctx: ITestCtx) {
     return { expenseIds, incomeResultIds, transferIds, total: 30 * 100 };
 }
 
-describe('Stats — month aggregations (full seed)', () => {
+describe('Stats - month aggregations (full seed)', () => {
     it('initial totals match seeded transactions', async () => {
         const ctx = await setupUser();
         const { total } = await seedDecember(ctx);
@@ -271,7 +272,7 @@ describe('Stats — month aggregations (full seed)', () => {
     });
 });
 
-describe('Stats — patch reattribution (light setup)', () => {
+describe('Stats - patch reattribution (light setup)', () => {
     it('patch categoryId moves expense between categories without changing total', async () => {
         const ctx = await setupUser();
         const [catA, catB] = ctx.categoryIds;
@@ -434,5 +435,423 @@ describe('Stats — patch reattribution (light setup)', () => {
             period: StatsPeriod.Month,
         });
         expect(Utils.roundNumber(dec.expense_total)).toEqual(100);
+    });
+
+    it('entityStats expense - month', async () => {
+        const ctx = await setupUser();
+        const ids = [];
+        for (let i = 1; i <= 29; i++) {
+            await createExpenseTransaction(
+                ctx.agent,
+                ctx.userId,
+                ctx.authorization,
+                ctx.accountId,
+                ctx.categoryIds[0],
+                ctx.currencyId,
+                100,
+                Time.jsDateToUTCISO(new Date(`2025-12-${i < 10 ? `0${i}` : i}T11:00:00`)),
+            );
+            if (i % 2 === 0) {
+                const id = await createExpenseTransaction(
+                    ctx.agent,
+                    ctx.userId,
+                    ctx.authorization,
+                    ctx.accountId,
+                    ctx.categoryIds[0],
+                    ctx.currencyId,
+                    100,
+                    Time.jsDateToUTCISO(new Date(`2025-11-${i < 10 ? `0${i}` : i}T11:00:00`)),
+                );
+                ids.push(id);
+            }
+        }
+        const data = await getEntityStats(ctx.agent, ctx.userId, ctx.authorization, {
+            id: ctx.categoryIds[0],
+            from: '2025-12-01T00:00:00.000Z',
+            to: '2025-12-31T00:00:00.000Z',
+            period: StatsPeriod.Month,
+            type: StatsType.Expense,
+        });
+
+        expect(data).toEqual({ spendMTD: '2900.00', vsLastMonthSpendPct: 107, budgetPct: 100 });
+
+        for (let i = 0; i < ids.length; i++) {
+            const id = ids[i];
+            await patchExpenseTransaction(ctx.agent, ctx.userId, ctx.authorization, id, 50);
+        }
+
+        const dataAfterPatch = await getEntityStats(ctx.agent, ctx.userId, ctx.authorization, {
+            id: ctx.categoryIds[0],
+            from: '2025-12-01T00:00:00.000Z',
+            to: '2025-12-31T00:00:00.000Z',
+            period: StatsPeriod.Month,
+            type: StatsType.Expense,
+        });
+
+        expect(dataAfterPatch).toEqual({ spendMTD: '2900.00', vsLastMonthSpendPct: 314, budgetPct: 100 });
+
+        for (let i = 0; i < ids.length; i++) {
+            const id = ids[i];
+            const day = i + 1;
+            await patchExpenseTransaction(
+                ctx.agent,
+                ctx.userId,
+                ctx.authorization,
+                id,
+                100,
+                Time.jsDateToUTCISO(new Date(`2026-01-${day < 10 ? `0${day}` : day}T11:00:00`)),
+            );
+        }
+
+        const dataAfterDatePatch = await getEntityStats(ctx.agent, ctx.userId, ctx.authorization, {
+            id: ctx.categoryIds[0],
+            from: '2025-12-01T00:00:00.000Z',
+            to: '2025-12-31T00:00:00.000Z',
+            period: StatsPeriod.Month,
+            type: StatsType.Expense,
+        });
+
+        expect(dataAfterDatePatch).toEqual({ spendMTD: '2900.00', vsLastMonthSpendPct: 100, budgetPct: 100 });
+    });
+});
+
+describe('entityStats - Expense edge cases', () => {
+    it('returns 0 pct when both periods are empty', async () => {
+        const ctx = await setupUser();
+        const data = await getEntityStats(ctx.agent, ctx.userId, ctx.authorization, {
+            id: ctx.categoryIds[0],
+            from: DEC_FROM,
+            to: DEC_TO,
+            period: StatsPeriod.Month,
+            type: StatsType.Expense,
+        });
+        expect(data).toEqual({ spendMTD: '0', vsLastMonthSpendPct: 0, budgetPct: 100 });
+    });
+
+    it('returns 100 pct when previous=0 and current>0 (first month)', async () => {
+        const ctx = await setupUser();
+        await createExpenseTransaction(
+            ctx.agent,
+            ctx.userId,
+            ctx.authorization,
+            ctx.accountId,
+            ctx.categoryIds[0],
+            ctx.currencyId,
+            500,
+            DEC_DATE,
+        );
+        const data = await getEntityStats(ctx.agent, ctx.userId, ctx.authorization, {
+            id: ctx.categoryIds[0],
+            from: DEC_FROM,
+            to: DEC_TO,
+            period: StatsPeriod.Month,
+            type: StatsType.Expense,
+        });
+        expect(data).toEqual({ spendMTD: '500.00', vsLastMonthSpendPct: 100, budgetPct: 100 });
+    });
+
+    it('returns negative pct when spending decreased', async () => {
+        const ctx = await setupUser();
+        // November: 1000, December: 250 → (250-1000)/1000*100 = -75
+        await createExpenseTransaction(
+            ctx.agent,
+            ctx.userId,
+            ctx.authorization,
+            ctx.accountId,
+            ctx.categoryIds[0],
+            ctx.currencyId,
+            1000,
+            NOV_DATE,
+        );
+        await createExpenseTransaction(
+            ctx.agent,
+            ctx.userId,
+            ctx.authorization,
+            ctx.accountId,
+            ctx.categoryIds[0],
+            ctx.currencyId,
+            250,
+            DEC_DATE,
+        );
+
+        const data = await getEntityStats(ctx.agent, ctx.userId, ctx.authorization, {
+            id: ctx.categoryIds[0],
+            from: DEC_FROM,
+            to: DEC_TO,
+            period: StatsPeriod.Month,
+            type: StatsType.Expense,
+        });
+        expect(data).toEqual({ spendMTD: '250.00', vsLastMonthSpendPct: -75, budgetPct: 100 });
+    });
+
+    it('isolates stats by categoryId - other categories are not counted', async () => {
+        const ctx = await setupUser();
+        if (ctx.categoryIds.length < 2) return;
+        const [catA, catB] = ctx.categoryIds;
+
+        await createExpenseTransaction(
+            ctx.agent,
+            ctx.userId,
+            ctx.authorization,
+            ctx.accountId,
+            catA,
+            ctx.currencyId,
+            300,
+            DEC_DATE,
+        );
+        // Different category - must NOT be included in catA stats
+        await createExpenseTransaction(
+            ctx.agent,
+            ctx.userId,
+            ctx.authorization,
+            ctx.accountId,
+            catB,
+            ctx.currencyId,
+            900,
+            DEC_DATE,
+        );
+
+        const dataA = await getEntityStats(ctx.agent, ctx.userId, ctx.authorization, {
+            id: catA,
+            from: DEC_FROM,
+            to: DEC_TO,
+            period: StatsPeriod.Month,
+            type: StatsType.Expense,
+        });
+        expect(dataA.spendMTD).toEqual('300.00');
+
+        const dataB = await getEntityStats(ctx.agent, ctx.userId, ctx.authorization, {
+            id: catB,
+            from: DEC_FROM,
+            to: DEC_TO,
+            period: StatsPeriod.Month,
+            type: StatsType.Expense,
+        });
+        expect(dataB.spendMTD).toEqual('900.00');
+    });
+
+    it('recalculates correctly after delete', async () => {
+        const ctx = await setupUser();
+        const id1 = await createExpenseTransaction(
+            ctx.agent,
+            ctx.userId,
+            ctx.authorization,
+            ctx.accountId,
+            ctx.categoryIds[0],
+            ctx.currencyId,
+            400,
+            DEC_DATE,
+        );
+        await createExpenseTransaction(
+            ctx.agent,
+            ctx.userId,
+            ctx.authorization,
+            ctx.accountId,
+            ctx.categoryIds[0],
+            ctx.currencyId,
+            600,
+            DEC_DATE,
+        );
+
+        const before = await getEntityStats(ctx.agent, ctx.userId, ctx.authorization, {
+            id: ctx.categoryIds[0],
+            from: DEC_FROM,
+            to: DEC_TO,
+            period: StatsPeriod.Month,
+            type: StatsType.Expense,
+        });
+        expect(before.spendMTD).toEqual('1000.00');
+
+        await deleteTransaction(ctx.agent, ctx.userId, ctx.authorization, { transactionId: id1 });
+
+        const after = await getEntityStats(ctx.agent, ctx.userId, ctx.authorization, {
+            id: ctx.categoryIds[0],
+            from: DEC_FROM,
+            to: DEC_TO,
+            period: StatsPeriod.Month,
+            type: StatsType.Expense,
+        });
+        expect(after.spendMTD).toEqual('600.00');
+    });
+});
+
+describe('entityStats - Income', () => {
+    it('returns incomeMTD and vsLastMonthIncomePct, no expense fields', async () => {
+        const ctx = await setupUser();
+        const incId = ctx.incomeIds[0];
+
+        await createIncomeTransaction(
+            ctx.agent,
+            ctx.userId,
+            ctx.authorization,
+            ctx.accountId,
+            incId,
+            ctx.currencyId,
+            800,
+            NOV_DATE,
+        );
+        await createIncomeTransaction(
+            ctx.agent,
+            ctx.userId,
+            ctx.authorization,
+            ctx.accountId,
+            incId,
+            ctx.currencyId,
+            1200,
+            DEC_DATE,
+        );
+
+        const data = await getEntityStats(ctx.agent, ctx.userId, ctx.authorization, {
+            id: incId,
+            from: DEC_FROM,
+            to: DEC_TO,
+            period: StatsPeriod.Month,
+            type: StatsType.Income,
+        });
+
+        // (1200 - 800) / 800 * 100 = 50
+        expect(data).toEqual({ incomeMTD: '1200.00', vsLastMonthIncomePct: 50 });
+        expect(data).not.toHaveProperty('spendMTD');
+        expect(data).not.toHaveProperty('budgetPct');
+    });
+
+    it('returns 0/0 when both periods empty', async () => {
+        const ctx = await setupUser();
+        const data = await getEntityStats(ctx.agent, ctx.userId, ctx.authorization, {
+            id: ctx.incomeIds[0],
+            from: DEC_FROM,
+            to: DEC_TO,
+            period: StatsPeriod.Month,
+            type: StatsType.Income,
+        });
+        expect(data).toEqual({ incomeMTD: '0', vsLastMonthIncomePct: 0 });
+    });
+
+    it('returns negative pct when income decreased', async () => {
+        const ctx = await setupUser();
+        const incId = ctx.incomeIds[0];
+        // November: 1000, December: 400 → (400-1000)/1000*100 = -60
+        await createIncomeTransaction(
+            ctx.agent,
+            ctx.userId,
+            ctx.authorization,
+            ctx.accountId,
+            incId,
+            ctx.currencyId,
+            1000,
+            NOV_DATE,
+        );
+        await createIncomeTransaction(
+            ctx.agent,
+            ctx.userId,
+            ctx.authorization,
+            ctx.accountId,
+            incId,
+            ctx.currencyId,
+            400,
+            DEC_DATE,
+        );
+
+        const data = await getEntityStats(ctx.agent, ctx.userId, ctx.authorization, {
+            id: incId,
+            from: DEC_FROM,
+            to: DEC_TO,
+            period: StatsPeriod.Month,
+            type: StatsType.Income,
+        });
+        expect(data).toEqual({ incomeMTD: '400.00', vsLastMonthIncomePct: -60 });
+    });
+});
+
+describe('entityStats - Account', () => {
+    it('returns all 5 fields with correct values and savingsRate formula', async () => {
+        const ctx = await setupUser();
+        // November (previous): expenses=200, income=500
+        await createExpenseTransaction(
+            ctx.agent,
+            ctx.userId,
+            ctx.authorization,
+            ctx.accountId,
+            ctx.categoryIds[0],
+            ctx.currencyId,
+            200,
+            NOV_DATE,
+        );
+        await createIncomeTransaction(
+            ctx.agent,
+            ctx.userId,
+            ctx.authorization,
+            ctx.accountId,
+            ctx.incomeIds[0],
+            ctx.currencyId,
+            500,
+            NOV_DATE,
+        );
+        // December (current): expenses=300, income=1000, transfer=150
+        await createExpenseTransaction(
+            ctx.agent,
+            ctx.userId,
+            ctx.authorization,
+            ctx.accountId,
+            ctx.categoryIds[0],
+            ctx.currencyId,
+            300,
+            DEC_DATE,
+        );
+        await createIncomeTransaction(
+            ctx.agent,
+            ctx.userId,
+            ctx.authorization,
+            ctx.accountId,
+            ctx.incomeIds[0],
+            ctx.currencyId,
+            1000,
+            DEC_DATE,
+        );
+        await createTransferTransaction(
+            ctx.agent,
+            ctx.userId,
+            ctx.authorization,
+            ctx.accountId,
+            ctx.targetAccountId,
+            ctx.currencyId,
+            150,
+            DEC_DATE,
+        );
+
+        const data = await getEntityStats(ctx.agent, ctx.userId, ctx.authorization, {
+            id: ctx.accountId,
+            from: DEC_FROM,
+            to: DEC_TO,
+            period: StatsPeriod.Month,
+            type: StatsType.Account,
+        });
+
+        // spendMTD=300, vsLastMonthSpendPct=(300-200)/200*100=50
+        // incomeMTD=1000, vsLastMonthIncomePct=(1000-500)/500*100=100
+        // transferMTD=150
+        // savingsRate=(1000-300)*0.1=70
+        expect(data.vsLastMonthSpendPct).toEqual(50);
+        expect(data.vsLastMonthIncomePct).toEqual(100);
+        expect(Number(data.spendMTD)).toEqual(300);
+        expect(Number(data.incomeMTD)).toEqual(1000);
+        expect(Number(data.transferMTD)).toEqual(150);
+        expect(Number(data.savingsRate)).toBeCloseTo(70, 5);
+    });
+
+    it('returns zero values when no activity in either period', async () => {
+        const ctx = await setupUser();
+        const data = await getEntityStats(ctx.agent, ctx.userId, ctx.authorization, {
+            id: ctx.accountId,
+            from: DEC_FROM,
+            to: DEC_TO,
+            period: StatsPeriod.Month,
+            type: StatsType.Account,
+        });
+        expect(data.vsLastMonthSpendPct).toEqual(0);
+        expect(data.vsLastMonthIncomePct).toEqual(0);
+        expect(Number(data.spendMTD)).toEqual(0);
+        expect(Number(data.incomeMTD)).toEqual(0);
+        expect(Number(data.transferMTD)).toEqual(0);
     });
 });

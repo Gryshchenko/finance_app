@@ -39,10 +39,10 @@ export interface TextFieldAccessoryProps {
 export interface TextFieldProps extends Omit<TextInputProps, 'ref'> {
     /**
      * One of the different types of text field presets.
-     * - `default` — bordered card-style input with shadow
-     * - `underline` — minimal input with only a bottom border
-     * - `filled` — solid background, no visible border
-     * - `compact` — smaller height for inline / dense layouts
+     * - `default` - bordered card-style input with shadow
+     * - `underline` - minimal input with only a bottom border
+     * - `filled` - solid background, no visible border
+     * - `compact` - smaller height for inline / dense layouts
      */
     preset?: TextFieldPresets;
     /**

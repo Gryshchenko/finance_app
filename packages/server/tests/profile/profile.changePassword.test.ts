@@ -31,7 +31,7 @@ afterAll(async () => {
     await new Promise<void>((resolve) => (server as { close: (cb: () => void) => void }).close(resolve));
 });
 
-describe('POST /user/:userId/profile/password-change — request password change', () => {
+describe('POST /user/:userId/profile/password-change - request password change', () => {
     let agent: ReturnType<typeof request.agent>;
     let userId: number;
     let authorization: string;
@@ -44,7 +44,7 @@ describe('POST /user/:userId/profile/password-change — request password change
         userIds.push(userId);
     });
 
-    it('200 — creates pending change and returns expiresAt', async () => {
+    it('200 - creates pending change and returns expiresAt', async () => {
         const { body, status } = await agent
             .post(`/user/${userId}/profile/password-change`)
             .set('authorization', authorization)
@@ -56,7 +56,7 @@ describe('POST /user/:userId/profile/password-change — request password change
         });
     });
 
-    it('200 — pending record is written to password_changing table', async () => {
+    it('200 - pending record is written to password_changing table', async () => {
         await agent
             .post(`/user/${userId}/profile/password-change`)
             .set('authorization', authorization)
@@ -74,7 +74,7 @@ describe('POST /user/:userId/profile/password-change — request password change
         expect(record.salt).toEqual(expect.any(String));
     });
 
-    it('400 — wrong current password is rejected', async () => {
+    it('400 - wrong current password is rejected', async () => {
         await agent
             .post(`/user/${userId}/profile/password-change`)
             .set('authorization', authorization)
@@ -82,7 +82,7 @@ describe('POST /user/:userId/profile/password-change — request password change
             .expect(HttpCode.BAD_REQUEST);
     });
 
-    it('403 — unverified user cannot request password change', async () => {
+    it('403 - unverified user cannot request password change', async () => {
         const unverifiedAgent = request.agent(server);
         const { userId: unverifiedId, authorization: unverifiedAuth } = await createUserNotVerify({ agent: unverifiedAgent });
         userIds.push(unverifiedId);
@@ -94,7 +94,7 @@ describe('POST /user/:userId/profile/password-change — request password change
             .expect(HttpCode.FORBIDDEN);
     });
 
-    it('401 — unauthorized request is rejected', async () => {
+    it('401 - unauthorized request is rejected', async () => {
         await agent
             .post(`/user/${userId}/profile/password-change`)
             .send({ newPassword: NEW_PASSWORD, password: OLD_PASSWORD })
@@ -102,7 +102,7 @@ describe('POST /user/:userId/profile/password-change — request password change
     });
 });
 
-describe('POST /user/:userId/profile/password-change/verify — confirm password change', () => {
+describe('POST /user/:userId/profile/password-change/verify - confirm password change', () => {
     let agent: ReturnType<typeof request.agent>;
     let userId: number;
     let authorization: string;
@@ -130,7 +130,7 @@ describe('POST /user/:userId/profile/password-change/verify — confirm password
         confirmationCode = record.confirmationCode;
     });
 
-    it('204 — correct code confirms the password change', async () => {
+    it('204 - correct code confirms the password change', async () => {
         await agent
             .post(`/user/${userId}/profile/password-change/verify`)
             .set('authorization', authorization)
@@ -138,19 +138,19 @@ describe('POST /user/:userId/profile/password-change/verify — confirm password
             .expect(HttpCode.NO_CONTENT);
     });
 
-    it('— password_changing record is marked confirmed after verify', async () => {
+    it('- password_changing record is marked confirmed after verify', async () => {
         const record = await db.engine()('password_changing').select('confirmed').where({ userId }).orderBy('id', 'desc').first();
         expect(record.confirmed).toBe(true);
     });
 
-    it('— old token is invalidated after verify', async () => {
+    it('- old token is invalidated after verify', async () => {
         // The verify endpoint calls logout() which blacklists the current token
         const { status } = await agent.get(`/user/${userId}/profile`).set('authorization', authorization);
 
         expect(status).toBe(HttpCode.UNAUTHORIZED);
     });
 
-    it('400 — wrong confirmationCode is rejected', async () => {
+    it('400 - wrong confirmationCode is rejected', async () => {
         const agent2 = request.agent(server);
         const { userId: userId2, authorization: auth2 } = await createUser({
             agent: agent2,
@@ -180,7 +180,7 @@ describe('POST /user/:userId/profile/password-change/verify — confirm password
             .expect(HttpCode.BAD_REQUEST);
     });
 
-    it('400 — verify without a prior request returns error', async () => {
+    it('400 - verify without a prior request returns error', async () => {
         const agent3 = request.agent(server);
         const { userId: userId3, authorization: auth3 } = await createUser({
             agent: agent3,
@@ -196,7 +196,7 @@ describe('POST /user/:userId/profile/password-change/verify — confirm password
             .expect(HttpCode.BAD_REQUEST);
     });
 
-    it('401 — unauthorized request is rejected', async () => {
+    it('401 - unauthorized request is rejected', async () => {
         await agent
             .post(`/user/${userId}/profile/password-change/verify`)
             .send({ confirmationCode })
@@ -204,7 +204,7 @@ describe('POST /user/:userId/profile/password-change/verify — confirm password
     });
 });
 
-describe('POST /user/:userId/profile/password-change/resend — resend confirmation code', () => {
+describe('POST /user/:userId/profile/password-change/resend - resend confirmation code', () => {
     let agent: ReturnType<typeof request.agent>;
     let userId: number;
     let authorization: string;
@@ -227,7 +227,7 @@ describe('POST /user/:userId/profile/password-change/resend — resend confirmat
         confirmationId = record.id;
     });
 
-    it('204 — resend generates a new confirmationCode', async () => {
+    it('204 - resend generates a new confirmationCode', async () => {
         const before = await db
             .engine()('password_changing')
             .select('confirmationCode')
@@ -256,7 +256,7 @@ describe('POST /user/:userId/profile/password-change/resend — resend confirmat
         expect(after.confirmationCode).not.toBe(before.confirmationCode);
     });
 
-    it('400 — resend with non-existent confirmationId returns error', async () => {
+    it('400 - resend with non-existent confirmationId returns error', async () => {
         const agent4 = request.agent(server);
         const { userId: userId4, authorization: auth4 } = await createUser({
             agent: agent4,
@@ -273,12 +273,12 @@ describe('POST /user/:userId/profile/password-change/resend — resend confirmat
             .expect(HttpCode.BAD_REQUEST);
     });
 
-    it('401 — unauthorized request is rejected', async () => {
+    it('401 - unauthorized request is rejected', async () => {
         await agent.post(`/user/${userId}/profile/password-change/resend`).send({ confirmationId }).expect(HttpCode.UNAUTHORIZED);
     });
 });
 
-describe('Full flow — request → verify → login with new password', () => {
+describe('Full flow - request → verify → login with new password', () => {
     it('new password works for login after change; old password does not', async () => {
         const agent = request.agent(server);
         const email = generateRandomEmail();
@@ -291,14 +291,14 @@ describe('Full flow — request → verify → login with new password', () => {
         });
         userIds.push(userId);
 
-        // Step 1 — request password change
+        // Step 1 - request password change
         await agent
             .post(`/user/${userId}/profile/password-change`)
             .set('authorization', authorization)
             .send({ newPassword: NEW_PASSWORD, password: OLD_PASSWORD })
             .expect(HttpCode.OK);
 
-        // Step 2 — get code from DB
+        // Step 2 - get code from DB
         const record = await db
             .engine()('password_changing')
             .select('confirmationCode')

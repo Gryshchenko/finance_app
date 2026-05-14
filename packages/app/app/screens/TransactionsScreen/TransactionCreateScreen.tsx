@@ -1,7 +1,6 @@
-import { useNavigation } from '@react-navigation/native';
-import { ParamListBase } from '@react-navigation/native';
+import { useNavigation, ParamListBase } from '@react-navigation/native';
 import { NativeStackScreenProps } from '@react-navigation/native-stack';
-import { Utils } from 'tenpercent/shared';
+import { TransactionType } from 'tenpercent/shared';
 
 import { TransactionCreate } from '@/components/transaction/TransactionCreate';
 import { translate } from '@/i18n/translate';
@@ -11,20 +10,32 @@ import { OverviewPath } from '@/types/OverviewPath';
 
 type Props = NativeStackScreenProps<ParamListBase, string>;
 
+const getScreenTitle = (typeId?: number): string => {
+    switch (typeId) {
+        case TransactionType.Expense:
+            return `${translate('common:create')} ${translate('common:expense')}`;
+        case TransactionType.Income:
+            return `${translate('common:create')} ${translate('common:income')}`;
+        case TransactionType.Transafer:
+            return `${translate('common:create')} ${translate('common:transfer')}`;
+        default:
+            return translate('common:create');
+    }
+};
 export const TransactionCreateScreen = function TransactionsScreen(_props: Props) {
-    const params = _props?.route?.params as { id: number; name: string; payload: string };
     const navigation = useNavigation();
+    const params = _props?.route?.params as { payload?: Partial<ITransactionClient> } | undefined;
+    const payload = params?.payload;
 
-    const data = Utils.parseObject<ITransactionClient | undefined>(params.payload);
     return (
         <GenericListScreen
-            name={translate('common:new')}
+            name={getScreenTitle(payload?.transactionTypeId)}
             isError={false}
             isPending={false}
-            props={{
-                data,
-            }}
             onBack={() => navigation.getParent()?.navigate(OverviewPath.Dashboard)}
+            props={{
+                data: payload,
+            }}
             RenderComponent={TransactionCreate}
         />
     );

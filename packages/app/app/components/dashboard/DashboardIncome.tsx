@@ -1,6 +1,6 @@
 import { memo } from 'react';
 import { useNavigation } from '@react-navigation/native';
-import { CategoryIconType, IIncomeStats, TransactionFieldType, TransactionType } from 'tenpercent/shared';
+import { CategoryIconType, IIncomeStats, StatsType, TransactionFieldType } from 'tenpercent/shared';
 
 import { AddBox } from '@/components/dashboard/Box/AddBox';
 import { useDragOverlay } from '@/components/dashboard/Box/DragOverlayContext';
@@ -26,14 +26,15 @@ export default memo(function DashboardIncome(props: IDashboardItem<IIncomeStats>
             return (
                 <IncomeBox
                     onTap={() => {
-                        navigation.getParent()?.navigate(OverviewPath.Incomes, {
+                        navigation.getParent()?.navigate(OverviewPath.Transactions, {
                             screen: TransactionPath.Transactions,
                             params: {
                                 id: item.incomeId,
                                 name: item.incomeName,
                                 path: OverviewPath.Incomes,
                                 type: TransactionFieldType.Income,
-                                transactionType: TransactionType.Income,
+                                statsType: StatsType.Income,
+                                currencyId: item.currencyId,
                             },
                         });
                     }}

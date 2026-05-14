@@ -228,10 +228,12 @@ const en = {
     },
     transactionStatsBar: {
         spentMtd: 'Spent (MTD)',
+        incomeMtd: 'Income (MTD)',
+        transferMtd: 'Transfer (MTD)',
         deltaLabel: 'Δ vs Last Month',
         forecastEom: 'Forecast (EOM)',
         budgetPercent: '% of Budget',
-        noData: '—',
+        noData: '-',
         overBudget: 'Over budget',
     },
     transactionScreen: {
@@ -241,6 +243,7 @@ const en = {
         fromTo: 'From {{from}} to {{to}}',
         from: 'from',
         to: 'to',
+        transferToAccount: 'Transfer to account',
         description: 'Description',
         optionalDescription: 'Optional description',
         deleteTitle: 'Delete Transaction',
@@ -254,7 +257,7 @@ const en = {
     },
     welcomeScreen: {
         postscript:
-            "psst  — This probably isn't what your app looks like. (Unless your designer handed you these screens, and in that case, ship it!)",
+            "psst - This probably isn't what your app looks like. (Unless your designer handed you these screens, and in that case, ship it!)",
         readyForLaunch: 'Your app, almost ready for launch!',
         exciting: '(ohh, this is exciting!)',
         letsGo: "Let's go!",

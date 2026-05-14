@@ -1,5 +1,5 @@
 /**
- * Validation tests — Account routes
+ * Validation tests - Account routes
  *
  * POST  /user/:userId/account/
  * PATCH /user/:userId/account/:accountId
@@ -56,11 +56,11 @@ afterAll((done) => {
 
 // ─── POST /user/:userId/account/ ─────────────────────────────────────────────
 
-describe('POST /user/:userId/account/ — body validation', () => {
+describe('POST /user/:userId/account/ - body validation', () => {
     const url = () => `/user/${userId}/account/`;
 
     // required fields
-    it('400 — missing currencyId', async () => {
+    it('400 - missing currencyId', async () => {
         await agent
             .post(url())
             .set('authorization', authorization)
@@ -68,7 +68,7 @@ describe('POST /user/:userId/account/ — body validation', () => {
             .expect(HttpCode.BAD_REQUEST);
     });
 
-    it('400 — missing accountName', async () => {
+    it('400 - missing accountName', async () => {
         await agent
             .post(url())
             .set('authorization', authorization)
@@ -76,7 +76,7 @@ describe('POST /user/:userId/account/ — body validation', () => {
             .expect(HttpCode.BAD_REQUEST);
     });
 
-    it('400 — missing amount', async () => {
+    it('400 - missing amount', async () => {
         await agent
             .post(url())
             .set('authorization', authorization)
@@ -84,7 +84,7 @@ describe('POST /user/:userId/account/ — body validation', () => {
             .expect(HttpCode.BAD_REQUEST);
     });
 
-    it('400 — missing iconId', async () => {
+    it('400 - missing iconId', async () => {
         await agent
             .post(url())
             .set('authorization', authorization)
@@ -92,12 +92,12 @@ describe('POST /user/:userId/account/ — body validation', () => {
             .expect(HttpCode.BAD_REQUEST);
     });
 
-    it('400 — empty body', async () => {
+    it('400 - empty body', async () => {
         await agent.post(url()).set('authorization', authorization).send({}).expect(HttpCode.BAD_REQUEST);
     });
 
     // accountName constraints
-    it('400 — accountName too short (< 3 chars)', async () => {
+    it('400 - accountName too short (< 3 chars)', async () => {
         await agent
             .post(url())
             .set('authorization', authorization)
@@ -105,7 +105,7 @@ describe('POST /user/:userId/account/ — body validation', () => {
             .expect(HttpCode.BAD_REQUEST);
     });
 
-    it('400 — accountName too long (> 128 chars)', async () => {
+    it('400 - accountName too long (> 128 chars)', async () => {
         await agent
             .post(url())
             .set('authorization', authorization)
@@ -113,7 +113,7 @@ describe('POST /user/:userId/account/ — body validation', () => {
             .expect(HttpCode.BAD_REQUEST);
     });
 
-    it('400 — accountName is a number', async () => {
+    it('400 - accountName is a number', async () => {
         await agent
             .post(url())
             .set('authorization', authorization)

@@ -25,7 +25,7 @@ interface IProps<T = unknown> {
     keyGetter?: (item: IBoxDataItem<T>) => string;
     isExpanded?: boolean;
     id: string;
-    /** Passed through to DashboardExpandableGrid — controls which drag types trigger auto-expand. */
+    /** Passed through to DashboardExpandableGrid - controls which drag types trigger auto-expand. */
     acceptedDragTypes?: ItemType[];
 }
 

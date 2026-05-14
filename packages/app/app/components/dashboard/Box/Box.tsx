@@ -87,7 +87,7 @@ export function Box(props: IBoxProps) {
             setInitialDragPosition(offset.current.x, offset.current.y - DASH_BOARD_BOX_SIZE);
         };
         // setDraggedElementId and setInitialDragPosition are stable dispatcher
-        // references from context — safe to omit from the deps array.
+        // references from context - safe to omit from the deps array.
         // eslint-disable-next-line react-hooks/exhaustive-deps
     }, []);
 

@@ -10,7 +10,7 @@
  *  6. Long-token / refresh security
  *
  * Tests marked [BUG] document a current vulnerability.
- * They are written with the EXPECTED secure behaviour —
+ * They are written with the EXPECTED secure behaviour -
  * so they will FAIL until the bug is fixed.
  */
 
@@ -159,7 +159,7 @@ describe('2. Signature tampering & algorithm confusion', () => {
     });
 
     it('returns 401 when long-token secret is used to sign an access token', async () => {
-        // jwtLongSecret ≠ jwtSecret — passport-jwt verifies with jwtSecret only
+        // jwtLongSecret ≠ jwtSecret - passport-jwt verifies with jwtSecret only
         const wrongSecretToken = signLongToken(userId); // valid long token
         await agent.get(profileUrl(userId)).set('authorization', `Bearer ${wrongSecretToken}`).expect(HttpCode.UNAUTHORIZED);
     });
@@ -311,7 +311,7 @@ describe('5. Cross-user resource isolation', () => {
     });
 
     it('manually crafted token for user B cannot access user A resources', async () => {
-        // Valid signature, valid claims — but wrong userId in URL; tokenVerify rejects with 401
+        // Valid signature, valid claims - but wrong userId in URL; tokenVerify rejects with 401
         const craftedForB = signAccessToken(userB.userId);
         await agent.get(profileUrl(userA.userId)).set('authorization', `Bearer ${craftedForB}`).expect(HttpCode.UNAUTHORIZED);
     });
@@ -378,7 +378,7 @@ describe('6. Long-token / refresh security', () => {
 
         const response = await agent.post(`/auth/${userId}/refresh`).send({ token: expiredLongToken });
 
-        // Currently returns 200 — should return 400
+        // Currently returns 200 - should return 400
         expect(response.status).toBe(HttpCode.BAD_REQUEST);
     });
 

@@ -52,7 +52,12 @@ export const AccountsScreen = function AccountsScreen(_props: Props) {
                 onPress: (id: number, name: string) => {
                     navigation.getParent()?.navigate(OverviewPath.Accounts, {
                         screen: TransactionPath.Transactions,
-                        params: { id, name, type: TransactionFieldType.Account, path: OverviewPath.Accounts },
+                        params: {
+                            id,
+                            name,
+                            type: TransactionFieldType.Account,
+                            path: OverviewPath.Accounts,
+                        },
                     });
                 },
             }}

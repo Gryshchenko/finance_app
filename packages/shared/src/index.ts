@@ -43,6 +43,7 @@ export * from './types/TransactionFieldType';
 export * from './types/TransactionType';
 export * from './types/UserStatus';
 export * from './types/CategoryIconType';
+export * from './types/StatsType';
 
 // --- Utils ---
 export * from './utils/Utils';

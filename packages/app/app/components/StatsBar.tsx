@@ -54,7 +54,7 @@ export interface StatTileConfig {
 }
 
 // ---------------------------------------------------------------------------
-// StatTile — single cell
+// StatTile - single cell
 // ---------------------------------------------------------------------------
 
 interface StatTileInternalProps extends StatTileConfig {
@@ -101,7 +101,7 @@ const StatTile: FC<StatTileInternalProps> = ({ label, value, valueColor, rightEl
 };
 
 // ---------------------------------------------------------------------------
-// StatsBar — grid container
+// StatsBar - grid container
 // ---------------------------------------------------------------------------
 
 export interface StatsBarProps {
