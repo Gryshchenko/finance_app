@@ -93,7 +93,7 @@ export abstract class ApiAbstract {
 
     protected async publicPost<T>(url: string, body?: Record<string, unknown>): Promise<GeneralApiProblem<T>> {
         try {
-            return await this.buildResponse(async () => this.apisauce.post(url, body));
+            return await this.buildResponse(async () => await this.apisauce.post(url, body));
         } catch (e) {
             this._logger.error('publicPost failed due reason', (e as { message: string }).message);
             return {
@@ -160,8 +160,8 @@ export abstract class ApiAbstract {
     ): Promise<GeneralApiProblem<T>> {
         const { token } = options;
         if (!this.isAuthTokenExist(token)) return this.getAuthError('Token not exist');
-        return await this.buildResponse(async () =>
-            this.apisauce.get(url, {}, { headers: { Authorization: `Bearer ${token}` } }),
+        return await this.buildResponse(
+            async () => await this.apisauce.get(url, {}, { headers: { Authorization: `Bearer ${token}` } }),
         );
     }
     protected async authPatch<T>(
@@ -175,8 +175,8 @@ export abstract class ApiAbstract {
     ): Promise<GeneralApiProblem<T>> {
         const { token } = options;
         if (!this.isAuthTokenExist(token)) return this.getAuthError('Token not exist');
-        return await this.buildResponse(async () =>
-            this.apisauce.patch(url, body, { headers: { Authorization: `Bearer ${token}` } }),
+        return await this.buildResponse(
+            async () => await this.apisauce.patch(url, body, { headers: { Authorization: `Bearer ${token}` } }),
         );
     }
     protected async withErrorHandler<T>(
@@ -208,8 +208,8 @@ export abstract class ApiAbstract {
     ): Promise<GeneralApiProblem<T>> {
         const { token } = options;
         if (!this.isAuthTokenExist(token)) return this.getAuthError('Token not exist');
-        return await this.buildResponse(async () =>
-            this.apisauce.delete(url, {}, { headers: { Authorization: `Bearer ${token}` } }),
+        return await this.buildResponse(
+            async () => await this.apisauce.delete(url, {}, { headers: { Authorization: `Bearer ${token}` } }),
         );
     }
 }

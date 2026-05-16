@@ -28,7 +28,7 @@ export default memo(function DashboardAccount(props: IDashboardItem<IAccountList
             return (
                 <AccountBox
                     onTap={() => {
-                        navigation.getParent()?.navigate(OverviewPath.Accounts, {
+                        navigation.getParent()?.navigate(OverviewPath.Transactions, {
                             screen: TransactionPath.Transactions,
                             params: {
                                 id: item.accountId,

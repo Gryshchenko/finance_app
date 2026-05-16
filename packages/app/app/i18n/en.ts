@@ -235,6 +235,7 @@ const en = {
         budgetPercent: '% of Budget',
         noData: '-',
         overBudget: 'Over budget',
+        savingRate: 'Saving rates',
     },
     transactionScreen: {
         recentActivity: 'Recent Activity',

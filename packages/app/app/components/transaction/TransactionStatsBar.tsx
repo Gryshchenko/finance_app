@@ -24,6 +24,7 @@ export interface TransactionStatsBarProps {
     transferMtd?: number;
     /** ISO currency code, e.g. "USD" */
     currency: string;
+    savingsRate?: number;
 }
 
 type DeltaDirection = 'up' | 'down' | 'flat' | 'none';
@@ -61,24 +62,11 @@ function getBudgetStatus(pct: number): BudgetStatus {
 }
 
 export const TransactionStatsBar: FC<TransactionStatsBarProps> = function TransactionStatsBar(props) {
-    const { spentMtd, lastMonthSpent, forecastEom, budgetTotal, currency, transferMtd, incomeMtd, lastMonthIncome } = props;
+    const { spentMtd, lastMonthSpent, forecastEom, budgetTotal, currency, transferMtd, incomeMtd, lastMonthIncome, savingsRate } =
+        props;
 
     const { theme } = useAppTheme();
     const { colors } = theme;
-
-    const getDeltaColor = useCallback(
-        (delta: DeltaInfo) => {
-            switch (delta.direction) {
-                case 'up':
-                    return colors.palette.angry500;
-                case 'down':
-                    return colors.palette.green400;
-                default:
-                    return colors.textDim;
-            }
-        },
-        [colors.palette.angry500, colors.palette.green400, colors.textDim],
-    );
 
     const getDeltaIcon = useCallback((delta: DeltaInfo): 'trending-up' | 'trending-down' | 'trending-flat' => {
         switch (delta.direction) {
@@ -126,8 +114,19 @@ export const TransactionStatsBar: FC<TransactionStatsBarProps> = function Transa
             );
         }
         if (Utils.isNotNull(spentMtd) && Utils.isNotNull(lastMonthSpent)) {
+            const getDeltaColor = (delta: DeltaInfo) => {
+                switch (delta.direction) {
+                    case 'up':
+                        return colors.palette.angry500;
+                    case 'down':
+                        return colors.palette.green400;
+                    default:
+                        return colors.textDim;
+                }
+            };
             const delta = computeDelta(spentMtd, lastMonthSpent);
             const deltaColor = getDeltaColor(delta);
+
             arr.push(
                 // Δ vs Last Month
                 {
@@ -152,6 +151,16 @@ export const TransactionStatsBar: FC<TransactionStatsBarProps> = function Transa
             );
         }
         if (Utils.isNotNull(lastMonthIncome) && Utils.isNotNull(incomeMtd)) {
+            const getDeltaColor = (delta: DeltaInfo) => {
+                switch (delta.direction) {
+                    case 'up':
+                        return colors.palette.green400;
+                    case 'down':
+                        return colors.palette.angry500;
+                    default:
+                        return colors.textDim;
+                }
+            };
             const delta = computeDelta(incomeMtd, lastMonthIncome);
             const deltaColor = getDeltaColor(delta);
             arr.push(
@@ -196,6 +205,13 @@ export const TransactionStatsBar: FC<TransactionStatsBarProps> = function Transa
                 value: CurrencyUtils.formatWithDelimiter(forecastEom, currency),
             });
         }
+        if (Utils.isNotNull(savingsRate)) {
+            arr.push({
+                label: translate('transactionStatsBar:savingRate'),
+                value: savingsRate ? `${savingsRate} %` : translate('transactionStatsBar:noData'),
+                valueColor: savingsRate > 0 ? colors.palette.green400 : savingsRate < 0 ? colors.palette.angry500 : colors.text,
+            });
+        }
         return arr;
     }, [
         spentMtd,
@@ -205,11 +221,12 @@ export const TransactionStatsBar: FC<TransactionStatsBarProps> = function Transa
         budgetPct,
         transferMtd,
         forecastEom,
+        savingsRate,
         currency,
         colors.palette.angry500,
         colors.palette.green400,
         colors.text,
-        getDeltaColor,
+        colors.textDim,
         getDeltaIcon,
         budgetStatus,
         budgetColor,

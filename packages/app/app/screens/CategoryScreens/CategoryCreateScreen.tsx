@@ -1,22 +1,18 @@
-import { useNavigation } from '@react-navigation/native';
 import { NativeStackScreenProps } from '@react-navigation/native-stack';
 
 import { CategoryCreate } from '@/components/category/CategoryCreate';
 import { translate } from '@/i18n/translate';
 import { CategoriesPath, CategoriesStackParamList } from '@/navigators/CategoriesStackNavigator';
 import { GenericListScreen } from '@/screens/GenericListScreen';
-import { OverviewPath } from '@/types/OverviewPath';
 
 type Props = NativeStackScreenProps<CategoriesStackParamList, CategoriesPath.CategoriesCreate>;
 
 export const CategoryCreateScreen = function CategoryCreateScreen(_props: Props) {
-    const navigation = useNavigation();
     return (
         <GenericListScreen
             name={translate('categoryScreen:createTitle')}
             isError={false}
             isPending={false}
-            onBack={() => navigation.getParent()?.navigate(OverviewPath.Dashboard)}
             props={{
                 data: undefined,
             }}

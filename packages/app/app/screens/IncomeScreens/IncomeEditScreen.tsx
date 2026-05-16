@@ -1,13 +1,39 @@
 import { NativeStackScreenProps } from '@react-navigation/native-stack';
-import { IIncome } from 'tenpercent/shared';
+import { IIncome, Utils } from 'tenpercent/shared';
 
 import { IncomeEdit } from '@/components/income/IncomeEdit';
 import { useAppQuery } from '@/hooks/useAppQuery';
 import { translate } from '@/i18n/translate';
 import { IncomePath, IncomesStackParamList } from '@/navigators/IncomesStackNavigator';
 import { GenericListScreen } from '@/screens/GenericListScreen';
-import { fetchIncome } from '@/screens/IncomeScreens/IncomeViewScreen';
+import { GeneralApiProblemKind } from '@/services/api/apiProblem';
+import { IncomeService } from '@/services/IncomeService';
 import { QueryKeys, QueryStaleTimes } from '@/services/QueryCacheService';
+import { ValidationError } from '@/utils/errors/ValidationError';
+import { Logger } from '@/utils/logger/Logger';
+
+export async function fetchIncome(id: number): Promise<IIncome | undefined> {
+    try {
+        if (Utils.isNull(id)) {
+            throw new ValidationError({
+                message: 'ID = null',
+            });
+        }
+        const incomeService = IncomeService.instance();
+        const response = await incomeService.doGetIncome(id);
+        switch (response.kind) {
+            case GeneralApiProblemKind.Ok: {
+                return response.data as IIncome;
+            }
+            default: {
+                return undefined;
+            }
+        }
+    } catch (e) {
+        Logger.Of('FetchIncomes').error(`Fetch incomeId ${id}  failed due reason: ${(e as { message: string }).message}`);
+        return undefined;
+    }
+}
 
 type Props = NativeStackScreenProps<IncomesStackParamList, IncomePath.IncomeEdit>;
 

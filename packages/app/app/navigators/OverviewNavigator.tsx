@@ -12,7 +12,6 @@ import { TransactionStackNavigator, TransactionStackParamList } from '@/navigato
 import { useAppTheme } from '@/theme/context';
 import type { ThemedStyle } from '@/theme/types';
 import { OverviewPath } from '@/types/OverviewPath';
-import { TransactionPath } from '@/types/TransactionPath';
 
 import { AppStackParamList, AppStackScreenProps } from './AppNavigator';
 import { ResetOnBlur } from './ResetOnBlur';
@@ -111,7 +110,7 @@ export function OverviewNavigator() {
                     listeners={({ navigation }) => ({
                         tabPress: (event) => {
                             event.preventDefault();
-                            navigation.navigate(OverviewPath.Transactions, { screen: TransactionPath.Transactions });
+                            navigation.navigate(OverviewPath.Dashboard, { screen: DashboardPath.Overview });
                         },
                     })}
                 />

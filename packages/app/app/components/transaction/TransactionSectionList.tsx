@@ -266,13 +266,11 @@ export const $containerStyleOverride: ThemedStyle<ViewStyle> = () => ({
     margin: 'auto',
 });
 
-/* ── Section header: centered date with horizontal lines ── */
-
 const $sectionHeader: ThemedStyle<ViewStyle> = ({ colors }) => ({
     flexDirection: 'row',
     alignItems: 'center',
     gap: 8,
-    paddingTop: 16,
+    paddingTop: 0,
     paddingBottom: 12,
     backgroundColor: colors.background,
 });

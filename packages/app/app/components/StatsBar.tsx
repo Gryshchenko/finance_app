@@ -100,10 +100,6 @@ const StatTile: FC<StatTileInternalProps> = ({ label, value, valueColor, rightEl
     );
 };
 
-// ---------------------------------------------------------------------------
-// StatsBar - grid container
-// ---------------------------------------------------------------------------
-
 export interface StatsBarProps {
     /** Flat list of tile configs. Rendered left-to-right, top-to-bottom in 2 columns. */
     tiles: StatTileConfig[];
@@ -122,21 +118,12 @@ export const StatsBar: FC<StatsBarProps> = ({ tiles }) => {
         <View style={themed($grid)}>
             {rows.map((row, rowIndex) =>
                 row.map((tile, colIndex) => (
-                    <StatTile
-                        key={`${rowIndex}-${colIndex}`}
-                        {...tile}
-                        rightBorder={colIndex === 0 && row.length === 2}
-                        topBorder={rowIndex > 0}
-                    />
+                    <StatTile key={`${rowIndex}-${colIndex}`} {...tile} rightBorder={colIndex === 0} topBorder={rowIndex > 0} />
                 )),
             )}
         </View>
     );
 };
-
-// ---------------------------------------------------------------------------
-// Styles
-// ---------------------------------------------------------------------------
 
 const $grid: ThemedStyle<ViewStyle> = ({ colors }) => ({
     borderWidth: 1,

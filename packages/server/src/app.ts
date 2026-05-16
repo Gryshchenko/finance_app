@@ -1,5 +1,4 @@
 import express, { NextFunction, Request, Response } from 'express';
-import rateLimit from 'express-rate-limit';
 import helmet from 'helmet';
 import passport from 'passport';
 import path from 'path';
@@ -7,6 +6,7 @@ import { ResponseStatusType, ErrorCode } from 'tenpercent/shared';
 
 import Logger from 'helper/logger/Logger';
 import { checkCors } from 'middleware/checkCors';
+import { checkOriginReferer } from 'middleware/checkOriginReferer';
 import { currenciesRouter, currencyRouter } from 'routes/currency';
 import exchangeRates from 'routes/exchangeRates';
 import ExchangeRateServiceBuilder from 'services/exchangeRateService/ExchangeRateServiceBuilder';
@@ -28,13 +28,6 @@ const port = getConfig().appPort ?? 3000;
 
 passportSetup(passport);
 
-if (process.env.NODE_ENV !== 'test') {
-    const limiter = rateLimit({
-        windowMs: 15 * 60 * 1000, // 15 min
-        limit: 100,
-    });
-    app.use(limiter);
-}
 app.use((req: Request, res: Response, next: NextFunction) => {
     res.setTimeout(10000, () => {
         res.status(408).send(
@@ -47,7 +40,7 @@ app.use((req: Request, res: Response, next: NextFunction) => {
     next();
 });
 
-// app.use(checkOriginReferer);
+app.use(checkOriginReferer);
 app.use(checkCors());
 
 app.use(express.json({ limit: '5kb' }));

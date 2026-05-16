@@ -10,7 +10,7 @@ import { TransactionPath } from '@/types/TransactionPath';
 const TransactionStack = createNativeStackNavigator<TransactionStackParamList>();
 
 export type TransactionStackParamList = {
-    transactions: {
+    transactionItems: {
         id: number;
         name: string;
         type: TransactionFieldType;

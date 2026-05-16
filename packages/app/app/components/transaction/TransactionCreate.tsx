@@ -55,6 +55,8 @@ export const TransactionCreate: FC<IProps> = function TransactionCreate(_props: 
         ...data,
     };
 
+    console.log('formInitial', formInitial);
+
     const { form, handleChange, save, errors, setErrors } = useEditView<Partial<ITransactionClient>>(
         formInitial,
         buildTransactionCreateSchema({

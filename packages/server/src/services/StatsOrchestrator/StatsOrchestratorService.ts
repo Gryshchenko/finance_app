@@ -511,8 +511,6 @@ export default class StatsOrchestratorService extends LoggerBase implements ISta
                 const currentTransfer = await this._dailyTransferStatsService.summary(userId, id, startDate, endDate);
                 const currentAccount = await this._dailyAccountStatsService.summary(userId, id, startDate, endDate);
                 const previousAccount = await this._dailyAccountStatsService.summary(userId, id, prevStartDate, prevEndDate);
-                const currentIncome = await this._dailyIncomeStatsService.summary(userId, id, startDate, endDate);
-                const previousIncome = await this._dailyIncomeStatsService.summary(userId, id, prevStartDate, prevEndDate);
                 const vsLastMonthSpendPctAccount =
                     previousAccount.totalExpanse === 0
                         ? currentAccount.totalExpanse === 0
@@ -522,18 +520,20 @@ export default class StatsOrchestratorService extends LoggerBase implements ISta
                               ((currentAccount.totalExpanse - previousAccount.totalExpanse) / previousAccount.totalExpanse) * 100,
                           );
                 const vsLastMonthIncomePctAccount =
-                    previousIncome.total === 0
-                        ? currentIncome.total === 0
+                    previousAccount.totalIncome === 0
+                        ? currentAccount.totalIncome === 0
                             ? 0
                             : 100
-                        : Math.round(((currentIncome.total - previousIncome.total) / previousIncome.total) * 100);
+                        : Math.round(
+                              ((currentAccount.totalIncome - previousAccount.totalIncome) / previousAccount.totalIncome) * 100,
+                          );
                 return {
                     spendMTD: currentAccount.totalExpanse,
                     vsLastMonthSpendPct: vsLastMonthSpendPctAccount,
                     transferMTD: currentTransfer.total,
-                    incomeMTD: currentIncome.total,
+                    incomeMTD: currentAccount.totalIncome,
                     vsLastMonthIncomePct: vsLastMonthIncomePctAccount,
-                    savingsRate: (currentIncome.total - currentAccount.totalExpanse) * 0.1,
+                    savingsRate: (currentAccount.totalIncome - currentAccount.totalExpanse) * 0.1,
                 };
             default: {
                 throw new ValidationError({

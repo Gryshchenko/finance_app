@@ -76,8 +76,6 @@ export const Transactions: FC<ITransactionsPros> = function Transactions(_props)
         );
     }
 
-    console.log('stats', stats);
-
     return (
         <View style={themed([$container])}>
             <View style={$statsBarWrapper}>
@@ -111,14 +109,14 @@ const $statsBarWrapper: ViewStyle = {
     marginBottom: 24,
 };
 
-const $header: ThemedStyle<ViewStyle> = ({ colors }) => ({
+const $header: ThemedStyle<ViewStyle> = () => ({
     alignItems: 'flex-end',
-    borderBottomColor: colors.separator,
-    borderBottomWidth: 1,
+    // borderBottomColor: colors.separator,
+    // borderBottomWidth: 1,
     flexDirection: 'row',
     justifyContent: 'space-between',
-    marginBottom: 8,
-    paddingBottom: 16,
+    marginBottom: 15,
+    // paddingBottom: 16,
 });
 
 const $headerLabel: ThemedStyle<TextStyle> = ({ colors }) => ({
