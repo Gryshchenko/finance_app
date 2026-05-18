@@ -119,7 +119,8 @@ CREATE TABLE public.categories (
     status smallint,
     "isDeleted" boolean DEFAULT false NOT NULL,
     "deletedAt" timestamp with time zone,
-    "iconId" character varying
+    "iconId" character varying,
+    budget numeric(12,2)
 );
 
 

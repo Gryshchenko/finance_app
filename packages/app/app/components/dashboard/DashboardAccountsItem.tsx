@@ -1,5 +1,5 @@
 import { ComponentType } from 'react';
-import { IAccountListItem } from 'tenpercent/shared';
+import { IAccount, IAccountListItem } from 'tenpercent/shared';
 
 import { boxDataItemAdapter } from '@/components/dashboard/Box/boxDataItemAdapter';
 import { ItemType } from '@/components/dashboard/Box/ItemBox';
@@ -7,9 +7,29 @@ import DashboardAccount from '@/components/dashboard/DashboardAccount';
 import DashboardItem, { IDashboardItem } from '@/components/dashboard/DashboardItem';
 import { useAppQuery } from '@/hooks/useAppQuery';
 import { IBoxDataItem } from '@/interfaces/IBoxDataItem';
-import { fetchAccounts } from '@/screens/AccountScreens/AccountsScreen';
+import { AccountService } from '@/services/AccountService';
+import { GeneralApiProblemKind } from '@/services/api/apiProblem';
 import { QueryKeys, QueryStaleTimes } from '@/services/QueryCacheService';
 import { BoxDataItemType } from '@/types/BoxDataItemType';
+import { Logger } from '@/utils/logger/Logger';
+
+export async function fetchAccounts(): Promise<IAccountListItem[] | []> {
+    try {
+        const accountService = AccountService.instance();
+        const response = await accountService.doGetAccounts();
+        switch (response.kind) {
+            case GeneralApiProblemKind.Ok: {
+                return response.data as IAccount[];
+            }
+            default: {
+                return [];
+            }
+        }
+    } catch (e) {
+        Logger.Of('FetchAccounts').error(`Fetch account failed due reason: ${(e as { message: string }).message}`);
+        return [];
+    }
+}
 
 export default function DashboardAccountsItem() {
     const accounts = useAppQuery<IAccountListItem[]>(QueryKeys.accounts(), fetchAccounts, {

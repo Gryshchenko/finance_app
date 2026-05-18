@@ -2,10 +2,12 @@ import { FC } from 'react';
 import { StyleProp, TextStyle, View, ViewStyle } from 'react-native';
 import { ICategory, ICurrency } from 'tenpercent/shared';
 
+import { CurrencyField } from '@/components/CurrencyField';
 import { GeneralDetailView } from '@/components/GeneralDetailView';
 import { IconField } from '@/components/IconField';
 import { TextField } from '@/components/TextField';
 import { CurrencyDropdown } from '@/components/Toggle/CurrencyDropdown';
+import { useCurrency } from '@/context/CurrencyContext';
 import { TxKeyPath } from '@/i18n';
 import { useAppTheme } from '@/theme/context';
 import { ThemedStyle } from '@/theme/types';
@@ -26,6 +28,7 @@ interface IProps {
 export const CategoryFields: FC<IProps> = function CategoryFields(_props) {
     const { isView, form, handleChange, handleSave, edit, cancel, onDelete, errors, isEdit, isCreate } = _props;
     const { themed } = useAppTheme();
+    const { getCurrencySymbol } = useCurrency();
     return (
         <GeneralDetailView
             isCreate={isCreate}
@@ -76,6 +79,29 @@ export const CategoryFields: FC<IProps> = function CategoryFields(_props) {
                     onChange={(item: ICurrency) => {
                         if (handleChange) {
                             handleChange('currencyId', item.currencyId);
+                        }
+                    }}
+                />
+                <CurrencyField
+                    currency={getCurrencySymbol(form.currencyId!)}
+                    preset={'underline'}
+                    labelTx={'common:categoryBudget'}
+                    placeholderTx={'common:categoryBudgetPlaceholder'}
+                    keyboardType={'numeric'}
+                    value={form.budget !== undefined && form.budget !== null ? String(form.budget) : ''}
+                    helperTx={errors?.budget}
+                    status={errors?.budget ? 'error' : undefined}
+                    editable={!isView}
+                    onChangeCleaned={(v) => {
+                        if (!handleChange) return;
+                        const normalized = v.replace(',', '.').replace(/[^0-9.]/g, '');
+                        if (normalized === '') {
+                            handleChange('budget', '');
+                            return;
+                        }
+                        const num = Number(normalized);
+                        if (!isNaN(num)) {
+                            handleChange('budget', num);
                         }
                     }}
                 />

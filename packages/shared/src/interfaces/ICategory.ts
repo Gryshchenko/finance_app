@@ -7,6 +7,7 @@ export interface ICategory {
     currencyId: number;
     iconId: string;
     status: AccountStatusType;
+    budget?: number | null;
     createdAt: Date;
     updatedAt: Date;
 }

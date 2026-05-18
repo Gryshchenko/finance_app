@@ -69,7 +69,7 @@ export const AccountCreate: FC = function AccountCreate(_props) {
                 handleChange(key as keyof IAccount, value);
             }}
             cancel={() => {
-                navigation?.goBack();
+                navigation.getParent()?.navigate(OverviewPath.Dashboard);
             }}
             handleSave={handleSave}
         />

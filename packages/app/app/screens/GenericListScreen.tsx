@@ -18,8 +18,9 @@ interface GenericListScreenProps<T, B> {
         fetch?: B;
         data: T;
         onPress?: (id: number, name: string) => void;
+        [key: string]: unknown;
     };
-    RenderComponent: React.ComponentType<{ data: T; fetch?: B }>;
+    RenderComponent: React.ComponentType<{ data: T; fetch?: B; [key: string]: unknown }>;
     RightActionComponent?: ReactElement;
 }
 

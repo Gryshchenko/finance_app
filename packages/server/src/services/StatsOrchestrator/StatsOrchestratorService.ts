@@ -2,6 +2,7 @@ import { ErrorCode, HttpCode, IEntityStats, ISummary, StatsPeriod, StatsType, Ti
 
 import { LoggerBase } from 'helper/logger/LoggerBase';
 import { IDBTransaction } from 'interfaces/IDatabaseConnection';
+import { ICategoryService } from 'services/category/CategoryService';
 import { IDailyAccountStatsService } from 'services/dailyAccountStats/DailyAccountStatsService';
 import { IDailyCategoryStatsService } from 'services/dailyCategoryStats/DailyCategoryStatsService';
 import { IDailyIncomeStatsService } from 'services/dailyIncomeStats/DailyIncomeStatsService';
@@ -121,6 +122,7 @@ export default class StatsOrchestratorService extends LoggerBase implements ISta
     private readonly _dailyAccountStatsService: IDailyAccountStatsService;
     private readonly _dailyTransferStatsService: IDailyTransferStatsService;
     private readonly _dailyStatsService: IDailyStatsService;
+    private readonly _categoryService: ICategoryService;
 
     public constructor({
         dailyCategoryStatsService,
@@ -128,12 +130,14 @@ export default class StatsOrchestratorService extends LoggerBase implements ISta
         dailyAccountStatsService,
         dailyTransferStatsService,
         dailyStatsService,
+        categoryService,
     }: {
         dailyCategoryStatsService: IDailyCategoryStatsService;
         dailyIncomeStatsService: IDailyIncomeStatsService;
         dailyAccountStatsService: IDailyAccountStatsService;
         dailyTransferStatsService: IDailyTransferStatsService;
         dailyStatsService: IDailyStatsService;
+        categoryService: ICategoryService;
     }) {
         super();
         this._dailyAccountStatsService = dailyAccountStatsService;
@@ -141,6 +145,7 @@ export default class StatsOrchestratorService extends LoggerBase implements ISta
         this._dailyIncomeStatsService = dailyIncomeStatsService;
         this._dailyTransferStatsService = dailyTransferStatsService;
         this._dailyStatsService = dailyStatsService;
+        this._categoryService = categoryService;
     }
 
     public async create(command: CreateStatsCommand): Promise<boolean> {
@@ -493,6 +498,8 @@ export default class StatsOrchestratorService extends LoggerBase implements ISta
                 };
             }
             case StatsType.Expense: {
+                const category = await this._categoryService.get(userId, id);
+                const budget = category?.budget ?? 0;
                 const current = await this._dailyCategoryStatsService.summary(userId, id, startDate, endDate);
                 const previous = await this._dailyCategoryStatsService.summary(userId, id, prevStartDate, prevEndDate);
                 const vsLastMonthSpendPct =
@@ -504,7 +511,7 @@ export default class StatsOrchestratorService extends LoggerBase implements ISta
                 return {
                     spendMTD: current.total,
                     vsLastMonthSpendPct,
-                    budgetPct: 100,
+                    budgetTotal: budget > 0 ? budget : undefined,
                 };
             }
             case StatsType.Account:

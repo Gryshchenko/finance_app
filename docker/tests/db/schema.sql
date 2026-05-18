@@ -119,7 +119,8 @@ CREATE TABLE public.categories (
     "updatedAt" timestamp with time zone,
     status smallint,
     "isDeleted" boolean DEFAULT false NOT NULL,
-    "deletedAt" timestamp with time zone
+    "deletedAt" timestamp with time zone,
+    budget numeric(12,2)
 );
 
 

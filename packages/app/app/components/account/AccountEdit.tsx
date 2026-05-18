@@ -1,12 +1,12 @@
 import { FC } from 'react';
 import { StyleProp, ViewStyle } from 'react-native';
-import { useNavigation } from '@react-navigation/native';
 import { IAccount, Utils } from 'tenpercent/shared';
 
 import { AccountFields } from '@/components/account/AccountFields';
 import { EmptyState } from '@/components/EmptyState';
 import { useInvalidateQuery } from '@/hooks/useAppQuery';
 import { useEditView } from '@/hooks/useEditView';
+import { useGoBackSmart } from '@/hooks/useGoBackSmart';
 import { translate } from '@/i18n/translate';
 import { IAccountClient } from '@/interfaces/IAccountClient';
 import { accountEditSchema } from '@/schems/validationSchemas';
@@ -15,17 +15,18 @@ import AlertService from '@/services/AlertService';
 import { buildGeneralApiBaseHandler, GeneralApiProblemKind, handleBadDataResponse } from '@/services/api/apiProblem';
 import { InvalidationGroups } from '@/services/QueryCacheService';
 import ToastService from '@/services/ToastService';
-import { OverviewPath } from '@/types/OverviewPath';
+import type { BackTarget } from '@/types/BackTarget';
 
 interface IAccountPros {
     data: Partial<IAccountClient> | undefined;
+    back?: BackTarget;
 }
 
 export const AccountEdit: FC<IAccountPros> = function AccountEdit(_props) {
-    const { data } = _props;
-    const navigation = useNavigation();
+    const { data, back } = _props;
     const invalidateQuery = useInvalidateQuery();
     const { form, handleChange, save, errors, setErrors } = useEditView<Partial<IAccountClient>>(data!, accountEditSchema);
+    const goBackSmart = useGoBackSmart(back);
 
     const handlePatch = async () => {
         const accountService = AccountService.instance();
@@ -43,7 +44,7 @@ export const AccountEdit: FC<IAccountPros> = function AccountEdit(_props) {
                 message: 'common:updateAccountSuccess',
             });
             await invalidateQuery(InvalidationGroups.account(form.accountId));
-            navigation.goBack();
+            goBackSmart();
         } else if (response.kind === GeneralApiProblemKind.BadData) {
             handleBadDataResponse(response.errors, setErrors);
         } else {
@@ -67,7 +68,7 @@ export const AccountEdit: FC<IAccountPros> = function AccountEdit(_props) {
                 message: 'common:deleteAccountSuccess',
             });
             await invalidateQuery(InvalidationGroups.account(form.accountId));
-            navigation.getParent()?.navigate(OverviewPath.Dashboard);
+            goBackSmart();
         } else {
             ToastService.error({
                 title: 'common:error',
@@ -80,12 +81,7 @@ export const AccountEdit: FC<IAccountPros> = function AccountEdit(_props) {
         AlertService.confirm(translate('common:deleteAccountTitle'), translate('common:deleteAccountMessage'), handleDelete);
     };
     if (!data) {
-        return (
-            <EmptyState
-                style={$containerStyleOverride}
-                buttonOnPress={() => navigation.getParent()?.navigate(OverviewPath.Dashboard)}
-            />
-        );
+        return <EmptyState style={$containerStyleOverride} buttonOnPress={() => goBackSmart()} />;
     }
 
     return (
@@ -99,7 +95,7 @@ export const AccountEdit: FC<IAccountPros> = function AccountEdit(_props) {
                 handleChange(key as keyof IAccount, value);
             }}
             cancel={() => {
-                navigation.goBack();
+                goBackSmart();
             }}
             onDelete={onDelete}
             handleSave={handleSave}

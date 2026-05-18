@@ -98,6 +98,11 @@ const categoryCreate = {
         .min(Number.MIN_VALUE, translationsKeys.currencyInvalid)
         .max(Number.MAX_VALUE, translationsKeys.currencyInvalid)
         .required(translationsKeys.currencyRequired),
+    budget: Yup.number()
+        .transform((value, originalValue) => (originalValue === '' || originalValue === null ? null : value))
+        .nullable()
+        .min(0, translationsKeys.amountTooSmall)
+        .notRequired(),
 };
 const incomeEdit = {
     incomeName: Yup.string().min(3, translationsKeys.nameTooShort).max(50, translationsKeys.nameTooLong).notRequired(),
@@ -212,6 +217,11 @@ const forgotPasswordChangeSchema = Yup.object({
 const categoryEdit = {
     categoryName: Yup.string().min(3, translationsKeys.nameTooShort).max(50, translationsKeys.nameTooLong).notRequired(),
     currencyId: Yup.number().notRequired(),
+    budget: Yup.number()
+        .transform((value, originalValue) => (originalValue === '' || originalValue === null ? null : value))
+        .nullable()
+        .min(0, translationsKeys.amountTooSmall)
+        .notRequired(),
 };
 
 const buildTransactionCreateSchema = ({

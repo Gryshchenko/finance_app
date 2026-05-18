@@ -2,6 +2,7 @@ import { createNativeStackNavigator } from '@react-navigation/native-stack';
 
 import { IncomeCreateScreen } from '@/screens/IncomeScreens/IncomeCreateScreen';
 import { IncomeEditScreen } from '@/screens/IncomeScreens/IncomeEditScreen';
+import type { BackTarget } from '@/types/BackTarget';
 
 export enum IncomePath {
     IncomeEdit = 'incomeEdit',
@@ -9,8 +10,8 @@ export enum IncomePath {
 }
 
 export type IncomesStackParamList = {
-    incomeEdit: { id: number; name: string; payload: string };
-    incomeCreate: { payload: string } | undefined;
+    incomeEdit: { id: number; name: string; payload: string; back?: BackTarget };
+    incomeCreate: { payload: string; back?: BackTarget } | undefined;
 };
 
 const IncomesStack = createNativeStackNavigator<IncomesStackParamList>();

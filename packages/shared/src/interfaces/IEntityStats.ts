@@ -1,7 +1,7 @@
 export interface IEntityStats {
     spendMTD?: number;
     vsLastMonthSpendPct?: number;
-    budgetPct?: number;
+    budgetTotal?: number;
     transferMTD?: number;
     incomeMTD?: number;
     vsLastMonthIncomePct?: number;

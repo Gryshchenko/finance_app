@@ -79,7 +79,7 @@ export class CategoryService extends ApiAbstract {
 
     public async doPatchCategory(
         id: number,
-        body: { categoryName: string; iconId?: string },
+        body: { categoryName: string; iconId?: string; budget?: number | null },
     ): Promise<
         | {
               kind: GeneralApiProblemKind.Ok;
@@ -93,6 +93,7 @@ export class CategoryService extends ApiAbstract {
             const response = await this.authPatch(`/user/${userId}/category/${id}`, {
                 categoryName: String(body.categoryName),
                 iconId: body.iconId ? String(body.iconId) : undefined,
+                budget: body.budget ?? undefined,
             });
             if (response.kind === GeneralApiProblemKind.Ok) {
                 this._logger.info(`Patch category successfully: ${(response.data as [])?.length}`);
@@ -103,7 +104,12 @@ export class CategoryService extends ApiAbstract {
         });
     }
 
-    public async doCreateCategory(body: { categoryName: string; currencyId: number; iconId: string }): Promise<
+    public async doCreateCategory(body: {
+        categoryName: string;
+        currencyId: number;
+        iconId: string;
+        budget?: number | null;
+    }): Promise<
         | {
               kind: GeneralApiProblemKind.Ok;
               data: ICategory | undefined;
@@ -117,6 +123,7 @@ export class CategoryService extends ApiAbstract {
                 categoryName: String(body.categoryName),
                 currencyId: Number(body.currencyId),
                 iconId: String(body.iconId),
+                budget: body.budget ?? undefined,
             });
             if (response.kind === GeneralApiProblemKind.Ok) {
                 this._logger.info(`Create category successfully: ${(response?.data as ICategory)?.categoryId}`);

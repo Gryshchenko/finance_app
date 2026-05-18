@@ -114,6 +114,11 @@ export const TransactionsScreen = function TransactionsScreen(_props: Props) {
                                 name,
                                 type,
                                 path,
+                                back: {
+                                    path: OverviewPath.Transactions,
+                                    screen: TransactionPath.Transactions,
+                                    params: { id, name, type, path, statsType, currencyId },
+                                },
                             },
                         });
                     }}

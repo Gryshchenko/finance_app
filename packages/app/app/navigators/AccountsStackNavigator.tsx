@@ -2,6 +2,7 @@ import { createNativeStackNavigator } from '@react-navigation/native-stack';
 
 import { AccountCreateScreen } from '@/screens/AccountScreens/AccountCreateScreen';
 import { AccountEditScreen } from '@/screens/AccountScreens/AccountEditScreen';
+import type { BackTarget } from '@/types/BackTarget';
 
 export enum AccountsPath {
     AccountEdit = 'accountEdit',
@@ -9,7 +10,7 @@ export enum AccountsPath {
 }
 
 export type AccountsStackParamList = {
-    accountEdit: { id: number; name: string; payload: string };
+    accountEdit: { id: number; name: string; payload: string; back?: BackTarget };
     accountCreate: undefined;
 };
 

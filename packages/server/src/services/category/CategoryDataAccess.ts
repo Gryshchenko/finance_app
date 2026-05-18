@@ -36,6 +36,7 @@ export default class CategoryDataAccess extends LoggerBase implements ICategoryD
                     'categories.categoryName',
                     'categories.currencyId',
                     'categories.iconId',
+                    'categories.budget',
                     this._db.engine().raw('COALESCE(SUM(dcs.amount_total), 0) as amount'),
                 )
                 .leftJoin('daily_categories_stats as dcs', function () {
@@ -50,6 +51,7 @@ export default class CategoryDataAccess extends LoggerBase implements ICategoryD
                     'categories.categoryName',
                     'categories.currencyId',
                     'categories.iconId',
+                    'categories.budget',
                 );
             if (data) {
                 this._logger.info(`Fetched ${data.length} categories retrieved successfully for user: ${userId}`);
@@ -74,11 +76,12 @@ export default class CategoryDataAccess extends LoggerBase implements ICategoryD
         const query = trx || this._db.engine();
 
         try {
-            const formattedCategories = categories.map(({ categoryName, currencyId, iconId }) => ({
+            const formattedCategories = categories.map(({ categoryName, currencyId, iconId, budget }) => ({
                 userId,
                 categoryName,
                 currencyId,
                 iconId,
+                budget,
             }));
 
             const data = await query('categories').insert(formattedCategories, [
@@ -87,6 +90,7 @@ export default class CategoryDataAccess extends LoggerBase implements ICategoryD
                 'categoryName',
                 'currencyId',
                 'iconId',
+                'budget',
             ]);
 
             this._logger.info(`Categories created successfully for user: ${userId}`);
@@ -127,7 +131,6 @@ export default class CategoryDataAccess extends LoggerBase implements ICategoryD
 
     async get(userId: number, categoryId: number): Promise<ICategory | undefined> {
         this._logger.info(`Retrieving category ID ${categoryId} for user: ${userId}`);
-
         try {
             const data = await this.getCategoryBaseQuery()
                 .innerJoin('currencies', 'categories.currencyId', 'currencies.currencyId')
@@ -168,9 +171,10 @@ export default class CategoryDataAccess extends LoggerBase implements ICategoryD
                 iconId: properties.iconId,
                 updatedAt: Time.getISODateNowUTC(),
                 status: properties.status,
+                budget: properties.budget,
             };
 
-            validateAllowedProperties(allowedProperties, ['categoryName', 'iconId', 'updatedAt', 'status']);
+            validateAllowedProperties(allowedProperties, ['categoryName', 'iconId', 'updatedAt', 'status', 'budget']);
             const query = trx || this._db.engine();
             const data = await query('categories').update(properties).where({ userId, categoryId });
 
@@ -229,6 +233,7 @@ export default class CategoryDataAccess extends LoggerBase implements ICategoryD
                 'categories.categoryName',
                 'categories.currencyId',
                 'categories.iconId',
+                'categories.budget',
                 'categories.createdAt',
                 'categories.updatedAt',
                 'currencies.currencyCode',

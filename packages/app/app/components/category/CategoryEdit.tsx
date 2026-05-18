@@ -7,6 +7,7 @@ import { CategoryFields } from '@/components/category/CategoryFields';
 import { EmptyState } from '@/components/EmptyState';
 import { useInvalidateQuery } from '@/hooks/useAppQuery';
 import { useEditView } from '@/hooks/useEditView';
+import { useGoBackSmart } from '@/hooks/useGoBackSmart';
 import { translate } from '@/i18n/translate';
 import { categoryEditSchema } from '@/schems/validationSchemas';
 import AlertService from '@/services/AlertService';
@@ -14,17 +15,20 @@ import { buildGeneralApiBaseHandler, GeneralApiProblemKind, handleBadDataRespons
 import { CategoryService } from '@/services/CategoryService';
 import { InvalidationGroups } from '@/services/QueryCacheService';
 import ToastService from '@/services/ToastService';
+import type { BackTarget } from '@/types/BackTarget';
 import { OverviewPath } from '@/types/OverviewPath';
 
 interface ICategoryPros {
     data: Partial<ICategory> | undefined;
+    back?: BackTarget;
 }
 
 export const CategoryEdit: FC<ICategoryPros> = function CategoryEdit(_props) {
-    const { data } = _props;
+    const { data, back } = _props;
     const navigation = useNavigation();
     const invalidateQuery = useInvalidateQuery();
     const { form, handleChange, save, errors, setErrors } = useEditView<Partial<ICategory>>(data!, categoryEditSchema);
+    const goBackSmart = useGoBackSmart(back);
 
     const handlePatch = async () => {
         const categoryService = CategoryService.instance();
@@ -34,6 +38,7 @@ export const CategoryEdit: FC<ICategoryPros> = function CategoryEdit(_props) {
         const response = await categoryService.doPatchCategory(form.categoryId!, {
             categoryName: form.categoryName!,
             iconId: form.iconId,
+            budget: form.budget ?? undefined,
         });
         if (response.kind === GeneralApiProblemKind.Ok) {
             ToastService.info({
@@ -41,7 +46,7 @@ export const CategoryEdit: FC<ICategoryPros> = function CategoryEdit(_props) {
                 message: 'categoryScreen:updateCategorySuccess',
             });
             await invalidateQuery(InvalidationGroups.category(form.categoryId));
-            navigation.goBack();
+            goBackSmart();
         } else if (response.kind === GeneralApiProblemKind.BadData) {
             handleBadDataResponse(response.errors, setErrors);
         } else {
@@ -86,7 +91,7 @@ export const CategoryEdit: FC<ICategoryPros> = function CategoryEdit(_props) {
             <EmptyState
                 style={$containerStyleOverride}
                 buttonOnPress={() => {
-                    navigation.getParent()?.navigate(OverviewPath.Dashboard);
+                    goBackSmart();
                 }}
             />
         );
@@ -103,7 +108,7 @@ export const CategoryEdit: FC<ICategoryPros> = function CategoryEdit(_props) {
                 handleChange(key as keyof ICategory, value);
             }}
             cancel={() => {
-                navigation.goBack();
+                goBackSmart();
             }}
             onDelete={onDelete}
             handleSave={handleSave}

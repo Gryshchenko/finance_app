@@ -9,6 +9,7 @@ import { GenericListScreen } from '@/screens/GenericListScreen';
 import { AccountService } from '@/services/AccountService';
 import { GeneralApiProblemKind } from '@/services/api/apiProblem';
 import { QueryKeys, QueryStaleTimes } from '@/services/QueryCacheService';
+import type { BackTarget } from '@/types/BackTarget';
 import { ValidationError } from '@/utils/errors/ValidationError';
 import { Logger } from '@/utils/logger/Logger';
 
@@ -37,7 +38,12 @@ export async function fetchAccount(id: number): Promise<IAccount | undefined> {
 type Props = NativeStackScreenProps<AccountsStackParamList, AccountsPath.AccountEdit>;
 
 export const AccountEditScreen = function AccountEditScreen(_props: Props) {
-    const params = _props?.route?.params as { id: number; name: string; payload: string };
+    const params = _props?.route?.params as {
+        id: number;
+        name: string;
+        payload: string;
+        back?: BackTarget;
+    };
     const { isError, data, isPending } = useAppQuery<IAccount | undefined>(
         QueryKeys.account(params?.id),
         () => fetchAccount(params?.id),
@@ -51,6 +57,7 @@ export const AccountEditScreen = function AccountEditScreen(_props: Props) {
             onBack={undefined}
             props={{
                 data,
+                back: params?.back,
             }}
             RenderComponent={AccountEdit}
         />

@@ -9,6 +9,7 @@ import { GenericListScreen } from '@/screens/GenericListScreen';
 import { GeneralApiProblemKind } from '@/services/api/apiProblem';
 import { IncomeService } from '@/services/IncomeService';
 import { QueryKeys, QueryStaleTimes } from '@/services/QueryCacheService';
+import type { BackTarget } from '@/types/BackTarget';
 import { ValidationError } from '@/utils/errors/ValidationError';
 import { Logger } from '@/utils/logger/Logger';
 
@@ -38,7 +39,12 @@ export async function fetchIncome(id: number): Promise<IIncome | undefined> {
 type Props = NativeStackScreenProps<IncomesStackParamList, IncomePath.IncomeEdit>;
 
 export const IncomeEditScreen = function IncomeEditScreen(_props: Props) {
-    const params = _props?.route?.params as { id: number; name: string; payload: string };
+    const params = _props?.route?.params as {
+        id: number;
+        name: string;
+        payload: string;
+        back?: BackTarget;
+    };
     const { isError, data, isPending } = useAppQuery<IIncome | undefined>(
         QueryKeys.income(params?.id),
         () => fetchIncome(params?.id),
@@ -52,6 +58,7 @@ export const IncomeEditScreen = function IncomeEditScreen(_props: Props) {
             onBack={undefined}
             props={{
                 data,
+                back: params?.back,
             }}
             RenderComponent={IncomeEdit}
         />

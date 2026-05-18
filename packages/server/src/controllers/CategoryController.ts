@@ -56,11 +56,12 @@ export class CategoryController {
     public static async post(req: Request, res: Response) {
         const responseBuilder = new ResponseBuilder();
         try {
-            const { categoryName, currencyId, iconId } = req.body;
+            const { categoryName, currencyId, iconId, budget } = req.body;
             const category = await CategoryServiceBuilder.build().create(req.user?.userId as number, {
                 categoryName,
                 currencyId,
                 iconId,
+                budget,
             });
             res.status(HttpCode.OK).json(responseBuilder.setStatus(ResponseStatusType.OK).setData(category).build());
         } catch (e: unknown) {
@@ -100,14 +101,15 @@ export class CategoryController {
         const responseBuilder = new ResponseBuilder();
         try {
             const categoryId = Number(req.params?.categoryId);
-            const { categoryName, status, iconId } = req.body;
-            if (Utils.isEmpty(categoryName) && Utils.isNull(status) && Utils.isEmpty(iconId)) {
+            const { categoryName, status, iconId, budget } = req.body;
+            if (Utils.isEmpty(categoryName) && Utils.isNull(status) && Utils.isEmpty(iconId) && Utils.isNull(budget)) {
                 throw new ValidationError({ message: 'Path category failed due reason: empty body' });
             }
             await CategoryServiceBuilder.build().patch(req.user?.userId as number, categoryId, {
                 categoryName,
                 status,
                 iconId,
+                budget,
             });
             res.status(HttpCode.NO_CONTENT).json(responseBuilder.setStatus(ResponseStatusType.OK).setData({}).build());
         } catch (e: unknown) {

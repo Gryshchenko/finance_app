@@ -476,7 +476,7 @@ describe('Stats - patch reattribution (light setup)', () => {
         // Nov has 14 txns × 100 = 1400, BUT prev-range [Nov-01..Dec-01] also captures
         // the Dec-01 daily-aggregate row (boundary inclusive on date column) → +100.
         // So prev = 1500. round((2900-1500)/1500*100) = 93.
-        expect(data).toEqual({ spendMTD: '2900.00', vsLastMonthSpendPct: 93, budgetPct: 100 });
+        expect(data).toEqual({ spendMTD: '2900.00', vsLastMonthSpendPct: 93, budgetTotal: 100 });
 
         for (let i = 0; i < ids.length; i++) {
             const id = ids[i];
@@ -492,7 +492,7 @@ describe('Stats - patch reattribution (light setup)', () => {
         });
 
         // Nov patched 14×50 = 700 + Dec-01 leak 100 = 800 → round((2900-800)/800*100) = 263
-        expect(dataAfterPatch).toEqual({ spendMTD: '2900.00', vsLastMonthSpendPct: 263, budgetPct: 100 });
+        expect(dataAfterPatch).toEqual({ spendMTD: '2900.00', vsLastMonthSpendPct: 263, budgetTotal: 100 });
 
         for (let i = 0; i < ids.length; i++) {
             const id = ids[i];
@@ -517,7 +517,7 @@ describe('Stats - patch reattribution (light setup)', () => {
 
         // All 14 Nov txns moved to Jan 2026; Dec-01 leak (100) still in prev range.
         // (2900-100)/100*100 = 2800
-        expect(dataAfterDatePatch).toEqual({ spendMTD: '2900.00', vsLastMonthSpendPct: 2800, budgetPct: 100 });
+        expect(dataAfterDatePatch).toEqual({ spendMTD: '2900.00', vsLastMonthSpendPct: 2800, budgetTotal: 100 });
     });
 });
 
@@ -531,7 +531,7 @@ describe('entityStats - Expense edge cases', () => {
             period: StatsPeriod.Month,
             type: StatsType.Expense,
         });
-        expect(data).toEqual({ spendMTD: 0, vsLastMonthSpendPct: 0, budgetPct: 100 });
+        expect(data).toEqual({ spendMTD: 0, vsLastMonthSpendPct: 0, budgetTotal: 100 });
     });
 
     it('returns 100 pct when previous=0 and current>0 (first month)', async () => {
@@ -553,7 +553,7 @@ describe('entityStats - Expense edge cases', () => {
             period: StatsPeriod.Month,
             type: StatsType.Expense,
         });
-        expect(data).toEqual({ spendMTD: '500.00', vsLastMonthSpendPct: 100, budgetPct: 100 });
+        expect(data).toEqual({ spendMTD: '500.00', vsLastMonthSpendPct: 100, budgetTotal: 100 });
     });
 
     it('returns negative pct when spending decreased', async () => {
@@ -587,7 +587,7 @@ describe('entityStats - Expense edge cases', () => {
             period: StatsPeriod.Month,
             type: StatsType.Expense,
         });
-        expect(data).toEqual({ spendMTD: '250.00', vsLastMonthSpendPct: -75, budgetPct: 100 });
+        expect(data).toEqual({ spendMTD: '250.00', vsLastMonthSpendPct: -75, budgetTotal: 100 });
     });
 
     it('isolates stats by categoryId - other categories are not counted', async () => {
@@ -718,7 +718,7 @@ describe('entityStats - Income', () => {
         // (1200 - 800) / 800 * 100 = 50
         expect(data).toEqual({ incomeMTD: '1200.00', vsLastMonthIncomePct: 50 });
         expect(data).not.toHaveProperty('spendMTD');
-        expect(data).not.toHaveProperty('budgetPct');
+        expect(data).not.toHaveProperty('budgetTotal');
     });
 
     it('returns 0/0 when both periods empty', async () => {

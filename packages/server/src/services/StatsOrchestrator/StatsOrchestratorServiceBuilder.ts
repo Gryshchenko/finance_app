@@ -1,4 +1,5 @@
 import { IDatabaseConnection } from 'interfaces/IDatabaseConnection';
+import CategoryServiceBuilder from 'services/category/CategoryServiceBuilder';
 import { DailyAccountStatsServiceBuilder } from 'services/dailyAccountStats/DailyAccountStatsServiceBuilder';
 import { DailyCategoryStatsServiceBuilder } from 'services/dailyCategoryStats/DailyCategoryStatsServiceBuilder';
 import { DailyIncomeStatsServiceBuilder } from 'services/dailyIncomeStats/DailyIncomeStatsServiceBuilder';
@@ -17,6 +18,7 @@ export class StatsOrchestratorServiceBuilder {
             dailyAccountStatsService: DailyAccountStatsServiceBuilder.build(database),
             dailyIncomeStatsService: DailyIncomeStatsServiceBuilder.build(database),
             dailyTransferStatsService: DailyTransferStatsServiceBuilder.build(database),
+            categoryService: CategoryServiceBuilder.build(database),
         });
     }
 }

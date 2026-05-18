@@ -9,6 +9,7 @@ import { GenericListScreen } from '@/screens/GenericListScreen';
 import { GeneralApiProblemKind } from '@/services/api/apiProblem';
 import { CategoryService } from '@/services/CategoryService';
 import { QueryKeys, QueryStaleTimes } from '@/services/QueryCacheService';
+import type { BackTarget } from '@/types/BackTarget';
 import { ValidationError } from '@/utils/errors/ValidationError';
 import { Logger } from '@/utils/logger/Logger';
 
@@ -37,7 +38,12 @@ export async function fetchCategory(id: number): Promise<ICategory | undefined> 
 type Props = NativeStackScreenProps<CategoriesStackParamList, CategoriesPath.CategoryEdit>;
 
 export const CategoryEditScreen = function CategoryEditScreen(_props: Props) {
-    const params = _props?.route?.params as { id: number; name: string; payload: string };
+    const params = _props?.route?.params as {
+        id: number;
+        name: string;
+        payload: string;
+        back?: BackTarget;
+    };
     const { isError, data, isPending } = useAppQuery<ICategory | undefined>(
         QueryKeys.category(params?.id),
         () => fetchCategory(params?.id),
@@ -51,6 +57,7 @@ export const CategoryEditScreen = function CategoryEditScreen(_props: Props) {
             isPending={isPending}
             props={{
                 data,
+                back: params?.back,
             }}
             RenderComponent={CategoryEdit}
         />

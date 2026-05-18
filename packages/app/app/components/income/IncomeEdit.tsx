@@ -1,12 +1,12 @@
 import { FC } from 'react';
 import { StyleProp, ViewStyle } from 'react-native';
-import { useNavigation } from '@react-navigation/native';
 import { IIncome, Utils } from 'tenpercent/shared';
 
 import { EmptyState } from '@/components/EmptyState';
 import { IncomeFields } from '@/components/income/IncomeFields';
 import { useInvalidateQuery } from '@/hooks/useAppQuery';
 import { useEditView } from '@/hooks/useEditView';
+import { useGoBackSmart } from '@/hooks/useGoBackSmart';
 import { translate } from '@/i18n/translate';
 import { incomeEditSchema } from '@/schems/validationSchemas';
 import AlertService from '@/services/AlertService';
@@ -14,17 +14,18 @@ import { buildGeneralApiBaseHandler, GeneralApiProblemKind, handleBadDataRespons
 import { IncomeService } from '@/services/IncomeService';
 import { InvalidationGroups } from '@/services/QueryCacheService';
 import ToastService from '@/services/ToastService';
-import { OverviewPath } from '@/types/OverviewPath';
+import type { BackTarget } from '@/types/BackTarget';
 
 interface IIncomePros {
     data: Partial<IIncome> | undefined;
+    back?: BackTarget;
 }
 
 export const IncomeEdit: FC<IIncomePros> = function IncomeEdit(_props) {
-    const { data } = _props;
-    const navigation = useNavigation();
+    const { data, back } = _props;
     const invalidateQuery = useInvalidateQuery();
     const { form, handleChange, save, errors, setErrors } = useEditView<Partial<IIncome>>(data!, incomeEditSchema);
+    const goBackSmart = useGoBackSmart(back);
 
     const handlePatch = async () => {
         const incomeService = IncomeService.instance();
@@ -40,7 +41,7 @@ export const IncomeEdit: FC<IIncomePros> = function IncomeEdit(_props) {
                 message: 'common:updateAccountSuccess',
             });
             await invalidateQuery(InvalidationGroups.income(form.incomeId));
-            navigation.goBack();
+            goBackSmart();
         } else if (response.kind === GeneralApiProblemKind.BadData) {
             handleBadDataResponse(response.errors, setErrors);
         } else {
@@ -58,7 +59,7 @@ export const IncomeEdit: FC<IIncomePros> = function IncomeEdit(_props) {
                 message: 'common:deleteAccountSuccess',
             });
             await invalidateQuery(InvalidationGroups.income(form.incomeId));
-            navigation.getParent()?.navigate(OverviewPath.Dashboard);
+            goBackSmart();
         } else {
             ToastService.error({
                 title: 'common:error',
@@ -77,12 +78,7 @@ export const IncomeEdit: FC<IIncomePros> = function IncomeEdit(_props) {
         await handlePatch();
     };
     if (!data) {
-        return (
-            <EmptyState
-                style={$containerStyleOverride}
-                buttonOnPress={() => navigation.getParent()?.navigate(OverviewPath.Dashboard)}
-            />
-        );
+        return <EmptyState style={$containerStyleOverride} buttonOnPress={() => goBackSmart()} />;
     }
 
     return (
@@ -96,7 +92,7 @@ export const IncomeEdit: FC<IIncomePros> = function IncomeEdit(_props) {
                 handleChange(key as keyof IIncome, value);
             }}
             cancel={() => {
-                navigation.goBack();
+                goBackSmart();
             }}
             onDelete={onDelete}
             handleSave={handleSave}

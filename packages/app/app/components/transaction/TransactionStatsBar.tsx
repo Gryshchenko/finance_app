@@ -5,6 +5,7 @@ import { Utils } from 'tenpercent/shared';
 import { StatsBar, StatTileConfig } from '@/components/StatsBar';
 import { translate } from '@/i18n/translate';
 import { useAppTheme } from '@/theme/context';
+import { Colors } from '@/theme/types';
 import { CurrencyUtils } from '@/utils/CurrencyUtils';
 
 export interface TransactionStatsBarProps {
@@ -54,11 +55,30 @@ type BudgetStatus = 'ok' | 'warning' | 'critical' | 'over';
  * critical 90–99 % - red
  * over    ≥ 100 % - red + "Over budget" label
  */
-function getBudgetStatus(pct: number): BudgetStatus {
+export function getBudgetStatus(pct: number): BudgetStatus {
     if (pct >= 100) return 'over';
     if (pct >= 90) return 'critical';
     if (pct >= 70) return 'warning';
     return 'ok';
+}
+
+export function getBudgetStatusLabel(budgetStatus: BudgetStatus | null, colors: Colors): string {
+    switch (budgetStatus) {
+        case 'ok':
+            return colors.palette.green400;
+        case 'warning':
+            return '#F59E0B';
+        case 'critical':
+        case 'over':
+            return colors.palette.angry500;
+        default:
+            return colors.text;
+    }
+}
+
+export function getBudgetPercent(budgetTotal: number, spentMtd: number): number | null {
+    if (!budgetTotal || !spentMtd) return null;
+    return Math.round((spentMtd / budgetTotal) * 100);
 }
 
 export const TransactionStatsBar: FC<TransactionStatsBarProps> = function TransactionStatsBar(props) {
@@ -80,24 +100,13 @@ export const TransactionStatsBar: FC<TransactionStatsBarProps> = function Transa
     }, []);
 
     const budgetPct = useMemo(() => {
-        if (!budgetTotal || !spentMtd) return null;
-        return Math.round((spentMtd / budgetTotal) * 100);
+        return getBudgetPercent(budgetTotal ?? 0, spentMtd ?? 0);
     }, [spentMtd, budgetTotal]);
 
     const budgetStatus = useMemo(() => (budgetPct != null ? getBudgetStatus(budgetPct) : null), [budgetPct]);
 
     const budgetColor = useMemo(() => {
-        switch (budgetStatus) {
-            case 'ok':
-                return colors.palette.green400;
-            case 'warning':
-                return '#F59E0B';
-            case 'critical':
-            case 'over':
-                return colors.palette.angry500;
-            default:
-                return colors.text;
-        }
+        return getBudgetStatusLabel(budgetStatus, colors);
     }, [budgetStatus, colors]);
 
     const tiles = useMemo((): StatTileConfig[] => {
@@ -181,7 +190,7 @@ export const TransactionStatsBar: FC<TransactionStatsBarProps> = function Transa
                 budgetPct
                     ? {
                           label: translate('transactionStatsBar:budgetPercent'),
-                          value: budgetStatus === 'over' ? translate('transactionStatsBar:overBudget') : `${budgetPct}%`,
+                          value: `${budgetPct}%`,
                           valueColor: budgetColor,
                           progress: { filledPercent: budgetPct, color: budgetColor },
                       }

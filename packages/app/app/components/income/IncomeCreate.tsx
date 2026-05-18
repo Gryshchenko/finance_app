@@ -66,7 +66,7 @@ export const IncomeCreate: FC = function IncomeCreate(_props) {
                 handleChange(key as keyof IIncome, value);
             }}
             cancel={() => {
-                navigation?.goBack();
+                navigation.getParent()?.navigate(OverviewPath.Dashboard);
             }}
             handleSave={handleSave}
         />

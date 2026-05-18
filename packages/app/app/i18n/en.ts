@@ -138,6 +138,8 @@ const en = {
         selectIcon: 'Select icon',
         accountName: 'Account Name',
         categoryName: 'Category Name',
+        categoryBudget: 'Monthly budget',
+        categoryBudgetPlaceholder: 'Optional, e.g. 500',
         incomeName: 'Income Income',
         icon: 'icon',
         saveChanges: 'Save changes',

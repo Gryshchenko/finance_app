@@ -38,6 +38,7 @@ export const CategoryCreate: FC = function CategoryCreate(_props) {
             categoryName: form.categoryName!,
             currencyId: form.currencyId!,
             iconId: form.iconId ?? SpendIcon.ShoppingBag,
+            budget: form.budget ?? undefined,
         });
         if (response.kind === GeneralApiProblemKind.Ok) {
             await invalidateQuery(InvalidationGroups.category());

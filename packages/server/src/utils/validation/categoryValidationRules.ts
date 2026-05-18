@@ -4,6 +4,9 @@ import { createSignupValidationRules } from 'src/utils/validation/routesInputVal
 
 const categoryConvertValidationMessageToErrorCode = (path: string): ErrorCode => {
     switch (path) {
+        case 'budget': {
+            return ErrorCode.CATEGORY_ERROR;
+        }
         case 'status': {
             return ErrorCode.INCOME_ERROR;
         }
@@ -30,6 +33,11 @@ const createCategoryValidationRules = [
     ...createSignupValidationRules('iconId', 'string', {
         allowedValues: VALID_ICON_IDS,
     }),
+    ...createSignupValidationRules('budget', 'number', {
+        optional: true,
+        min: 0,
+        max: Number.MAX_SAFE_INTEGER,
+    }),
 ];
 
 const patchCategoryValidationRules = [
@@ -46,6 +54,11 @@ const patchCategoryValidationRules = [
     ...createSignupValidationRules('iconId', 'string', {
         optional: true,
         allowedValues: VALID_ICON_IDS,
+    }),
+    ...createSignupValidationRules('budget', 'number', {
+        optional: true,
+        min: 0,
+        max: Number.MAX_SAFE_INTEGER,
     }),
 ];
 

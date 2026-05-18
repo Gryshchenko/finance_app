@@ -8,9 +8,11 @@ import { CategoryBox } from '@/components/dashboard/Box/CategoryBox';
 import { useDragOverlay } from '@/components/dashboard/Box/DragOverlayContext';
 import { ItemType } from '@/components/dashboard/Box/ItemBox';
 import { IDashboardItem } from '@/components/dashboard/DashboardItem';
+import { getBudgetPercent, getBudgetStatus, getBudgetStatusLabel } from '@/components/transaction/TransactionStatsBar';
 import { useCurrency } from '@/context/CurrencyContext';
 import { CategoriesPath } from '@/navigators/CategoriesStackNavigator';
 import ToastService from '@/services/ToastService';
+import { useAppTheme } from '@/theme/context';
 import { BoxDataItemType } from '@/types/BoxDataItemType';
 import { OverviewPath } from '@/types/OverviewPath';
 import { TransactionPath } from '@/types/TransactionPath';
@@ -18,6 +20,8 @@ import { CurrencyUtils } from '@/utils/CurrencyUtils';
 
 export default memo(function DashboardCategory(props: IDashboardItem<ICategoryStats>) {
     const { getCurrencySymbol } = useCurrency();
+    const { theme } = useAppTheme();
+    const { colors } = theme;
     const { draggingItemType } = useDragOverlay();
     const { BoxProps } = props;
     const navigation = useNavigation();
@@ -25,6 +29,10 @@ export default memo(function DashboardCategory(props: IDashboardItem<ICategorySt
     switch (container.type) {
         case BoxDataItemType.Default:
             const item = container.data as ICategoryStats;
+            const budgetStatus =
+                (item?.budget ?? 0) > 0
+                    ? getBudgetStatusLabel(getBudgetStatus(getBudgetPercent(item.budget ?? 0, item.amount ?? 0) ?? 0), colors)
+                    : undefined;
             return (
                 <CategoryBox
                     onTap={() => {
@@ -39,6 +47,9 @@ export default memo(function DashboardCategory(props: IDashboardItem<ICategorySt
                                 currencyId: item.currencyId,
                             },
                         });
+                    }}
+                    styles={{
+                        value: { color: budgetStatus },
                     }}
                     BoxProps={{
                         styles: BoxProps?.styles,

@@ -12,7 +12,7 @@ interface IProps {
 export const TransactionStats = ({ statsType, stats, currencyId }: IProps) => {
     const { getCurrencySymbol } = useCurrency();
     if (!stats) return null;
-    const { spendMTD, vsLastMonthSpendPct, incomeMTD, vsLastMonthIncomePct, budgetPct, transferMTD, savingsRate } = stats;
+    const { spendMTD, vsLastMonthSpendPct, incomeMTD, vsLastMonthIncomePct, budgetTotal, transferMTD, savingsRate } = stats;
     switch (statsType) {
         case StatsType.Account:
             return (
@@ -39,7 +39,7 @@ export const TransactionStats = ({ statsType, stats, currencyId }: IProps) => {
                 <TransactionStatsBar
                     spentMtd={spendMTD as number}
                     lastMonthSpent={vsLastMonthSpendPct}
-                    budgetTotal={budgetPct}
+                    budgetTotal={budgetTotal}
                     currency={getCurrencySymbol(currencyId)}
                 />
             );

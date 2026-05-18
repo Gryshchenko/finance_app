@@ -13,7 +13,7 @@ interface CategoryBoxProps
     icon: CategoryIconType;
 }
 
-export function CategoryBox({ title, value, icon, id, isDroppable, onDrop, BoxProps, onTap }: CategoryBoxProps) {
+export function CategoryBox({ title, value, icon, id, isDroppable, onDrop, BoxProps, onTap, styles }: CategoryBoxProps) {
     const droppableId = `${id}-${ItemType.Category}`;
     const { themed } = useAppTheme();
     return (
@@ -29,6 +29,7 @@ export function CategoryBox({ title, value, icon, id, isDroppable, onDrop, BoxPr
             onDragEnd={() => null}
             onDrop={onDrop}
             isDraggable={false}
+            styles={styles}
             BoxProps={{
                 BoxDraggableItemProps: {
                     icon,

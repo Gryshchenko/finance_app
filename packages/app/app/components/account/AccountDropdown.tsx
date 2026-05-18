@@ -1,10 +1,10 @@
 import { ViewStyle } from 'react-native';
 import { IAccountListItem } from 'tenpercent/shared';
 
+import { fetchAccounts } from '@/components/dashboard/DashboardAccountsItem';
 import { Dropdown } from '@/components/Dropdown';
 import { FieldPresets } from '@/components/FieldPresets';
 import { TxKeyPath } from '@/i18n';
-import { fetchAccounts } from '@/screens/AccountScreens/AccountsScreen';
 
 type AccountDropdownProps = {
     preset?: FieldPresets;
