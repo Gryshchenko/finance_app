@@ -205,7 +205,7 @@ export const DragOverlayProvider: FC<PropsWithChildren> = ({ children }) => {
 
     const updateDragPosition = (x: number, y: number) => {
         const newX = x;
-        const newY = y + scrollY.value;
+        const newY = y;
 
         for (const zone of zonesRef.current?.values()) {
             const layout = zone.measure;
@@ -237,7 +237,7 @@ export const DragOverlayProvider: FC<PropsWithChildren> = ({ children }) => {
                 });
             }
         }
-        if (newY >= 0 && newY <= (overlayLayout.value.height ?? 0) + scrollY.value) {
+        if (newY >= 0 && newY <= (overlayLayout.value.height ?? 0) + scrollY.value + 80) {
             dragTranslateY.value = newY;
             if (y < AUTO_SCROLL_EDGE_THRESHOLD) {
                 scrollRef.current?.scrollTo({
