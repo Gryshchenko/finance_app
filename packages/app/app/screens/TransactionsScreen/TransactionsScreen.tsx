@@ -84,10 +84,20 @@ export const TransactionsScreen = function TransactionsScreen(_props: Props) {
             isError={isError}
             isPending={isPending}
             props={{
-                onPress: (id: number, name: string) => {
+                onPress: (idEdit: number, nameEdit: string) => {
                     navigation.getParent()?.navigate(OverviewPath.Transactions, {
                         screen: TransactionPath.TransactionEdit,
-                        params: { id, name, type, path },
+                        params: {
+                            id: idEdit,
+                            name: nameEdit,
+                            type,
+                            path,
+                            back: {
+                                path: OverviewPath.Transactions,
+                                screen: TransactionPath.Transactions,
+                                params: { id, name, type, path, statsType, currencyId },
+                            },
+                        },
                     });
                 },
                 data: {

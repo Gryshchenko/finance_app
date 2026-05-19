@@ -72,7 +72,7 @@ export function getBudgetStatusLabel(budgetStatus: BudgetStatus | null, colors: 
         case 'over':
             return colors.palette.angry500;
         default:
-            return colors.text;
+            return colors.textDim;
     }
 }
 
@@ -237,7 +237,6 @@ export const TransactionStatsBar: FC<TransactionStatsBarProps> = function Transa
         colors.text,
         colors.textDim,
         getDeltaIcon,
-        budgetStatus,
         budgetColor,
     ]);
 

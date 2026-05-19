@@ -298,15 +298,16 @@ export const TextField = forwardRef(function TextField(props: TextFieldProps, re
 // ---------------------------------------------------------------------------
 
 const $rightAccessoryStyle: ThemedStyle<ViewStyle> = ({ colors }) => ({
-    height: 40,
+    height: 37,
     justifyContent: 'center',
     alignItems: 'center',
-    backgroundColor: colors.palette.neutral100,
+    backgroundColor: colors.background,
     margin: 'auto',
     marginHorizontal: 10,
 });
 
-const $leftAccessoryDefaultStyle: ThemedStyle<ViewStyle> = ({ spacing }) => ({
+const $leftAccessoryDefaultStyle: ThemedStyle<ViewStyle> = ({ spacing, colors }) => ({
+    backgroundColor: colors.background,
     marginStart: spacing.xs,
     height: 40,
     justifyContent: 'center',

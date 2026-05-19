@@ -10,6 +10,7 @@ import { GenericListScreen } from '@/screens/GenericListScreen';
 import { GeneralApiProblemKind } from '@/services/api/apiProblem';
 import { QueryKeys, QueryStaleTimes } from '@/services/QueryCacheService';
 import { TransactionService } from '@/services/TransactionService';
+import type { BackTarget } from '@/types/BackTarget';
 import { Logger } from '@/utils/logger/Logger';
 
 type Props = NativeStackScreenProps<ParamListBase, string>;
@@ -35,7 +36,7 @@ export async function fetchTransaction(id: number | string): Promise<ITransactio
 }
 
 export const TransactionEditScreen = function TransactionsScreen(_props: Props) {
-    const params = _props?.route?.params as { id: number; name: string; payload: string };
+    const params = _props?.route?.params as { id: number; name: string; payload: string; back?: BackTarget };
     const { id } = params;
     const {
         isError,
@@ -55,6 +56,7 @@ export const TransactionEditScreen = function TransactionsScreen(_props: Props) 
             isPending={isPending}
             props={{
                 data,
+                back: params?.back,
             }}
             RenderComponent={TransactionEdit}
         />

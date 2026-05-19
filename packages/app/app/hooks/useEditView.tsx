@@ -1,18 +1,29 @@
-import { useState } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
 import * as Yup from 'yup';
 
 import { TxKeyPath } from '@/i18n';
 
 type Errors<T> = Partial<Record<keyof T, TxKeyPath>>;
 
-export function useEditView<T extends object>(initialData: T, schema?: Yup.ObjectSchema<any>) {
+export function useEditView<T extends object>(initialData: T, schema?: Yup.ObjectSchema<any>, uuid?: string) {
     const [form, setForm] = useState<Partial<T>>(initialData);
     const [errors, setErrors] = useState<Errors<T>>({});
+    const prevUuid = useRef<string>(uuid);
 
-    const resetForm = (newData?: Partial<T>) => {
-        setForm(newData ?? initialData);
-        setErrors({});
-    };
+    const resetForm = useCallback(
+        (newData?: Partial<T>) => {
+            setForm(newData ?? initialData);
+            setErrors({});
+        },
+        [initialData],
+    );
+
+    useEffect(() => {
+        if (uuid && uuid !== prevUuid.current) {
+            resetForm();
+            prevUuid.current = uuid;
+        }
+    }, [uuid, resetForm, prevUuid]);
 
     const handleChange = <K extends keyof T>(key: K, value: T[K]) => {
         setForm((prev) => ({ ...(prev ?? {}), [key]: value }));

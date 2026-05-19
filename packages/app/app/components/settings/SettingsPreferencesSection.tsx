@@ -54,7 +54,6 @@ export function SettingsPreferencesSection({
                 labelExtractor={(item) => item.label}
                 onChange={onLanguageChange}
                 disabled={isSaving}
-                isLast
             />
             {/*<SettingsSwitchRow*/}
             {/*    labelTx="settingsScreen:notifications"*/}

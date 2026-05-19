@@ -65,7 +65,7 @@ export const ForgotPasswordChangeScreen: FC<Props> = (_props) => {
                 return (
                     <PressableIcon
                         icon={isAuthPasswordHidden ? 'view' : 'hidden'}
-                        color={colors.palette.neutral800}
+                        color={colors.textDim}
                         containerStyle={props.style}
                         size={20}
                         onPress={() => setIsAuthPasswordHidden(!isAuthPasswordHidden)}
@@ -80,7 +80,7 @@ export const ForgotPasswordChangeScreen: FC<Props> = (_props) => {
                 return (
                     <PressableIcon
                         icon={isRepeatPasswordHidden ? 'view' : 'hidden'}
-                        color={colors.palette.neutral800}
+                        color={colors.textDim}
                         containerStyle={props.style}
                         size={20}
                         onPress={() => setIsRepeatPasswordHidden(!isRepeatPasswordHidden)}

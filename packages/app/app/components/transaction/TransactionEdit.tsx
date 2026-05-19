@@ -1,12 +1,12 @@
-import { FC, useCallback } from 'react';
+import { FC } from 'react';
 import { StyleProp, ViewStyle } from 'react-native';
-import { useNavigation, useFocusEffect } from '@react-navigation/native';
 import { ITransaction } from 'tenpercent/shared';
 
 import { EmptyState } from '@/components/EmptyState';
 import { TransactionFields } from '@/components/transaction/TransactionFields';
 import { useInvalidateQuery } from '@/hooks/useAppQuery';
 import { useEditView } from '@/hooks/useEditView';
+import { useGoBackSmart } from '@/hooks/useGoBackSmart';
 import { translate } from '@/i18n/translate';
 import { ITransactionClient } from '@/interfaces/ITransactionClient';
 import { buildTransactionEditSchema } from '@/schems/validationSchemas';
@@ -15,28 +15,21 @@ import { buildGeneralApiBaseHandler, GeneralApiProblemKind, handleBadDataRespons
 import { InvalidationGroups } from '@/services/QueryCacheService';
 import ToastService from '@/services/ToastService';
 import { TransactionService } from '@/services/TransactionService';
-import { OverviewPath } from '@/types/OverviewPath';
+import type { BackTarget } from '@/types/BackTarget';
 
 interface ITransactionPros {
     data: Partial<ITransactionClient> | undefined;
+    back?: BackTarget;
 }
 
 export const TransactionEdit: FC<ITransactionPros> = function TransactionEdit(_props) {
-    const { data } = _props;
-    const navigation = useNavigation();
+    const { data, back } = _props;
+    const goBackSmart = useGoBackSmart(back);
     const invalidateQuery = useInvalidateQuery();
 
-    const { form, handleChange, save, errors, setErrors, resetForm } = useEditView<Partial<ITransactionClient>>(
+    const { form, handleChange, save, errors, setErrors } = useEditView<Partial<ITransactionClient>>(
         data!,
         buildTransactionEditSchema(),
-    );
-
-    useFocusEffect(
-        useCallback(() => {
-            return () => {
-                resetForm(data!);
-            };
-        }, [data, resetForm]),
     );
 
     const handlePatch = async () => {
@@ -58,7 +51,7 @@ export const TransactionEdit: FC<ITransactionPros> = function TransactionEdit(_p
                 message: 'transactionScreen:updateSuccess',
             });
             await invalidateQuery(InvalidationGroups.transaction(form.transactionId));
-            navigation.getParent()?.navigate(OverviewPath.Dashboard);
+            goBackSmart();
         } else if (response.kind === GeneralApiProblemKind.BadData) {
             handleBadDataResponse(response.errors, setErrors);
         } else {
@@ -77,7 +70,7 @@ export const TransactionEdit: FC<ITransactionPros> = function TransactionEdit(_p
                 message: 'transactionScreen:deleteSuccess',
             });
             await invalidateQuery(InvalidationGroups.transaction(form.transactionId));
-            navigation.getParent()?.navigate(OverviewPath.Dashboard);
+            goBackSmart();
         } else {
             ToastService.error({
                 title: 'common:error',
@@ -99,12 +92,7 @@ export const TransactionEdit: FC<ITransactionPros> = function TransactionEdit(_p
         await handlePatch();
     };
     if (!data) {
-        return (
-            <EmptyState
-                style={$containerStyleOverride}
-                buttonOnPress={() => navigation.getParent()?.navigate(OverviewPath.Dashboard)}
-            />
-        );
+        return <EmptyState style={$containerStyleOverride} buttonOnPress={() => goBackSmart()} />;
     }
 
     return (
@@ -118,7 +106,7 @@ export const TransactionEdit: FC<ITransactionPros> = function TransactionEdit(_p
             handleChange={(key: string, value: string | number) => {
                 handleChange(key as keyof ITransaction, value);
             }}
-            cancel={() => navigation.goBack()}
+            cancel={() => goBackSmart()}
             handleSave={handleSave}
         />
     );

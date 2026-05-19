@@ -17,6 +17,7 @@ import { Logger } from '@/utils/logger/Logger';
 
 interface IProps {
     data: Partial<ITransactionClient> | undefined;
+    uuid?: string;
 }
 
 const fetchRates = async (
@@ -43,7 +44,7 @@ const fetchRates = async (
 };
 
 export const TransactionCreate: FC<IProps> = function TransactionCreate(_props: IProps) {
-    const { data } = _props;
+    const { data, uuid } = _props;
     const { getCurrency, defaultCurrencyId } = useCurrency();
     const navigation = useNavigation();
     const invalidateQuery = useInvalidateQuery();
@@ -55,14 +56,13 @@ export const TransactionCreate: FC<IProps> = function TransactionCreate(_props: 
         ...data,
     };
 
-    console.log('formInitial', formInitial);
-
     const { form, handleChange, save, errors, setErrors } = useEditView<Partial<ITransactionClient>>(
         formInitial,
         buildTransactionCreateSchema({
             sourceCurrencyId: data?.sourceCurrencyId,
             currencyId: defaultCurrencyId,
         }),
+        uuid,
     );
 
     const hasDifferentCurrencies =
@@ -125,7 +125,7 @@ export const TransactionCreate: FC<IProps> = function TransactionCreate(_props: 
             handleChange={(key: string, value: string | number) => {
                 handleChange(key as keyof ITransaction, value);
             }}
-            cancel={() => navigation.goBack()}
+            cancel={() => navigation.getParent()?.navigate(OverviewPath.Dashboard)}
             handleSave={handleSave}
         />
     );

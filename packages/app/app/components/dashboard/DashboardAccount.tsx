@@ -73,11 +73,14 @@ export default memo(function DashboardAccount(props: IDashboardItem<IAccountList
                                         screen: TransactionPath.TransactionCreate,
                                         params: {
                                             payload: {
-                                                transactionTypeId: TransactionType.Transafer,
-                                                accountId: item.accountId,
-                                                targetAccountId: inWorkDropItem.id,
-                                                currencyId: item.currencyId,
-                                                sourceCurrencyId: inWorkDropItem.payload?.currencyId,
+                                                data: {
+                                                    transactionTypeId: TransactionType.Transafer,
+                                                    accountId: inWorkDropItem.id,
+                                                    targetAccountId: item.accountId,
+                                                    currencyId: item.currencyId,
+                                                    sourceCurrencyId: inWorkDropItem.payload?.currencyId,
+                                                },
+                                                uuid: new Date().getMilliseconds(),
                                             },
                                         },
                                     });
@@ -88,11 +91,14 @@ export default memo(function DashboardAccount(props: IDashboardItem<IAccountList
                                     screen: TransactionPath.TransactionCreate,
                                     params: {
                                         payload: {
-                                            transactionTypeId: TransactionType.Income,
-                                            accountId: item.accountId,
-                                            incomeId: inWorkDropItem.id,
-                                            currencyId: item.currencyId,
-                                            sourceCurrencyId: inWorkDropItem.payload?.currencyId,
+                                            data: {
+                                                transactionTypeId: TransactionType.Income,
+                                                accountId: item.accountId,
+                                                incomeId: inWorkDropItem.id,
+                                                currencyId: item.currencyId,
+                                                sourceCurrencyId: inWorkDropItem.payload?.currencyId,
+                                            },
+                                            uuid: new Date().getMilliseconds(),
                                         },
                                     },
                                 });

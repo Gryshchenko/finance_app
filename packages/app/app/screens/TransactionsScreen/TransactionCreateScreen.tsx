@@ -24,17 +24,19 @@ const getScreenTitle = (typeId?: number): string => {
 };
 export const TransactionCreateScreen = function TransactionsScreen(_props: Props) {
     const navigation = useNavigation();
-    const params = _props?.route?.params as { payload?: Partial<ITransactionClient> } | undefined;
-    const payload = params?.payload;
+    const params = _props?.route?.params as { payload?: { data: Partial<ITransactionClient>; uuid: string } } | undefined;
+    const data = params?.payload?.data;
+    const uuid = params?.payload?.uuid;
 
     return (
         <GenericListScreen
-            name={getScreenTitle(payload?.transactionTypeId)}
+            name={getScreenTitle(data?.transactionTypeId)}
             isError={false}
             isPending={false}
             onBack={() => navigation.getParent()?.navigate(OverviewPath.Dashboard)}
             props={{
-                data: payload,
+                data,
+                uuid,
             }}
             RenderComponent={TransactionCreate}
         />

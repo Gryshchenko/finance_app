@@ -59,7 +59,7 @@ export const SettingsChangePassword: FC = function SettingsChangePassword() {
                 return (
                     <PressableIcon
                         icon={isPasswordHidden ? 'view' : 'hidden'}
-                        color={colors.palette.neutral800}
+                        color={colors.textDim}
                         containerStyle={props.style}
                         size={20}
                         onPress={() => setIsPasswordHidden(!isPasswordHidden)}
@@ -74,7 +74,7 @@ export const SettingsChangePassword: FC = function SettingsChangePassword() {
                 return (
                     <PressableIcon
                         icon={isNewPasswordHidden ? 'view' : 'hidden'}
-                        color={colors.palette.neutral800}
+                        color={colors.textDim}
                         containerStyle={props.style}
                         size={20}
                         onPress={() => setIsNewPasswordHidden(!isNewPasswordHidden)}

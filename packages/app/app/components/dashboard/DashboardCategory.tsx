@@ -32,7 +32,7 @@ export default memo(function DashboardCategory(props: IDashboardItem<ICategorySt
             const budgetStatus =
                 (item?.budget ?? 0) > 0
                     ? getBudgetStatusLabel(getBudgetStatus(getBudgetPercent(item.budget ?? 0, item.amount ?? 0) ?? 0), colors)
-                    : undefined;
+                    : colors.textDim;
             return (
                 <CategoryBox
                     onTap={() => {
@@ -74,11 +74,15 @@ export default memo(function DashboardCategory(props: IDashboardItem<ICategorySt
                                 screen: TransactionPath.TransactionCreate,
                                 params: {
                                     payload: {
-                                        transactionTypeId: TransactionType.Expense,
-                                        categoryId: item.categoryId,
-                                        accountId: inWorkDropItem.id,
-                                        currencyId: item.currencyId,
-                                        sourceCurrencyId: inWorkDropItem.payload?.currencyId,
+                                        data: {
+                                            transactionTypeId: TransactionType.Expense,
+                                            categoryId: item.categoryId,
+                                            accountId: inWorkDropItem.id,
+                                            currencyId: item.currencyId,
+                                            sourceCurrencyId: inWorkDropItem.payload?.currencyId,
+                                        },
+
+                                        uuid: new Date().getMilliseconds(),
                                     },
                                 },
                             });
