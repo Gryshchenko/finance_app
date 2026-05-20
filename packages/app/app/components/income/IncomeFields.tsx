@@ -37,16 +37,6 @@ export const IncomeFields: FC<IProps> = function IncomeFields(_props) {
             onDelete={onDelete}
         >
             <View style={$fieldWrapper as undefined}>
-                <IconField
-                    labelTx={'common:selectIcon'}
-                    value={form.iconId}
-                    disabled={isView}
-                    onChange={(newIcon) => {
-                        if (handleChange) {
-                            handleChange('iconId', newIcon);
-                        }
-                    }}
-                />
                 <TextField
                     preset={'underlineBig'}
                     focusOnMount={true}
@@ -70,13 +60,24 @@ export const IncomeFields: FC<IProps> = function IncomeFields(_props) {
                 <CurrencyDropdown
                     preset={'underline'}
                     style={$fieldCurrency}
-                    editable={!isView}
+                    editable={isCreate}
                     helperTx={errors?.currencyId}
                     status={errors?.currencyId ? 'error' : undefined}
                     value={form.currencyId}
                     onChange={(item: ICurrency) => {
                         if (handleChange) {
                             handleChange('currencyId', item.currencyId);
+                        }
+                    }}
+                />
+                <IconField
+                    preset={'underline'}
+                    labelTx={'common:selectIcon'}
+                    value={form.iconId}
+                    disabled={isView}
+                    onChange={(newIcon) => {
+                        if (handleChange) {
+                            handleChange('iconId', newIcon);
                         }
                     }}
                 />

@@ -75,7 +75,7 @@ export class AccountService extends ApiAbstract {
 
     public async doPatchAccount(
         id: number,
-        body: { accountName: string; amount?: number; iconId?: string },
+        body: { accountName: string; amount?: number },
     ): Promise<
         | {
               kind: GeneralApiProblemKind.Ok;
@@ -89,7 +89,6 @@ export class AccountService extends ApiAbstract {
             const response = await this.authPatch(`/user/${userId}/account/${id}`, {
                 accountName: String(body.accountName),
                 amount: Number(body.amount),
-                iconId: body.iconId ? String(body.iconId) : undefined,
             });
             if (response.kind === GeneralApiProblemKind.Ok) {
                 this._logger.info(`Patch account successfully: ${(response.data as [])?.length}`);

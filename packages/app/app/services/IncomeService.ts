@@ -101,7 +101,7 @@ export class IncomeService extends ApiAbstract {
 
     public async doPatchIncome(
         id: number,
-        body: { incomeName: string },
+        body: { incomeName: string; iconId: string | undefined },
     ): Promise<
         | {
               kind: GeneralApiProblemKind.Ok;
@@ -113,7 +113,8 @@ export class IncomeService extends ApiAbstract {
             this._logger.info('Start patch income');
             const userId = this._authService.userId;
             const response = await this.authPatch(`/user/${userId}/income/${id}`, {
-                incomeName: String(body.incomeName),
+                incomeName: body.incomeName ? String(body.incomeName) : undefined,
+                iconId: body.iconId ? String(body.iconId) : undefined,
             });
             if (response.kind === GeneralApiProblemKind.Ok) {
                 this._logger.info(`Patch income successfully: ${(response.data as [])?.length}`);

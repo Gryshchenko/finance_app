@@ -54,6 +54,7 @@ export type FieldModalProps = {
     /* ── container ── */
     style?: StyleProp<ViewStyle>;
     disabled?: boolean;
+    inputWrapperStyle?: ThemedStyle<ViewStyle>;
 };
 
 export function FieldModal({
@@ -75,6 +76,7 @@ export function FieldModal({
     status,
     style,
     disabled,
+    inputWrapperStyle,
 }: FieldModalProps) {
     const {
         themed,
@@ -102,6 +104,7 @@ export function FieldModal({
 
     const $triggers = [
         ...presetStyles.inputWrapper,
+        inputWrapperStyle,
         { justifyContent: 'center' as const },
         triggerStyle,
         status === 'error' && { borderColor: colors.error },

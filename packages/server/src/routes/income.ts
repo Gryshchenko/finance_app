@@ -40,7 +40,7 @@ incomeRouter.delete(
 incomeRouter.patch(
     '/:incomeId',
     validateQuery({}),
-    sanitizeRequestBody(['incomeName', 'status']),
+    sanitizeRequestBody(['incomeName', 'status', 'iconId']),
     routesInputValidation(patchIncomeValidationRules, incomeConvertValidationMessageToErrorCode),
     routesInputValidation([validatePathQueryProperty('incomeId')]),
     IncomeController.patch,

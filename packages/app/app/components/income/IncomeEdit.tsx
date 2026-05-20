@@ -34,6 +34,7 @@ export const IncomeEdit: FC<IIncomePros> = function IncomeEdit(_props) {
 
         const response = await incomeService.doPatchIncome(form.incomeId!, {
             incomeName: form.incomeName!,
+            iconId: form.iconId,
         });
         if (response.kind === GeneralApiProblemKind.Ok) {
             ToastService.info({

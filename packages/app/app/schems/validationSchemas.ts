@@ -70,23 +70,23 @@ const incomeCreate = {
         .min(3, translationsKeys.nameTooShort)
         .max(50, translationsKeys.nameTooLong),
     currencyId: Yup.number()
-        .min(Number.MIN_VALUE, translationsKeys.currencyInvalid)
-        .max(Number.MAX_VALUE, translationsKeys.currencyInvalid)
+        .min(Number.MIN_SAFE_INTEGER, translationsKeys.currencyInvalid)
+        .max(Number.MAX_SAFE_INTEGER, translationsKeys.currencyInvalid)
         .required(translationsKeys.currencyRequired),
     iconId: Yup.string().required(translationsKeys.iconRequired),
 };
 
 const accountCreate = {
     amount: Yup.number()
-        .min(Number.MIN_VALUE, translationsKeys.amountTooSmall)
-        .max(Number.MAX_VALUE, translationsKeys.amountTooLarge),
+        .min(Number.MIN_SAFE_INTEGER, translationsKeys.amountTooSmall)
+        .max(Number.MAX_SAFE_INTEGER, translationsKeys.amountTooLarge),
     accountName: Yup.string()
         .required(translationsKeys.nameRequired)
         .min(3, translationsKeys.nameTooShort)
         .max(50, translationsKeys.nameTooLong),
     currencyId: Yup.number()
-        .min(Number.MIN_VALUE, translationsKeys.currencyInvalid)
-        .max(Number.MAX_VALUE, translationsKeys.currencyInvalid)
+        .min(Number.MIN_SAFE_INTEGER, translationsKeys.currencyInvalid)
+        .max(Number.MAX_SAFE_INTEGER, translationsKeys.currencyInvalid)
         .required(translationsKeys.currencyRequired),
 };
 const categoryCreate = {
@@ -95,8 +95,8 @@ const categoryCreate = {
         .min(3, translationsKeys.nameTooShort)
         .max(50, translationsKeys.nameTooLong),
     currencyId: Yup.number()
-        .min(Number.MIN_VALUE, translationsKeys.currencyInvalid)
-        .max(Number.MAX_VALUE, translationsKeys.currencyInvalid)
+        .min(Number.MIN_SAFE_INTEGER, translationsKeys.currencyInvalid)
+        .max(Number.MAX_SAFE_INTEGER, translationsKeys.currencyInvalid)
         .required(translationsKeys.currencyRequired),
     budget: Yup.number()
         .transform((value, originalValue) => (originalValue === '' || originalValue === null ? null : value))
@@ -125,8 +125,8 @@ const emailEdit = {
 
 const accountEdit = {
     amount: Yup.number()
-        .min(0, translationsKeys.amountTooSmall)
-        .max(Number.MAX_VALUE, translationsKeys.amountTooLarge)
+        .min(Number.MIN_SAFE_INTEGER, translationsKeys.amountTooSmall)
+        .max(Number.MAX_SAFE_INTEGER, translationsKeys.amountTooLarge)
         .notRequired(),
     accountName: Yup.string().min(3, translationsKeys.nameTooShort).max(50, translationsKeys.nameTooLong).notRequired(),
     currencyId: Yup.number().notRequired(),
@@ -239,11 +239,11 @@ const buildTransactionCreateSchema = ({
         ...(currencyId !== sourceCurrencyId
             ? {
                   amountInCurrency: Yup.number()
-                      .min(Number.MIN_VALUE, translationsKeys.amountTooSmall)
-                      .max(Number.MAX_VALUE, translationsKeys.amountTooLarge),
+                      .min(Number.MIN_SAFE_INTEGER, translationsKeys.amountTooSmall)
+                      .max(Number.MAX_SAFE_INTEGER, translationsKeys.amountTooLarge),
                   sourceCurrencyId: Yup.number()
-                      .min(Number.MIN_VALUE, translationsKeys.currencyInvalid)
-                      .max(Number.MAX_VALUE, translationsKeys.currencyInvalid),
+                      .min(Number.MIN_SAFE_INTEGER, translationsKeys.currencyInvalid)
+                      .max(Number.MAX_SAFE_INTEGER, translationsKeys.currencyInvalid),
               }
             : {}),
         transactionTypeId: Yup.number()
@@ -253,15 +253,15 @@ const buildTransactionCreateSchema = ({
             )
             .required(translationsKeys.transactionTypeRequired),
         amount: Yup.number()
-            .min(Number.MIN_VALUE, translationsKeys.amountTooSmall)
-            .max(Number.MAX_VALUE, translationsKeys.amountTooLarge),
+            .min(Number.MIN_SAFE_INTEGER, translationsKeys.amountTooSmall)
+            .max(Number.MAX_SAFE_INTEGER, translationsKeys.amountTooLarge),
         description: Yup.string()
             .notRequired()
             .min(3, translationsKeys.descriptionTooShort)
             .max(150, translationsKeys.descriptionTooLong),
         currencyId: Yup.number()
-            .min(Number.MIN_VALUE, translationsKeys.currencyInvalid)
-            .max(Number.MAX_VALUE, translationsKeys.currencyInvalid),
+            .min(Number.MIN_SAFE_INTEGER, translationsKeys.currencyInvalid)
+            .max(Number.MAX_SAFE_INTEGER, translationsKeys.currencyInvalid),
         createdAt: Yup.date().min(twentyYearsAgo, translationsKeys.dateTooOld).max(now, translationsKeys.dateInFuture),
         accountId: Yup.number().when('transactionTypeId', (transactionTypeId, schema) => {
             if ((transactionTypeId as unknown as TransactionType) === TransactionType.Transafer)
@@ -304,7 +304,7 @@ const buildTransactionEditSchema = () => {
             .nullable(),
         amount: Yup.number()
             .min(0, translationsKeys.amountTooSmall)
-            .max(Number.MAX_VALUE, translationsKeys.amountTooLarge)
+            .max(Number.MAX_SAFE_INTEGER, translationsKeys.amountTooLarge)
             .notRequired(),
 
         description: Yup.string()
@@ -314,7 +314,7 @@ const buildTransactionEditSchema = () => {
 
         currencyId: Yup.number()
             .min(0, translationsKeys.currencyInvalid)
-            .max(Number.MAX_VALUE, translationsKeys.currencyInvalid)
+            .max(Number.MAX_SAFE_INTEGER, translationsKeys.currencyInvalid)
             .notRequired(),
 
         createdAt: Yup.date()

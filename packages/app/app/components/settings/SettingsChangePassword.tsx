@@ -66,7 +66,7 @@ export const SettingsChangePassword: FC = function SettingsChangePassword() {
                     />
                 );
             },
-        [isPasswordHidden],
+        [isPasswordHidden, colors.textDim],
     );
     const PasswordRightAccessoryRepeat: ComponentType<TextFieldAccessoryProps> = useMemo(
         () =>
@@ -81,7 +81,7 @@ export const SettingsChangePassword: FC = function SettingsChangePassword() {
                     />
                 );
             },
-        [isNewPasswordHidden],
+        [isNewPasswordHidden, colors.textDim],
     );
     return (
         <View style={$container}>

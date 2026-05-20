@@ -36,7 +36,6 @@ export const AccountEdit: FC<IAccountPros> = function AccountEdit(_props) {
         const response = await accountService.doPatchAccount(form.accountId!, {
             accountName: form.accountName!,
             amount: Number(form.amount!),
-            iconId: form.iconId,
         });
         if (response.kind === GeneralApiProblemKind.Ok) {
             ToastService.info({

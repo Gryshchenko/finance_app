@@ -100,13 +100,14 @@ export class IncomeController {
         const responseBuilder = new ResponseBuilder();
         try {
             const incomeId = Number(req.params?.incomeId);
-            const { incomeName, status } = req.body;
+            const { incomeName, status, iconId } = req.body;
             if (Utils.isEmpty(incomeName) && Utils.isNull(status)) {
                 throw new ValidationError({ message: 'Path income failed due reason: empty body' });
             }
             await IncomeServiceBuilder.build().patch(req.user?.userId as number, incomeId, {
                 incomeName,
                 status,
+                iconId,
             });
             res.status(HttpCode.NO_CONTENT).json(responseBuilder.setStatus(ResponseStatusType.OK).setData({}).build());
         } catch (e: unknown) {

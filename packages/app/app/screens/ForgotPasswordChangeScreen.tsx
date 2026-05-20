@@ -72,7 +72,7 @@ export const ForgotPasswordChangeScreen: FC<Props> = (_props) => {
                     />
                 );
             },
-        [isAuthPasswordHidden, colors.palette.neutral800],
+        [isAuthPasswordHidden, colors.textDim],
     );
     const PasswordRightAccessoryRepeat: ComponentType<TextFieldAccessoryProps> = useMemo(
         () =>
@@ -87,7 +87,7 @@ export const ForgotPasswordChangeScreen: FC<Props> = (_props) => {
                     />
                 );
             },
-        [isRepeatPasswordHidden, colors.palette.neutral800],
+        [isRepeatPasswordHidden, colors.textDim],
     );
 
     return (

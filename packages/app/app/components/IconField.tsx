@@ -21,6 +21,8 @@ import { useAppTheme } from '@/theme/context';
 import { spacing } from '@/theme/spacing';
 import { ThemedStyle } from '@/theme/types';
 
+import { FieldPresets } from './FieldPresets';
+
 type IconCategory = {
     name: string;
     icons: CategoryIconType[];
@@ -37,7 +39,23 @@ const iconCategories: IconCategory[] = [
     { name: 'VIP', icons: Object.values(VIPIcon) },
 ];
 
+function formatIconName(icon: string): string {
+    return icon
+        .replace(/([A-Z])/g, ' $1')
+        .replace(/(\d+)/g, ' $1')
+        .trim()
+        .replace(/^\w/, (c) => c.toUpperCase());
+}
+
+function getIconCategory(icon: CategoryIconType): string {
+    for (const category of iconCategories) {
+        if (category.icons.includes(icon)) return category.name;
+    }
+    return '';
+}
+
 type IconFieldProps = {
+    preset?: FieldPresets;
     value: CategoryIconType | string | undefined;
     onChange?: (icon: CategoryIconType) => void;
     labelTx?: TxKeyPath;
@@ -52,6 +70,7 @@ type IconFieldProps = {
 };
 
 export function IconField({
+    preset = 'default',
     value,
     onChange,
     labelTx,
@@ -64,28 +83,38 @@ export function IconField({
     helperTx,
     helperTxOptions,
 }: IconFieldProps) {
-    const valueInWork = iconRegistry[value as unknown as CategoryIconType] ? (value as CategoryIconType) : AccountIcon.Cash;
+    const hasValue = !!value && !!iconRegistry[value as unknown as CategoryIconType];
+    const valueInWork = hasValue ? (value as CategoryIconType) : undefined;
     const { themed, theme } = useAppTheme();
 
     return (
         <FieldModal
+            preset={preset}
             labelTx={labelTx}
             label={label}
-            style={[themed($containerOverride), style]}
+            style={style}
             disabled={disabled}
             status={status}
             helper={helper}
             helperTx={helperTx}
             helperTxOptions={helperTxOptions}
             HelperTextProps={HelperTextProps}
-            triggerStyle={themed($triggerOverride)}
+            inputWrapperStyle={$inputWrapper}
             renderTrigger={() =>
                 valueInWork ? (
-                    <View style={themed($selectedIconWrapper)}>
-                        <CategoryIcon name={valueInWork} size={28} color={theme.colors.text} />
+                    <View style={themed($triggerRow)}>
+                        <View style={themed($iconPreview)}>
+                            <CategoryIcon name={valueInWork} size={20} color={theme.colors.palette.primary500} />
+                        </View>
+                        <View style={themed($triggerTextWrapper)}>
+                            <Text style={themed($triggerName)}>{formatIconName(valueInWork)}</Text>
+                            <Text style={themed($triggerCategory)}>{getIconCategory(valueInWork)}</Text>
+                        </View>
                     </View>
                 ) : (
-                    <Text style={themed($placeholderText)}>{translate('common:icon')}</Text>
+                    <View style={themed($triggerRow)}>
+                        <Text style={themed($placeholderText)}>{translate('common:icon')}</Text>
+                    </View>
                 )
             }
             renderContent={(close) => (
@@ -121,30 +150,43 @@ export function IconField({
 
 /* ── IconField-specific style overrides ── */
 
-const $containerOverride: ThemedStyle<ViewStyle> = () => ({
-    height: 80,
-    width: '100%',
+const $triggerRow: ThemedStyle<ViewStyle> = () => ({
+    flexDirection: 'row',
+    alignItems: 'center',
+    paddingHorizontal: 0,
+    flex: 1,
+    gap: 12,
+});
+
+const $iconPreview: ThemedStyle<ViewStyle> = ({ colors, border }) => ({
+    width: 36,
+    height: 36,
+    borderRadius: border.borderRadius,
+    backgroundColor: colors.palette.primary100,
     alignItems: 'center',
     justifyContent: 'center',
 });
 
-const $triggerOverride: ThemedStyle<ViewStyle> = () => ({
-    alignItems: 'center',
-    justifyContent: 'center',
-    height: 54,
-    width: 54,
+const $triggerTextWrapper: ThemedStyle<ViewStyle> = () => ({
+    flex: 1,
 });
 
-const $selectedIconWrapper: ThemedStyle<ViewStyle> = () => ({
-    display: 'flex',
-    width: '100%',
-    alignItems: 'center',
-    justifyContent: 'center',
+const $triggerName: ThemedStyle<TextStyle> = ({ colors, typography }) => ({
+    fontSize: 14,
+    color: colors.text,
+    fontFamily: typography.primary.medium,
+});
+
+const $triggerCategory: ThemedStyle<TextStyle> = ({ colors }) => ({
+    fontSize: 11,
+    color: colors.textDim,
+    marginTop: 1,
 });
 
 const $placeholderText: ThemedStyle<TextStyle> = ({ colors }) => ({
+    flex: 1,
     color: colors.textDim,
-    fontSize: 12,
+    fontSize: 14,
 });
 
 const $categorySection: ThemedStyle<ViewStyle> = ({ spacing }) => ({
@@ -181,4 +223,8 @@ const $iconItemSelected: ThemedStyle<ViewStyle> = ({ colors }) => ({
     backgroundColor: colors.palette.primary100,
     borderWidth: 2,
     borderColor: colors.palette.primary500,
+});
+
+const $inputWrapper: ThemedStyle<ViewStyle> = () => ({
+    height: 54,
 });

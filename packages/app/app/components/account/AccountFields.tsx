@@ -4,7 +4,6 @@ import { ICurrency } from 'tenpercent/shared';
 
 import { CurrencyField } from '@/components/CurrencyField';
 import { GeneralDetailView } from '@/components/GeneralDetailView';
-import { IconField } from '@/components/IconField';
 import { TextField } from '@/components/TextField';
 import { CurrencyDropdown } from '@/components/Toggle/CurrencyDropdown';
 import { useCurrency } from '@/context/CurrencyContext';
@@ -41,15 +40,6 @@ export const AccountFields: FC<IProps> = function AccountFields(_props) {
             onDelete={onDelete}
         >
             <View style={$fieldWrapper as undefined}>
-                <IconField
-                    value={form.iconId}
-                    disabled={isView}
-                    onChange={(newIcon) => {
-                        if (handleChange) {
-                            handleChange('iconId', newIcon);
-                        }
-                    }}
-                />
                 <TextField
                     preset={'underlineBig'}
                     focusOnMount={true}
@@ -90,13 +80,23 @@ export const AccountFields: FC<IProps> = function AccountFields(_props) {
                     helperTx={errors?.currencyId}
                     status={errors?.currencyId ? 'error' : undefined}
                     value={form.currencyId}
-                    editable={!isView}
+                    editable={isCreate}
                     onChange={(item: ICurrency) => {
                         if (handleChange) {
                             handleChange('currencyId', item.currencyId);
                         }
                     }}
                 />
+                {/*<IconField*/}
+                {/*    preset={'underline'}*/}
+                {/*    value={form.iconId}*/}
+                {/*    disabled={isView}*/}
+                {/*    onChange={(newIcon) => {*/}
+                {/*        if (handleChange) {*/}
+                {/*            handleChange('iconId', newIcon);*/}
+                {/*        }*/}
+                {/*    }}*/}
+                {/*/>*/}
             </View>
         </GeneralDetailView>
     );

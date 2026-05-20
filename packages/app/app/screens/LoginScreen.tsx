@@ -71,7 +71,7 @@ export const LoginScreen: FC<LoginScreenProps> = (_props) => {
                     />
                 );
             },
-        [isAuthPasswordHidden, colors.text],
+        [isAuthPasswordHidden, colors.textDim],
     );
 
     return (

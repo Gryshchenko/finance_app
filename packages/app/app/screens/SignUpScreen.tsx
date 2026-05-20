@@ -162,11 +162,11 @@ export const SignUpScreen: FC<SignUpScreenProps> = (_props) => {
                     />
                 );
             },
-        [isAuthPasswordHidden, colors.palette.neutral800],
+        [isAuthPasswordHidden, colors.textDim],
     );
 
     return (
-        <Screen preset="fixed" contentContainerStyle={themed($screenContentContainer)} safeAreaEdges={['top', 'bottom']}>
+        <Screen preset="fixed" contentContainerStyle={themed($screenContentContainer)} safeAreaEdges={['top']}>
             <HeaderTitle subLogoText={'signUpScreen:signup'} />
             <Text tx={'signUpScreen:title'} preset="default" style={themed($title)} />
             <Text tx={'signUpScreen:subTitle'} preset="default" style={themed($subTitle)} />
@@ -228,40 +228,49 @@ export const SignUpScreen: FC<SignUpScreenProps> = (_props) => {
                     status={errors.currency ? 'error' : undefined}
                     onChange={(v) => handleChange('currency', v.currencyCode)}
                 />
-            </KeyboardAwareScrollView>
-
-            {isBiometricAvailable && (
-                <View style={themed($biometricRow)}>
-                    <View style={$biometricInfo}>
-                        <MaterialIcons name={biometricType === 'face' ? 'face' : 'fingerprint'} size={28} color={colors.text} />
-                        <View style={$biometricTextBlock}>
-                            <Text tx="signUpScreen:biometricTitle" style={themed($biometricTitle)} />
-                            <Text
-                                tx={
-                                    biometricType === 'face'
-                                        ? 'signUpScreen:biometricSubtitleFace'
-                                        : 'signUpScreen:biometricSubtitleFingerprint'
-                                }
-                                style={themed($biometricSubtitle)}
+                {isBiometricAvailable && (
+                    <View style={themed($biometricRow)}>
+                        <View style={$biometricInfo}>
+                            <MaterialIcons
+                                name={biometricType === 'face' ? 'face' : 'fingerprint'}
+                                size={28}
+                                color={colors.text}
                             />
+                            <View style={$biometricTextBlock}>
+                                <Text tx="signUpScreen:biometricTitle" style={themed($biometricTitle)} />
+                                <Text
+                                    tx={
+                                        biometricType === 'face'
+                                            ? 'signUpScreen:biometricSubtitleFace'
+                                            : 'signUpScreen:biometricSubtitleFingerprint'
+                                    }
+                                    style={themed($biometricSubtitle)}
+                                />
+                            </View>
                         </View>
+                        <Switch
+                            value={enableBiometric}
+                            onValueChange={setEnableBiometric}
+                            trackColor={{
+                                false: colors.palette.neutral300,
+                                true: colors.palette.primary500,
+                            }}
+                            thumbColor={colors.palette.neutral100}
+                            // iOS: renders the system switch; Android: Material switch
+                            accessibilityLabel="Enable biometric authentication"
+                        />
                     </View>
-                    <Switch
-                        value={enableBiometric}
-                        onValueChange={setEnableBiometric}
-                        trackColor={{
-                            false: colors.palette.neutral300,
-                            true: colors.palette.primary500,
-                        }}
-                        thumbColor={colors.palette.neutral100}
-                        // iOS: renders the system switch; Android: Material switch
-                        accessibilityLabel="Enable biometric authentication"
-                    />
-                </View>
-            )}
+                )}
 
-            <Button testID="signUp-button" tx="common:continue" style={themed($tapButton)} preset="reversed" onPress={signUp} />
-            <TextButton testID="back-button" tx="common:back" style={themed($tapButton)} onPress={goBack} />
+                <Button
+                    testID="signUp-button"
+                    tx="common:continue"
+                    style={themed($tapButton)}
+                    preset="reversed"
+                    onPress={signUp}
+                />
+                <TextButton testID="back-button" tx="common:back" style={themed($tapButton)} onPress={goBack} />
+            </KeyboardAwareScrollView>
         </Screen>
     );
 };

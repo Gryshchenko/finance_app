@@ -4,6 +4,8 @@ import { createSignupValidationRules } from 'src/utils/validation/routesInputVal
 
 const incomeConvertValidationMessageToErrorCode = (path: string): ErrorCode => {
     switch (path) {
+        case 'iconId':
+            return ErrorCode.INCOME_ERROR;
         case 'status': {
             return ErrorCode.INCOME_ERROR;
         }
