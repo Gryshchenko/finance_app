@@ -1,9 +1,8 @@
 import { forwardRef, useState } from 'react';
 import { Pressable, SectionList, TextStyle, View, ViewStyle } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
-import { AccountIcon, IPagination, ITransactionListItem, TransactionType, Utils, DateFormat, Time } from 'tenpercent/shared';
+import { IPagination, ITransactionListItem, TransactionType, Utils, DateFormat, Time } from 'tenpercent/shared';
 
-import { CategoryIcon } from '@/components/CategoryIcon';
 import { EmptyState } from '@/components/EmptyState';
 import { Icon } from '@/components/Icon';
 import SectionListWithKeyboardAwareScrollView, { SectionType } from '@/components/SectionListWithKeyboardAwareScrollView';
@@ -45,25 +44,6 @@ const getTypeKey = (typeId: TransactionType): string => {
     }
 };
 
-const getTransactionTitle = (transaction: ITransactionListItem): string => {
-    switch (transaction.transactionTypeId) {
-        case TransactionType.Expense:
-            return translate('transactionScreen:fromTo', {
-                from: transaction.accountName ?? '-',
-                to: transaction.categoryName ?? '-',
-            });
-        case TransactionType.Income:
-            return transaction.incomeName ?? '-';
-        case TransactionType.Transafer:
-            return translate('transactionScreen:fromTo', {
-                from: transaction.accountName ?? '-',
-                to: transaction.targetAccountName ?? '-',
-            });
-        default:
-            return '-';
-    }
-};
-
 const getTransactionLabel = (transaction: ITransactionListItem): string => {
     switch (transaction.transactionTypeId) {
         case TransactionType.Expense:
@@ -87,14 +67,6 @@ const getFormattedTime = (createdAt: string): string => {
     } catch {
         return '';
     }
-};
-
-const isIncome = (typeId: TransactionType): boolean => typeId === TransactionType.Income;
-
-const formatAmount = (amount: number, typeId: TransactionType, currencySymbol: string): string => {
-    const formatted = CurrencyUtils.formatWithDelimiter(Math.abs(amount), currencySymbol);
-    if (isIncome(typeId)) return `+${formatted}`;
-    return `-${formatted}`;
 };
 
 const formatSectionDate = (dateStr: string): string => {
@@ -183,15 +155,53 @@ const TransactionSectionList = forwardRef<SectionList<ITransactionListItem>, Pro
             }
         };
 
+        const getItemSides = (transaction: ITransactionListItem) => {
+            const { amount, currencyId, targetAmount, targetCurrencyId, transactionTypeId } = transaction;
+            const fromAmount = CurrencyUtils.formatWithDelimiter(Math.abs(amount), getCurrencySymbol(currencyId));
+
+            switch (transactionTypeId) {
+                case TransactionType.Expense:
+                    return {
+                        fromLabel: transaction.accountName ?? '-',
+                        fromAmount: `-${fromAmount}`,
+                        fromAmountStyle: $transferAmountFrom,
+                        toLabel: transaction.categoryName ?? '-',
+                        toAmount: ` `,
+                    };
+                case TransactionType.Income:
+                    return {
+                        fromAmount: ` `,
+                        fromLabel: transaction.incomeName ?? '-',
+                        toLabel: transaction.accountName ?? '-',
+                        toAmount: `+${fromAmount}`,
+                        toAmountStyle: $transferAmountTo,
+                    };
+                case TransactionType.Transafer: {
+                    const toAmt = CurrencyUtils.formatWithDelimiter(
+                        Math.abs(targetAmount ?? amount),
+                        getCurrencySymbol(targetCurrencyId ?? currencyId),
+                    );
+                    return {
+                        fromLabel: transaction.accountName ?? '-',
+                        fromAmount: `-${fromAmount}`,
+                        fromAmountStyle: $transferAmountFrom,
+                        toLabel: transaction.targetAccountName ?? '-',
+                        toAmount: `+${toAmt}`,
+                        toAmountStyle: $transferAmountTo,
+                    };
+                }
+                default:
+                    return { fromLabel: '-', toLabel: '-' };
+            }
+        };
+
         const renderItem = ({ item: transaction }: { item: ITransactionListItem }) => {
             if (!transaction) return null;
-            const { transactionId, amount, currencyId, transactionTypeId, createdAt } = transaction;
+            const { transactionId, createdAt } = transaction;
             const label = getTransactionLabel(transaction);
-            const title = getTransactionTitle(transaction);
             const category = getSubtitleCategory(transaction);
             const time = getFormattedTime(createdAt);
-            const incomeType = isIncome(transactionTypeId);
-            const amountText = formatAmount(amount, transactionTypeId, getCurrencySymbol(currencyId));
+            const sides = getItemSides(transaction);
 
             return (
                 <Pressable
@@ -200,33 +210,40 @@ const TransactionSectionList = forwardRef<SectionList<ITransactionListItem>, Pro
                     onPress={() => onPress(transactionId, label)}
                     style={themed([$card])}
                 >
-                    <View style={themed([$cardContent])}>
-                        {/* Icon circle */}
-                        <View style={themed([$iconCircle, incomeType && $iconCircleIncome])}>
-                            <CategoryIcon name={AccountIcon.Wallet} size={20} color={incomeType ? '#27ae60' : '#1a1a1a'} />
-                        </View>
-
-                        {/* Name + subtitle */}
-                        <View style={$labelContainer}>
-                            <Text style={themed([$transactionName])} numberOfLines={1} ellipsizeMode="tail">
-                                {title}
-                            </Text>
-                            <View style={$subtitleRow}>
-                                <Text style={themed([$subtitleText])}>{category}</Text>
-                                {time ? (
-                                    <>
-                                        <View style={themed([$dot])} />
-                                        <Text style={themed([$subtitleText])}>{time}</Text>
-                                    </>
+                    <View style={$transferRow}>
+                        <View style={$transferSide}>
+                            <Text style={themed([$transferDirectionLabel])}>{translate('transactionScreen:from')}</Text>
+                            <View style={$nameAmountRow}>
+                                <Text style={themed([$transactionName])} numberOfLines={1} ellipsizeMode="tail">
+                                    {sides.fromLabel}
+                                </Text>
+                                {sides.fromAmount ? (
+                                    <Text style={themed([sides.fromAmountStyle!])}>{sides.fromAmount}</Text>
                                 ) : null}
                             </View>
                         </View>
 
-                        {/* Amount + chevron */}
-                        <View style={$amountContainer}>
-                            <Text style={themed([$amountText, incomeType ? $amountIncome : $amountExpense])}>{amountText}</Text>
-                            <Icon icon={'caretRight'} size={16} color="#888888" />
+                        <Icon icon={'caretRight'} size={14} color="#888888" />
+
+                        <View style={$transferSide}>
+                            <Text style={themed([$transferDirectionLabel])}>{translate('transactionScreen:to')}</Text>
+                            <View style={$nameAmountRow}>
+                                <Text style={themed([$transactionName])} numberOfLines={1} ellipsizeMode="tail">
+                                    {sides.toLabel}
+                                </Text>
+                                {sides.toAmount ? <Text style={themed([sides.toAmountStyle!])}>{sides.toAmount}</Text> : null}
+                            </View>
                         </View>
+                    </View>
+
+                    <View style={$subtitleRow}>
+                        <Text style={themed([$subtitleText])}>{category}</Text>
+                        {time ? (
+                            <>
+                                <View style={themed([$dot])} />
+                                <Text style={themed([$subtitleText])}>{time}</Text>
+                            </>
+                        ) : null}
                     </View>
                 </Pressable>
             );
@@ -295,45 +312,22 @@ const $card: ThemedStyle<ViewStyle> = ({ colors }) => ({
     backgroundColor: colors.background,
     borderWidth: 1,
     borderColor: colors.separator,
-    padding: 15,
-    marginBottom: 8,
+    paddingHorizontal: 12,
+    paddingVertical: 8,
+    marginBottom: 6,
 });
-
-const $cardContent: ViewStyle = {
-    flexDirection: 'row',
-    alignItems: 'center',
-};
-
-const $iconCircle: ThemedStyle<ViewStyle> = ({ colors }) => ({
-    width: 40,
-    height: 40,
-    borderRadius: 20,
-    backgroundColor: colors.background,
-    alignItems: 'center',
-    justifyContent: 'center',
-    marginRight: 16,
-});
-
-const $iconCircleIncome: ThemedStyle<ViewStyle> = ({ colors }) => ({
-    backgroundColor: colors.background,
-});
-
-const $labelContainer: ViewStyle = {
-    flex: 1,
-    flexDirection: 'column',
-};
 
 const $transactionName: ThemedStyle<TextStyle> = ({ colors, typography }) => ({
-    fontSize: 16,
+    fontSize: 14,
     fontFamily: typography.fonts.funnelSans.bold,
     color: colors.text,
+    flexShrink: 1,
 });
 
 const $subtitleRow: ViewStyle = {
     flexDirection: 'row',
     alignItems: 'center',
     gap: 6,
-    marginTop: 2,
 };
 
 const $subtitleText: ThemedStyle<TextStyle> = ({ colors }) => ({
@@ -350,23 +344,38 @@ const $dot: ThemedStyle<ViewStyle> = ({ colors }) => ({
     backgroundColor: colors.textDim,
 });
 
-const $amountContainer: ViewStyle = {
+const $transferRow: ViewStyle = {
     flexDirection: 'row',
     alignItems: 'center',
-    gap: 8,
-    marginLeft: 8,
+    gap: 10,
+    marginBottom: 4,
 };
 
-const $amountText: ThemedStyle<TextStyle> = ({ colors, typography }) => ({
-    fontSize: 18,
-    fontFamily: typography.fonts.funnelSans.bold,
-    color: colors.text,
+const $transferSide: ViewStyle = {
+    flex: 1,
+};
+
+const $nameAmountRow: ViewStyle = {
+    flexDirection: 'row',
+    alignItems: 'baseline',
+    gap: 6,
+};
+
+const $transferDirectionLabel: ThemedStyle<TextStyle> = ({ colors }) => ({
+    fontSize: 10,
+    color: colors.textDim,
+    textTransform: 'uppercase',
+    letterSpacing: 1,
+    marginBottom: 1,
 });
 
-const $amountIncome: ThemedStyle<TextStyle> = () => ({
-    color: '#27ae60',
-});
-
-const $amountExpense: ThemedStyle<TextStyle> = ({ colors }) => ({
+const $transferAmountFrom: ThemedStyle<TextStyle> = ({ colors }) => ({
+    fontSize: 13,
     color: colors.error,
+});
+
+const $transferAmountTo: ThemedStyle<TextStyle> = () => ({
+    fontSize: 13,
+    color: '#27ae60',
+    marginTop: 2,
 });

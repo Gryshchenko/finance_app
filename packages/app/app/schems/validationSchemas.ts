@@ -70,7 +70,7 @@ const incomeCreate = {
         .min(3, translationsKeys.nameTooShort)
         .max(50, translationsKeys.nameTooLong),
     currencyId: Yup.number()
-        .min(Number.MIN_SAFE_INTEGER, translationsKeys.currencyInvalid)
+        .min(1, translationsKeys.currencyInvalid)
         .max(Number.MAX_SAFE_INTEGER, translationsKeys.currencyInvalid)
         .required(translationsKeys.currencyRequired),
     iconId: Yup.string().required(translationsKeys.iconRequired),
@@ -85,7 +85,7 @@ const accountCreate = {
         .min(3, translationsKeys.nameTooShort)
         .max(50, translationsKeys.nameTooLong),
     currencyId: Yup.number()
-        .min(Number.MIN_SAFE_INTEGER, translationsKeys.currencyInvalid)
+        .min(1, translationsKeys.currencyInvalid)
         .max(Number.MAX_SAFE_INTEGER, translationsKeys.currencyInvalid)
         .required(translationsKeys.currencyRequired),
 };
@@ -106,7 +106,6 @@ const categoryCreate = {
 };
 const incomeEdit = {
     incomeName: Yup.string().min(3, translationsKeys.nameTooShort).max(50, translationsKeys.nameTooLong).notRequired(),
-    currencyId: Yup.number().notRequired(),
 };
 const publicNameEdit = {
     publicName: Yup.string()
@@ -129,7 +128,6 @@ const accountEdit = {
         .max(Number.MAX_SAFE_INTEGER, translationsKeys.amountTooLarge)
         .notRequired(),
     accountName: Yup.string().min(3, translationsKeys.nameTooShort).max(50, translationsKeys.nameTooLong).notRequired(),
-    currencyId: Yup.number().notRequired(),
 };
 const signUpConfirmation = {
     confirmationCode: Yup.string()
@@ -216,7 +214,6 @@ const forgotPasswordChangeSchema = Yup.object({
 
 const categoryEdit = {
     categoryName: Yup.string().min(3, translationsKeys.nameTooShort).max(50, translationsKeys.nameTooLong).notRequired(),
-    currencyId: Yup.number().notRequired(),
     budget: Yup.number()
         .transform((value, originalValue) => (originalValue === '' || originalValue === null ? null : value))
         .nullable()
@@ -225,10 +222,10 @@ const categoryEdit = {
 };
 
 const buildTransactionCreateSchema = ({
-    sourceCurrencyId,
+    targetCurrencyId,
     currencyId,
 }: {
-    sourceCurrencyId: number | undefined;
+    targetCurrencyId: number | undefined;
     currencyId: number;
 }) => {
     const now = new Date();
@@ -236,13 +233,13 @@ const buildTransactionCreateSchema = ({
     twentyYearsAgo.setFullYear(twentyYearsAgo.getFullYear() - 20);
 
     const transactionsCreate = {
-        ...(currencyId !== sourceCurrencyId
+        ...(currencyId !== targetCurrencyId
             ? {
-                  amountInCurrency: Yup.number()
+                  targetAmount: Yup.number()
                       .min(Number.MIN_SAFE_INTEGER, translationsKeys.amountTooSmall)
                       .max(Number.MAX_SAFE_INTEGER, translationsKeys.amountTooLarge),
-                  sourceCurrencyId: Yup.number()
-                      .min(Number.MIN_SAFE_INTEGER, translationsKeys.currencyInvalid)
+                  targetCurrencyId: Yup.number()
+                      .min(1, translationsKeys.currencyInvalid)
                       .max(Number.MAX_SAFE_INTEGER, translationsKeys.currencyInvalid),
               }
             : {}),
@@ -260,7 +257,7 @@ const buildTransactionCreateSchema = ({
             .min(3, translationsKeys.descriptionTooShort)
             .max(150, translationsKeys.descriptionTooLong),
         currencyId: Yup.number()
-            .min(Number.MIN_SAFE_INTEGER, translationsKeys.currencyInvalid)
+            .min(1, translationsKeys.currencyInvalid)
             .max(Number.MAX_SAFE_INTEGER, translationsKeys.currencyInvalid),
         createdAt: Yup.date().min(twentyYearsAgo, translationsKeys.dateTooOld).max(now, translationsKeys.dateInFuture),
         accountId: Yup.number().when('transactionTypeId', (transactionTypeId, schema) => {
@@ -290,12 +287,28 @@ const buildTransactionCreateSchema = ({
     };
     return Yup.object(transactionsCreate);
 };
-const buildTransactionEditSchema = () => {
+const buildTransactionEditSchema = ({
+    targetCurrencyId,
+    currencyId,
+}: {
+    targetCurrencyId: number | undefined;
+    currencyId: number;
+}) => {
     const now = new Date();
     const twentyYearsAgo = new Date();
     twentyYearsAgo.setFullYear(twentyYearsAgo.getFullYear() - 20);
 
     const transactionEdit = {
+        ...(currencyId !== targetCurrencyId
+            ? {
+                  targetAmount: Yup.number()
+                      .min(Number.MIN_SAFE_INTEGER, translationsKeys.amountTooSmall)
+                      .max(Number.MAX_SAFE_INTEGER, translationsKeys.amountTooLarge),
+                  targetCurrencyId: Yup.number()
+                      .min(1, translationsKeys.currencyInvalid)
+                      .max(Number.MAX_SAFE_INTEGER, translationsKeys.currencyInvalid),
+              }
+            : {}),
         transactionTypeId: Yup.number()
             .oneOf(
                 [TransactionType.Expense, TransactionType.Income, TransactionType.Transafer],
@@ -313,7 +326,7 @@ const buildTransactionEditSchema = () => {
             .notRequired(),
 
         currencyId: Yup.number()
-            .min(0, translationsKeys.currencyInvalid)
+            .min(1, translationsKeys.currencyInvalid)
             .max(Number.MAX_SAFE_INTEGER, translationsKeys.currencyInvalid)
             .notRequired(),
 

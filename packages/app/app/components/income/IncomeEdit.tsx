@@ -1,5 +1,6 @@
 import { FC } from 'react';
 import { StyleProp, ViewStyle } from 'react-native';
+import { useNavigation } from '@react-navigation/native';
 import { IIncome, Utils } from 'tenpercent/shared';
 
 import { EmptyState } from '@/components/EmptyState';
@@ -15,6 +16,7 @@ import { IncomeService } from '@/services/IncomeService';
 import { InvalidationGroups } from '@/services/QueryCacheService';
 import ToastService from '@/services/ToastService';
 import type { BackTarget } from '@/types/BackTarget';
+import { OverviewPath } from '@/types/OverviewPath';
 
 interface IIncomePros {
     data: Partial<IIncome> | undefined;
@@ -23,6 +25,7 @@ interface IIncomePros {
 
 export const IncomeEdit: FC<IIncomePros> = function IncomeEdit(_props) {
     const { data, back } = _props;
+    const navigation = useNavigation();
     const invalidateQuery = useInvalidateQuery();
     const { form, handleChange, save, errors, setErrors } = useEditView<Partial<IIncome>>(data!, incomeEditSchema);
     const goBackSmart = useGoBackSmart(back);
@@ -60,7 +63,7 @@ export const IncomeEdit: FC<IIncomePros> = function IncomeEdit(_props) {
                 message: 'common:deleteAccountSuccess',
             });
             await invalidateQuery(InvalidationGroups.income(form.incomeId));
-            goBackSmart();
+            navigation.getParent()?.navigate(OverviewPath.Dashboard);
         } else {
             ToastService.error({
                 title: 'common:error',

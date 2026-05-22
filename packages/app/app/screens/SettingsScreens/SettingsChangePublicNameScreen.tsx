@@ -12,8 +12,7 @@ import { $styles } from '@/theme/styles';
 type Props = NativeStackScreenProps<SettingsStackParamList, SettingsPath.ChangePublicName>;
 
 export const SettingsChangePublicNameScreen: FC<Props> = function SettingsChangePublicNameScreen(_props) {
-    const { route } = _props;
-    const { publicName } = route.params;
+    const publicName = _props.route?.params?.publicName;
     return (
         <Screen preset="fixed" contentContainerStyle={[$styles.screen, $topAlignScreen]} safeAreaEdges={['bottom']}>
             <Header

@@ -144,7 +144,7 @@ export const TransactionStatsBar: FC<TransactionStatsBarProps> = function Transa
                     valueColor: deltaColor,
                     rightElement:
                         delta.direction !== 'none' ? (
-                            <MaterialIcons name={getDeltaIcon(delta)} size={16} color={deltaColor} />
+                            <MaterialIcons name={getDeltaIcon(delta)} size={14} color={deltaColor} />
                         ) : undefined,
                 },
             );
@@ -180,7 +180,7 @@ export const TransactionStatsBar: FC<TransactionStatsBarProps> = function Transa
                     valueColor: deltaColor,
                     rightElement:
                         delta.direction !== 'none' ? (
-                            <MaterialIcons name={getDeltaIcon(delta)} size={16} color={deltaColor} />
+                            <MaterialIcons name={getDeltaIcon(delta)} size={14} color={deltaColor} />
                         ) : undefined,
                 },
             );

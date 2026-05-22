@@ -89,6 +89,8 @@ const createTransactionValidationRules = [
             });
         })
         .bail(),
+    ...createSignupValidationRules('targetAmount', 'number', { optional: true }),
+    ...createSignupValidationRules('targetCurrencyId', 'number', { optional: true }),
     ...createSignupValidationRules('currencyId', 'number', { optional: true }),
     ...createSignupValidationRules('transactionTypeId', 'number', {}),
     ...createSignupValidationRules('amount', 'number', {}),
@@ -155,6 +157,9 @@ const patchTransactionValidationRules = [
     ...createSignupValidationRules('createdAt', 'date', {
         optional: true,
     }),
+
+    ...createSignupValidationRules('targetAmount', 'number', { optional: true }),
+    ...createSignupValidationRules('targetCurrencyId', 'number', { optional: true }),
     body('createdAt')
         .custom((_, { req }) => {
             const { createdAt } = req.body;
@@ -174,6 +179,12 @@ const patchTransactionValidationRules = [
 
 export const transactionConvertValidationMessageToErrorCode = (path: string): ErrorCode => {
     switch (path) {
+        case 'targetCurrencyId': {
+            return ErrorCode.TRANSACTION_ERROR;
+        }
+        case 'targetAmount': {
+            return ErrorCode.TRANSACTION_ERROR;
+        }
         case 'targetAccountId': {
             return ErrorCode.ACCOUNT_ERROR;
         }

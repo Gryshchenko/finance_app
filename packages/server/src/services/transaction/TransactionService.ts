@@ -335,28 +335,51 @@ export default class TransactionService extends LoggerBase implements ITransacti
     private async createIncomeTransaction(transaction: ICreateTransaction): Promise<number> {
         return this.processTransaction(
             transaction,
-            async ({ transactionAmount, accountId, userId, trx }) => {
+            async ({ transactionAmount, accountId, userId, trx, targetAmount, currencyId }) => {
                 const accountInWork = await this._accountService.getAccount(userId, accountId as number);
 
                 this.validateAccount(accountInWork);
-
-                await this._balanceService.patch(
-                    userId,
-                    { amount: transactionAmount, currencyCode: accountInWork?.currencyCode as string },
-                    trx,
-                );
-                await this._accountService.patchAccount(userId, accountId as number, { amount: transactionAmount }, trx);
-                await this._statsOrchestratorService.create({
-                    type: TransactionType.Income,
-                    userId,
-                    data: {
-                        amount: transactionAmount,
-                        incomeId: transaction.incomeId as number,
-                        accountId,
-                        date: transaction.createdAt,
-                    },
-                    trx,
-                });
+                if (
+                    accountInWork?.currencyId !== currencyId &&
+                    Utils.isNotNull(accountInWork?.currencyId) &&
+                    Utils.isNotNull(targetAmount)
+                ) {
+                    await this._balanceService.patch(
+                        userId,
+                        { amount: targetAmount, currencyCode: accountInWork?.currencyCode as string },
+                        trx,
+                    );
+                    await this._accountService.patchAccount(userId, accountId as number, { amount: transactionAmount }, trx);
+                    await this._statsOrchestratorService.create({
+                        type: TransactionType.Income,
+                        userId,
+                        data: {
+                            amount: transactionAmount,
+                            incomeId: transaction.incomeId as number,
+                            accountId,
+                            date: transaction.createdAt,
+                        },
+                        trx,
+                    });
+                } else {
+                    await this._balanceService.patch(
+                        userId,
+                        { amount: transactionAmount, currencyCode: accountInWork?.currencyCode as string },
+                        trx,
+                    );
+                    await this._accountService.patchAccount(userId, accountId as number, { amount: transactionAmount }, trx);
+                    await this._statsOrchestratorService.create({
+                        type: TransactionType.Income,
+                        userId,
+                        data: {
+                            amount: transactionAmount,
+                            incomeId: transaction.incomeId as number,
+                            accountId,
+                            date: transaction.createdAt,
+                        },
+                        trx,
+                    });
+                }
             },
             'income',
         );
@@ -440,6 +463,7 @@ export default class TransactionService extends LoggerBase implements ITransacti
             userId,
             targetAccountId,
             currencyId,
+            targetCurrencyId,
         }: {
             currencyId?: number;
             transactionAmount: number;
@@ -447,12 +471,14 @@ export default class TransactionService extends LoggerBase implements ITransacti
             accountId: number;
             userId: number;
             targetAccountId?: number;
+            targetAmount?: number;
+            targetCurrencyId?: number;
         }) => Promise<void>,
         transactionType: 'income' | 'expense' | 'transfare',
     ): Promise<number> {
         const uow = new UnitOfWork(this._db);
         try {
-            const { amount, userId, targetAccountId, accountId, currencyId } = transaction;
+            const { amount, userId, targetAccountId, accountId, currencyId, targetAmount, targetCurrencyId } = transaction;
             await uow.start();
 
             const trxInProcess = uow.getTransaction();
@@ -462,6 +488,8 @@ export default class TransactionService extends LoggerBase implements ITransacti
 
             await operation({
                 transactionAmount: Math.abs(amount),
+                targetAmount,
+                targetCurrencyId,
                 accountId,
                 userId,
                 targetAccountId,

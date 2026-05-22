@@ -48,21 +48,22 @@ export async function fetchTransactions(
 
 type Props = NativeStackScreenProps<ParamListBase, string>;
 
+type TransactionsRouteParams = {
+    id: number;
+    name: string;
+    type: TransactionFieldType;
+    path: OverviewPath;
+    statsType: StatsType;
+    currencyId: number;
+};
+
 export const TransactionsScreen = function TransactionsScreen(_props: Props) {
-    const params = _props?.route?.params as {
-        id: number;
-        name: string;
-        type: TransactionFieldType;
-        path: OverviewPath;
-        statsType: StatsType;
-        currencyId: number;
-    };
+    const params = _props?.route?.params as TransactionsRouteParams | undefined;
     const navigation = useNavigation();
-    const { id, type, name, path, statsType, currencyId } = params;
     const { isError, data, isPending } = useAppQuery<IPagination<ITransactionListItem> | undefined>(
-        QueryKeys.transactions(id, type),
-        async () => fetchTransactions(id, type, undefined, 10),
-        { staleTime: QueryStaleTimes.transactions },
+        QueryKeys.transactions(params?.id, params?.type),
+        async () => fetchTransactions(params?.id, params?.type, undefined, 10),
+        { staleTime: QueryStaleTimes.transactions, enabled: !!params },
     );
     const getScreenForEditPath = (path: OverviewPath) => {
         switch (path) {
@@ -77,6 +78,15 @@ export const TransactionsScreen = function TransactionsScreen(_props: Props) {
                 return undefined;
         }
     };
+
+    // TransactionStackNavigator is wrapped in ResetOnBlur, which remounts the
+    // whole stack on tab blur. A fresh stack renders its initial route
+    // (TransactionsScreen) with no params — render nothing in that transient case.
+    if (!params) {
+        return null;
+    }
+
+    const { id, type, name, path, statsType, currencyId } = params;
 
     return (
         <GenericListScreen

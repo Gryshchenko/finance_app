@@ -7,4 +7,6 @@ export interface IPatchTransaction {
     amount: number;
     description: string;
     createdAt: string;
+    targetAmount?: number;
+    targetCurrencyId?: number;
 }

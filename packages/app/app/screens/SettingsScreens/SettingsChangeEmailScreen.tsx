@@ -12,8 +12,11 @@ import { $styles } from '@/theme/styles';
 type Props = NativeStackScreenProps<SettingsStackParamList, SettingsPath.ChangeEmail>;
 
 export const SettingsChangeEmailScreen: FC<Props> = function SettingsChangeEmailScreen(_props) {
-    const { route } = _props;
-    const { email, originEmail } = route.params;
+    const params = _props.route?.params;
+    if (!params) {
+        return null;
+    }
+    const { email, originEmail } = params;
     return (
         <Screen preset="fixed" contentContainerStyle={[$styles.screen, $topAlignScreen]} safeAreaEdges={['bottom']}>
             <Header

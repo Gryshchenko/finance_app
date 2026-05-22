@@ -72,7 +72,7 @@ export const CategoryFields: FC<IProps> = function CategoryFields(_props) {
                 <CurrencyDropdown
                     preset={'underline'}
                     style={$fieldCurrency}
-                    editable={!isView}
+                    editable={isCreate}
                     helperTx={errors?.currencyId}
                     status={errors?.currencyId ? 'error' : undefined}
                     value={form.currencyId}

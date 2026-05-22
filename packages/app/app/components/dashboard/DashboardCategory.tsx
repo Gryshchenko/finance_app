@@ -78,8 +78,8 @@ export default memo(function DashboardCategory(props: IDashboardItem<ICategorySt
                                             transactionTypeId: TransactionType.Expense,
                                             categoryId: item.categoryId,
                                             accountId: inWorkDropItem.id,
-                                            currencyId: item.currencyId,
-                                            sourceCurrencyId: inWorkDropItem.payload?.currencyId,
+                                            targetCurrencyId: item.currencyId,
+                                            currencyId: inWorkDropItem.payload?.currencyId,
                                         },
 
                                         uuid: new Date().getMilliseconds(),

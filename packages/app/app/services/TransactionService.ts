@@ -109,6 +109,8 @@ export class TransactionService extends ApiAbstract {
         currencyId: number | undefined;
         transactionTypeId: number | undefined;
         amount: number | undefined;
+        targetAmount?: number | undefined;
+        rate?: number | undefined;
         createdAt: string | undefined;
         targetAccountId: number | undefined;
         description: string | undefined;
@@ -128,6 +130,8 @@ export class TransactionService extends ApiAbstract {
                 categoryId: body.categoryId,
                 currencyId: body.currencyId,
                 transactionTypeId: body.transactionTypeId,
+                targetAmount: body.targetAmount,
+                rate: body.rate,
                 amount: body.amount,
                 createdAt: body.createdAt,
                 targetAccountId: body.targetAccountId,
@@ -153,6 +157,8 @@ export class TransactionService extends ApiAbstract {
             createdAt: string | undefined;
             targetAccountId: number | undefined;
             description: string | undefined;
+            targetAmount?: number | undefined;
+            rate?: number | undefined;
         },
     ): Promise<
         | {
@@ -173,6 +179,8 @@ export class TransactionService extends ApiAbstract {
                 createdAt: body.createdAt,
                 targetAccountId: body.targetAccountId,
                 description: body.description,
+                targetAmount: body.targetAmount,
+                rate: body.rate,
             });
             if (response.kind === GeneralApiProblemKind.Ok) {
                 this._logger.info(`Patch transaction successfully: ${(response.data as [])?.length}`);

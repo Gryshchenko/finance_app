@@ -72,6 +72,8 @@ export default class TransactionDataAccess extends LoggerBase implements ITransa
                     userId: transaction.userId,
                     createdAt: transaction.createdAt,
                     targetAccountId: transaction.targetAccountId,
+                    targetCurrencyId: transaction.targetCurrencyId,
+                    targetAmount: transaction.targetAmount,
                 },
                 ['transactionId'],
             );
@@ -122,6 +124,8 @@ export default class TransactionDataAccess extends LoggerBase implements ITransa
                     'categories.categoryName',
                     'sourceAccount.accountName',
                     'targetAccount.accountName as targetAccountName',
+                    'transactions.targetCurrencyId',
+                    'transactions.targetAmount',
                 )
                 .leftJoin('incomes', 'transactions.incomeId', 'incomes.incomeId')
                 .leftJoin('categories', 'transactions.categoryId', 'categories.categoryId')
@@ -197,6 +201,8 @@ export default class TransactionDataAccess extends LoggerBase implements ITransa
                     'transactions.currencyId',
                     'transactions.targetAccountId',
                     'transactions.transactionTypeId',
+                    'transactions.targetCurrencyId',
+                    'transactions.targetAmount',
                     'currencies.currencyCode',
                     'currencies.currencyName',
                     'currencies.symbol',
@@ -244,7 +250,10 @@ export default class TransactionDataAccess extends LoggerBase implements ITransa
                 targetAccountId: properties.targetAccountId,
                 createdAt: properties.createdAt,
                 updatedAt: Time.getISODateNowUTC(),
+                targetCurrencyId: properties.targetCurrencyId,
+                targetAmount: properties.targetAmount,
             };
+
             validateAllowedProperties(allowedProperties, [
                 'accountId',
                 'incomeId',
@@ -254,6 +263,8 @@ export default class TransactionDataAccess extends LoggerBase implements ITransa
                 'targetAccountId',
                 'createdAt',
                 'updatedAt',
+                'targetCurrencyId',
+                'targetAmount',
             ]);
             const data = await query('transactions').update(allowedProperties).where({ userId, transactionId, isDeleted: false });
 

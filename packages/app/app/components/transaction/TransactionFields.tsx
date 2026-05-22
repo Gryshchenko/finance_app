@@ -12,12 +12,16 @@ import { DatePickerType, IgniteDatePicker } from '@/components/IgniteDatePicker'
 import { IncomeDropdown } from '@/components/income/IncomeDropdown';
 import { TextField } from '@/components/TextField';
 import { useCurrency } from '@/context/CurrencyContext';
+import { useAppQuery } from '@/hooks/useAppQuery';
 import { TxKeyPath } from '@/i18n';
 import { ITransactionClient } from '@/interfaces/ITransactionClient';
+import { GeneralApiProblemKind } from '@/services/api/apiProblem';
+import { ExchangeService } from '@/services/ExchangeService';
+import { QueryKeys, QueryStaleTimes } from '@/services/QueryCacheService';
+import { Logger } from '@/utils/logger/Logger';
 
 interface IProps {
     form: Partial<ITransactionClient>;
-    rates?: IRate | undefined;
     errors?: Partial<Record<keyof ITransactionClient, TxKeyPath>>;
     handleChange?: (key: string, value: string | number) => void;
     isView: boolean;
@@ -29,11 +33,49 @@ interface IProps {
     handleSave?: () => void;
 }
 
-export const TransactionFields: FC<IProps> = function TransactionFields(_props) {
-    const { isView, form, handleChange, handleSave, edit, cancel, onDelete, errors, isEdit, isCreate, rates } = _props;
-    const { getCurrencySymbol } = useCurrency();
-    const { sourceCurrencyId, currencyId } = form;
+const fetchRates = async (
+    sourceCurrencySymbol: string | undefined,
+    targetCurrencySymbol: string | undefined,
+): Promise<IRate | undefined> => {
+    try {
+        if (sourceCurrencySymbol === targetCurrencySymbol) return undefined;
+        if (!targetCurrencySymbol && !sourceCurrencySymbol) return undefined;
+        if (!targetCurrencySymbol || !sourceCurrencySymbol) return undefined;
 
+        const exchangeService = ExchangeService.instance();
+
+        const response = await exchangeService.doGetRateForCurrency(sourceCurrencySymbol, targetCurrencySymbol);
+        if (response.kind === GeneralApiProblemKind.Ok) {
+            return response.data as IRate;
+        } else {
+            return undefined;
+        }
+    } catch (e) {
+        Logger.Of('TransactionFilds').error(e);
+        return undefined;
+    }
+};
+
+export const TransactionFields: FC<IProps> = function TransactionFields(_props) {
+    const { isView, form, handleChange, handleSave, edit, cancel, onDelete, errors, isEdit, isCreate } = _props;
+    const { getCurrencySymbol, getCurrency } = useCurrency();
+    const { targetCurrencyId, currencyId } = form;
+
+    const hasDifferentCurrencies =
+        !!form.targetCurrencyId &&
+        !!form.currencyId &&
+        !isNaN(form.targetCurrencyId) &&
+        !isNaN(form.currencyId) &&
+        form.targetCurrencyId !== form.currencyId;
+
+    const sourceCurrencySymbol = hasDifferentCurrencies ? getCurrency(form.targetCurrencyId as number)?.currencyCode : undefined;
+    const targetCurrencySymbol = hasDifferentCurrencies ? getCurrency(form.currencyId as number)?.currencyCode : undefined;
+
+    const { data: rates } = useAppQuery<IRate | undefined>(
+        QueryKeys.rates(form.currencyId, form.targetCurrencyId),
+        () => fetchRates(sourceCurrencySymbol, targetCurrencySymbol),
+        { enabled: hasDifferentCurrencies, staleTime: QueryStaleTimes.rates },
+    );
     const renderDropdownInputs = () => {
         switch (form.transactionTypeId) {
             case TransactionType.Transafer:
@@ -45,7 +87,10 @@ export const TransactionFields: FC<IProps> = function TransactionFields(_props) 
                             disabled={isView}
                             helperTx={errors?.accountId}
                             status={errors?.accountId ? 'error' : undefined}
-                            onChange={(v) => handleChange?.('accountId', v.accountId)}
+                            onChange={(v) => {
+                                handleChange?.('accountId', v.accountId);
+                                handleChange?.('currencyId', v.currencyId);
+                            }}
                         />
                         <AccountDropdown
                             labelTx={'transactionScreen:transferToAccount'}
@@ -55,7 +100,10 @@ export const TransactionFields: FC<IProps> = function TransactionFields(_props) 
                             disabled={isView}
                             helperTx={errors?.targetAccountId}
                             status={errors?.targetAccountId ? 'error' : undefined}
-                            onChange={(v) => handleChange?.('targetAccountId', v?.accountId)}
+                            onChange={(v) => {
+                                handleChange?.('targetAccountId', v.accountId);
+                                handleChange?.('targetCurrencyId', v.currencyId);
+                            }}
                         />
                     </>
                 );
@@ -68,7 +116,10 @@ export const TransactionFields: FC<IProps> = function TransactionFields(_props) 
                             disabled={isView}
                             helperTx={errors?.accountId}
                             status={errors?.accountId ? 'error' : undefined}
-                            onChange={(v) => handleChange?.('accountId', v.accountId)}
+                            onChange={(v) => {
+                                handleChange?.('accountId', v.accountId);
+                                handleChange?.('currencyId', v.currencyId);
+                            }}
                         />
                         <CategoryDropdown
                             preset={'underline'}
@@ -76,7 +127,10 @@ export const TransactionFields: FC<IProps> = function TransactionFields(_props) 
                             disabled={isView}
                             helperTx={errors?.categoryId}
                             status={errors?.categoryId ? 'error' : undefined}
-                            onChange={(v) => handleChange?.('categoryId', v.categoryId)}
+                            onChange={(v) => {
+                                handleChange?.('categoryId', v.categoryId);
+                                handleChange?.('targetCurrencyId', v.currencyId);
+                            }}
                         />
                     </>
                 );
@@ -91,6 +145,7 @@ export const TransactionFields: FC<IProps> = function TransactionFields(_props) 
                             status={errors?.incomeId ? 'error' : undefined}
                             onChange={(v) => {
                                 handleChange?.('incomeId', v.incomeId);
+                                handleChange?.('currencyId', v.currencyId);
                             }}
                         />
                         <AccountDropdown
@@ -101,6 +156,7 @@ export const TransactionFields: FC<IProps> = function TransactionFields(_props) 
                             status={errors?.accountId ? 'error' : undefined}
                             onChange={(v) => {
                                 handleChange?.('accountId', v.accountId);
+                                handleChange?.('targetCurrencyId', v.currencyId);
                             }}
                         />
                     </>
@@ -112,11 +168,11 @@ export const TransactionFields: FC<IProps> = function TransactionFields(_props) 
 
     const renderAmountInputs = () => {
         const showDualCurrency =
-            !!sourceCurrencyId &&
+            !!targetCurrencyId &&
             !!currencyId &&
-            !isNaN(sourceCurrencyId) &&
+            !isNaN(targetCurrencyId) &&
             !isNaN(currencyId) &&
-            sourceCurrencyId !== currencyId;
+            targetCurrencyId !== currencyId;
 
         if (showDualCurrency) {
             return (
@@ -128,17 +184,17 @@ export const TransactionFields: FC<IProps> = function TransactionFields(_props) 
                                 preset: 'underline',
                                 focusOnMount: true,
                                 onChangeCleaned: (v: string) => {
-                                    handleChange?.('amountInCurrency', v);
-                                    if (rates && rates.rate > 0 && !isNaN(Number(v))) {
-                                        handleChange?.('amount', Utils.roundNumber(Number(v) * rates.rate));
+                                    handleChange?.('amount', v);
+                                    if (rates && rates.rate && !isNaN(Number(v))) {
+                                        handleChange?.('targetAmount', String(Utils.roundNumber(Number(v) * rates.rate)));
                                     }
                                 },
-                                currency: getCurrencySymbol(form.sourceCurrencyId!),
-                                value: form.amountInCurrency!,
+                                currency: getCurrencySymbol(form.currencyId!),
+                                value: form.amount!,
                                 editable: !isView,
-                                helperTx: errors?.amountInCurrency,
+                                helperTx: errors?.amount,
                                 labelTx: 'common:amount',
-                                status: errors?.amountInCurrency ? 'error' : undefined,
+                                status: errors?.amount ? 'error' : undefined,
                             }}
                         />
                     </View>
@@ -148,13 +204,13 @@ export const TransactionFields: FC<IProps> = function TransactionFields(_props) 
                             componentProps={{
                                 preset: 'underline',
                                 focusOnMount: false,
-                                onChangeCleaned: (v: string) => handleChange?.('amount', v),
-                                currency: getCurrencySymbol(form.currencyId!),
-                                value: form.amount!,
+                                onChangeCleaned: (v: string) => handleChange?.('targetAmount', v),
+                                currency: getCurrencySymbol(form.targetCurrencyId!),
+                                value: form.targetAmount!,
                                 editable: !isView,
-                                helperTx: errors?.amount,
+                                helperTx: errors?.targetAmount,
                                 labelTx: ' ',
-                                status: errors?.amount ? 'error' : undefined,
+                                status: errors?.targetAmount ? 'error' : undefined,
                             }}
                         />
                     </View>

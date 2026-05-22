@@ -12,7 +12,7 @@ export const QueryKeys = {
     incomesStats: () => ['incomesStats'] as const,
     categoriesStats: () => ['categoriesStats'] as const,
 
-    rates: (currencyId?: number, sourceCurrencyId?: number) => ['rates', currencyId, sourceCurrencyId] as const,
+    rates: (currencyId?: number, targetCurrencyId?: number) => ['rates', currencyId, targetCurrencyId] as const,
 
     account: (id: number) => ['account', id] as const,
     income: (id: number) => ['income', id] as const,

@@ -125,6 +125,8 @@ export class TransactionController {
                 description,
                 createdAt = Time.getISODateNowUTC(),
                 targetAccountId,
+                targetAmount,
+                targetCurrencyId,
             } = req.body;
             const transactionId = await TransactionServiceBuilder.build().createTransaction({
                 accountId,
@@ -137,6 +139,8 @@ export class TransactionController {
                 userId: req.user?.userId as number,
                 createdAt,
                 targetAccountId,
+                targetAmount,
+                targetCurrencyId,
             });
             res.status(HttpCode.CREATED).json(
                 responseBuilder.setStatus(ResponseStatusType.OK).setData({ transactionId }).build(),
@@ -150,7 +154,17 @@ export class TransactionController {
     public static async patch(req: Request, res: Response) {
         const responseBuilder = new ResponseBuilder();
         try {
-            const { accountId, incomeId, categoryId, amount, description, createdAt, targetAccountId } = req.body;
+            const {
+                accountId,
+                incomeId,
+                categoryId,
+                amount,
+                description,
+                createdAt,
+                targetAccountId,
+                targetAmount,
+                targetCurrencyId,
+            } = req.body;
             await TransactionServiceBuilder.build().patchTransaction(req.user?.userId as number, {
                 transactionId: Number(req.params.transactionId),
                 accountId,
@@ -160,6 +174,8 @@ export class TransactionController {
                 description,
                 createdAt,
                 targetAccountId,
+                targetAmount,
+                targetCurrencyId,
             });
             res.status(HttpCode.NO_CONTENT).json(responseBuilder.setStatus(ResponseStatusType.OK).setData({}).build());
         } catch (e: unknown) {

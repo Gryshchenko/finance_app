@@ -29,7 +29,10 @@ export const TransactionEdit: FC<ITransactionPros> = function TransactionEdit(_p
 
     const { form, handleChange, save, errors, setErrors } = useEditView<Partial<ITransactionClient>>(
         data!,
-        buildTransactionEditSchema(),
+        buildTransactionEditSchema({
+            targetCurrencyId: data?.targetCurrencyId,
+            currencyId: data?.currencyId!,
+        }),
     );
 
     const handlePatch = async () => {

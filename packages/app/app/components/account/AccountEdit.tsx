@@ -1,5 +1,6 @@
 import { FC } from 'react';
 import { StyleProp, ViewStyle } from 'react-native';
+import { useNavigation } from '@react-navigation/native';
 import { IAccount, Utils } from 'tenpercent/shared';
 
 import { AccountFields } from '@/components/account/AccountFields';
@@ -16,6 +17,7 @@ import { buildGeneralApiBaseHandler, GeneralApiProblemKind, handleBadDataRespons
 import { InvalidationGroups } from '@/services/QueryCacheService';
 import ToastService from '@/services/ToastService';
 import type { BackTarget } from '@/types/BackTarget';
+import { OverviewPath } from '@/types/OverviewPath';
 
 interface IAccountPros {
     data: Partial<IAccountClient> | undefined;
@@ -26,6 +28,7 @@ export const AccountEdit: FC<IAccountPros> = function AccountEdit(_props) {
     const { data, back } = _props;
     const invalidateQuery = useInvalidateQuery();
     const { form, handleChange, save, errors, setErrors } = useEditView<Partial<IAccountClient>>(data!, accountEditSchema);
+    const navigation = useNavigation();
     const goBackSmart = useGoBackSmart(back);
 
     const handlePatch = async () => {
@@ -67,7 +70,7 @@ export const AccountEdit: FC<IAccountPros> = function AccountEdit(_props) {
                 message: 'common:deleteAccountSuccess',
             });
             await invalidateQuery(InvalidationGroups.account(form.accountId));
-            goBackSmart();
+            navigation.getParent()?.navigate(OverviewPath.Dashboard);
         } else {
             ToastService.error({
                 title: 'common:error',

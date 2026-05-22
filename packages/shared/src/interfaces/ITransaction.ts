@@ -1,7 +1,9 @@
 export interface ITransaction {
     transactionId: number;
-    accountId: number;
     targetAccountId?: number;
+    targetAmount?: number;
+    targetCurrencyId?: number;
+    accountId: number;
     incomeId?: number;
     categoryId?: number;
     currencyId: number;

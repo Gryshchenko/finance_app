@@ -136,8 +136,9 @@ const $grid: ThemedStyle<ViewStyle> = ({ colors }) => ({
 const $tile: ThemedStyle<ViewStyle> = ({ colors }) => ({
     width: '50%',
     backgroundColor: colors.background,
-    padding: 16,
-    gap: 4,
+    paddingHorizontal: 12,
+    paddingVertical: 8,
+    gap: 2,
 });
 
 const $tileBorderRight: ThemedStyle<ViewStyle> = ({ colors }) => ({
@@ -152,19 +153,19 @@ const $tileBorderTop: ThemedStyle<ViewStyle> = ({ colors }) => ({
 
 const $tileLabel: ThemedStyle<TextStyle> = ({ colors, typography }) => ({
     color: colors.textDim,
-    fontSize: 10,
+    fontSize: 9,
     fontWeight: '500',
-    letterSpacing: 2,
+    letterSpacing: 1.5,
     textTransform: 'uppercase',
     fontFamily: typography.fonts.funnelSans.medium,
 });
 
 const $tileValue: ThemedStyle<TextStyle> = ({ colors, typography }) => ({
     color: colors.text,
-    fontSize: 20,
+    fontSize: 16,
     fontWeight: '600',
     fontFamily: typography.fonts.funnelSans.semiBold,
-    lineHeight: 26,
+    lineHeight: 20,
     flexShrink: 1,
 });
 
@@ -176,8 +177,8 @@ const $tileValueRow: ViewStyle = {
 };
 
 const $progressTrack: ThemedStyle<ViewStyle> = ({ colors }) => ({
-    width: 48,
-    height: 4,
+    width: 40,
+    height: 3,
     backgroundColor: colors.background,
     overflow: 'hidden',
     flexShrink: 0,
