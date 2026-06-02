@@ -7,7 +7,7 @@ export interface ICreateTransaction {
     targetCurrencyId: number;
     transactionTypeId: number;
     amount: number;
-    targetAmount?: number;
+    targetAmount: number;
     description: string;
     userId: number;
     createdAt: string;

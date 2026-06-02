@@ -76,7 +76,7 @@ export default class AccountDataAccess extends LoggerBase implements IAccountDat
                 this._logger.info(`Fetched ${data.length} accounts for userId: ${userId}`);
             }
 
-            return Utils.greaterThen0(data?.length) ? data : [];
+            return Utils.greaterThen0(data?.length) ? data.map((data) => ({ ...data, amount: Number(data?.amount) ?? 0 })) : [];
         } catch (e) {
             this._logger.error(`Failed to fetch accounts for userId: ${userId}. Error: ${(e as { message: string }).message}`);
             throw new DBError({
@@ -117,7 +117,10 @@ export default class AccountDataAccess extends LoggerBase implements IAccountDat
                 this._logger.info(`Fetched account with accountId: ${accountId} for userId: ${userId}`);
             }
 
-            return data;
+            return {
+                ...data,
+                amount: Utils.isNotNull(data.amount) ? Number(data.amount) : 0,
+            };
         } catch (e) {
             this._logger.error(
                 `Failed to fetch account with accountId: ${accountId} for userId: ${userId}. Error: ${(e as { message: string }).message}`,

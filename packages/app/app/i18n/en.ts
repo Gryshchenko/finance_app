@@ -96,6 +96,7 @@ const en = {
         transactionTypeRequired: 'Select a transaction type',
         accountRequired: 'Select an account',
         targetAccountRequired: 'Select a target account',
+        targetAccountSameAsSource: 'Target account must differ from source account',
         categoryRequired: 'Select a category',
         incomeRequired: 'Select an income',
         password: 'Invalid password format',

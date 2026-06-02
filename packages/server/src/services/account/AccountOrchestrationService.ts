@@ -1,4 +1,4 @@
-import { Utils, IAccount, ErrorCode, HttpCode } from 'tenpercent/shared';
+import { ErrorCode, HttpCode, IAccount, Utils } from 'tenpercent/shared';
 
 import { LoggerBase } from 'helper/logger/LoggerBase';
 import { ICreateAccount } from 'interfaces/ICreateAccount';
@@ -50,16 +50,7 @@ export class AccountOrchestrationService extends LoggerBase {
                     message: `Accounts creation failed due balance update amount should not be null amount: ${amount}`,
                 });
             }
-            const newAccount = await this._accountService.createAccount(userId, account, trx);
-            await this._balanceService.patch(
-                userId,
-                {
-                    currencyCode: currency?.currencyCode as string,
-                    amount,
-                },
-                trx,
-            );
-            return newAccount;
+            return await this._accountService.createAccount(userId, account, trx);
         });
     }
     public async patch(userId: number, accountId: number, properties: Partial<IAccount>): Promise<number> {
@@ -111,9 +102,6 @@ export class AccountOrchestrationService extends LoggerBase {
                 message: `Cant update balance for userId: ${userId} miss currency code`,
                 errorCode: ErrorCode.ACCOUNT_ERROR,
             });
-        }
-        if (Utils.greaterThen0(amount)) {
-            await this._balanceService.patch(userId, { amount, currencyCode: currencyCode }, trx);
         }
     }
 

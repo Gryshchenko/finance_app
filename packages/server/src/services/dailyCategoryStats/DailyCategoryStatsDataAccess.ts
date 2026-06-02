@@ -5,12 +5,27 @@ import { IDatabaseConnection, IDBTransaction } from 'interfaces/IDatabaseConnect
 import { DBError } from 'src/utils/errors/DBError';
 
 export interface IDailyCategoryStatsDataAccess {
-    updateTotal(userId: number, date: string, categoryId: number, amount: number, trx?: IDBTransaction): Promise<boolean>;
-    addToScore: (userId: number, date: string, amount: number, categoryId: number, trx?: IDBTransaction) => Promise<boolean>;
+    updateTotal(
+        userId: number,
+        date: string,
+        categoryId: number,
+        source_amount: number,
+        target_amount: number,
+        trx?: IDBTransaction,
+    ): Promise<boolean>;
+    addToScore: (
+        userId: number,
+        date: string,
+        source_amount: number,
+        target_amount: number,
+        categoryId: number,
+        trx?: IDBTransaction,
+    ) => Promise<boolean>;
     subtractFromScore: (
         userId: number,
         date: string,
-        amount: number,
+        source_amount: number,
+        target_amount: number,
         categoryId: number,
         trx?: IDBTransaction,
     ) => Promise<boolean>;
@@ -52,7 +67,8 @@ export class DailyCategoryStatsDataAccess extends LoggerBase implements IDailyCa
     public async addToScore(
         userId: number,
         date: string,
-        amount: number,
+        source_amount: number,
+        target_amount: number,
         categoryId: number,
         trx?: IDBTransaction,
     ): Promise<boolean> {
@@ -69,7 +85,8 @@ export class DailyCategoryStatsDataAccess extends LoggerBase implements IDailyCa
                 })
                 .onConflict(['userId', 'date', 'categoryId'])
                 .merge({
-                    amount_total: query.raw('daily_categories_stats.amount_total + ?', [amount]),
+                    amount_total: query.raw('daily_categories_stats.amount_total + ?', [source_amount]),
+                    target_amount: query.raw('daily_categories_stats.target_amount + ?', [target_amount]),
                     updatedAt,
                 });
             this._logger.info(`Successfully addToScore daily stats for userId: ${userId}`);
@@ -88,7 +105,8 @@ export class DailyCategoryStatsDataAccess extends LoggerBase implements IDailyCa
     public async subtractFromScore(
         userId: number,
         date: string,
-        amount: number,
+        source_amount: number,
+        target_amount: number,
         categoryId: number,
         trx?: IDBTransaction,
     ): Promise<boolean> {
@@ -105,7 +123,8 @@ export class DailyCategoryStatsDataAccess extends LoggerBase implements IDailyCa
                 })
                 .onConflict(['userId', 'date', 'categoryId'])
                 .merge({
-                    amount_total: query.raw('daily_categories_stats.amount_total - ?', [amount]),
+                    amount_total: query.raw('daily_categories_stats.amount_total - ?', [source_amount]),
+                    target_amount: query.raw('daily_categories_stats.target_amount - ?', [target_amount]),
                     updatedAt,
                 });
             this._logger.info(`Successfully subtractFromScore daily stats for userId: ${userId}`);
@@ -121,20 +140,28 @@ export class DailyCategoryStatsDataAccess extends LoggerBase implements IDailyCa
         }
     }
 
-    async updateTotal(userId: number, date: string, categoryId: number, amount: number, trx?: IDBTransaction): Promise<boolean> {
+    async updateTotal(
+        userId: number,
+        date: string,
+        categoryId: number,
+        source_amount: number,
+        target_amount: number,
+        trx?: IDBTransaction,
+    ): Promise<boolean> {
         try {
             const query = trx || this._db.engine();
             this._logger.info(`Starting update daily category stats userId: ${userId}, date: ${date}`);
             await query.raw(
                 `
-                INSERT INTO daily_categories_stats ("userId", date, "categoryId", amount_total)
-                VALUES (?, ?::date, ?, ?)
+                INSERT INTO daily_categories_stats ("userId", date, "categoryId", amount_total, target_amount)
+                VALUES (?, ?::date, ?, ?, ?)
                 ON CONFLICT ("userId", date, "categoryId")
                 DO UPDATE SET
                     amount_total = daily_categories_stats.amount_total + EXCLUDED.amount_total,
+                    target_amount = daily_categories_stats.target_amount + EXCLUDED.target_amount,
                     "updatedAt" = NOW();
                 `,
-                [userId, date, categoryId, amount],
+                [userId, date, categoryId, source_amount, target_amount],
             );
 
             this._logger.info(`Successfully update daily category stats for userId: ${userId}`);

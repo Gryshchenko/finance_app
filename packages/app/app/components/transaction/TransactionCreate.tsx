@@ -28,6 +28,7 @@ export const TransactionCreate: FC<IProps> = function TransactionCreate(_props: 
         createdAt: Time.getISODateNowUTC(),
         ...data,
         targetAmount: '0',
+        targetCurrencyId: data?.currencyId === data?.targetCurrencyId ? data?.currencyId : data?.targetCurrencyId,
     };
 
     const { form, handleChange, save, errors, setErrors } = useEditView<Partial<ITransactionClient>>(

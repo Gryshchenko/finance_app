@@ -100,6 +100,7 @@ export const TransactionFields: FC<IProps> = function TransactionFields(_props) 
                             disabled={isView}
                             helperTx={errors?.targetAccountId}
                             status={errors?.targetAccountId ? 'error' : undefined}
+                            filter={(items) => items?.filter((item) => item.accountId !== form.accountId) ?? []}
                             onChange={(v) => {
                                 handleChange?.('targetAccountId', v.accountId);
                                 handleChange?.('targetCurrencyId', v.currencyId);
@@ -223,7 +224,10 @@ export const TransactionFields: FC<IProps> = function TransactionFields(_props) 
                     componentProps={{
                         preset: 'underlineBig',
                         focusOnMount: true,
-                        onChangeCleaned: (v: string) => handleChange?.('amount', v),
+                        onChangeCleaned: (v: string) => {
+                            handleChange?.('amount', v);
+                            handleChange?.('targetAmount', v);
+                        },
                         currency: getCurrencySymbol(form.currencyId!),
                         value: String(form.amount!),
                         editable: !isView,

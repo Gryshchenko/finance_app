@@ -175,7 +175,6 @@ export default class UserRegistrationService extends LoggerBase {
                         errorCode: ErrorCode.SIGNUP_PROFILE_NOT_CREATED_ERROR,
                     });
                 }
-                await this.balanceService.post(user.userId, { amount: 0, currencyCode: currency.currencyCode }, trx);
                 const profile = response[1] as IProfile;
                 await this.createInitialDataForNewUser(user.userId, profile, trx);
                 await uow.commit();
@@ -290,7 +289,6 @@ export default class UserRegistrationService extends LoggerBase {
                 });
             }
 
-            await this.balanceService.post(user.userId, { amount: 0, currencyCode: currency.currencyCode }, trx);
             const profile = response[1] as IProfile;
             await this.createInitialDataForNewUser(user.userId, profile, trx);
 

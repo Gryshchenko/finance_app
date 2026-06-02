@@ -10,22 +10,27 @@ export interface IDailyAccountStatsService {
         date: string,
         accountId: number,
         type: StatsTransactionType,
-        amount: number,
+        source_amount: number,
+        target_amount: number,
         trx?: IDBTransaction,
     ): Promise<boolean>;
     addToScore: (
         userId: number,
         date: string,
-        income_amount: number,
-        expanse_amount: number,
+        income_source_amount: number,
+        income_target_amount: number,
+        expanse_source_amount: number,
+        expanse_target_amount: number,
         accountId: number,
         trx?: IDBTransaction,
     ) => Promise<boolean>;
     subtractFromScore: (
         userId: number,
         date: string,
-        income_amount: number,
-        expanse_amount: number,
+        income_source_amount: number,
+        income_target_amount: number,
+        expanse_source_amount: number,
+        expanse_target_amount: number,
         accountId: number,
         trx?: IDBTransaction,
     ) => Promise<boolean>;
@@ -57,33 +62,56 @@ export class DailyAccountStatsService extends LoggerBase implements IDailyAccoun
         date: string,
         accountId: number,
         type: StatsTransactionType,
-        amount: number,
+        source_amount: number,
+        target_amount: number,
         trx?: IDBTransaction,
     ): Promise<boolean> {
         const day: string = statsValidateDate(date);
-        return this.dataAccess.updateTotal(userId, day, accountId, type, amount, trx);
+        return this.dataAccess.updateTotal(userId, day, accountId, type, source_amount, target_amount, trx);
     }
     public async addToScore(
         userId: number,
         date: string,
-        income_amount: number,
-        expanse_amount: number,
+        income_source_amount: number,
+        income_target_amount: number,
+        expanse_source_amount: number,
+        expanse_target_amount: number,
         accountId: number,
         trx?: IDBTransaction,
     ): Promise<boolean> {
         const day: string = statsValidateDate(date);
-        return this.dataAccess.addToScore(userId, day, income_amount, expanse_amount, accountId, trx);
+        return this.dataAccess.addToScore(
+            userId,
+            day,
+            income_source_amount,
+            income_target_amount,
+            expanse_source_amount,
+            expanse_target_amount,
+            accountId,
+            trx,
+        );
     }
 
     public async subtractFromScore(
         userId: number,
         date: string,
-        income_amount: number,
-        expanse_amount: number,
+        income_source_amount: number,
+        income_target_amount: number,
+        expanse_source_amount: number,
+        expanse_target_amount: number,
         accountId: number,
         trx?: IDBTransaction,
     ): Promise<boolean> {
         const day: string = statsValidateDate(date);
-        return this.dataAccess.subtractFromScore(userId, day, income_amount, expanse_amount, accountId, trx);
+        return this.dataAccess.subtractFromScore(
+            userId,
+            day,
+            income_source_amount,
+            income_target_amount,
+            expanse_source_amount,
+            expanse_target_amount,
+            accountId,
+            trx,
+        );
     }
 }

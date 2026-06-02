@@ -8,6 +8,8 @@ import ResponseBuilder from 'src/helper/responseBuilder/ResponseBuilder';
 interface IOptions {
     max: number;
     min: number;
+    gt: number;
+    lt: number;
     onlyASCII: boolean;
     escapeHTML: boolean;
     optional: boolean;
@@ -45,12 +47,21 @@ export function createSignupValidationRules(field: string, type: string, options
     } else if (type === 'number') {
         const numMin = options.min ?? Number.MIN_SAFE_INTEGER;
         const numMax = options.max ?? Number.MAX_SAFE_INTEGER;
+        const floatOptions: { min: number; max: number; gt?: number; lt?: number } = { min: numMin, max: numMax };
+        if (options.gt !== undefined) floatOptions.gt = options.gt;
+        if (options.lt !== undefined) floatOptions.lt = options.lt;
+        const rangeDescription =
+            options.gt !== undefined
+                ? `greater than ${options.gt}`
+                : options.lt !== undefined
+                  ? `less than ${options.lt}`
+                  : `between ${numMin} and ${numMax}`;
         validatorChain = validatorChain
             .isNumeric()
             .withMessage(`Field ${field} must be a numeric value`)
             .bail()
-            .isFloat({ min: numMin, max: numMax })
-            .withMessage(`Field ${field} must be a number between ${numMin} and ${numMax}`);
+            .isFloat(floatOptions)
+            .withMessage(`Field ${field} must be a number ${rangeDescription}`);
     } else if (type === 'string') {
         validatorChain = validatorChain.isString().withMessage(`Field ${field} must be a string`).bail();
         if (field === 'locale') {

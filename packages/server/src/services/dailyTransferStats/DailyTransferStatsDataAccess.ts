@@ -10,11 +10,17 @@ export interface IDailyTransferStatsDataAccess {
         date: string,
         accountId: number,
         targetAccountId: number,
-        amount: number,
+        sourceAmount: number,
+        targetAmount: number,
         trx?: IDBTransaction,
     ): Promise<boolean>;
 
-    summary: (userId: number, id: number, from: string, to: string) => Promise<{ id: number; total: number }>;
+    summary: (
+        userId: number,
+        id: number,
+        from: string,
+        to: string,
+    ) => Promise<{ id: number; total: number; target_total: number }>;
 }
 
 export class DailyTransferStatsDataAccess extends LoggerBase implements IDailyTransferStatsDataAccess {
@@ -27,7 +33,8 @@ export class DailyTransferStatsDataAccess extends LoggerBase implements IDailyTr
         date: string,
         accountId: number,
         targetAccountId: number,
-        amount: number,
+        sourceAmount: number,
+        targetAmount: number,
         trx?: IDBTransaction,
     ): Promise<boolean> {
         const query = trx || this.db.engine();
@@ -35,21 +42,27 @@ export class DailyTransferStatsDataAccess extends LoggerBase implements IDailyTr
         await query.raw(
             `
             INSERT INTO daily_transfer_stats (
-                "userId", date, "accountId", "targetAccountId", amount_total
+                "userId", date, "accountId", "targetAccountId", amount_total, amount_target_total
             )
             VALUES (?, ?::date, ?, ?, ?)
             ON CONFLICT ("userId", "accountId", "targetAccountId", date)
             DO UPDATE SET
                 amount_total = daily_transfer_stats.amount_total + EXCLUDED.amount_total,
+                amount_target_total = daily_transfer_stats.amount_target_total + EXCLUDED.amount_target_total,
                 "updatedAt" = NOW();
             `,
-            [userId, date, accountId, targetAccountId, amount],
+            [userId, date, accountId, targetAccountId, sourceAmount, targetAmount],
         );
 
         return true;
     }
 
-    async summary(userId: number, id: number, from: string, to: string): Promise<{ id: number; total: number }> {
+    async summary(
+        userId: number,
+        id: number,
+        from: string,
+        to: string,
+    ): Promise<{ id: number; total: number; target_total: number }> {
         try {
             const fromConverted = Time.toUTCISO(from);
             const toConverted = Time.toUTCISO(to);
@@ -60,11 +73,15 @@ export class DailyTransferStatsDataAccess extends LoggerBase implements IDailyTr
                 .engine()('daily_transfer_stats')
                 .where({ userId, accountId: id })
                 .andWhereBetween('date', [fromConverted, toConverted])
-                .sum({ total: this.db.engine().raw('amount_total') })
+                .sum({
+                    total: this.db.engine().raw('amount_total'),
+                    target_total: this.db.engine().raw('amount_target_total'),
+                })
                 .first();
             const total = result?.total || 0;
+            const target_total = result?.target_total || 0;
             this._logger.info(`Successfully fetched summary for userId: ${userId}, accountId: ${id}`);
-            return { id, total };
+            return { id, total, target_total };
         } catch (e) {
             this._logger.error(
                 `Failed to fetch summary for userId: ${userId}, accountId: ${id}. Error: ${(e as { message: string }).message}`,

@@ -508,6 +508,7 @@ declare const en: {
         transactionTypeRequired: string;
         accountRequired: string;
         targetAccountRequired: string;
+        targetAccountSameAsSource: string;
         categoryRequired: string;
         incomeRequired: string;
         password: string;

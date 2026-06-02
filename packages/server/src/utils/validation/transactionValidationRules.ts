@@ -72,6 +72,14 @@ const baseAtLeastOneFieldRequired = ({
         }
     }
 
+    if (transactionTypeId === TransactionType.Transafer && accountId === targetAccountId) {
+        throw new ValidationError({
+            message: `Validation failed at '${path}': Source and target accounts must differ for transfer.`,
+            errorCode: ErrorCode.ACCOUNT_ERROR,
+            payload: { field: 'targetAccountId', reason: 'validation:targetAccountSameAsSource' },
+        });
+    }
+
     return true;
 };
 
@@ -89,11 +97,11 @@ const createTransactionValidationRules = [
             });
         })
         .bail(),
-    ...createSignupValidationRules('targetAmount', 'number', { optional: true }),
-    ...createSignupValidationRules('targetCurrencyId', 'number', { optional: true }),
+    ...createSignupValidationRules('targetAmount', 'number', { gt: 0 }),
+    ...createSignupValidationRules('targetCurrencyId', 'number'),
     ...createSignupValidationRules('currencyId', 'number', { optional: true }),
     ...createSignupValidationRules('transactionTypeId', 'number', {}),
-    ...createSignupValidationRules('amount', 'number', {}),
+    ...createSignupValidationRules('amount', 'number', { gt: 0 }),
     ...createSignupValidationRules('description', 'string', { max: 200, min: 3, optional: true }),
     ...createSignupValidationRules('accountId', 'number', {
         optional: true,
@@ -128,14 +136,22 @@ const createTransactionValidationRules = [
 ];
 
 const patchTransactionValidationRules = [
-    ...createSignupValidationRules('transactionTypeId', 'number', {
-        optional: true,
-    }),
-    ...createSignupValidationRules('currencyId', 'number', {
-        optional: true,
-    }),
+    body('transaction')
+        .custom((_, { req }) => {
+            const { accountId, targetAccountId } = req.body;
+            if (Utils.isNotNull(accountId) && Utils.isNotNull(targetAccountId) && accountId === targetAccountId) {
+                throw new ValidationError({
+                    message: 'Source and target accounts must differ for transfer.',
+                    errorCode: ErrorCode.ACCOUNT_ERROR,
+                    payload: { field: 'targetAccountId', reason: 'validation:targetAccountSameAsSource' },
+                });
+            }
+            return true;
+        })
+        .bail(),
     ...createSignupValidationRules('amount', 'number', {
         optional: true,
+        gt: 0,
     }),
     ...createSignupValidationRules('description', 'string', {
         optional: true,
@@ -158,8 +174,7 @@ const patchTransactionValidationRules = [
         optional: true,
     }),
 
-    ...createSignupValidationRules('targetAmount', 'number', { optional: true }),
-    ...createSignupValidationRules('targetCurrencyId', 'number', { optional: true }),
+    ...createSignupValidationRules('targetAmount', 'number', { optional: true, gt: 0 }),
     body('createdAt')
         .custom((_, { req }) => {
             const { createdAt } = req.body;

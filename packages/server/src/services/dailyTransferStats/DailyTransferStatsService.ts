@@ -10,10 +10,16 @@ export interface IDailyTransferStatsService {
         date: string,
         accountId: number,
         targetAccountId: number,
-        amount: number,
+        sourceAmount: number,
+        targetAmount: number,
         trx?: IDBTransaction,
     ): Promise<boolean>;
-    summary: (userId: number, id: number, from: string, to: string) => Promise<{ id: number; total: number }>;
+    summary: (
+        userId: number,
+        id: number,
+        from: string,
+        to: string,
+    ) => Promise<{ id: number; total: number; target_total: number }>;
 }
 
 export class DailyTransferStatsService extends LoggerBase implements IDailyTransferStatsService {
@@ -26,13 +32,19 @@ export class DailyTransferStatsService extends LoggerBase implements IDailyTrans
         date: string,
         accountId: number,
         targetAccountId: number,
-        amount: number,
+        sourceAmount: number,
+        targetAmount: number,
         trx?: IDBTransaction,
     ): Promise<boolean> {
         const day = Time.formatUTCDate(date, DateFormat.YYYY_MM_DD);
-        return this.dataAccess.updateTotal(userId, day, accountId, targetAccountId, amount, trx);
+        return this.dataAccess.updateTotal(userId, day, accountId, targetAccountId, sourceAmount, targetAmount, trx);
     }
-    async summary(userId: number, id: number, from: string, to: string): Promise<{ id: number; total: number }> {
+    async summary(
+        userId: number,
+        id: number,
+        from: string,
+        to: string,
+    ): Promise<{ id: number; total: number; target_total: number }> {
         const fromDate: string = Time.formatUTCDate(from, DateFormat.YYYY_MM_DD);
         const toDate: string = Time.formatUTCDate(to, DateFormat.YYYY_MM_DD);
         return this.dataAccess.summary(userId, id, fromDate, toDate);

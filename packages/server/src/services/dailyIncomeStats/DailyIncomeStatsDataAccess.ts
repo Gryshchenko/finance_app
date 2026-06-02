@@ -5,9 +5,30 @@ import { IDatabaseConnection, IDBTransaction } from 'interfaces/IDatabaseConnect
 import { DBError } from 'src/utils/errors/DBError';
 
 export interface IDailyIncomeStatsDataAccess {
-    updateTotal(userId: number, date: string, incomeId: number, amount: number, trx?: IDBTransaction): Promise<boolean>;
-    addToScore: (userId: number, date: string, amount: number, incomeId: number, trx?: IDBTransaction) => Promise<boolean>;
-    subtractFromScore: (userId: number, date: string, amount: number, incomeId: number, trx?: IDBTransaction) => Promise<boolean>;
+    updateTotal(
+        userId: number,
+        date: string,
+        incomeId: number,
+        source_amount: number,
+        target_amount: number,
+        trx?: IDBTransaction,
+    ): Promise<boolean>;
+    addToScore: (
+        userId: number,
+        date: string,
+        source_amount: number,
+        target_amount: number,
+        incomeId: number,
+        trx?: IDBTransaction,
+    ) => Promise<boolean>;
+    subtractFromScore: (
+        userId: number,
+        date: string,
+        source_amount: number,
+        target_amount: number,
+        incomeId: number,
+        trx?: IDBTransaction,
+    ) => Promise<boolean>;
     summary: (userId: number, id: number, from: string, to: string) => Promise<{ id: number; total: number }>;
 }
 
@@ -46,7 +67,8 @@ export class DailyIncomeStatsDataAccess extends LoggerBase implements IDailyInco
     public async addToScore(
         userId: number,
         date: string,
-        amount: number,
+        source_amount: number,
+        target_amount: number,
         incomeId: number,
         trx?: IDBTransaction,
     ): Promise<boolean> {
@@ -63,7 +85,8 @@ export class DailyIncomeStatsDataAccess extends LoggerBase implements IDailyInco
                 })
                 .onConflict(['userId', 'date', 'incomeId'])
                 .merge({
-                    amount_total: query.raw('daily_incomes_stats.amount_total + ?', [amount]),
+                    amount_total: query.raw('daily_incomes_stats.amount_total + ?', [source_amount]),
+                    target_amount: query.raw('daily_incomes_stats.target_amount + ?', [target_amount]),
                     updatedAt,
                 });
             this._logger.info(`Successfully addToScore daily stats for userId: ${userId}`);
@@ -82,7 +105,8 @@ export class DailyIncomeStatsDataAccess extends LoggerBase implements IDailyInco
     public async subtractFromScore(
         userId: number,
         date: string,
-        amount: number,
+        source_amount: number,
+        target_amount: number,
         incomeId: number,
         trx?: IDBTransaction,
     ): Promise<boolean> {
@@ -99,7 +123,8 @@ export class DailyIncomeStatsDataAccess extends LoggerBase implements IDailyInco
                 })
                 .onConflict(['userId', 'date', 'incomeId'])
                 .merge({
-                    amount_total: query.raw('daily_incomes_stats.amount_total - ?', [amount]),
+                    amount_total: query.raw('daily_incomes_stats.amount_total - ?', [source_amount]),
+                    target_amount: query.raw('daily_incomes_stats.target_amount - ?', [target_amount]),
                     updatedAt,
                 });
             this._logger.info(`Successfully subtractFromScore daily stats for userId: ${userId}`);
@@ -115,20 +140,28 @@ export class DailyIncomeStatsDataAccess extends LoggerBase implements IDailyInco
         }
     }
 
-    async updateTotal(userId: number, date: string, incomeId: number, amount: number, trx?: IDBTransaction): Promise<boolean> {
+    async updateTotal(
+        userId: number,
+        date: string,
+        incomeId: number,
+        source_amount: number,
+        target_amount: number,
+        trx?: IDBTransaction,
+    ): Promise<boolean> {
         const query = trx || this._db.engine();
         try {
             this._logger.info(`Starting update daily income stats userId: ${userId}, date: ${date}`);
             await query.raw(
                 `
-                INSERT INTO daily_incomes_stats ("userId", date, "incomeId", amount_total)
-                VALUES (?, ?::date, ?, ?)
+                INSERT INTO daily_incomes_stats ("userId", date, "incomeId", amount_total, target_amount)
+                VALUES (?, ?::date, ?, ?, ?)
                 ON CONFLICT ("userId", date, "incomeId")
                 DO UPDATE SET
                     amount_total = daily_incomes_stats.amount_total + EXCLUDED.amount_total,
+                    target_amount = daily_incomes_stats.target_amount + EXCLUDED.target_amount,
                     "updatedAt" = NOW();
             `,
-                [userId, date, incomeId, amount],
+                [userId, date, incomeId, source_amount, target_amount],
             );
 
             this._logger.info(`Successfully update daily income stats for userId: ${userId}`);

@@ -37,6 +37,7 @@ const translationsKeys = {
     transactionTypeRequired: 'validation:transactionTypeRequired',
     accountRequired: 'validation:accountRequired',
     targetAccountRequired: 'validation:targetAccountRequired',
+    targetAccountSameAsSource: 'validation:targetAccountSameAsSource',
     categoryRequired: 'validation:categoryRequired',
     incomeRequired: 'validation:incomeRequired',
 
@@ -271,7 +272,12 @@ const buildTransactionCreateSchema = ({
         }),
         targetAccountId: Yup.number().when('transactionTypeId', {
             is: TransactionType.Transafer,
-            then: (schema) => schema.required(translationsKeys.targetAccountRequired),
+            then: (schema) =>
+                schema
+                    .required(translationsKeys.targetAccountRequired)
+                    .test('not-same-as-source', translationsKeys.targetAccountSameAsSource, function (value) {
+                        return value !== this.parent.accountId;
+                    }),
             otherwise: (schema) => schema.notRequired(),
         }),
         categoryId: Yup.number().when('transactionTypeId', {
@@ -347,7 +353,12 @@ const buildTransactionEditSchema = ({
 
         targetAccountId: Yup.number().when('transactionTypeId', {
             is: TransactionType.Transafer,
-            then: (schema) => schema.required(translationsKeys.targetAccountRequired),
+            then: (schema) =>
+                schema
+                    .required(translationsKeys.targetAccountRequired)
+                    .test('not-same-as-source', translationsKeys.targetAccountSameAsSource, function (value) {
+                        return value !== this.parent.accountId;
+                    }),
             otherwise: (schema) => schema.notRequired(),
         }),
 

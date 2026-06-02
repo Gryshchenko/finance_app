@@ -1,41 +1,82 @@
 import { IBalance, Utils, HttpCode, ErrorCode } from 'tenpercent/shared';
 
 import { LoggerBase } from 'helper/logger/LoggerBase';
-import { IDBTransaction } from 'interfaces/IDatabaseConnection';
-import { IBalanceDataAccess } from 'services/balance/BalanceDataAccess';
+import { IAccountService } from 'services/account/AccountService';
 import { ICurrencyService } from 'services/currency/CurrencyService';
 import { IExchangeRateService } from 'services/exchangeRateService/ExchangeRateService';
 import { IProfileService } from 'services/profile/ProfileService';
 import { CustomError } from 'src/utils/errors/CustomError';
 
-import { IRate } from '../../../../shared/src/interfaces/IRate';
-
 export interface IBalanceService {
     get(userId: number): Promise<IBalance>;
-    patch(userId: number, properties: { amount: number; currencyCode: string }, trx?: IDBTransaction): Promise<number>;
-    post(userId: number, properties: { amount: number; currencyCode: string }, trx?: IDBTransaction): Promise<number>;
 }
 
 export default class BalanceService extends LoggerBase implements IBalanceService {
-    private readonly _balanceDataAccess: IBalanceDataAccess;
     private readonly _profileService: IProfileService;
     private readonly _exchangeRateService: IExchangeRateService;
     private readonly _currencyService: ICurrencyService;
+    private readonly _accountService: IAccountService;
 
     public constructor(
-        balanceDataAccess: IBalanceDataAccess,
         profileService: IProfileService,
         exchangeRateService: IExchangeRateService,
         currencyService: ICurrencyService,
+        accountService: IAccountService,
     ) {
         super();
-        this._balanceDataAccess = balanceDataAccess;
         this._profileService = profileService;
         this._exchangeRateService = exchangeRateService;
         this._currencyService = currencyService;
+        this._accountService = accountService;
     }
     async get(userId: number): Promise<IBalance> {
-        return await this._balanceDataAccess.get(userId);
+        const accounts = await this._accountService.getAccounts(userId);
+        const user = await this._profileService.get(userId);
+        if (!user) {
+            throw this.error(`User currency not found for userId: ${userId}`);
+        }
+        const currencySymbolForCurrentUser = await this._currencyService.getById(user.currencyId);
+        if (!currencySymbolForCurrentUser?.symbol) {
+            throw this.error(`Currency symbol not found for currencyId: ${user.currencyId}`);
+        }
+        const accountWithSameCurrency = accounts?.filter((acc) => acc.currencyId === user.currencyId);
+        const accountWithDiffCurrency = accounts?.filter((acc) => acc.currencyId !== user.currencyId);
+        let sum = 0;
+
+        if (Utils.isArrayNotEmpty(accountWithDiffCurrency)) {
+            const numbers = await Promise.all(
+                accountWithDiffCurrency?.map(async (account) => {
+                    const currencySymbolForAccount = await this._currencyService.getById(account.currencyId);
+                    if (!currencySymbolForAccount?.currencyCode) {
+                        throw this.error(`Currency symbol not found for account currencyId: ${account.currencyId}`);
+                    }
+                    const rate = await this._exchangeRateService.get(
+                        currencySymbolForCurrentUser.currencyCode,
+                        currencySymbolForAccount.currencyCode,
+                    );
+                    if (!rate) {
+                        throw this.error(
+                            `Rates not found for symbols: ${currencySymbolForCurrentUser.currencyCode}, ${currencySymbolForAccount.currencyCode}`,
+                        );
+                    }
+                    return account.amount * rate.rate;
+                }),
+            );
+            if (Utils.isArrayNotEmpty(numbers)) {
+                sum += numbers.reduce((acc: number, curr): number => {
+                    return acc + curr;
+                });
+            }
+        }
+
+        if (Utils.isArrayNotEmpty(accountWithSameCurrency)) {
+            sum += accountWithSameCurrency?.reduce((acc: number, curr): number => {
+                return curr.amount + acc;
+            }, 0);
+        }
+        return {
+            balance: sum,
+        };
     }
     private error(msg: string): CustomError {
         this._logger.error(msg);
@@ -44,43 +85,5 @@ export default class BalanceService extends LoggerBase implements IBalanceServic
             statusCode: HttpCode.INTERNAL_SERVER_ERROR,
             errorCode: ErrorCode.PROFILE_ERROR,
         });
-    }
-    async post(userId: number, properties: { amount: number; currencyCode: string }, trx?: IDBTransaction): Promise<number> {
-        return await this._balanceDataAccess.post(userId, properties, trx);
-    }
-
-    async patch(userId: number, properties: { amount: number; currencyCode: string }, trx?: IDBTransaction): Promise<number> {
-        try {
-            this._logger.info(`Patch user balance to amount: ${properties.amount} currency: ${properties.currencyCode}`);
-            const profile = await this._profileService.get(userId);
-            if (Utils.isNull(profile?.currencyId)) {
-                throw this.error(`Patch user balance failed, profile currency null`);
-            }
-            const userCurrency = await this._currencyService.getById(profile?.currencyId as number);
-            if (userCurrency?.currencyCode && userCurrency.currencyCode === properties.currencyCode) {
-                const result = await this._balanceDataAccess.patch(userId, properties, trx);
-                this._logger.info(`Patch user balance success`);
-                return result;
-            }
-            const currency = userCurrency?.currencyCode as unknown as string;
-            const response = await this._exchangeRateService.get(currency, properties.currencyCode);
-            if (Utils.isNull(response) || Utils.isObjectEmpty(response as unknown as Record<string, unknown>)) {
-                throw this.error(`Fetch rate for default currency ${currency} and target currency: ${properties.currencyCode}`);
-            }
-            const { rate } = response as unknown as IRate;
-            const { amount } = properties;
-            const result = await this._balanceDataAccess.patch(
-                userId,
-                {
-                    amount: Utils.roundNumber(amount * rate),
-                },
-                trx,
-            );
-            this._logger.info(`Patch user balance success amount: ${Utils.roundNumber(amount * rate)}`);
-            return result;
-        } catch (e) {
-            this._logger.error(`Patch balance failed due reason: ${(e as { message: string }).message}`);
-            throw e;
-        }
     }
 }
