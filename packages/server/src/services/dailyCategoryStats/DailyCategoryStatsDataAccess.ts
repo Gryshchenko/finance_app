@@ -4,31 +4,21 @@ import { LoggerBase } from 'helper/logger/LoggerBase';
 import { IDatabaseConnection, IDBTransaction } from 'interfaces/IDatabaseConnection';
 import { DBError } from 'src/utils/errors/DBError';
 
+export interface IDailyCategoryStatsScoreParams {
+    userId: number;
+    date: string;
+    categoryId: number;
+    sourceAmount: number;
+    targetAmount: number;
+    currencyId?: number;
+    targetCurrencyId?: number;
+    trx?: IDBTransaction;
+}
+
 export interface IDailyCategoryStatsDataAccess {
-    updateTotal(
-        userId: number,
-        date: string,
-        categoryId: number,
-        source_amount: number,
-        target_amount: number,
-        trx?: IDBTransaction,
-    ): Promise<boolean>;
-    addToScore: (
-        userId: number,
-        date: string,
-        source_amount: number,
-        target_amount: number,
-        categoryId: number,
-        trx?: IDBTransaction,
-    ) => Promise<boolean>;
-    subtractFromScore: (
-        userId: number,
-        date: string,
-        source_amount: number,
-        target_amount: number,
-        categoryId: number,
-        trx?: IDBTransaction,
-    ) => Promise<boolean>;
+    updateTotal(params: IDailyCategoryStatsScoreParams): Promise<boolean>;
+    addToScore: (params: IDailyCategoryStatsScoreParams) => Promise<boolean>;
+    subtractFromScore: (params: IDailyCategoryStatsScoreParams) => Promise<boolean>;
     summary: (userId: number, id: number, from: string, to: string) => Promise<{ id: number; total: number }>;
 }
 
@@ -48,7 +38,7 @@ export class DailyCategoryStatsDataAccess extends LoggerBase implements IDailyCa
                 .engine()('daily_categories_stats')
                 .where({ userId, categoryId: id })
                 .andWhereBetween('date', [fromConverted, toConverted])
-                .sum({ total: this._db.engine().raw('amount_total') })
+                .sum({ total: this._db.engine().raw('target_total') })
                 .first();
             const total = result?.total || 0;
             this._logger.info(`Successfully fetched summary for userId: ${userId}, categoryId: ${id}`);
@@ -64,14 +54,14 @@ export class DailyCategoryStatsDataAccess extends LoggerBase implements IDailyCa
         }
     }
 
-    public async addToScore(
-        userId: number,
-        date: string,
-        source_amount: number,
-        target_amount: number,
-        categoryId: number,
-        trx?: IDBTransaction,
-    ): Promise<boolean> {
+    public async addToScore({
+        userId,
+        date,
+        categoryId,
+        sourceAmount,
+        targetAmount,
+        trx,
+    }: IDailyCategoryStatsScoreParams): Promise<boolean> {
         try {
             this._logger.info(`AddToScore daily stats userId: ${userId}, for date: ${date}`);
             const query = trx || this._db.engine();
@@ -81,12 +71,14 @@ export class DailyCategoryStatsDataAccess extends LoggerBase implements IDailyCa
                     userId,
                     date,
                     categoryId,
+                    source_total: sourceAmount,
+                    target_total: targetAmount,
                     updatedAt,
                 })
                 .onConflict(['userId', 'date', 'categoryId'])
                 .merge({
-                    amount_total: query.raw('daily_categories_stats.amount_total + ?', [source_amount]),
-                    target_amount: query.raw('daily_categories_stats.target_amount + ?', [target_amount]),
+                    source_total: query.raw('daily_categories_stats.source_total + ?', [sourceAmount]),
+                    target_total: query.raw('daily_categories_stats.target_total + ?', [targetAmount]),
                     updatedAt,
                 });
             this._logger.info(`Successfully addToScore daily stats for userId: ${userId}`);
@@ -102,14 +94,14 @@ export class DailyCategoryStatsDataAccess extends LoggerBase implements IDailyCa
         }
     }
 
-    public async subtractFromScore(
-        userId: number,
-        date: string,
-        source_amount: number,
-        target_amount: number,
-        categoryId: number,
-        trx?: IDBTransaction,
-    ): Promise<boolean> {
+    public async subtractFromScore({
+        userId,
+        date,
+        categoryId,
+        sourceAmount,
+        targetAmount,
+        trx,
+    }: IDailyCategoryStatsScoreParams): Promise<boolean> {
         try {
             this._logger.info(`SubtractFromScore daily stats userId: ${userId}, for date: ${date}`);
             const query = trx || this._db.engine();
@@ -119,12 +111,14 @@ export class DailyCategoryStatsDataAccess extends LoggerBase implements IDailyCa
                     userId,
                     date,
                     categoryId,
+                    source_total: -sourceAmount,
+                    target_total: -targetAmount,
                     updatedAt,
                 })
                 .onConflict(['userId', 'date', 'categoryId'])
                 .merge({
-                    amount_total: query.raw('daily_categories_stats.amount_total - ?', [source_amount]),
-                    target_amount: query.raw('daily_categories_stats.target_amount - ?', [target_amount]),
+                    source_total: query.raw('daily_categories_stats.source_total - ?', [sourceAmount]),
+                    target_total: query.raw('daily_categories_stats.target_total - ?', [targetAmount]),
                     updatedAt,
                 });
             this._logger.info(`Successfully subtractFromScore daily stats for userId: ${userId}`);
@@ -140,28 +134,32 @@ export class DailyCategoryStatsDataAccess extends LoggerBase implements IDailyCa
         }
     }
 
-    async updateTotal(
-        userId: number,
-        date: string,
-        categoryId: number,
-        source_amount: number,
-        target_amount: number,
-        trx?: IDBTransaction,
-    ): Promise<boolean> {
+    async updateTotal({
+        userId,
+        date,
+        categoryId,
+        sourceAmount,
+        targetAmount,
+        currencyId,
+        targetCurrencyId,
+        trx,
+    }: IDailyCategoryStatsScoreParams): Promise<boolean> {
         try {
             const query = trx || this._db.engine();
             this._logger.info(`Starting update daily category stats userId: ${userId}, date: ${date}`);
             await query.raw(
                 `
-                INSERT INTO daily_categories_stats ("userId", date, "categoryId", amount_total, target_amount)
-                VALUES (?, ?::date, ?, ?, ?)
+                INSERT INTO daily_categories_stats ("userId", date, "categoryId", source_total, target_total, "currencyId", "targetCurrencyId")
+                VALUES (?, ?::date, ?, ?, ?, ?, ?)
                 ON CONFLICT ("userId", date, "categoryId")
                 DO UPDATE SET
-                    amount_total = daily_categories_stats.amount_total + EXCLUDED.amount_total,
-                    target_amount = daily_categories_stats.target_amount + EXCLUDED.target_amount,
+                    source_total = daily_categories_stats.source_total + EXCLUDED.source_total,
+                    target_total = daily_categories_stats.target_total + EXCLUDED.target_total,
+                    "currencyId" = EXCLUDED."currencyId",
+                    "targetCurrencyId" = EXCLUDED."targetCurrencyId",
                     "updatedAt" = NOW();
                 `,
-                [userId, date, categoryId, source_amount, target_amount],
+                [userId, date, categoryId, sourceAmount, targetAmount, currencyId, targetCurrencyId],
             );
 
             this._logger.info(`Successfully update daily category stats for userId: ${userId}`);

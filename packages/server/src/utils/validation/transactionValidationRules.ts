@@ -99,7 +99,7 @@ const createTransactionValidationRules = [
         .bail(),
     ...createSignupValidationRules('targetAmount', 'number', { gt: 0 }),
     ...createSignupValidationRules('targetCurrencyId', 'number'),
-    ...createSignupValidationRules('currencyId', 'number', { optional: true }),
+    ...createSignupValidationRules('currencyId', 'number', {}),
     ...createSignupValidationRules('transactionTypeId', 'number', {}),
     ...createSignupValidationRules('amount', 'number', { gt: 0 }),
     ...createSignupValidationRules('description', 'string', { max: 200, min: 3, optional: true }),
@@ -175,6 +175,7 @@ const patchTransactionValidationRules = [
     }),
 
     ...createSignupValidationRules('targetAmount', 'number', { optional: true, gt: 0 }),
+    ...createSignupValidationRules('targetCurrencyId', 'number', { optional: true }),
     body('createdAt')
         .custom((_, { req }) => {
             const { createdAt } = req.body;

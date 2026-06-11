@@ -4,23 +4,27 @@ import { LoggerBase } from 'helper/logger/LoggerBase';
 import { IDatabaseConnection, IDBTransaction } from 'interfaces/IDatabaseConnection';
 import { DBError } from 'src/utils/errors/DBError';
 
+export interface IDailyTransferStatsUpdateTotalParams {
+    userId: number;
+    date: string;
+    accountId: number;
+    targetAccountId: number;
+    sourceAmount: number;
+    targetAmount: number;
+    currencyId?: number;
+    targetCurrencyId?: number;
+    trx?: IDBTransaction;
+}
+
 export interface IDailyTransferStatsDataAccess {
-    updateTotal(
-        userId: number,
-        date: string,
-        accountId: number,
-        targetAccountId: number,
-        sourceAmount: number,
-        targetAmount: number,
-        trx?: IDBTransaction,
-    ): Promise<boolean>;
+    updateTotal(params: IDailyTransferStatsUpdateTotalParams): Promise<boolean>;
 
     summary: (
         userId: number,
         id: number,
         from: string,
         to: string,
-    ) => Promise<{ id: number; total: number; target_total: number }>;
+    ) => Promise<{ id: number; source_total: number; target_total: number }>;
 }
 
 export class DailyTransferStatsDataAccess extends LoggerBase implements IDailyTransferStatsDataAccess {
@@ -28,30 +32,34 @@ export class DailyTransferStatsDataAccess extends LoggerBase implements IDailyTr
         super();
     }
 
-    async updateTotal(
-        userId: number,
-        date: string,
-        accountId: number,
-        targetAccountId: number,
-        sourceAmount: number,
-        targetAmount: number,
-        trx?: IDBTransaction,
-    ): Promise<boolean> {
+    async updateTotal({
+        userId,
+        date,
+        accountId,
+        targetAccountId,
+        sourceAmount,
+        targetAmount,
+        currencyId,
+        targetCurrencyId,
+        trx,
+    }: IDailyTransferStatsUpdateTotalParams): Promise<boolean> {
         const query = trx || this.db.engine();
 
         await query.raw(
             `
             INSERT INTO daily_transfer_stats (
-                "userId", date, "accountId", "targetAccountId", amount_total, amount_target_total
+                "userId", date, "accountId", "targetAccountId", source_total, target_total, "currencyId", "targetCurrencyId"
             )
-            VALUES (?, ?::date, ?, ?, ?)
+            VALUES (?, ?::date, ?, ?, ?, ?, ?, ?)
             ON CONFLICT ("userId", "accountId", "targetAccountId", date)
             DO UPDATE SET
-                amount_total = daily_transfer_stats.amount_total + EXCLUDED.amount_total,
-                amount_target_total = daily_transfer_stats.amount_target_total + EXCLUDED.amount_target_total,
+                source_total = daily_transfer_stats.source_total + EXCLUDED.source_total,
+                target_total = daily_transfer_stats.target_total + EXCLUDED.target_total,
+                "currencyId" = EXCLUDED."currencyId",
+                "targetCurrencyId" = EXCLUDED."targetCurrencyId",
                 "updatedAt" = NOW();
             `,
-            [userId, date, accountId, targetAccountId, sourceAmount, targetAmount],
+            [userId, date, accountId, targetAccountId, sourceAmount, targetAmount, currencyId, targetCurrencyId],
         );
 
         return true;
@@ -62,7 +70,7 @@ export class DailyTransferStatsDataAccess extends LoggerBase implements IDailyTr
         id: number,
         from: string,
         to: string,
-    ): Promise<{ id: number; total: number; target_total: number }> {
+    ): Promise<{ id: number; source_total: number; target_total: number }> {
         try {
             const fromConverted = Time.toUTCISO(from);
             const toConverted = Time.toUTCISO(to);
@@ -74,14 +82,14 @@ export class DailyTransferStatsDataAccess extends LoggerBase implements IDailyTr
                 .where({ userId, accountId: id })
                 .andWhereBetween('date', [fromConverted, toConverted])
                 .sum({
-                    total: this.db.engine().raw('amount_total'),
-                    target_total: this.db.engine().raw('amount_target_total'),
+                    source_total: this.db.engine().raw('source_total'),
+                    target_total: this.db.engine().raw('target_total'),
                 })
                 .first();
-            const total = result?.total || 0;
+            const source_total = result?.source_total || 0;
             const target_total = result?.target_total || 0;
             this._logger.info(`Successfully fetched summary for userId: ${userId}, accountId: ${id}`);
-            return { id, total, target_total };
+            return { id, source_total, target_total };
         } catch (e) {
             this._logger.error(
                 `Failed to fetch summary for userId: ${userId}, accountId: ${id}. Error: ${(e as { message: string }).message}`,

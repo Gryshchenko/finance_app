@@ -87,16 +87,6 @@ export const AccountFields: FC<IProps> = function AccountFields(_props) {
                         }
                     }}
                 />
-                {/*<IconField*/}
-                {/*    preset={'underline'}*/}
-                {/*    value={form.iconId}*/}
-                {/*    disabled={isView}*/}
-                {/*    onChange={(newIcon) => {*/}
-                {/*        if (handleChange) {*/}
-                {/*            handleChange('iconId', newIcon);*/}
-                {/*        }*/}
-                {/*    }}*/}
-                {/*/>*/}
             </View>
         </GeneralDetailView>
     );

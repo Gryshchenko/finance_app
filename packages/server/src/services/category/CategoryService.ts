@@ -41,6 +41,7 @@ export default class CategoryService extends LoggerBase implements ICategoryServ
             'categoryName',
             'currencyId',
             'iconId',
+            'budget',
         ]);
         const categories = await this._categoryDataAccess.create(userId, [category], trx);
         return categories[0];

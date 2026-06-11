@@ -40,15 +40,6 @@ export const CategoryFields: FC<IProps> = function CategoryFields(_props) {
             onDelete={onDelete}
         >
             <View style={$fieldWrapper as undefined}>
-                <IconField
-                    value={form.iconId}
-                    disabled={isView}
-                    onChange={(newIcon) => {
-                        if (handleChange) {
-                            handleChange('iconId', newIcon);
-                        }
-                    }}
-                />
                 <TextField
                     preset={'underlineBig'}
                     focusOnMount={true}
@@ -102,6 +93,16 @@ export const CategoryFields: FC<IProps> = function CategoryFields(_props) {
                         const num = Number(normalized);
                         if (!isNaN(num)) {
                             handleChange('budget', num);
+                        }
+                    }}
+                />
+                <IconField
+                    preset={'underline'}
+                    value={form.iconId}
+                    disabled={isView}
+                    onChange={(newIcon) => {
+                        if (handleChange) {
+                            handleChange('iconId', newIcon);
                         }
                     }}
                 />

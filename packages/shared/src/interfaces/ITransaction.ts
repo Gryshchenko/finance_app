@@ -7,9 +7,6 @@ export interface ITransaction {
     incomeId?: number;
     categoryId?: number;
     currencyId: number;
-    currencyCode: string;
-    currencyName: string;
-    symbol: string;
     transactionTypeId: number;
     amount: number;
     description: string;

@@ -68,8 +68,8 @@ export const TransactionFields: FC<IProps> = function TransactionFields(_props) 
         !isNaN(form.currencyId) &&
         form.targetCurrencyId !== form.currencyId;
 
-    const sourceCurrencySymbol = hasDifferentCurrencies ? getCurrency(form.targetCurrencyId as number)?.currencyCode : undefined;
-    const targetCurrencySymbol = hasDifferentCurrencies ? getCurrency(form.currencyId as number)?.currencyCode : undefined;
+    const sourceCurrencySymbol = hasDifferentCurrencies ? getCurrency(form.currencyId as number)?.currencyCode : undefined;
+    const targetCurrencySymbol = hasDifferentCurrencies ? getCurrency(form.targetCurrencyId as number)?.currencyCode : undefined;
 
     const { data: rates } = useAppQuery<IRate | undefined>(
         QueryKeys.rates(form.currencyId, form.targetCurrencyId),
@@ -187,6 +187,7 @@ export const TransactionFields: FC<IProps> = function TransactionFields(_props) 
                                 onChangeCleaned: (v: string) => {
                                     handleChange?.('amount', v);
                                     if (rates && rates.rate && !isNaN(Number(v))) {
+                                        console.log(rates.rate);
                                         handleChange?.('targetAmount', String(Utils.roundNumber(Number(v) * rates.rate)));
                                     }
                                 },

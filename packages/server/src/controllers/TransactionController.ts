@@ -43,11 +43,10 @@ export class TransactionController {
                             incomeId: transaction?.incomeId,
                             categoryId: transaction?.categoryId,
                             currencyId: transaction?.currencyId,
-                            currencyCode: transaction?.currencyCode,
-                            currencyName: transaction?.currencyName,
-                            symbol: transaction?.symbol,
+                            targetCurrencyId: transaction?.targetCurrencyId,
                             transactionTypeId: transaction?.transactionTypeId,
                             amount: transaction?.amount,
+                            targetAmount: transaction?.targetAmount,
                             description: transaction?.description,
                             createdAt: transaction?.createdAt,
                         })

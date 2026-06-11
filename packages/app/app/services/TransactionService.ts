@@ -107,6 +107,7 @@ export class TransactionService extends ApiAbstract {
         incomeId: number | undefined;
         categoryId: number | undefined;
         currencyId: number | undefined;
+        targetCurrencyId: number | undefined;
         transactionTypeId: number | undefined;
         amount: number | undefined;
         targetAmount?: number | undefined;
@@ -129,6 +130,7 @@ export class TransactionService extends ApiAbstract {
                 incomeId: body.incomeId,
                 categoryId: body.categoryId,
                 currencyId: body.currencyId,
+                targetCurrencyId: body.targetCurrencyId,
                 transactionTypeId: body.transactionTypeId,
                 targetAmount: body.targetAmount,
                 rate: body.rate,
@@ -153,6 +155,7 @@ export class TransactionService extends ApiAbstract {
             incomeId: number | undefined;
             categoryId: number | undefined;
             currencyId: number | undefined;
+            targetCurrencyId: number | undefined;
             amount: number | undefined;
             createdAt: string | undefined;
             targetAccountId: number | undefined;
@@ -175,6 +178,7 @@ export class TransactionService extends ApiAbstract {
                 incomeId: body.incomeId,
                 categoryId: body.categoryId,
                 currencyId: body.currencyId,
+                targetCurrencyId: body.targetCurrencyId,
                 amount: body.amount,
                 createdAt: body.createdAt,
                 targetAccountId: body.targetAccountId,

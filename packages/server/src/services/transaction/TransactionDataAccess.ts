@@ -203,11 +203,7 @@ export default class TransactionDataAccess extends LoggerBase implements ITransa
                     'transactions.transactionTypeId',
                     'transactions.targetCurrencyId',
                     'transactions.targetAmount',
-                    'currencies.currencyCode',
-                    'currencies.currencyName',
-                    'currencies.symbol',
                 )
-                .innerJoin('currencies', 'transactions.currencyId', 'currencies.currencyId')
                 .where({ userId, transactionId, 'transactions.isDeleted': false })
                 .first();
 

@@ -37,13 +37,15 @@ export const TransactionEdit: FC<ITransactionPros> = function TransactionEdit(_p
 
     const handlePatch = async () => {
         const transactionService = TransactionService.instance();
-
+        const sameCurrency = !form.targetCurrencyId || form.targetCurrencyId === form.currencyId;
         const response = await transactionService.doPatchTransaction(form.transactionId!, {
             accountId: form.accountId,
             incomeId: form.incomeId,
             categoryId: form.categoryId,
             currencyId: form.currencyId,
+            targetCurrencyId: sameCurrency ? form.currencyId : Number(form.targetCurrencyId),
             amount: Number(form.amount),
+            targetAmount: sameCurrency ? Number(form.amount) : Number(form.targetAmount),
             createdAt: form.createdAt,
             targetAccountId: form.targetAccountId,
             description: form.description,

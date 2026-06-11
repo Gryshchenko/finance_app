@@ -42,13 +42,16 @@ export const TransactionCreate: FC<IProps> = function TransactionCreate(_props: 
 
     const handleCreate = async () => {
         const transactionService = TransactionService.instance();
+        const sameCurrency = !form.targetCurrencyId || form.targetCurrencyId === form.currencyId;
         const response = await transactionService.doCreateTransaction({
             accountId: Number(form.accountId),
             incomeId: Number(form.incomeId),
             categoryId: Number(form.categoryId),
             currencyId: Number(form.currencyId),
+            targetCurrencyId: sameCurrency ? Number(form.currencyId) : Number(form.targetCurrencyId),
             transactionTypeId: Number(form.transactionTypeId),
             amount: Number(form.amount),
+            targetAmount: sameCurrency ? Number(form.amount) : Number(form.targetAmount),
             createdAt: form.createdAt,
             targetAccountId: Number(form.targetAccountId),
             description: form.description,

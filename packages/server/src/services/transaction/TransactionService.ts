@@ -93,7 +93,7 @@ export default class TransactionService extends LoggerBase implements ITransacti
                             accountId: trs.accountId,
                             categoryId: trs.categoryId as number,
                             sourceAmount: trs.amount,
-                            targetAmount: trs.targetAmount ?? trs.amount,
+                            targetAmount: trs.targetAmount,
                         },
                         trx,
                     });
@@ -305,6 +305,8 @@ export default class TransactionService extends LoggerBase implements ITransacti
                         incomeId: transaction.incomeId as number,
                         accountId,
                         date: transaction.createdAt,
+                        currencyId: transaction.currencyId,
+                        targetCurrencyId: transaction.targetCurrencyId,
                     },
                     trx,
                 });
@@ -332,6 +334,8 @@ export default class TransactionService extends LoggerBase implements ITransacti
                         categoryId: transaction.categoryId as number,
                         sourceAmount,
                         targetAmount,
+                        currencyId: transaction.currencyId,
+                        targetCurrencyId: transaction.targetCurrencyId,
                     },
                     trx,
                 });
@@ -371,6 +375,8 @@ export default class TransactionService extends LoggerBase implements ITransacti
                         targetAccountId: targetAccountId,
                         sourceAmount,
                         targetAmount,
+                        currencyId: transaction.currencyId,
+                        targetCurrencyId: transaction.targetCurrencyId,
                     },
                     userId,
                     trx,

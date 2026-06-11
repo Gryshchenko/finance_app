@@ -51,7 +51,11 @@ export const TransactionEditScreen = function TransactionsScreen(_props: Props) 
     );
 
     const data: Partial<ITransactionClient> | undefined = fetchData
-        ? { ...fetchData, amount: fetchData.amount != null ? String(fetchData.amount) : '' }
+        ? {
+              ...fetchData,
+              amount: fetchData.amount != null ? String(fetchData.amount) : '',
+              targetAmount: fetchData.targetAmount != null ? String(fetchData.targetAmount) : undefined,
+          }
         : undefined;
 
     // route.params here is a type cast — not runtime-guaranteed. Guard against undefined.

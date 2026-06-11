@@ -51,8 +51,8 @@ export default class BalanceService extends LoggerBase implements IBalanceServic
                         throw this.error(`Currency symbol not found for account currencyId: ${account.currencyId}`);
                     }
                     const rate = await this._exchangeRateService.get(
-                        currencySymbolForCurrentUser.currencyCode,
                         currencySymbolForAccount.currencyCode,
+                        currencySymbolForCurrentUser.currencyCode,
                     );
                     if (!rate) {
                         throw this.error(

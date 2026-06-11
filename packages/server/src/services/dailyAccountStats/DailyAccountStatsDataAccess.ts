@@ -5,36 +5,22 @@ import { IDatabaseConnection, IDBTransaction } from 'interfaces/IDatabaseConnect
 import { DBError } from 'src/utils/errors/DBError';
 import { StatsTransactionType } from 'types/StatsTransactionType';
 
+export interface IDailyAccountStatsScoreParams {
+    userId: number;
+    date: string;
+    accountId: number;
+    type: StatsTransactionType;
+    sourceAmount: number;
+    targetAmount: number;
+    currencyId?: number;
+    targetCurrencyId?: number;
+    trx?: IDBTransaction;
+}
+
 export interface IDailyAccountStatsDataAccess {
-    updateTotal(
-        userId: number,
-        date: string,
-        accountId: number,
-        type: StatsTransactionType,
-        source_amount: number,
-        target_amount: number,
-        trx?: IDBTransaction,
-    ): Promise<boolean>;
-    addToScore: (
-        userId: number,
-        date: string,
-        income_source_amount: number,
-        income_target_amount: number,
-        expanse_source_amount: number,
-        expanse_target_amount: number,
-        accountId: number,
-        trx?: IDBTransaction,
-    ) => Promise<boolean>;
-    subtractFromScore: (
-        userId: number,
-        date: string,
-        income_source_amount: number,
-        income_target_amount: number,
-        expanse_source_amount: number,
-        expanse_target_amount: number,
-        accountId: number,
-        trx?: IDBTransaction,
-    ) => Promise<boolean>;
+    updateTotal(params: IDailyAccountStatsScoreParams): Promise<boolean>;
+    addToScore: (params: IDailyAccountStatsScoreParams) => Promise<boolean>;
+    subtractFromScore: (params: IDailyAccountStatsScoreParams) => Promise<boolean>;
     summary: (
         userId: number,
         id: number,
@@ -64,7 +50,10 @@ export class DailyAccountStatsDataAccess extends LoggerBase implements IDailyAcc
                 .engine()('daily_accounts_stats')
                 .where({ userId, accountId: id })
                 .andWhereBetween('date', [fromConverted, toConverted])
-                .sum({ totalIncome: this._db.engine().raw('income_total'), totalExpanse: this._db.engine().raw('expense_total') })
+                .sum({
+                    totalIncome: this._db.engine().raw('income_target_total'),
+                    totalExpanse: this._db.engine().raw('expense_source_total'),
+                })
                 .first();
             const totalIncome = result?.totalIncome || 0;
             const totalExpanse = result?.totalExpanse || 0;
@@ -81,37 +70,40 @@ export class DailyAccountStatsDataAccess extends LoggerBase implements IDailyAcc
         }
     }
 
-    public async addToScore(
-        userId: number,
-        date: string,
-        income_source_amount: number,
-        income_target_amount: number,
-        expanse_source_amount: number,
-        expanse_target_amount: number,
-        accountId: number,
-        trx?: IDBTransaction,
-    ): Promise<boolean> {
+    public async addToScore({
+        userId,
+        date,
+        accountId,
+        type,
+        sourceAmount,
+        targetAmount,
+        trx,
+    }: IDailyAccountStatsScoreParams): Promise<boolean> {
         try {
             this._logger.info(`AddToScore daily stats userId: ${userId}, for date: ${date}`);
             const query = trx || this._db.engine();
             const updatedAt = Time.getISODateNowUTC();
+            const incomeSource = type === StatsTransactionType.INCOME ? sourceAmount : 0;
+            const incomeTarget = type === StatsTransactionType.INCOME ? targetAmount : 0;
+            const expenseSource = type === StatsTransactionType.EXPENSE ? sourceAmount : 0;
+            const expenseTarget = type === StatsTransactionType.EXPENSE ? targetAmount : 0;
             await query('daily_accounts_stats')
                 .insert({
                     userId,
                     date,
-                    income_total: income_source_amount,
-                    income_target: income_target_amount,
-                    expense_total: expanse_source_amount,
-                    expense_target: expanse_target_amount,
+                    income_source_total: incomeSource,
+                    income_target_total: incomeTarget,
+                    expense_source_total: expenseSource,
+                    expense_target_total: expenseTarget,
                     accountId,
                     updatedAt,
                 })
                 .onConflict(['userId', 'date', 'accountId'])
                 .merge({
-                    income_total: query.raw('daily_accounts_stats.income_total + ?', [income_source_amount]),
-                    income_target: query.raw('daily_accounts_stats.income_target + ?', [income_target_amount]),
-                    expense_total: query.raw('daily_accounts_stats.expense_total + ?', [expanse_source_amount]),
-                    expense_target: query.raw('daily_accounts_stats.expense_target + ?', [expanse_target_amount]),
+                    income_source_total: query.raw('daily_accounts_stats.income_source_total + ?', [incomeSource]),
+                    income_target_total: query.raw('daily_accounts_stats.income_target_total + ?', [incomeTarget]),
+                    expense_source_total: query.raw('daily_accounts_stats.expense_source_total + ?', [expenseSource]),
+                    expense_target_total: query.raw('daily_accounts_stats.expense_target_total + ?', [expenseTarget]),
                     updatedAt,
                 });
             this._logger.info(`Successfully addToScore daily stats for userId: ${userId}`);
@@ -127,37 +119,40 @@ export class DailyAccountStatsDataAccess extends LoggerBase implements IDailyAcc
         }
     }
 
-    public async subtractFromScore(
-        userId: number,
-        date: string,
-        income_source_amount: number,
-        income_target_amount: number,
-        expanse_source_amount: number,
-        expanse_target_amount: number,
-        accountId: number,
-        trx?: IDBTransaction,
-    ): Promise<boolean> {
+    public async subtractFromScore({
+        userId,
+        date,
+        accountId,
+        type,
+        sourceAmount,
+        targetAmount,
+        trx,
+    }: IDailyAccountStatsScoreParams): Promise<boolean> {
         try {
             this._logger.info(`SubtractFromScore daily stats userId: ${userId}, for date: ${date}`);
             const query = trx || this._db.engine();
             const updatedAt = Time.getISODateNowUTC();
+            const incomeSource = type === StatsTransactionType.INCOME ? sourceAmount : 0;
+            const incomeTarget = type === StatsTransactionType.INCOME ? targetAmount : 0;
+            const expenseSource = type === StatsTransactionType.EXPENSE ? sourceAmount : 0;
+            const expenseTarget = type === StatsTransactionType.EXPENSE ? targetAmount : 0;
             await query('daily_accounts_stats')
                 .insert({
                     userId,
                     date,
-                    income_total: income_source_amount,
-                    income_target: income_target_amount,
-                    expense_total: expanse_source_amount,
-                    expense_target: expanse_target_amount,
+                    income_source_total: -incomeSource,
+                    income_target_total: -incomeTarget,
+                    expense_source_total: -expenseSource,
+                    expense_target_total: -expenseTarget,
                     accountId,
                     updatedAt,
                 })
                 .onConflict(['userId', 'date', 'accountId'])
                 .merge({
-                    income_total: query.raw('daily_accounts_stats.income_total - ?', [income_source_amount]),
-                    income_target: query.raw('daily_accounts_stats.income_target - ?', [income_target_amount]),
-                    expense_total: query.raw('daily_accounts_stats.expense_total - ?', [expanse_source_amount]),
-                    expense_target: query.raw('daily_accounts_stats.expense_target - ?', [expanse_target_amount]),
+                    income_source_total: query.raw('daily_accounts_stats.income_source_total - ?', [incomeSource]),
+                    income_target_total: query.raw('daily_accounts_stats.income_target_total - ?', [incomeTarget]),
+                    expense_source_total: query.raw('daily_accounts_stats.expense_source_total - ?', [expenseSource]),
+                    expense_target_total: query.raw('daily_accounts_stats.expense_target_total - ?', [expenseTarget]),
                     updatedAt,
                 });
             this._logger.info(`Successfully subtractFromScore daily stats for userId: ${userId}`);
@@ -173,39 +168,60 @@ export class DailyAccountStatsDataAccess extends LoggerBase implements IDailyAcc
         }
     }
 
-    async updateTotal(
-        userId: number,
-        date: string,
-        accountId: number,
-        type: StatsTransactionType,
-        source_amount: number,
-        target_amount: number,
-        trx?: IDBTransaction,
-    ): Promise<boolean> {
+    async updateTotal({
+        userId,
+        date,
+        accountId,
+        type,
+        sourceAmount,
+        targetAmount,
+        currencyId,
+        targetCurrencyId,
+        trx,
+    }: IDailyAccountStatsScoreParams): Promise<boolean> {
         try {
             const query = trx || this._db.engine();
             this._logger.info(`Starting update daily account stats userId: ${userId}, date: ${date}`);
             await query.raw(
                 `
             INSERT INTO daily_accounts_stats (
-                "userId", date, "accountId", income_total, income_target, expense_total, expense_target
+                "userId", date, "accountId",
+                income_source_total, income_target_total, expense_source_total, expense_target_total,
+                "currencyId", "targetCurrencyId"
             )
             VALUES (
                 ?, ?::date, ?,
                 CASE WHEN ? = 'income' THEN ? ELSE 0::numeric END,
                 CASE WHEN ? = 'income' THEN ? ELSE 0::numeric END,
                 CASE WHEN ? = 'expense' THEN ? ELSE 0::numeric END,
-                CASE WHEN ? = 'expense' THEN ? ELSE 0::numeric END
+                CASE WHEN ? = 'expense' THEN ? ELSE 0::numeric END,
+                ?, ?
             )
             ON CONFLICT ("userId", date, "accountId")
             DO UPDATE SET
-                income_total   = daily_accounts_stats.income_total   + EXCLUDED.income_total,
-                income_target  = daily_accounts_stats.income_target  + EXCLUDED.income_target,
-                expense_total  = daily_accounts_stats.expense_total  + EXCLUDED.expense_total,
-                expense_target = daily_accounts_stats.expense_target + EXCLUDED.expense_target,
+                income_source_total  = daily_accounts_stats.income_source_total  + EXCLUDED.income_source_total,
+                income_target_total  = daily_accounts_stats.income_target_total  + EXCLUDED.income_target_total,
+                expense_source_total = daily_accounts_stats.expense_source_total + EXCLUDED.expense_source_total,
+                expense_target_total = daily_accounts_stats.expense_target_total + EXCLUDED.expense_target_total,
+                "currencyId" = EXCLUDED."currencyId",
+                "targetCurrencyId" = EXCLUDED."targetCurrencyId",
                 "updatedAt" = NOW();
             `,
-                [userId, date, accountId, type, source_amount, type, target_amount, type, source_amount, type, target_amount],
+                [
+                    userId,
+                    date,
+                    accountId,
+                    type,
+                    sourceAmount,
+                    type,
+                    targetAmount,
+                    type,
+                    sourceAmount,
+                    type,
+                    targetAmount,
+                    currencyId,
+                    targetCurrencyId,
+                ],
             );
             this._logger.info(`Successfully update daily account stats for userId: ${userId}`);
             return true;

@@ -5,30 +5,27 @@ import { LoggerBase } from 'src/helper/logger/LoggerBase';
 import { DBError } from 'src/utils/errors/DBError';
 import { StatsTransactionType } from 'types/StatsTransactionType';
 
+export interface IDailyStatsUpdateTotalParams {
+    userId: number;
+    date: string;
+    type: StatsTransactionType;
+    amount: number;
+    trx?: IDBTransaction;
+}
+
+export interface IDailyStatsScoreParams {
+    userId: number;
+    date: string;
+    incomeTotal: number;
+    expenseTotal: number;
+    transferTotal: number;
+    trx?: IDBTransaction;
+}
+
 export interface IDailyStatsDataAccess {
-    updateTotal: (
-        userId: number,
-        date: string,
-        category: StatsTransactionType,
-        amount: number,
-        trx?: IDBTransaction,
-    ) => Promise<boolean>;
-    addToScore: (
-        userId: number,
-        date: string,
-        income_total: number,
-        expense_total: number,
-        transfer_total: number,
-        trx?: IDBTransaction,
-    ) => Promise<boolean>;
-    subtractFromScore: (
-        userId: number,
-        date: string,
-        income_total: number,
-        expense_total: number,
-        transfer_total: number,
-        trx?: IDBTransaction,
-    ) => Promise<boolean>;
+    updateTotal: (params: IDailyStatsUpdateTotalParams) => Promise<boolean>;
+    addToScore: (params: IDailyStatsScoreParams) => Promise<boolean>;
+    subtractFromScore: (params: IDailyStatsScoreParams) => Promise<boolean>;
     summary(userId: number, from: string, to: string, period: StatsPeriod): Promise<ISummary>;
 }
 
@@ -40,14 +37,14 @@ export default class DailyStatsDataAccess extends LoggerBase implements IDailySt
         this._db = db;
     }
 
-    public async addToScore(
-        userId: number,
-        date: string,
-        income_total: number,
-        expense_total: number,
-        transfer_total: number,
-        trx?: IDBTransaction,
-    ): Promise<boolean> {
+    public async addToScore({
+        userId,
+        date,
+        incomeTotal,
+        expenseTotal,
+        transferTotal,
+        trx,
+    }: IDailyStatsScoreParams): Promise<boolean> {
         try {
             this._logger.info(`AddToScore daily stats userId: ${userId}, for date: ${date}`);
             const query = trx || this._db.engine();
@@ -55,15 +52,15 @@ export default class DailyStatsDataAccess extends LoggerBase implements IDailySt
                 .insert({
                     userId,
                     date,
-                    income_total,
-                    expense_total,
-                    transfer_total,
+                    income_total: incomeTotal,
+                    expense_total: expenseTotal,
+                    transfer_total: transferTotal,
                 })
                 .onConflict(['userId', 'date'])
                 .merge({
-                    income_total: query.raw('daily_stats.income_total + ?', [income_total]),
-                    expense_total: query.raw('daily_stats.expense_total + ?', [expense_total]),
-                    transfer_total: query.raw('daily_stats.transfer_total + ?', [transfer_total]),
+                    income_total: query.raw('daily_stats.income_total + ?', [incomeTotal]),
+                    expense_total: query.raw('daily_stats.expense_total + ?', [expenseTotal]),
+                    transfer_total: query.raw('daily_stats.transfer_total + ?', [transferTotal]),
                 });
             this._logger.info(`Successfully addToScore daily stats for userId: ${userId}`);
             return true;
@@ -78,14 +75,14 @@ export default class DailyStatsDataAccess extends LoggerBase implements IDailySt
         }
     }
 
-    public async subtractFromScore(
-        userId: number,
-        date: string,
-        income_total: number,
-        expense_total: number,
-        transfer_total: number,
-        trx?: IDBTransaction,
-    ): Promise<boolean> {
+    public async subtractFromScore({
+        userId,
+        date,
+        incomeTotal,
+        expenseTotal,
+        transferTotal,
+        trx,
+    }: IDailyStatsScoreParams): Promise<boolean> {
         try {
             this._logger.info(`SubtractFromScore daily stats userId: ${userId}, for date: ${date}`);
             const query = trx || this._db.engine();
@@ -93,15 +90,15 @@ export default class DailyStatsDataAccess extends LoggerBase implements IDailySt
                 .insert({
                     userId,
                     date,
-                    income_total,
-                    expense_total,
-                    transfer_total,
+                    income_total: incomeTotal,
+                    expense_total: expenseTotal,
+                    transfer_total: transferTotal,
                 })
                 .onConflict(['userId', 'date'])
                 .merge({
-                    income_total: query.raw('daily_stats.income_total - ?', [income_total]),
-                    expense_total: query.raw('daily_stats.expense_total - ?', [expense_total]),
-                    transfer_total: query.raw('daily_stats.transfer_total - ?', [transfer_total]),
+                    income_total: query.raw('daily_stats.income_total - ?', [incomeTotal]),
+                    expense_total: query.raw('daily_stats.expense_total - ?', [expenseTotal]),
+                    transfer_total: query.raw('daily_stats.transfer_total - ?', [transferTotal]),
                 });
             this._logger.info(`Successfully subtractFromScore daily stats for userId: ${userId}`);
             return true;
@@ -148,13 +145,7 @@ export default class DailyStatsDataAccess extends LoggerBase implements IDailySt
         }
     }
 
-    public async updateTotal(
-        userId: number,
-        date: string,
-        category: StatsTransactionType,
-        amount: number,
-        trx?: IDBTransaction,
-    ): Promise<boolean> {
+    public async updateTotal({ userId, date, type, amount, trx }: IDailyStatsUpdateTotalParams): Promise<boolean> {
         try {
             this._logger.info(`Starting update daily stats userId: ${userId}, date: ${date}`);
 
@@ -173,7 +164,7 @@ export default class DailyStatsDataAccess extends LoggerBase implements IDailySt
                         transfer_total  = daily_stats.transfer_total + CASE WHEN EXCLUDED.transfer_total  <> 0 THEN EXCLUDED.transfer_total  ELSE 0 END,
                         "updatedAt" = NOW();
         `,
-                [userId, date, category, amount, category, amount, category, amount],
+                [userId, date, type, amount, type, amount, type, amount],
             );
             this._logger.info(`Successfully update daily stats for userId: ${userId}`);
             return true;

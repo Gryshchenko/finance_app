@@ -1,33 +1,14 @@
 import { LoggerBase } from 'helper/logger/LoggerBase';
-import { IDBTransaction } from 'interfaces/IDatabaseConnection';
-import { IDailyCategoryStatsDataAccess } from 'services/dailyCategoryStats/DailyCategoryStatsDataAccess';
+import {
+    IDailyCategoryStatsDataAccess,
+    IDailyCategoryStatsScoreParams,
+} from 'services/dailyCategoryStats/DailyCategoryStatsDataAccess';
 import { statsValidateDate } from 'src/utils/validation/StatsValidateDate';
 
 export interface IDailyCategoryStatsService {
-    updateTotal(
-        userId: number,
-        date: string,
-        categoryId: number,
-        source_amount: number,
-        target_amount: number,
-        trx?: IDBTransaction,
-    ): Promise<boolean>;
-    addToScore: (
-        userId: number,
-        date: string,
-        source_amount: number,
-        target_amount: number,
-        categoryId: number,
-        trx?: IDBTransaction,
-    ) => Promise<boolean>;
-    subtractFromScore: (
-        userId: number,
-        date: string,
-        source_amount: number,
-        target_amount: number,
-        categoryId: number,
-        trx?: IDBTransaction,
-    ) => Promise<boolean>;
+    updateTotal(params: IDailyCategoryStatsScoreParams): Promise<boolean>;
+    addToScore: (params: IDailyCategoryStatsScoreParams) => Promise<boolean>;
+    subtractFromScore: (params: IDailyCategoryStatsScoreParams) => Promise<boolean>;
     summary: (userId: number, id: number, from: string, to: string) => Promise<{ id: number; total: number }>;
 }
 
@@ -41,38 +22,15 @@ export class DailyCategoryStatsService extends LoggerBase implements IDailyCateg
         return this.dataAccess.summary(userId, id, fromDate, toDate);
     }
 
-    async updateTotal(
-        userId: number,
-        date: string,
-        categoryId: number,
-        source_amount: number,
-        target_amount: number,
-        trx?: IDBTransaction,
-    ): Promise<boolean> {
-        const day: string = statsValidateDate(date);
-        return this.dataAccess.updateTotal(userId, day, categoryId, source_amount, target_amount, trx);
-    }
-    public async addToScore(
-        userId: number,
-        date: string,
-        source_amount: number,
-        target_amount: number,
-        categoryId: number,
-        trx?: IDBTransaction,
-    ): Promise<boolean> {
-        const day: string = statsValidateDate(date);
-        return this.dataAccess.addToScore(userId, day, source_amount, target_amount, categoryId, trx);
+    async updateTotal(params: IDailyCategoryStatsScoreParams): Promise<boolean> {
+        return this.dataAccess.updateTotal({ ...params, date: statsValidateDate(params.date) });
     }
 
-    public async subtractFromScore(
-        userId: number,
-        date: string,
-        source_amount: number,
-        target_amount: number,
-        categoryId: number,
-        trx?: IDBTransaction,
-    ): Promise<boolean> {
-        const day: string = statsValidateDate(date);
-        return this.dataAccess.subtractFromScore(userId, day, source_amount, target_amount, categoryId, trx);
+    public async addToScore(params: IDailyCategoryStatsScoreParams): Promise<boolean> {
+        return this.dataAccess.addToScore({ ...params, date: statsValidateDate(params.date) });
+    }
+
+    public async subtractFromScore(params: IDailyCategoryStatsScoreParams): Promise<boolean> {
+        return this.dataAccess.subtractFromScore({ ...params, date: statsValidateDate(params.date) });
     }
 }

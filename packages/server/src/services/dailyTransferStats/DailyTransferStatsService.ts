@@ -1,25 +1,19 @@
 import { DateFormat, Time } from 'tenpercent/shared';
 
 import { LoggerBase } from 'helper/logger/LoggerBase';
-import { IDBTransaction } from 'interfaces/IDatabaseConnection';
-import { IDailyTransferStatsDataAccess } from 'services/dailyTransferStats/DailyTransferStatsDataAccess';
+import {
+    IDailyTransferStatsDataAccess,
+    IDailyTransferStatsUpdateTotalParams,
+} from 'services/dailyTransferStats/DailyTransferStatsDataAccess';
 
 export interface IDailyTransferStatsService {
-    updateTotal(
-        userId: number,
-        date: string,
-        accountId: number,
-        targetAccountId: number,
-        sourceAmount: number,
-        targetAmount: number,
-        trx?: IDBTransaction,
-    ): Promise<boolean>;
+    updateTotal(params: IDailyTransferStatsUpdateTotalParams): Promise<boolean>;
     summary: (
         userId: number,
         id: number,
         from: string,
         to: string,
-    ) => Promise<{ id: number; total: number; target_total: number }>;
+    ) => Promise<{ id: number; source_total: number; target_total: number }>;
 }
 
 export class DailyTransferStatsService extends LoggerBase implements IDailyTransferStatsService {
@@ -27,24 +21,18 @@ export class DailyTransferStatsService extends LoggerBase implements IDailyTrans
         super();
     }
 
-    async updateTotal(
-        userId: number,
-        date: string,
-        accountId: number,
-        targetAccountId: number,
-        sourceAmount: number,
-        targetAmount: number,
-        trx?: IDBTransaction,
-    ): Promise<boolean> {
-        const day = Time.formatUTCDate(date, DateFormat.YYYY_MM_DD);
-        return this.dataAccess.updateTotal(userId, day, accountId, targetAccountId, sourceAmount, targetAmount, trx);
+    async updateTotal(params: IDailyTransferStatsUpdateTotalParams): Promise<boolean> {
+        return this.dataAccess.updateTotal({
+            ...params,
+            date: Time.formatUTCDate(params.date, DateFormat.YYYY_MM_DD),
+        });
     }
     async summary(
         userId: number,
         id: number,
         from: string,
         to: string,
-    ): Promise<{ id: number; total: number; target_total: number }> {
+    ): Promise<{ id: number; source_total: number; target_total: number }> {
         const fromDate: string = Time.formatUTCDate(from, DateFormat.YYYY_MM_DD);
         const toDate: string = Time.formatUTCDate(to, DateFormat.YYYY_MM_DD);
         return this.dataAccess.summary(userId, id, fromDate, toDate);

@@ -4,7 +4,9 @@ function validateAllowedProperties<T extends Record<string, unknown>>(obj: T, al
     const invalidKeys = Object.keys(obj).filter((key) => !allowedKeys.includes(key));
 
     if (invalidKeys.length > 0) {
-        throw new ValidationError({ message: `Invalid properties detected: ${invalidKeys.join(', ')}` });
+        throw new ValidationError({
+            message: `Invalid properties detected: ${invalidKeys.join(', ')}`,
+        });
     }
 }
 

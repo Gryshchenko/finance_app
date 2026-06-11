@@ -21,9 +21,9 @@ interface ExpenseSnapshot {
     accountId: number;
     categoryId: number;
     sourceAmount: MoneyAmount;
-    targetAmount: number;
-    expanseSourceAmount: MoneyAmount;
-    expanseTargetAmount: MoneyAmount;
+    targetAmount: MoneyAmount;
+    currencyId?: number;
+    targetCurrencyId?: number;
 }
 
 interface IncomeSnapshot {
@@ -32,6 +32,8 @@ interface IncomeSnapshot {
     accountId: number;
     sourceAmount: MoneyAmount;
     targetAmount: MoneyAmount;
+    currencyId?: number;
+    targetCurrencyId?: number;
 }
 
 interface TransferSnapshot {
@@ -40,8 +42,8 @@ interface TransferSnapshot {
     targetAccountId: number;
     sourceAmount: MoneyAmount;
     targetAmount: MoneyAmount;
-    expanseSourceAmount: MoneyAmount;
-    expanseTargetAmount: MoneyAmount;
+    currencyId?: number;
+    targetCurrencyId?: number;
 }
 
 interface CreateExpenseCommand {
@@ -157,21 +159,46 @@ export default class StatsOrchestratorService extends LoggerBase implements ISta
 
     public async create(command: CreateStatsCommand): Promise<boolean> {
         const { trx, userId, type } = command;
+        // NOTE: sourceAmount = the "from" amount in currencyId (money leaving); targetAmount = the "to" amount in
+        // targetCurrencyId (money arriving). No swapping — every leg passes sourceAmount/targetAmount straight
+        // through, and every per-entity table stores BOTH legs: income/category/transfer keep source_total +
+        // target_total; an account keeps them per direction (income_source_total/income_target_total when it
+        // receives, expense_source_total/expense_target_total when it sends). Summaries read the entity's
+        // own-currency column (income → source_total; category → target_total; account → income_target_total +
+        // expense_source_total) and are never converted/merged across currencies. The global daily_stats aggregate
+        // currently sums sourceAmount across currencies — handled in a separate redesign (per-currency + % trends).
         switch (type) {
             case TransactionType.Income: {
-                const { accountId, incomeId, sourceAmount, targetAmount, date } = command.data;
+                const { accountId, incomeId, sourceAmount, targetAmount, currencyId, targetCurrencyId, date } = command.data;
                 const response = await Promise.all([
-                    await this._dailyStatsService.updateTotal(userId, date, StatsTransactionType.INCOME, sourceAmount, trx),
-                    await this._dailyIncomeStatsService.updateTotal(userId, date, incomeId, sourceAmount, targetAmount, trx),
-                    await this._dailyAccountStatsService.updateTotal(
+                    await this._dailyStatsService.updateTotal({
+                        userId,
+                        date,
+                        type: StatsTransactionType.INCOME,
+                        amount: sourceAmount,
+                        trx,
+                    }),
+                    await this._dailyIncomeStatsService.updateTotal({
+                        userId,
+                        date,
+                        incomeId,
+                        sourceAmount,
+                        targetAmount,
+                        currencyId,
+                        targetCurrencyId,
+                        trx,
+                    }),
+                    await this._dailyAccountStatsService.updateTotal({
                         userId,
                         date,
                         accountId,
-                        StatsTransactionType.INCOME,
+                        type: StatsTransactionType.INCOME,
                         sourceAmount,
                         targetAmount,
+                        currencyId,
+                        targetCurrencyId,
                         trx,
-                    ),
+                    }),
                 ]);
                 const allSucceeded = response.every((r) => r === true);
 
@@ -181,20 +208,36 @@ export default class StatsOrchestratorService extends LoggerBase implements ISta
                 return true;
             }
             case TransactionType.Expense: {
-                const { accountId, categoryId, sourceAmount, targetAmount, date } = command.data;
-                // TODO convert to user currency
+                const { accountId, categoryId, sourceAmount, targetAmount, currencyId, targetCurrencyId, date } = command.data;
                 const response = await Promise.all([
-                    await this._dailyStatsService.updateTotal(userId, date, StatsTransactionType.EXPENSE, sourceAmount, trx),
-                    await this._dailyAccountStatsService.updateTotal(
+                    await this._dailyStatsService.updateTotal({
+                        userId,
+                        date,
+                        type: StatsTransactionType.EXPENSE,
+                        amount: sourceAmount,
+                        trx,
+                    }),
+                    await this._dailyAccountStatsService.updateTotal({
                         userId,
                         date,
                         accountId,
-                        StatsTransactionType.EXPENSE,
+                        type: StatsTransactionType.EXPENSE,
                         sourceAmount,
                         targetAmount,
+                        currencyId,
+                        targetCurrencyId,
                         trx,
-                    ),
-                    await this._dailyCategoryStatsService.updateTotal(userId, date, categoryId, sourceAmount, targetAmount, trx),
+                    }),
+                    await this._dailyCategoryStatsService.updateTotal({
+                        userId,
+                        date,
+                        categoryId,
+                        sourceAmount,
+                        targetAmount,
+                        currencyId,
+                        targetCurrencyId,
+                        trx,
+                    }),
                 ]);
                 const allSucceeded = response.every((r) => r === true);
 
@@ -204,36 +247,49 @@ export default class StatsOrchestratorService extends LoggerBase implements ISta
                 return true;
             }
             case TransactionType.Transafer: {
-                const { accountId, targetAccountId, date, sourceAmount, targetAmount } = command.data;
+                const { accountId, targetAccountId, date, sourceAmount, targetAmount, currencyId, targetCurrencyId } =
+                    command.data;
                 const response = await Promise.all([
-                    await this._dailyStatsService.updateTotal(userId, date, StatsTransactionType.TRANSFER, sourceAmount, trx),
-                    await this._dailyAccountStatsService.updateTotal(
+                    await this._dailyStatsService.updateTotal({
+                        userId,
+                        date,
+                        type: StatsTransactionType.TRANSFER,
+                        amount: sourceAmount,
+                        trx,
+                    }),
+                    await this._dailyAccountStatsService.updateTotal({
                         userId,
                         date,
                         accountId,
-                        StatsTransactionType.EXPENSE,
+                        type: StatsTransactionType.EXPENSE,
                         sourceAmount,
                         targetAmount,
+                        currencyId,
+                        targetCurrencyId,
                         trx,
-                    ),
-                    await this._dailyAccountStatsService.updateTotal(
+                    }),
+                    await this._dailyAccountStatsService.updateTotal({
                         userId,
                         date,
-                        targetAccountId,
-                        StatsTransactionType.INCOME,
+                        accountId: targetAccountId,
+                        type: StatsTransactionType.INCOME,
                         sourceAmount,
                         targetAmount,
+                        currencyId,
+                        targetCurrencyId,
                         trx,
-                    ),
-                    await this._dailyTransferStatsService.updateTotal(
+                    }),
+                    await this._dailyTransferStatsService.updateTotal({
                         userId,
                         date,
                         accountId,
                         targetAccountId,
                         sourceAmount,
                         targetAmount,
+                        currencyId,
+                        targetCurrencyId,
                         trx,
-                    ),
+                    }),
                 ]);
                 const allSucceeded = response.every((r) => r === true);
 
@@ -254,6 +310,8 @@ export default class StatsOrchestratorService extends LoggerBase implements ISta
 
     public async patch(command: PatchStatsCommand): Promise<boolean> {
         const { trx, userId, type, before, after } = command;
+        // A patch mirrors a create: add the new snapshot to the score and subtract the previous one,
+        // using the exact same value -> column mapping as create().
         switch (type) {
             case TransactionType.Income: {
                 if (
@@ -264,44 +322,56 @@ export default class StatsOrchestratorService extends LoggerBase implements ISta
                     before?.targetAmount !== after?.targetAmount
                 ) {
                     const response = await Promise.all([
-                        await this._dailyStatsService.addToScore(userId, after.date, after.sourceAmount, 0, 0, trx),
-                        await this._dailyIncomeStatsService.addToScore(
+                        await this._dailyStatsService.addToScore({
                             userId,
-                            after.date,
-                            after.sourceAmount,
-                            after.targetAmount,
-                            after?.incomeId,
+                            date: after.date,
+                            incomeTotal: after.sourceAmount,
+                            expenseTotal: 0,
+                            transferTotal: 0,
                             trx,
-                        ),
-                        await this._dailyAccountStatsService.addToScore(
+                        }),
+                        await this._dailyIncomeStatsService.addToScore({
                             userId,
-                            after.date,
-                            after.sourceAmount,
-                            after.targetAmount,
-                            0,
-                            0,
-                            after.accountId,
+                            date: after.date,
+                            incomeId: after.incomeId,
+                            sourceAmount: after.sourceAmount,
+                            targetAmount: after.targetAmount,
                             trx,
-                        ),
-                        await this._dailyStatsService.subtractFromScore(userId, before.date, before.sourceAmount, 0, 0, trx),
-                        await this._dailyIncomeStatsService.subtractFromScore(
+                        }),
+                        await this._dailyAccountStatsService.addToScore({
                             userId,
-                            before.date,
-                            before.sourceAmount,
-                            before.targetAmount,
-                            before.incomeId,
+                            date: after.date,
+                            accountId: after.accountId,
+                            type: StatsTransactionType.INCOME,
+                            sourceAmount: after.sourceAmount,
+                            targetAmount: after.targetAmount,
                             trx,
-                        ),
-                        await this._dailyAccountStatsService.subtractFromScore(
+                        }),
+                        await this._dailyStatsService.subtractFromScore({
                             userId,
-                            before.date,
-                            before.sourceAmount,
-                            before.targetAmount,
-                            0,
-                            0,
-                            before.accountId,
+                            date: before.date,
+                            incomeTotal: before.sourceAmount,
+                            expenseTotal: 0,
+                            transferTotal: 0,
                             trx,
-                        ),
+                        }),
+                        await this._dailyIncomeStatsService.subtractFromScore({
+                            userId,
+                            date: before.date,
+                            incomeId: before.incomeId,
+                            sourceAmount: before.sourceAmount,
+                            targetAmount: before.targetAmount,
+                            trx,
+                        }),
+                        await this._dailyAccountStatsService.subtractFromScore({
+                            userId,
+                            date: before.date,
+                            accountId: before.accountId,
+                            type: StatsTransactionType.INCOME,
+                            sourceAmount: before.sourceAmount,
+                            targetAmount: before.targetAmount,
+                            trx,
+                        }),
                     ]);
                     const allSucceeded = response.every((r) => r === true);
 
@@ -320,44 +390,56 @@ export default class StatsOrchestratorService extends LoggerBase implements ISta
                     before?.targetAmount !== after?.targetAmount
                 ) {
                     const response = await Promise.all([
-                        await this._dailyStatsService.addToScore(userId, after.date, 0, after.sourceAmount, 0, trx),
-                        await this._dailyAccountStatsService.addToScore(
+                        await this._dailyStatsService.addToScore({
                             userId,
-                            after.date,
-                            0,
-                            0,
-                            after.targetAmount,
-                            after.sourceAmount,
-                            after.accountId,
+                            date: after.date,
+                            incomeTotal: 0,
+                            expenseTotal: after.sourceAmount,
+                            transferTotal: 0,
                             trx,
-                        ),
-                        await this._dailyCategoryStatsService.addToScore(
+                        }),
+                        await this._dailyAccountStatsService.addToScore({
                             userId,
-                            after.date,
-                            after.sourceAmount,
-                            after.targetAmount,
-                            after.categoryId,
+                            date: after.date,
+                            accountId: after.accountId,
+                            type: StatsTransactionType.EXPENSE,
+                            sourceAmount: after.sourceAmount,
+                            targetAmount: after.targetAmount,
                             trx,
-                        ),
-                        await this._dailyStatsService.subtractFromScore(userId, before.date, 0, before.sourceAmount, 0, trx),
-                        await this._dailyAccountStatsService.subtractFromScore(
+                        }),
+                        await this._dailyCategoryStatsService.addToScore({
                             userId,
-                            before.date,
-                            0,
-                            0,
-                            before.targetAmount,
-                            before.sourceAmount,
-                            before.accountId,
+                            date: after.date,
+                            categoryId: after.categoryId,
+                            sourceAmount: after.sourceAmount,
+                            targetAmount: after.targetAmount,
                             trx,
-                        ),
-                        await this._dailyCategoryStatsService.subtractFromScore(
+                        }),
+                        await this._dailyStatsService.subtractFromScore({
                             userId,
-                            before.date,
-                            before.targetAmount,
-                            before.sourceAmount,
-                            before.categoryId,
+                            date: before.date,
+                            incomeTotal: 0,
+                            expenseTotal: before.sourceAmount,
+                            transferTotal: 0,
                             trx,
-                        ),
+                        }),
+                        await this._dailyAccountStatsService.subtractFromScore({
+                            userId,
+                            date: before.date,
+                            accountId: before.accountId,
+                            type: StatsTransactionType.EXPENSE,
+                            sourceAmount: before.sourceAmount,
+                            targetAmount: before.targetAmount,
+                            trx,
+                        }),
+                        await this._dailyCategoryStatsService.subtractFromScore({
+                            userId,
+                            date: before.date,
+                            categoryId: before.categoryId,
+                            sourceAmount: before.sourceAmount,
+                            targetAmount: before.targetAmount,
+                            trx,
+                        }),
                     ]);
                     const allSucceeded = response.every((r) => r === true);
 
@@ -376,48 +458,58 @@ export default class StatsOrchestratorService extends LoggerBase implements ISta
                     before?.targetAmount !== after?.targetAmount
                 ) {
                     const response = await Promise.all([
-                        await this._dailyStatsService.addToScore(userId, after.date, 0, 0, after.sourceAmount, trx),
-                        await this._dailyAccountStatsService.addToScore(
+                        await this._dailyStatsService.addToScore({
                             userId,
-                            after.date,
-                            0,
-                            0,
-                            after.sourceAmount,
-                            after.targetAmount,
-                            after.accountId,
+                            date: after.date,
+                            incomeTotal: 0,
+                            expenseTotal: 0,
+                            transferTotal: after.sourceAmount,
                             trx,
-                        ),
-                        await this._dailyAccountStatsService.addToScore(
+                        }),
+                        await this._dailyAccountStatsService.addToScore({
                             userId,
-                            after.date,
-                            0,
-                            0,
-                            after.sourceAmount,
-                            after.targetAmount,
-                            after.targetAccountId,
+                            date: after.date,
+                            accountId: after.accountId,
+                            type: StatsTransactionType.EXPENSE,
+                            sourceAmount: after.sourceAmount,
+                            targetAmount: after.targetAmount,
                             trx,
-                        ),
-                        await this._dailyStatsService.subtractFromScore(userId, before.date, 0, 0, before.sourceAmount, trx),
-                        await this._dailyAccountStatsService.subtractFromScore(
+                        }),
+                        await this._dailyAccountStatsService.addToScore({
                             userId,
-                            before.date,
-                            0,
-                            0,
-                            before.sourceAmount,
-                            before.sourceAmount,
-                            before.accountId,
+                            date: after.date,
+                            accountId: after.targetAccountId,
+                            type: StatsTransactionType.INCOME,
+                            sourceAmount: after.sourceAmount,
+                            targetAmount: after.targetAmount,
                             trx,
-                        ),
-                        await this._dailyAccountStatsService.subtractFromScore(
+                        }),
+                        await this._dailyStatsService.subtractFromScore({
                             userId,
-                            before.date,
-                            0,
-                            0,
-                            before.sourceAmount,
-                            before.targetAmount,
-                            before.targetAccountId,
+                            date: before.date,
+                            incomeTotal: 0,
+                            expenseTotal: 0,
+                            transferTotal: before.sourceAmount,
                             trx,
-                        ),
+                        }),
+                        await this._dailyAccountStatsService.subtractFromScore({
+                            userId,
+                            date: before.date,
+                            accountId: before.accountId,
+                            type: StatsTransactionType.EXPENSE,
+                            sourceAmount: before.sourceAmount,
+                            targetAmount: before.targetAmount,
+                            trx,
+                        }),
+                        await this._dailyAccountStatsService.subtractFromScore({
+                            userId,
+                            date: before.date,
+                            accountId: before.targetAccountId,
+                            type: StatsTransactionType.INCOME,
+                            sourceAmount: before.sourceAmount,
+                            targetAmount: before.targetAmount,
+                            trx,
+                        }),
                     ]);
                     const allSucceeded = response.every((r) => r === true);
 
@@ -438,30 +530,37 @@ export default class StatsOrchestratorService extends LoggerBase implements ISta
     }
     public async delete(command: DeleteStatsCommand): Promise<boolean> {
         const { trx, userId, type, data } = command;
+        // A delete reverses a create: subtract the snapshot from the score using the same mapping as create().
         switch (type) {
             case TransactionType.Income:
                 {
                     const { date, sourceAmount, accountId, incomeId, targetAmount } = data;
                     const response = await Promise.all([
-                        await this._dailyStatsService.subtractFromScore(userId, date, sourceAmount, 0, 0, trx),
-                        await this._dailyIncomeStatsService.subtractFromScore(
+                        await this._dailyStatsService.subtractFromScore({
                             userId,
                             date,
-                            sourceAmount,
-                            targetAmount,
+                            incomeTotal: sourceAmount,
+                            expenseTotal: 0,
+                            transferTotal: 0,
+                            trx,
+                        }),
+                        await this._dailyIncomeStatsService.subtractFromScore({
+                            userId,
+                            date,
                             incomeId,
-                            trx,
-                        ),
-                        await this._dailyAccountStatsService.subtractFromScore(
-                            userId,
-                            date,
                             sourceAmount,
                             targetAmount,
-                            0,
-                            0,
-                            accountId,
                             trx,
-                        ),
+                        }),
+                        await this._dailyAccountStatsService.subtractFromScore({
+                            userId,
+                            date,
+                            accountId,
+                            type: StatsTransactionType.INCOME,
+                            sourceAmount,
+                            targetAmount,
+                            trx,
+                        }),
                     ]);
                     const allSucceeded = response.every((r) => r === true);
 
@@ -475,35 +574,33 @@ export default class StatsOrchestratorService extends LoggerBase implements ISta
                 return true;
             case TransactionType.Expense:
                 {
-                    const { date, sourceAmount, accountId, categoryId, targetAmount, expanseTargetAmount, expanseSourceAmount } =
-                        data;
+                    const { date, sourceAmount, accountId, categoryId, targetAmount } = data;
                     const response = await Promise.all([
-                        await this._dailyStatsService.subtractFromScore(
+                        await this._dailyStatsService.subtractFromScore({
                             userId,
                             date,
-                            sourceAmount,
-                            targetAmount,
-
+                            incomeTotal: 0,
+                            expenseTotal: sourceAmount,
+                            transferTotal: 0,
                             trx,
-                        ),
-                        await this._dailyAccountStatsService.subtractFromScore(
+                        }),
+                        await this._dailyAccountStatsService.subtractFromScore({
                             userId,
                             date,
-                            sourceAmount,
-                            targetAmount,
-                            expanseSourceAmount,
-                            expanseTargetAmount,
                             accountId,
+                            type: StatsTransactionType.EXPENSE,
+                            sourceAmount,
+                            targetAmount,
                             trx,
-                        ),
-                        await this._dailyCategoryStatsService.subtractFromScore(
+                        }),
+                        await this._dailyCategoryStatsService.subtractFromScore({
                             userId,
                             date,
-                            targetAmount,
-                            targetAmount,
                             categoryId,
+                            sourceAmount,
+                            targetAmount,
                             trx,
-                        ),
+                        }),
                     ]);
                     const allSucceeded = response.every((r) => r === true);
 
@@ -516,30 +613,34 @@ export default class StatsOrchestratorService extends LoggerBase implements ISta
                 }
                 return true;
             case TransactionType.Transafer: {
-                const { date, sourceAmount, accountId, targetAccountId, targetAmount, expanseSourceAmount, expanseTargetAmount } =
-                    data;
+                const { date, sourceAmount, accountId, targetAccountId, targetAmount } = data;
                 const response = await Promise.all([
-                    await this._dailyStatsService.subtractFromScore(userId, date, sourceAmount, trx),
-                    await this._dailyAccountStatsService.subtractFromScore(
+                    await this._dailyStatsService.subtractFromScore({
                         userId,
                         date,
-                        sourceAmount,
-                        targetAmount,
-                        expanseSourceAmount,
-                        expanseTargetAmount,
+                        incomeTotal: 0,
+                        expenseTotal: 0,
+                        transferTotal: sourceAmount,
+                        trx,
+                    }),
+                    await this._dailyAccountStatsService.subtractFromScore({
+                        userId,
+                        date,
                         accountId,
-                        trx,
-                    ),
-                    await this._dailyAccountStatsService.subtractFromScore(
-                        userId,
-                        date,
+                        type: StatsTransactionType.EXPENSE,
                         sourceAmount,
                         targetAmount,
-                        expanseSourceAmount,
-                        expanseTargetAmount,
-                        targetAccountId,
                         trx,
-                    ),
+                    }),
+                    await this._dailyAccountStatsService.subtractFromScore({
+                        userId,
+                        date,
+                        accountId: targetAccountId,
+                        type: StatsTransactionType.INCOME,
+                        sourceAmount,
+                        targetAmount,
+                        trx,
+                    }),
                 ]);
                 const allSucceeded = response.every((r) => r === true);
 
@@ -651,7 +752,7 @@ export default class StatsOrchestratorService extends LoggerBase implements ISta
                 return {
                     spendMTD: currentAccount.totalExpanse,
                     vsLastMonthSpendPct: vsLastMonthSpendPctAccount,
-                    transferMTD: currentTransfer.total,
+                    transferMTD: currentTransfer.source_total,
                     incomeMTD: currentAccount.totalIncome,
                     vsLastMonthIncomePct: vsLastMonthIncomePctAccount,
                     savingsRate: (currentAccount.totalIncome - currentAccount.totalExpanse) * 0.1,

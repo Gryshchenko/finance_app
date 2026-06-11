@@ -239,8 +239,12 @@ ALTER SEQUENCE public."currencytype_currencyTypeId_seq" OWNED BY public.currency
 CREATE TABLE public.daily_accounts_stats (
     "userId" integer NOT NULL,
     date date NOT NULL,
-    income_total numeric(18,2) DEFAULT 0 NOT NULL,
-    expense_total numeric(18,2) DEFAULT 0 NOT NULL,
+    income_source_total numeric(18,2) DEFAULT 0 NOT NULL,
+    income_target_total numeric(18,2) DEFAULT 0 NOT NULL,
+    expense_source_total numeric(18,2) DEFAULT 0 NOT NULL,
+    expense_target_total numeric(18,2) DEFAULT 0 NOT NULL,
+    "currencyId" integer,
+    "targetCurrencyId" integer,
     "accountId" integer NOT NULL,
     "updatedAt" timestamp without time zone DEFAULT now() NOT NULL
 );
@@ -254,7 +258,10 @@ CREATE TABLE public.daily_accounts_stats (
 CREATE TABLE public.daily_categories_stats (
     "userId" integer NOT NULL,
     date date NOT NULL,
-    amount_total numeric(18,2) DEFAULT 0 NOT NULL,
+    source_total numeric(18,2) DEFAULT 0 NOT NULL,
+    target_total numeric(18,2) DEFAULT 0 NOT NULL,
+    "currencyId" integer,
+    "targetCurrencyId" integer,
     "categoryId" integer NOT NULL,
     "updatedAt" timestamp without time zone DEFAULT now() NOT NULL
 );
@@ -268,7 +275,10 @@ CREATE TABLE public.daily_categories_stats (
 CREATE TABLE public.daily_incomes_stats (
     "userId" integer NOT NULL,
     date date NOT NULL,
-    amount_total numeric(18,2) DEFAULT 0 NOT NULL,
+    source_total numeric(18,2) DEFAULT 0 NOT NULL,
+    target_total numeric(18,2) DEFAULT 0 NOT NULL,
+    "currencyId" integer,
+    "targetCurrencyId" integer,
     "incomeId" integer NOT NULL,
     "updatedAt" timestamp without time zone DEFAULT now() NOT NULL
 );
@@ -297,7 +307,10 @@ CREATE TABLE public.daily_stats (
 CREATE TABLE public.daily_transfer_stats (
     "userId" integer NOT NULL,
     date date NOT NULL,
-    amount_total numeric(18,2) DEFAULT 0 NOT NULL,
+    source_total numeric(18,2) DEFAULT 0 NOT NULL,
+    target_total numeric(18,2) DEFAULT 0 NOT NULL,
+    "currencyId" integer,
+    "targetCurrencyId" integer,
     "accountId" integer NOT NULL,
     "targetAccountId" integer NOT NULL,
     "updatedAt" timestamp without time zone DEFAULT now() NOT NULL
@@ -669,6 +682,8 @@ CREATE TABLE public.transactions (
     "updatedAt" timestamp without time zone,
     "transactionTypeId" integer NOT NULL,
     "targetAccountId" integer,
+    "targetAmount" numeric,
+    "targetCurrencyId" integer,
     "isDeleted" boolean DEFAULT false NOT NULL,
     "deletedAt" timestamp with time zone
 );
