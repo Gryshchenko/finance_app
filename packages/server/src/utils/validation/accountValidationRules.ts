@@ -59,6 +59,11 @@ const patchAccountValidationRules = [
         optional: true,
         allowedValues: VALID_ICON_IDS,
     }),
+    ...createSignupValidationRules('position', 'number', {
+        optional: true,
+        min: 0,
+        max: Number.MAX_SAFE_INTEGER,
+    }),
 ];
 
 export { patchAccountValidationRules, accountConvertValidationMessageToErrorCode, createAccountValidationRules };

@@ -40,7 +40,8 @@ CREATE TABLE public.accounts (
     "updatedAt" timestamp with time zone,
     status smallint,
     "isDeleted" boolean DEFAULT false NOT NULL,
-    "deletedAt" timestamp with time zone
+    "deletedAt" timestamp with time zone,
+    "position" integer DEFAULT 0 NOT NULL
 );
 
 
@@ -120,7 +121,8 @@ CREATE TABLE public.categories (
     status smallint,
     "isDeleted" boolean DEFAULT false NOT NULL,
     "deletedAt" timestamp with time zone,
-    budget numeric(12,2)
+    budget numeric(12,2),
+    "position" integer DEFAULT 0 NOT NULL
 );
 
 
@@ -410,7 +412,8 @@ CREATE TABLE public.incomes (
     "updatedAt" timestamp with time zone,
     status smallint,
     "isDeleted" boolean DEFAULT false NOT NULL,
-    "deletedAt" timestamp with time zone
+    "deletedAt" timestamp with time zone,
+    "position" integer DEFAULT 0 NOT NULL
 );
 
 

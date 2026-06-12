@@ -9,4 +9,5 @@ export interface IAccount {
     symbol: string;
     iconId: string;
     status: AccountStatusType;
+    position: number;
 }

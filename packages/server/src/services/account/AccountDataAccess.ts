@@ -37,16 +37,19 @@ export default class AccountDataAccess extends LoggerBase implements IAccountDat
                 ]);
             }
             const query = trx || this._db.engine();
+            const maxPositionRow = await query('accounts').where({ userId }).max('position as maxPosition').first();
+            const nextPosition = Number(maxPositionRow?.maxPosition ?? 0) + 1;
             const data = await query('accounts').insert(
-                accounts.map(({ accountName, currencyId, amount, iconId }) => ({
+                accounts.map(({ accountName, currencyId, amount, iconId }, index) => ({
                     userId,
                     accountName,
                     currencyId,
                     iconId,
                     status: AccountStatusType.Enable,
                     amount: Number(amount.toFixed(2)),
+                    position: nextPosition + index,
                 })),
-                ['accountId', 'userId', 'accountName', 'currencyId', 'amount', 'iconId'],
+                ['accountId', 'userId', 'accountName', 'currencyId', 'amount', 'iconId', 'position'],
             );
 
             this._logger.info(`Successfully created ${data.length} accounts for userId: ${userId}`);
@@ -67,8 +70,17 @@ export default class AccountDataAccess extends LoggerBase implements IAccountDat
 
             const data = await this._db
                 .engine()('accounts')
-                .select('accounts.accountId', 'accounts.amount', 'accounts.accountName', 'accounts.currencyId', 'accounts.iconId')
-                .where({ userId, 'status': AccountStatusType.Enable, 'accounts.isDeleted': false });
+                .select(
+                    'accounts.accountId',
+                    'accounts.amount',
+                    'accounts.accountName',
+                    'accounts.currencyId',
+                    'accounts.iconId',
+                    'accounts.position',
+                )
+                .where({ userId, 'status': AccountStatusType.Enable, 'accounts.isDeleted': false })
+                .orderBy('accounts.position', 'asc')
+                .orderBy('accounts.accountId', 'asc');
 
             if (!data.length) {
                 this._logger.info(`No accounts found for userId: ${userId}`);
@@ -99,6 +111,7 @@ export default class AccountDataAccess extends LoggerBase implements IAccountDat
                     'accounts.accountName',
                     'accounts.currencyId',
                     'accounts.iconId',
+                    'accounts.position',
                     'accounts.createdAt',
                     'accounts.updatedAt',
                     'currencies.currencyCode',
@@ -142,9 +155,10 @@ export default class AccountDataAccess extends LoggerBase implements IAccountDat
                 iconId: properties.iconId,
                 updatedAt: Time.getISODateNowUTC(),
                 status: properties.status,
+                position: properties.position,
             };
 
-            const allowedKeys = ['accountName', 'amount', 'iconId', 'updatedAt', 'status'];
+            const allowedKeys = ['accountName', 'amount', 'iconId', 'updatedAt', 'status', 'position'];
             validateAllowedProperties(allowedProperties, allowedKeys);
             const properestForUpdate = getOnlyNotEmptyProperties(allowedProperties, allowedKeys);
             if (properestForUpdate.amount !== undefined) {

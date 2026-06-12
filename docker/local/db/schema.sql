@@ -40,7 +40,8 @@ CREATE TABLE public.accounts (
     status smallint,
     "isDeleted" boolean DEFAULT false NOT NULL,
     "deletedAt" timestamp with time zone,
-    "iconId" character varying
+    "iconId" character varying,
+    "position" integer DEFAULT 0 NOT NULL
 );
 
 
@@ -120,7 +121,8 @@ CREATE TABLE public.categories (
     "isDeleted" boolean DEFAULT false NOT NULL,
     "deletedAt" timestamp with time zone,
     "iconId" character varying,
-    budget numeric(12,2)
+    budget numeric(12,2),
+    "position" integer DEFAULT 0 NOT NULL
 );
 
 
@@ -449,7 +451,8 @@ CREATE TABLE public.incomes (
     status smallint,
     "isDeleted" boolean DEFAULT false NOT NULL,
     "deletedAt" timestamp with time zone,
-    "iconId" character varying
+    "iconId" character varying,
+    "position" integer DEFAULT 0 NOT NULL
 );
 
 

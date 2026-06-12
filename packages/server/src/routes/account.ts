@@ -39,7 +39,7 @@ accountRouter.delete(
 accountRouter.patch(
     '/:accountId',
     validateQuery({}),
-    sanitizeRequestBody(['accountName', 'amount', 'status', 'iconId']),
+    sanitizeRequestBody(['accountName', 'amount', 'status', 'iconId', 'position']),
     routesInputValidation(patchAccountValidationRules, accountConvertValidationMessageToErrorCode),
     routesInputValidation([validatePathQueryProperty('accountId')]),
     AccountController.patch,

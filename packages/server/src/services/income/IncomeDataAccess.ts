@@ -39,6 +39,7 @@ export default class IncomeDataAccess extends LoggerBase implements IIncomeDataA
                     'incomes.incomeName',
                     'incomes.currencyId',
                     'incomes.iconId',
+                    'incomes.position',
                     this._db.engine().raw('COALESCE(SUM(dis.source_total), 0) as amount'),
                 )
                 .leftJoin('daily_incomes_stats as dis', function () {
@@ -47,7 +48,9 @@ export default class IncomeDataAccess extends LoggerBase implements IIncomeDataA
                         .andOnBetween('dis.date', [from, to]);
                 })
                 .where({ 'incomes.userId': userId, 'incomes.isDeleted': false })
-                .groupBy('incomes.incomeId', 'incomes.userId', 'incomes.incomeName', 'incomes.currencyId');
+                .groupBy('incomes.incomeId', 'incomes.userId', 'incomes.incomeName', 'incomes.currencyId')
+                .orderBy('incomes.position', 'asc')
+                .orderBy('incomes.incomeId', 'asc');
             if (data) {
                 this._logger.info(`Fetched ${data.length} incomes retrieved successfully for user: ${userId}`);
             } else {
@@ -70,15 +73,18 @@ export default class IncomeDataAccess extends LoggerBase implements IIncomeDataA
 
         try {
             const query = trx || this._db.engine();
+            const maxPositionRow = await query('incomes').where({ userId }).max('position as maxPosition').first();
+            const nextPosition = Number(maxPositionRow?.maxPosition ?? 0) + 1;
             const data = await query('incomes').insert(
-                incomes.map(({ incomeName, currencyId, iconId }) => ({
+                incomes.map(({ incomeName, currencyId, iconId }, index) => ({
                     userId,
                     incomeName,
                     currencyId,
                     status: AccountStatusType.Enable,
                     iconId,
+                    position: nextPosition + index,
                 })),
-                ['incomeId', 'userId', 'incomeName', 'currencyId'],
+                ['incomeId', 'userId', 'incomeName', 'currencyId', 'position'],
             );
 
             this._logger.info(`Successfully created incomes for userId ${userId}`);
@@ -98,7 +104,9 @@ export default class IncomeDataAccess extends LoggerBase implements IIncomeDataA
         try {
             const data = await this.getIncomeBaseQuery()
                 .innerJoin('currencies', 'incomes.currencyId', 'currencies.currencyId')
-                .where({ userId, 'status': AccountStatusType.Enable, 'incomes.isDeleted': false });
+                .where({ userId, 'status': AccountStatusType.Enable, 'incomes.isDeleted': false })
+                .orderBy('incomes.position', 'asc')
+                .orderBy('incomes.incomeId', 'asc');
 
             this._logger.info(`Successfully fetched incomes for userId ${userId}`);
             return data;
@@ -157,6 +165,7 @@ export default class IncomeDataAccess extends LoggerBase implements IIncomeDataA
                 'incomes.createdAt',
                 'incomes.updatedAt',
                 'incomes.iconId',
+                'incomes.position',
                 'currencies.currencyCode',
                 'currencies.currencyName',
                 'currencies.symbol',
@@ -170,9 +179,10 @@ export default class IncomeDataAccess extends LoggerBase implements IIncomeDataA
                 updatedAt: Time.getISODateNowUTC(),
                 status: properties.status,
                 iconId: properties.iconId,
+                position: properties.position,
             };
 
-            const allowedKeys = ['incomeName', 'updatedAt', 'status', 'iconId'];
+            const allowedKeys = ['incomeName', 'updatedAt', 'status', 'iconId', 'position'];
             validateAllowedProperties(allowedProperties, allowedKeys);
             const properestForUpdate = getOnlyNotEmptyProperties(allowedProperties, allowedKeys);
             const query = trx || this._db.engine();

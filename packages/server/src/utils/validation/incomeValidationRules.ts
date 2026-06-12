@@ -49,6 +49,11 @@ const patchIncomeValidationRules = [
         min: 2,
         max: 3,
     }),
+    ...createSignupValidationRules('position', 'number', {
+        optional: true,
+        min: 0,
+        max: Number.MAX_SAFE_INTEGER,
+    }),
 ];
 
 export { patchIncomeValidationRules, incomeConvertValidationMessageToErrorCode, createIncomeValidationRules };

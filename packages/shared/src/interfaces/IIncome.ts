@@ -7,6 +7,7 @@ export interface IIncome {
     currencyId: number;
     iconId: string;
     status: AccountStatusType;
+    position: number;
     createdAt: Date;
     updatedAt: Date;
 }

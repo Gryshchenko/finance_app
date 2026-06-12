@@ -64,8 +64,14 @@ export class AccountController {
         const responseBuilder = new ResponseBuilder();
         try {
             const accountId = Number(req.params?.accountId);
-            const { accountName, amount, status, iconId } = req.body;
-            if (Utils.isEmpty(accountName) && Utils.isNull(amount) && Utils.isNull(status) && Utils.isEmpty(iconId)) {
+            const { accountName, amount, status, iconId, position } = req.body;
+            if (
+                Utils.isEmpty(accountName) &&
+                Utils.isNull(amount) &&
+                Utils.isNull(status) &&
+                Utils.isEmpty(iconId) &&
+                Utils.isNull(position)
+            ) {
                 throw new ValidationError({ message: 'Path account failed due reason: empty body' });
             }
             await AccountOrchestrationServiceBuilder.build().patch(req.user?.userId as number, accountId, {
@@ -73,6 +79,7 @@ export class AccountController {
                 amount,
                 status,
                 iconId,
+                position,
             });
             res.status(HttpCode.NO_CONTENT).json(responseBuilder.setStatus(ResponseStatusType.OK).setData({}).build());
         } catch (e: unknown) {

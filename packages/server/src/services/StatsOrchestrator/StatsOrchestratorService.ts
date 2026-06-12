@@ -3,11 +3,13 @@ import { ErrorCode, HttpCode, IEntityStats, ISummary, StatsPeriod, StatsType, Ti
 import { LoggerBase } from 'helper/logger/LoggerBase';
 import { IDBTransaction } from 'interfaces/IDatabaseConnection';
 import { ICategoryService } from 'services/category/CategoryService';
+// import { ICurrencyService } from 'services/currency/CurrencyService';
 import { IDailyAccountStatsService } from 'services/dailyAccountStats/DailyAccountStatsService';
 import { IDailyCategoryStatsService } from 'services/dailyCategoryStats/DailyCategoryStatsService';
 import { IDailyIncomeStatsService } from 'services/dailyIncomeStats/DailyIncomeStatsService';
 import { IDailyStatsService } from 'services/dailyStats/DailyStatsService';
 import { IDailyTransferStatsService } from 'services/dailyTransferStats/DailyTransferStatsService';
+// import { IExchangeRateService } from 'services/exchangeRateService/ExchangeRateService';
 import { CustomError } from 'src/utils/errors/CustomError';
 import { DBError } from 'src/utils/errors/DBError';
 import { ValidationError } from 'src/utils/errors/ValidationError';
@@ -132,6 +134,8 @@ export default class StatsOrchestratorService extends LoggerBase implements ISta
     private readonly _dailyTransferStatsService: IDailyTransferStatsService;
     private readonly _dailyStatsService: IDailyStatsService;
     private readonly _categoryService: ICategoryService;
+    // private readonly _exchangeRateService: IExchangeRateService;
+    // private readonly _currencyService: ICurrencyService;
 
     public constructor({
         dailyCategoryStatsService,
@@ -140,6 +144,8 @@ export default class StatsOrchestratorService extends LoggerBase implements ISta
         dailyTransferStatsService,
         dailyStatsService,
         categoryService,
+        // exchangeRateService,
+        // currencyService,
     }: {
         dailyCategoryStatsService: IDailyCategoryStatsService;
         dailyIncomeStatsService: IDailyIncomeStatsService;
@@ -147,6 +153,8 @@ export default class StatsOrchestratorService extends LoggerBase implements ISta
         dailyTransferStatsService: IDailyTransferStatsService;
         dailyStatsService: IDailyStatsService;
         categoryService: ICategoryService;
+        // exchangeRateService: IExchangeRateService;
+        // currencyService: ICurrencyService;
     }) {
         super();
         this._dailyAccountStatsService = dailyAccountStatsService;
@@ -155,6 +163,8 @@ export default class StatsOrchestratorService extends LoggerBase implements ISta
         this._dailyTransferStatsService = dailyTransferStatsService;
         this._dailyStatsService = dailyStatsService;
         this._categoryService = categoryService;
+        // this._exchangeRateService = exchangeRateService;
+        // this._currencyService = currencyService;
     }
 
     public async create(command: CreateStatsCommand): Promise<boolean> {
@@ -766,4 +776,51 @@ export default class StatsOrchestratorService extends LoggerBase implements ISta
             }
         }
     }
+    // private async convertAmountToCurrentUserCurrency({
+    //     sourceAmount,
+    //     targetAmount,
+    //     currencyId,
+    //     targetCurrencyId,
+    //     sourceCurrencyId,
+    // }: {
+    //     sourceAmount: number;
+    //     targetAmount: number;
+    //     currencyId: number;
+    //     targetCurrencyId: number;
+    //     sourceCurrencyId: number;
+    // }): Promise<number> {
+    //     if (sourceCurrencyId === currencyId) {
+    //         return sourceAmount;
+    //     }
+    //     if (targetCurrencyId === currencyId) {
+    //         return targetAmount;
+    //     }
+    //
+    //     const currentCurrency = await this._currencyService.getById(currencyId);
+    //     if (!currentCurrency) {
+    //         throw new ValidationError({
+    //             statusCode: HttpCode.BAD_REQUEST,
+    //             errorCode: ErrorCode.STATS_ERROR,
+    //             message: `Can't get currency code for current currencyId: ${currencyId}`,
+    //         });
+    //     }
+    //     const sourceCurrency = await this._currencyService.getById(sourceCurrencyId);
+    //     if (!sourceCurrency) {
+    //         throw new ValidationError({
+    //             statusCode: HttpCode.BAD_REQUEST,
+    //             errorCode: ErrorCode.STATS_ERROR,
+    //             message: `Can't get currency code for source currencyId: ${sourceCurrencyId}`,
+    //         });
+    //     }
+    //
+    //     const rates = await this._exchangeRateService.get(sourceCurrency?.currencyCode, currentCurrency?.currencyCode);
+    //     if (!rates) {
+    //         throw new ValidationError({
+    //             statusCode: HttpCode.BAD_REQUEST,
+    //             errorCode: ErrorCode.STATS_ERROR,
+    //             message: `Can't get rates for current currencyId -> sourceCurrencyId: ${currencyId} -> ${sourceCurrencyId}`,
+    //         });
+    //     }
+    //     return sourceAmount * rates?.rate;
+    // }
 }

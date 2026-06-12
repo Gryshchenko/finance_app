@@ -60,6 +60,11 @@ const patchCategoryValidationRules = [
         min: 0,
         max: Number.MAX_SAFE_INTEGER,
     }),
+    ...createSignupValidationRules('position', 'number', {
+        optional: true,
+        min: 0,
+        max: Number.MAX_SAFE_INTEGER,
+    }),
 ];
 
 export { patchCategoryValidationRules, categoryConvertValidationMessageToErrorCode, createCategoryValidationRules };

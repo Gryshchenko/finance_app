@@ -8,6 +8,7 @@ export interface ICategory {
     iconId: string;
     status: AccountStatusType;
     budget?: number | null;
+    position: number;
     createdAt: Date;
     updatedAt: Date;
 }

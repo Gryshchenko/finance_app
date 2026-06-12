@@ -47,7 +47,7 @@ categoryRouter.delete(
 categoryRouter.patch(
     '/:categoryId',
     validateQuery({}),
-    sanitizeRequestBody(['categoryName', 'status', 'iconId', 'budget']),
+    sanitizeRequestBody(['categoryName', 'status', 'iconId', 'budget', 'position']),
     routesInputValidation(patchCategoryValidationRules, categoryConvertValidationMessageToErrorCode),
     routesInputValidation([validatePathQueryProperty('categoryId')]),
     CategoryController.patch,

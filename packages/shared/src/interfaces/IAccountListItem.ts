@@ -4,4 +4,5 @@ export interface IAccountListItem {
     amount: number;
     currencyId: number;
     iconId: string;
+    position: number;
 }

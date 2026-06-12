@@ -7,6 +7,7 @@ import { BaseError } from 'src/utils/errors/BaseError';
 import { DBError } from 'src/utils/errors/DBError';
 import { isBaseError } from 'src/utils/errors/isBaseError';
 import { NotFoundError } from 'src/utils/errors/NotFoundError';
+import { getOnlyNotEmptyProperties } from 'src/utils/validation/getOnlyNotEmptyProperties';
 import { validateAllowedProperties } from 'src/utils/validation/validateAllowedProperties';
 
 export interface ICategoryDataAccess {
@@ -37,6 +38,7 @@ export default class CategoryDataAccess extends LoggerBase implements ICategoryD
                     'categories.currencyId',
                     'categories.iconId',
                     'categories.budget',
+                    'categories.position',
                     this._db.engine().raw('COALESCE(SUM(dcs.target_total), 0) as amount'),
                 )
                 .leftJoin('daily_categories_stats as dcs', function () {
@@ -52,7 +54,10 @@ export default class CategoryDataAccess extends LoggerBase implements ICategoryD
                     'categories.currencyId',
                     'categories.iconId',
                     'categories.budget',
-                );
+                    'categories.position',
+                )
+                .orderBy('categories.position', 'asc')
+                .orderBy('categories.categoryId', 'asc');
             if (data) {
                 this._logger.info(`Fetched ${data.length} categories retrieved successfully for user: ${userId}`);
             } else {
@@ -76,12 +81,15 @@ export default class CategoryDataAccess extends LoggerBase implements ICategoryD
         const query = trx || this._db.engine();
 
         try {
-            const formattedCategories = categories.map(({ categoryName, currencyId, iconId, budget }) => ({
+            const maxPositionRow = await query('categories').where({ userId }).max('position as maxPosition').first();
+            const nextPosition = Number(maxPositionRow?.maxPosition ?? 0) + 1;
+            const formattedCategories = categories.map(({ categoryName, currencyId, iconId, budget }, index) => ({
                 userId,
                 categoryName,
                 currencyId,
                 iconId,
                 budget,
+                position: nextPosition + index,
             }));
 
             const data = await query('categories').insert(formattedCategories, [
@@ -91,6 +99,7 @@ export default class CategoryDataAccess extends LoggerBase implements ICategoryD
                 'currencyId',
                 'iconId',
                 'budget',
+                'position',
             ]);
 
             this._logger.info(`Categories created successfully for user: ${userId}`);
@@ -111,7 +120,9 @@ export default class CategoryDataAccess extends LoggerBase implements ICategoryD
         try {
             const data = await this.getCategoryBaseQuery()
                 .innerJoin('currencies', 'categories.currencyId', 'currencies.currencyId')
-                .where({ userId, 'categories.isDeleted': false });
+                .where({ userId, 'categories.isDeleted': false })
+                .orderBy('categories.position', 'asc')
+                .orderBy('categories.categoryId', 'asc');
 
             if (data) {
                 this._logger.info(`Fetched ${data.length} categories retrieved successfully for user: ${userId}`);
@@ -172,11 +183,14 @@ export default class CategoryDataAccess extends LoggerBase implements ICategoryD
                 updatedAt: Time.getISODateNowUTC(),
                 status: properties.status,
                 budget: properties.budget,
+                position: properties.position,
             };
 
-            validateAllowedProperties(allowedProperties, ['categoryName', 'iconId', 'updatedAt', 'status', 'budget']);
+            const allowedKeys = ['categoryName', 'iconId', 'updatedAt', 'status', 'budget', 'position'];
+            validateAllowedProperties(allowedProperties, allowedKeys);
+            const properestForUpdate = getOnlyNotEmptyProperties(allowedProperties, allowedKeys);
             const query = trx || this._db.engine();
-            const data = await query('categories').update(properties).where({ userId, categoryId });
+            const data = await query('categories').update(properestForUpdate).where({ userId, categoryId });
 
             if (!data) {
                 throw new NotFoundError({
@@ -234,6 +248,7 @@ export default class CategoryDataAccess extends LoggerBase implements ICategoryD
                 'categories.currencyId',
                 'categories.iconId',
                 'categories.budget',
+                'categories.position',
                 'categories.createdAt',
                 'categories.updatedAt',
                 'currencies.currencyCode',

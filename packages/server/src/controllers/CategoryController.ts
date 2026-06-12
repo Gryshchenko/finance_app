@@ -101,8 +101,14 @@ export class CategoryController {
         const responseBuilder = new ResponseBuilder();
         try {
             const categoryId = Number(req.params?.categoryId);
-            const { categoryName, status, iconId, budget } = req.body;
-            if (Utils.isEmpty(categoryName) && Utils.isNull(status) && Utils.isEmpty(iconId) && Utils.isNull(budget)) {
+            const { categoryName, status, iconId, budget, position } = req.body;
+            if (
+                Utils.isEmpty(categoryName) &&
+                Utils.isNull(status) &&
+                Utils.isEmpty(iconId) &&
+                Utils.isNull(budget) &&
+                Utils.isNull(position)
+            ) {
                 throw new ValidationError({ message: 'Path category failed due reason: empty body' });
             }
             await CategoryServiceBuilder.build().patch(req.user?.userId as number, categoryId, {
@@ -110,6 +116,7 @@ export class CategoryController {
                 status,
                 iconId,
                 budget,
+                position,
             });
             res.status(HttpCode.NO_CONTENT).json(responseBuilder.setStatus(ResponseStatusType.OK).setData({}).build());
         } catch (e: unknown) {
