@@ -53,6 +53,9 @@ export function Box(props: IBoxProps) {
     } = props;
 
     const viewRef = useRef<View>(null);
+    // The in-flow placeholder shown in the source slot during a drag. Measured on
+    // release to send the overlay back to the slot's CURRENT on-screen position.
+    const placeholderRef = useRef<View>(null);
     // Tap vs drag discrimination: timer fires if drag ends before 300 ms and
     // the item never actually moved (wasDragged stays false).
     const tapTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
@@ -76,18 +79,17 @@ export function Box(props: IBoxProps) {
     const [isDragOver, setIsDragOver] = useState(false);
     const isDragging = id === draggedElementId;
 
-    // Restore overlay to origin and clear dragged ID when the Box unmounts
-    // (e.g. when DropProvider re-keys after resetDragState).
-    // Capture the ref value inside the effect so the cleanup closure holds
-    // a stable snapshot at mount time (satisfies react-hooks/exhaustive-deps).
+    // Clear the dragged ID when the Box unmounts (e.g. when DropProvider re-keys
+    // after resetDragState on a successful drop). The overlay's return-to-origin
+    // animation is already started by onDragEnd, which always fires before the
+    // drop-triggered remount, so we deliberately don't restart it here - that
+    // would double-animate the overlay on every drop.
     useEffect(() => {
-        const offset = initialOffset;
         return () => {
             setDraggedElementId(undefined);
-            setInitialDragPosition(offset.current.x, offset.current.y - DASH_BOARD_BOX_SIZE);
         };
-        // setDraggedElementId and setInitialDragPosition are stable dispatcher
-        // references from context - safe to omit from the deps array.
+        // setDraggedElementId is a stable dispatcher reference from context -
+        // safe to omit from the deps array.
         // eslint-disable-next-line react-hooks/exhaustive-deps
     }, []);
 
@@ -131,7 +133,33 @@ export function Box(props: IBoxProps) {
                                 wasDragged.current = false;
                                 setDraggingItemType(undefined);
                                 onDragEnd?.(data);
-                                setInitialDragPosition(initialOffset.current.x, initialOffset.current.y - DASH_BOARD_BOX_SIZE);
+
+                                // Send the overlay back to the source slot's CURRENT on-screen
+                                // position. Measuring the in-flow placeholder (instead of reusing
+                                // originX/Y captured at drag start) keeps the target correct after
+                                // the list scrolled or a grid auto-expanded and shifted the slot.
+                                const fallbackX = initialOffset.current.x;
+                                const fallbackY = initialOffset.current.y - DASH_BOARD_BOX_SIZE;
+                                const placeholderNode = placeholderRef.current;
+                                // Settle exactly once: setInitialDragPosition both animates the
+                                // overlay home and schedules its cleanup, so it must run even if
+                                // measureInWindow never calls back (e.g. the placeholder detached
+                                // on a drop-triggered remount). The timer is the safety net.
+                                let settled = false;
+                                const settle = (x: number, y: number) => {
+                                    if (settled) return;
+                                    settled = true;
+                                    setInitialDragPosition(x, y);
+                                };
+                                if (placeholderNode) {
+                                    placeholderNode.measureInWindow((px, py, pw, ph) => {
+                                        const measured = pw > 0 || ph > 0;
+                                        settle(measured ? px : fallbackX, measured ? py - DASH_BOARD_BOX_SIZE : fallbackY);
+                                    });
+                                    setTimeout(() => settle(fallbackX, fallbackY), 50);
+                                } else {
+                                    settle(fallbackX, fallbackY);
+                                }
                             }}
                             onDragging={(data) => {
                                 if (!wasDragged.current) {
@@ -171,6 +199,7 @@ export function Box(props: IBoxProps) {
                         {isDragging && (
                             <BoxDraggableItem
                                 {...BoxDraggableItemProps}
+                                ref={placeholderRef}
                                 styles={{
                                     ...BoxDraggableItemProps.styles,
                                     box: [themed($dragging), ...(BoxDraggableItemProps.styles?.box ?? [])],

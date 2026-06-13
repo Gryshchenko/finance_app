@@ -33,7 +33,7 @@ type Props = {
 
 export default function DashboardExpandableGrid({ rowHeight, rows, children, id, acceptedDragTypes }: Props) {
     const { themed } = useAppTheme();
-    const { addZone, activeZones, draggingItemType } = useDragOverlay();
+    const { addZone, removeZone, activeZones, draggingItemType } = useDragOverlay();
 
     const MIN_HEIGHT = rowHeight;
     const MAX_HEIGHT = rowHeight * rows;
@@ -119,8 +119,8 @@ export default function DashboardExpandableGrid({ rowHeight, rows, children, id,
         };
     }, [activeZones, id, isDragTypeAccepted, openGridByDrag, closeGrid, clearHoverTimer, draggingItemType]);
 
-    // Re-measure both zones whenever layout changes so drag detection stays
-    // accurate after scroll or container resize.
+    // Re-measure the zone whenever layout changes so drag detection stays
+    // accurate after a container resize.
     const measureZones = useCallback(() => {
         viewRef.current?.measureInWindow((x, y, width, heightElement) => {
             addZone({
@@ -132,8 +132,15 @@ export default function DashboardExpandableGrid({ rowHeight, rows, children, id,
 
     // Initial measurement - wait one frame so the layout pass has finished.
     useEffect(() => {
-        setTimeout(measureZones, 0);
+        const timer = setTimeout(measureZones, 0);
+        return () => clearTimeout(timer);
     }, [measureZones]);
+
+    // Drop this grid's zone from the registry on unmount so a removed section's
+    // stale rect can't keep matching a drag point.
+    useEffect(() => {
+        return () => removeZone(`${id}-view`);
+    }, [removeZone, id]);
 
     // Manual pan gesture: allows the user to swipe open / close the grid
     // without relying on the drag-and-drop hover path.

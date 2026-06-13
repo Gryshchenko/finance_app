@@ -22,7 +22,7 @@ import Animated, {
 } from 'react-native-reanimated';
 import { scheduleOnRN } from 'react-native-worklets';
 
-import { IDrag } from '@/components/dashboard/Box/Box';
+import { DASH_BOARD_BOX_SIZE, IDrag } from '@/components/dashboard/Box/Box';
 import { ItemType } from '@/components/dashboard/Box/ItemBox';
 import { Logger } from '@/utils/logger/Logger';
 
@@ -46,6 +46,12 @@ export interface IDragOverlayZone {
     };
     onEnter?: () => void;
     onLeave?: () => void;
+    /**
+     * Scroll offset captured when this zone was measured. The drag point lives in
+     * non-scrolling window space while zones live inside the ScrollView, so the
+     * hit-test shifts the measured rect by the delta to the current scroll.
+     */
+    measuredAtScrollY?: number;
 }
 
 const { height: SCREEN_HEIGHT } = Dimensions.get('window');
@@ -53,7 +59,7 @@ const { height: SCREEN_HEIGHT } = Dimensions.get('window');
 const AUTO_SCROLL_EDGE_THRESHOLD = 300;
 const AUTO_SCROLL_SPEED = 12;
 const ANIMATION_TIMEOUT_MS = 600;
-// Minimum pixel overlap to consider the drag point "inside" a zone.
+// Pixels of slop added around every edge of a zone so hovering is forgiving.
 const ZONE_HIT_SLOP = 10;
 
 const _logger = Logger.Of('DragOverlayContext');
@@ -74,6 +80,7 @@ type ContextType = {
     setDraggedElementId: Dispatch<SetStateAction<string | undefined>>;
     draggedElementId: string | undefined;
     addZone: (zone: IDragOverlayZone) => void;
+    removeZone: (id: string) => void;
     activeZones?: string;
 };
 
@@ -83,10 +90,10 @@ const isPointInside = (
     rect: { pageX: number; pageY: number; width: number; height: number },
 ) => {
     return (
-        draggableX < rect.pageX + rect.width &&
-        draggableX + ZONE_HIT_SLOP > rect.pageX &&
-        draggableY < rect.pageY + rect.height &&
-        draggableY + ZONE_HIT_SLOP > rect.pageY
+        draggableX > rect.pageX - ZONE_HIT_SLOP &&
+        draggableX < rect.pageX + rect.width + ZONE_HIT_SLOP &&
+        draggableY > rect.pageY - ZONE_HIT_SLOP &&
+        draggableY < rect.pageY + rect.height + ZONE_HIT_SLOP
     );
 };
 
@@ -142,8 +149,19 @@ export const DragOverlayProvider: FC<PropsWithChildren> = ({ children }) => {
     }, [cleanupDragSessionWithWatchdog]);
 
     // addZone always overwrites to keep coordinates fresh after re-layouts.
-    const addZone = useCallback((zone: IDragOverlayZone) => {
-        zonesRef.current?.set(zone.id, zone);
+    // Stamp the scroll offset at measure time so updateDragPosition can correct
+    // for list scroll - zones are only re-measured on layout, never on scroll.
+    const addZone = useCallback(
+        (zone: IDragOverlayZone) => {
+            zonesRef.current?.set(zone.id, { ...zone, measuredAtScrollY: scrollY.value });
+        },
+        [scrollY],
+    );
+
+    // Remove a zone when its owning component unmounts so a removed section's
+    // stale rect can't keep matching the drag point.
+    const removeZone = useCallback((id: string) => {
+        zonesRef.current?.delete(id);
     }, []);
 
     const onOverlayLayout = useCallback(
@@ -179,7 +197,12 @@ export const DragOverlayProvider: FC<PropsWithChildren> = ({ children }) => {
 
     const setInitialDragPosition = (x: number, y: number) => {
         const newX = x;
-        const newY = y + scrollY.value;
+        // No scrollY term: the overlay is absolute inside the non-scrolling Screen
+        // container, so its translate lives in window space - exactly like the live
+        // drag (updateDragPosition sets dragTranslateY = y with no scroll offset).
+        // Adding scrollY here shifted the return target by the scroll amount, so
+        // the overlay flew off-target and vanished there instead of going home.
+        const newY = y;
         const duration = 500;
 
         // Watchdog: if animations are interrupted, clean up after the timeout.
@@ -215,13 +238,27 @@ export const DragOverlayProvider: FC<PropsWithChildren> = ({ children }) => {
         const newX = x;
         const newY = y;
 
-        // A single drag point can physically overlap more than one registered
-        // zone, so pick the first match deterministically and break - never let a
-        // later zone in the iteration clobber the result back to undefined.
-        const withOffSetY = y - (overlayLayout.value.y ?? 0);
+        // The hit-test works in absolute window space: the dnd library reports
+        // originX/Y (measure().pageX/pageY) plus the gesture translation, and zones
+        // are captured with measureInWindow - the same space. Do NOT subtract
+        // overlayLayout.y (the ScrollView sits below the header/summary, so its
+        // layout y is a large positive offset that would push the hit-zone down).
+        //
+        // y arrives with a -DASH_BOARD_BOX_SIZE baked in by Box, which renders the
+        // overlay at the finger despite its parent's top inset. Add it back so the
+        // hit-test uses the finger's true window position; otherwise the trigger
+        // zone sits one element too low and grids only open once the item is dragged
+        // a full element past their top edge.
+        const currentScrollY = scrollY.value;
+        const hitY = y + DASH_BOARD_BOX_SIZE;
         let matchedZoneId: string | undefined;
         for (const zone of zonesRef.current.values()) {
-            if (isPointInside(x, withOffSetY, zone.measure)) {
+            // Shift the measured rect by how far the list has scrolled since the
+            // zone was measured. Zero delta => identical to a fresh measurement,
+            // so the unscrolled case is never altered.
+            const scrollDelta = currentScrollY - (zone.measuredAtScrollY ?? 0);
+            const rect = scrollDelta === 0 ? zone.measure : { ...zone.measure, pageY: zone.measure.pageY - scrollDelta };
+            if (isPointInside(x, hitY, rect)) {
                 matchedZoneId = zone.id;
                 break;
             }
@@ -275,6 +312,7 @@ export const DragOverlayProvider: FC<PropsWithChildren> = ({ children }) => {
         draggedElementId,
         setInitialDragPosition,
         addZone,
+        removeZone,
         activeZones,
     };
 
