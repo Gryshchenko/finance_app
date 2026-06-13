@@ -1,7 +1,14 @@
 import { useEffect, useRef, useCallback } from 'react';
 import { View, ViewStyle } from 'react-native';
 import { Gesture, GestureDetector } from 'react-native-gesture-handler';
-import Animated, { useSharedValue, useAnimatedStyle, withSpring, clamp } from 'react-native-reanimated';
+import Animated, {
+    useSharedValue,
+    useAnimatedStyle,
+    withSpring,
+    withTiming,
+    clamp,
+    interpolateColor,
+} from 'react-native-reanimated';
 import { scheduleOnRN } from 'react-native-worklets';
 
 import { useDragOverlay } from '@/components/dashboard/Box/DragOverlayContext';
@@ -32,7 +39,7 @@ type Props = {
 };
 
 export default function DashboardExpandableGrid({ rowHeight, rows, children, id, acceptedDragTypes }: Props) {
-    const { themed } = useAppTheme();
+    const { themed, theme } = useAppTheme();
     const { addZone, removeZone, activeZones, draggingItemType } = useDragOverlay();
 
     const MIN_HEIGHT = rowHeight;
@@ -42,6 +49,8 @@ export default function DashboardExpandableGrid({ rowHeight, rows, children, id,
     const viewRef = useRef<View>(null);
     const isOpened = useRef(false);
     const height = useSharedValue(MIN_HEIGHT);
+    // 0 → 1 while a compatible item hovers, driving the "charging" border/fill cue.
+    const hoverProgress = useSharedValue(0);
 
     // Tracks whether the grid was opened by drag-hover (not by manual pan gesture).
     // We only auto-close grids that were auto-opened - never touch manually opened ones.
@@ -66,8 +75,10 @@ export default function DashboardExpandableGrid({ rowHeight, rows, children, id,
     // Opens the grid and marks it as drag-triggered so it can be auto-closed later.
     const openGridByDrag = useCallback(() => {
         wasAutoOpenedByDragRef.current = true;
+        // Fade the charging fill out as the grid expands so the open grid looks normal.
+        hoverProgress.value = withTiming(0, { duration: 250 });
         openGrid();
-    }, [openGrid]);
+    }, [openGrid, hoverProgress]);
 
     const closeGrid = useCallback(() => {
         if (!isOpened.current) return;
@@ -98,6 +109,10 @@ export default function DashboardExpandableGrid({ rowHeight, rows, children, id,
             // 4. No timer is already running (clearHoverTimer before scheduling).
             if (draggingItemType && !isOpened.current && isDragTypeAccepted()) {
                 clearHoverTimer();
+                // Visual "charging" cue over the same delay: the border thickens and
+                // the fill blends toward the border colour. The timer firing (= the
+                // animation finishing) is what actually opens the grid.
+                hoverProgress.value = withTiming(1, { duration: HOVER_OPEN_DELAY_MS });
                 hoverTimerRef.current = setTimeout(() => {
                     hoverTimerRef.current = null;
                     openGridByDrag();
@@ -105,8 +120,9 @@ export default function DashboardExpandableGrid({ rowHeight, rows, children, id,
             }
         } else {
             // Drag left the zone OR drag ended (draggingItemType → undefined).
-            // Cancel any pending hover timer either way.
+            // Cancel the pending open and rewind the charging cue.
             clearHoverTimer();
+            hoverProgress.value = withTiming(0, { duration: 160 });
             // Auto-close only if this grid was expanded by a drag-hover.
             // Never forcibly close a grid the user opened manually via pan gesture.
             if (wasAutoOpenedByDragRef.current) {
@@ -117,7 +133,7 @@ export default function DashboardExpandableGrid({ rowHeight, rows, children, id,
         return () => {
             clearHoverTimer();
         };
-    }, [activeZones, id, isDragTypeAccepted, openGridByDrag, closeGrid, clearHoverTimer, draggingItemType]);
+    }, [activeZones, id, isDragTypeAccepted, openGridByDrag, closeGrid, clearHoverTimer, draggingItemType, hoverProgress]);
 
     // Re-measure the zone whenever layout changes so drag detection stays
     // accurate after a container resize.
@@ -167,10 +183,18 @@ export default function DashboardExpandableGrid({ rowHeight, rows, children, id,
         height: height.value,
     }));
 
+    // Charging cue: thicken the border and blend the fill toward the border colour.
+    // At rest (hoverProgress 0) these equal the static $container values, so the
+    // idle grid is unchanged.
+    // const baseBorderWidth = theme.border.borderWidth;
+    const hoverFillStyle = useAnimatedStyle(() => ({
+        backgroundColor: interpolateColor(hoverProgress.value, [0, 1], [theme.colors.background, theme.colors.border]),
+    }));
+
     return (
         <View ref={viewRef} style={themed($wrapper)} onLayout={measureZones}>
             <GestureDetector gesture={gesture}>
-                <Animated.View style={[themed($container), animatedStyle]}>
+                <Animated.View style={[themed($container), animatedStyle, hoverFillStyle]}>
                     <View style={themed($content)}>{children}</View>
                     {showHandle && <View style={themed($handle)} onLayout={measureZones} />}
                 </Animated.View>
