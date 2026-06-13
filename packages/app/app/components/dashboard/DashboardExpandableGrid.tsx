@@ -40,7 +40,6 @@ export default function DashboardExpandableGrid({ rowHeight, rows, children, id,
     const showHandle = rows >= 2;
 
     const viewRef = useRef<View>(null);
-    const handleRef = useRef<View>(null);
     const isOpened = useRef(false);
     const height = useSharedValue(MIN_HEIGHT);
 
@@ -129,12 +128,6 @@ export default function DashboardExpandableGrid({ rowHeight, rows, children, id,
                 measure: { pageX: x, pageY: y, width, height: heightElement },
             });
         });
-        handleRef.current?.measureInWindow((x, y, width, heightElement) => {
-            addZone({
-                id: `${id}-handle`,
-                measure: { pageX: x, pageY: y, width: width || 100, height: heightElement || 50 },
-            });
-        });
     }, [addZone, id]);
 
     // Initial measurement - wait one frame so the layout pass has finished.
@@ -172,7 +165,7 @@ export default function DashboardExpandableGrid({ rowHeight, rows, children, id,
             <GestureDetector gesture={gesture}>
                 <Animated.View style={[themed($container), animatedStyle]}>
                     <View style={themed($content)}>{children}</View>
-                    {showHandle && <View ref={handleRef} style={themed($handle)} onLayout={measureZones} />}
+                    {showHandle && <View style={themed($handle)} onLayout={measureZones} />}
                 </Animated.View>
             </GestureDetector>
         </View>

@@ -96,7 +96,10 @@ export const DragOverlayProvider: FC<PropsWithChildren> = ({ children }) => {
     const overlayLayout = useSharedValue<IDragOverlayLayout>({ width: null, height: null, x: null, y: null });
 
     const zonesRef = useRef<Map<string, IDragOverlayZone>>(new Map());
-    const activeZoneMapRef = useRef<Map<string, boolean>>(new Map());
+    // The single zone the drag point is currently inside (or undefined). A ref,
+    // not the activeZones state, so updateDragPosition reads a fresh value every
+    // frame without being recreated on each render.
+    const activeZoneIdRef = useRef<string | undefined>(undefined);
     const animationTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
     const [activeZones, setActiveZones] = useState<string | undefined>(undefined);
@@ -130,11 +133,11 @@ export const DragOverlayProvider: FC<PropsWithChildren> = ({ children }) => {
         // Capture ref values so the cleanup closure holds a stable snapshot
         // (satisfies react-hooks/exhaustive-deps for .current access).
         const zones = zonesRef;
-        const activeZoneMap = activeZoneMapRef;
+        const activeZoneId = activeZoneIdRef;
         return () => {
             zones.current?.clear();
             cleanupDragSessionWithWatchdog();
-            activeZoneMap.current?.clear();
+            activeZoneId.current = undefined;
         };
     }, [cleanupDragSessionWithWatchdog]);
 
@@ -200,32 +203,36 @@ export const DragOverlayProvider: FC<PropsWithChildren> = ({ children }) => {
 
         dragTranslateY.value = withTiming(newY, { duration }, onBothDone);
         dragTranslateX.value = withTiming(newX, { duration }, onBothDone);
-        activeZoneMapRef.current?.clear();
+
+        // The drag is ending: clear the active zone so any grid auto-expanded by
+        // hover collapses again, even when the item was released outside a drop
+        // target (no onDrop / no DropProvider remount to reset it).
+        activeZoneIdRef.current = undefined;
+        setActiveZones(undefined);
     };
 
     const updateDragPosition = (x: number, y: number) => {
         const newX = x;
         const newY = y;
 
-        for (const zone of zonesRef.current?.values()) {
-            const layout = zone.measure;
-            const withOffSetX = x;
-            const withOffSetY = y - (overlayLayout.value.y ?? 0);
-            const isInside = isPointInside(withOffSetX, withOffSetY, layout);
-
-            if (isInside) {
-                if (!activeZoneMapRef.current.get(zone.id)) {
-                    activeZoneMapRef.current.set(zone.id, true);
-                    _logger.debug(`Entering zone ${zone.id}`);
-                    setActiveZones(zone.id);
-                }
-            } else {
-                if (activeZoneMapRef.current.get(zone.id)) {
-                    activeZoneMapRef.current.set(zone.id, false);
-                    _logger.debug(`Left zone ${zone.id}`);
-                    setActiveZones(undefined);
-                }
+        // A single drag point can physically overlap more than one registered
+        // zone, so pick the first match deterministically and break - never let a
+        // later zone in the iteration clobber the result back to undefined.
+        const withOffSetY = y - (overlayLayout.value.y ?? 0);
+        let matchedZoneId: string | undefined;
+        for (const zone of zonesRef.current.values()) {
+            if (isPointInside(x, withOffSetY, zone.measure)) {
+                matchedZoneId = zone.id;
+                break;
             }
+        }
+
+        // Commit the change exactly once, and only on a real transition.
+        if (matchedZoneId !== activeZoneIdRef.current) {
+            if (activeZoneIdRef.current) _logger.debug(`Left zone ${activeZoneIdRef.current}`);
+            if (matchedZoneId) _logger.debug(`Entering zone ${matchedZoneId}`);
+            activeZoneIdRef.current = matchedZoneId;
+            setActiveZones(matchedZoneId);
         }
 
         if (newX >= 0 && newX <= (overlayLayout.value.width ?? 0)) {

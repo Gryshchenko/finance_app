@@ -68,6 +68,7 @@ export abstract class ApiAbstract {
 
     private async buildResponse<T>(fn: () => Promise<ApiResponse<IResponse<T>>>): Promise<GeneralApiProblem<T>> {
         const response = await fn();
+        console.log(response);
         if (response.ok) {
             return {
                 kind: GeneralApiProblemKind.Ok,
