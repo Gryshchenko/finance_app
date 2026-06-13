@@ -202,7 +202,7 @@ export function Box(props: IBoxProps) {
                                 ref={placeholderRef}
                                 styles={{
                                     ...BoxDraggableItemProps.styles,
-                                    box: [themed($dragging), ...(BoxDraggableItemProps.styles?.box ?? [])],
+                                    box: [$placeholderOverlay, themed($dragging), ...(BoxDraggableItemProps.styles?.box ?? [])],
                                 }}
                             />
                         )}
@@ -232,10 +232,21 @@ const $base: ThemedStyle<ViewStyle> = () => ({
     gap: 8,
 });
 
+// Keep the dragged source IN FLOW (just invisible) so the Draggable wrapper keeps
+// its size. If it collapses (position:absolute child), the dnd library measures
+// itemW/itemH as 0 and "intersect" degenerates to "drag point inside target", so a
+// drop/highlight only registers once the item has fully entered the box.
 const $opacity: ThemedStyle<ViewStyle> = () => ({
     opacity: 0,
-    position: 'absolute',
 });
+
+// The dashed placeholder overlays the in-flow (invisible) source instead of taking
+// its own slot - otherwise the source wrapper + placeholder would claim two slots.
+const $placeholderOverlay: ViewStyle = {
+    position: 'absolute',
+    top: 0,
+    left: 0,
+};
 
 const $dragging: ThemedStyle<ViewStyle> = ({ colors }) => ({
     borderStyle: 'dashed',
