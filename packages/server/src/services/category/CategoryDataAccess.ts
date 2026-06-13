@@ -37,6 +37,7 @@ export default class CategoryDataAccess extends LoggerBase implements ICategoryD
                     'categories.categoryName',
                     'categories.currencyId',
                     'categories.iconId',
+                    'categories.colorId',
                     'categories.budget',
                     'categories.position',
                     this._db.engine().raw('COALESCE(SUM(dcs.target_total), 0) as amount'),
@@ -53,6 +54,7 @@ export default class CategoryDataAccess extends LoggerBase implements ICategoryD
                     'categories.categoryName',
                     'categories.currencyId',
                     'categories.iconId',
+                    'categories.colorId',
                     'categories.budget',
                     'categories.position',
                 )
@@ -83,11 +85,12 @@ export default class CategoryDataAccess extends LoggerBase implements ICategoryD
         try {
             const maxPositionRow = await query('categories').where({ userId }).max('position as maxPosition').first();
             const nextPosition = Number(maxPositionRow?.maxPosition ?? 0) + 1;
-            const formattedCategories = categories.map(({ categoryName, currencyId, iconId, budget }, index) => ({
+            const formattedCategories = categories.map(({ categoryName, currencyId, iconId, colorId, budget }, index) => ({
                 userId,
                 categoryName,
                 currencyId,
                 iconId,
+                colorId: colorId ?? null,
                 budget,
                 position: nextPosition + index,
             }));
@@ -98,6 +101,7 @@ export default class CategoryDataAccess extends LoggerBase implements ICategoryD
                 'categoryName',
                 'currencyId',
                 'iconId',
+                'colorId',
                 'budget',
                 'position',
             ]);
@@ -180,13 +184,14 @@ export default class CategoryDataAccess extends LoggerBase implements ICategoryD
             const allowedProperties = {
                 categoryName: properties.categoryName,
                 iconId: properties.iconId,
+                colorId: properties.colorId,
                 updatedAt: Time.getISODateNowUTC(),
                 status: properties.status,
                 budget: properties.budget,
                 position: properties.position,
             };
 
-            const allowedKeys = ['categoryName', 'iconId', 'updatedAt', 'status', 'budget', 'position'];
+            const allowedKeys = ['categoryName', 'iconId', 'colorId', 'updatedAt', 'status', 'budget', 'position'];
             validateAllowedProperties(allowedProperties, allowedKeys);
             const properestForUpdate = getOnlyNotEmptyProperties(allowedProperties, allowedKeys);
             const query = trx || this._db.engine();
@@ -247,6 +252,7 @@ export default class CategoryDataAccess extends LoggerBase implements ICategoryD
                 'categories.categoryName',
                 'categories.currencyId',
                 'categories.iconId',
+                'categories.colorId',
                 'categories.budget',
                 'categories.position',
                 'categories.createdAt',

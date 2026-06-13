@@ -44,6 +44,7 @@ export default memo(function DashboardIncome(props: IDashboardItem<IIncomeStats>
                     }}
                     icon={item.iconId as CategoryIconType}
                     id={String(item.incomeId)}
+                    colorId={item.colorId}
                     key={item.incomeName}
                     title={item.incomeName}
                     value={CurrencyUtils.formatWithDelimiter(item.amount, getCurrencySymbol(item.currencyId), 2, true)}

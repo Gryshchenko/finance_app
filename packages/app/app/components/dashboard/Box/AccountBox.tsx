@@ -7,12 +7,14 @@ import { ColorService } from '@/services/ColorService';
 
 interface AccountBoxProps extends Omit<ItemBoxProps, 'type' | 'isDragging' | 'setIsDragging' | 'droppableId'> {
     icon: CategoryIconType;
+    colorId?: string | null;
 }
 
 export function AccountBox({
     title,
     value,
     id,
+    colorId,
     isDroppable,
     onDragStart,
     onDragEnd,
@@ -23,8 +25,8 @@ export function AccountBox({
 }: AccountBoxProps) {
     const droppableId = `${id}-${ItemType.Account}`;
     const color = useMemo(() => {
-        return new ColorService().getAccountColor(id);
-    }, [id]);
+        return new ColorService().getAccountColor(id, colorId);
+    }, [id, colorId]);
     return (
         <ItemBox
             onTap={onTap}

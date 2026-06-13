@@ -18,7 +18,7 @@ const categoriesRouter = express.Router({ mergeParams: true });
 categoryRouter.post(
     '/',
     validateQuery({}),
-    sanitizeRequestBody(['currencyId', 'categoryName', 'iconId', 'budget']),
+    sanitizeRequestBody(['currencyId', 'categoryName', 'iconId', 'colorId', 'budget']),
     routesInputValidation(createCategoryValidationRules, categoryConvertValidationMessageToErrorCode),
     CategoryController.post,
 );
@@ -47,7 +47,7 @@ categoryRouter.delete(
 categoryRouter.patch(
     '/:categoryId',
     validateQuery({}),
-    sanitizeRequestBody(['categoryName', 'status', 'iconId', 'budget', 'position']),
+    sanitizeRequestBody(['categoryName', 'status', 'iconId', 'colorId', 'budget', 'position']),
     routesInputValidation(patchCategoryValidationRules, categoryConvertValidationMessageToErrorCode),
     routesInputValidation([validatePathQueryProperty('categoryId')]),
     CategoryController.patch,

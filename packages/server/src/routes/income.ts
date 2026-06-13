@@ -18,7 +18,7 @@ const incomesRouter = express.Router({ mergeParams: true });
 incomeRouter.post(
     '/',
     validateQuery({}),
-    sanitizeRequestBody(['currencyId', 'incomeName', 'amount', 'iconId']),
+    sanitizeRequestBody(['currencyId', 'incomeName', 'amount', 'iconId', 'colorId']),
     routesInputValidation(createIncomeValidationRules, incomeConvertValidationMessageToErrorCode),
     IncomeController.post,
 );
@@ -40,7 +40,7 @@ incomeRouter.delete(
 incomeRouter.patch(
     '/:incomeId',
     validateQuery({}),
-    sanitizeRequestBody(['incomeName', 'status', 'iconId', 'position']),
+    sanitizeRequestBody(['incomeName', 'status', 'iconId', 'colorId', 'position']),
     routesInputValidation(patchIncomeValidationRules, incomeConvertValidationMessageToErrorCode),
     routesInputValidation([validatePathQueryProperty('incomeId')]),
     IncomeController.patch,

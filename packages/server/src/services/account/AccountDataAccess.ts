@@ -1,4 +1,12 @@
-import { IAccount, Time, Utils, AccountStatusType, IAccountListItem, ErrorCode } from 'tenpercent/shared';
+import {
+    IAccount,
+    Time,
+    Utils,
+    AccountStatusType,
+    IAccountListItem,
+    ErrorCode,
+    DEFAULT_ACCOUNT_COLOR_IDS,
+} from 'tenpercent/shared';
 
 import { ICreateAccount } from 'interfaces/ICreateAccount';
 import { IDatabaseConnection, IDBTransaction } from 'interfaces/IDatabaseConnection';
@@ -34,22 +42,24 @@ export default class AccountDataAccess extends LoggerBase implements IAccountDat
                     'amount',
                     'currencyId',
                     'iconId',
+                    'colorId',
                 ]);
             }
             const query = trx || this._db.engine();
             const maxPositionRow = await query('accounts').where({ userId }).max('position as maxPosition').first();
             const nextPosition = Number(maxPositionRow?.maxPosition ?? 0) + 1;
             const data = await query('accounts').insert(
-                accounts.map(({ accountName, currencyId, amount, iconId }, index) => ({
+                accounts.map(({ accountName, currencyId, amount, iconId, colorId }, index) => ({
                     userId,
                     accountName,
                     currencyId,
                     iconId,
+                    colorId: colorId ?? DEFAULT_ACCOUNT_COLOR_IDS[(nextPosition + index - 1) % DEFAULT_ACCOUNT_COLOR_IDS.length],
                     status: AccountStatusType.Enable,
                     amount: Number(amount.toFixed(2)),
                     position: nextPosition + index,
                 })),
-                ['accountId', 'userId', 'accountName', 'currencyId', 'amount', 'iconId', 'position'],
+                ['accountId', 'userId', 'accountName', 'currencyId', 'amount', 'iconId', 'colorId', 'position'],
             );
 
             this._logger.info(`Successfully created ${data.length} accounts for userId: ${userId}`);
@@ -76,6 +86,7 @@ export default class AccountDataAccess extends LoggerBase implements IAccountDat
                     'accounts.accountName',
                     'accounts.currencyId',
                     'accounts.iconId',
+                    'accounts.colorId',
                     'accounts.position',
                 )
                 .where({ userId, 'status': AccountStatusType.Enable, 'accounts.isDeleted': false })
@@ -111,6 +122,7 @@ export default class AccountDataAccess extends LoggerBase implements IAccountDat
                     'accounts.accountName',
                     'accounts.currencyId',
                     'accounts.iconId',
+                    'accounts.colorId',
                     'accounts.position',
                     'accounts.createdAt',
                     'accounts.updatedAt',
@@ -153,12 +165,13 @@ export default class AccountDataAccess extends LoggerBase implements IAccountDat
                 accountName: properties.accountName,
                 amount: properties.amount,
                 iconId: properties.iconId,
+                colorId: properties.colorId,
                 updatedAt: Time.getISODateNowUTC(),
                 status: properties.status,
                 position: properties.position,
             };
 
-            const allowedKeys = ['accountName', 'amount', 'iconId', 'updatedAt', 'status', 'position'];
+            const allowedKeys = ['accountName', 'amount', 'iconId', 'colorId', 'updatedAt', 'status', 'position'];
             validateAllowedProperties(allowedProperties, allowedKeys);
             const properestForUpdate = getOnlyNotEmptyProperties(allowedProperties, allowedKeys);
             if (properestForUpdate.amount !== undefined) {

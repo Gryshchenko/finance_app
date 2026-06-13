@@ -1,4 +1,12 @@
-import { IIncome, AccountStatusType, Time, IIncomeStats, IGetStatsProperties, ErrorCode } from 'tenpercent/shared';
+import {
+    IIncome,
+    AccountStatusType,
+    Time,
+    IIncomeStats,
+    IGetStatsProperties,
+    ErrorCode,
+    DEFAULT_INCOME_COLOR_IDS,
+} from 'tenpercent/shared';
 
 import { ICreateIncome } from 'interfaces/ICreateIncome';
 import { IDatabaseConnection, IDBTransaction } from 'interfaces/IDatabaseConnection';
@@ -39,6 +47,7 @@ export default class IncomeDataAccess extends LoggerBase implements IIncomeDataA
                     'incomes.incomeName',
                     'incomes.currencyId',
                     'incomes.iconId',
+                    'incomes.colorId',
                     'incomes.position',
                     this._db.engine().raw('COALESCE(SUM(dis.source_total), 0) as amount'),
                 )
@@ -76,15 +85,16 @@ export default class IncomeDataAccess extends LoggerBase implements IIncomeDataA
             const maxPositionRow = await query('incomes').where({ userId }).max('position as maxPosition').first();
             const nextPosition = Number(maxPositionRow?.maxPosition ?? 0) + 1;
             const data = await query('incomes').insert(
-                incomes.map(({ incomeName, currencyId, iconId }, index) => ({
+                incomes.map(({ incomeName, currencyId, iconId, colorId }, index) => ({
                     userId,
                     incomeName,
                     currencyId,
                     status: AccountStatusType.Enable,
                     iconId,
+                    colorId: colorId ?? DEFAULT_INCOME_COLOR_IDS[(nextPosition + index - 1) % DEFAULT_INCOME_COLOR_IDS.length],
                     position: nextPosition + index,
                 })),
-                ['incomeId', 'userId', 'incomeName', 'currencyId', 'position'],
+                ['incomeId', 'userId', 'incomeName', 'currencyId', 'colorId', 'position'],
             );
 
             this._logger.info(`Successfully created incomes for userId ${userId}`);
@@ -165,6 +175,7 @@ export default class IncomeDataAccess extends LoggerBase implements IIncomeDataA
                 'incomes.createdAt',
                 'incomes.updatedAt',
                 'incomes.iconId',
+                'incomes.colorId',
                 'incomes.position',
                 'currencies.currencyCode',
                 'currencies.currencyName',
@@ -179,10 +190,11 @@ export default class IncomeDataAccess extends LoggerBase implements IIncomeDataA
                 updatedAt: Time.getISODateNowUTC(),
                 status: properties.status,
                 iconId: properties.iconId,
+                colorId: properties.colorId,
                 position: properties.position,
             };
 
-            const allowedKeys = ['incomeName', 'updatedAt', 'status', 'iconId', 'position'];
+            const allowedKeys = ['incomeName', 'updatedAt', 'status', 'iconId', 'colorId', 'position'];
             validateAllowedProperties(allowedProperties, allowedKeys);
             const properestForUpdate = getOnlyNotEmptyProperties(allowedProperties, allowedKeys);
             const query = trx || this._db.engine();

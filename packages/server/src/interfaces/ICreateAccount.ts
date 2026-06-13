@@ -3,4 +3,5 @@ export interface ICreateAccount {
     currencyId: number;
     amount: number;
     iconId?: string;
+    colorId?: string;
 }

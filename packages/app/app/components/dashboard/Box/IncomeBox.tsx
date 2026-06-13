@@ -8,13 +8,25 @@ import { setRgbOpacity } from '@/utils/setRgbOpacity';
 
 interface IncomeBoxProps extends Omit<ItemBoxProps, 'type' | 'isDroppable' | 'onDrop' | 'droppableId'> {
     icon: CategoryIconType;
+    colorId?: string | null;
 }
 
-export function IncomeBox({ title, value, icon, id, onDragStart, onDragEnd, isDraggable, BoxProps, onTap }: IncomeBoxProps) {
+export function IncomeBox({
+    title,
+    value,
+    icon,
+    id,
+    colorId,
+    onDragStart,
+    onDragEnd,
+    isDraggable,
+    BoxProps,
+    onTap,
+}: IncomeBoxProps) {
     const droppableId = `${id}-${ItemType.Income}`;
     const color = useMemo(() => {
-        return new ColorService().getIncomeColor(id);
-    }, [id]);
+        return new ColorService().getIncomeColor(id, colorId);
+    }, [id, colorId]);
     return (
         <ItemBox
             onTap={onTap}

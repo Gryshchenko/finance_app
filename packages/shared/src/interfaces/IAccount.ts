@@ -8,6 +8,7 @@ export interface IAccount {
     currencyCode: string;
     symbol: string;
     iconId: string;
+    colorId?: string | null;
     status: AccountStatusType;
     position: number;
 }

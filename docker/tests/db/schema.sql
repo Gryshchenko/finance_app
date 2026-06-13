@@ -36,6 +36,7 @@ CREATE TABLE public.accounts (
     amount numeric NOT NULL,
     "currencyId" integer NOT NULL,
     "iconId" character varying(64),
+    "colorId" character varying(64),
     "createdAt" timestamp with time zone DEFAULT CURRENT_TIMESTAMP NOT NULL,
     "updatedAt" timestamp with time zone,
     status smallint,
@@ -122,6 +123,7 @@ CREATE TABLE public.categories (
     "isDeleted" boolean DEFAULT false NOT NULL,
     "deletedAt" timestamp with time zone,
     budget numeric(12,2),
+    "colorId" character varying(64),
     "position" integer DEFAULT 0 NOT NULL
 );
 
@@ -408,6 +410,7 @@ CREATE TABLE public.incomes (
     "incomeName" character varying(128) NOT NULL,
     "currencyId" integer NOT NULL,
     "iconId" character varying(64),
+    "colorId" character varying(64),
     "createdAt" timestamp with time zone DEFAULT CURRENT_TIMESTAMP NOT NULL,
     "updatedAt" timestamp with time zone,
     status smallint,

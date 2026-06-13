@@ -101,11 +101,12 @@ export class CategoryController {
         const responseBuilder = new ResponseBuilder();
         try {
             const categoryId = Number(req.params?.categoryId);
-            const { categoryName, status, iconId, budget, position } = req.body;
+            const { categoryName, status, iconId, colorId, budget, position } = req.body;
             if (
                 Utils.isEmpty(categoryName) &&
                 Utils.isNull(status) &&
                 Utils.isEmpty(iconId) &&
+                Utils.isEmpty(colorId) &&
                 Utils.isNull(budget) &&
                 Utils.isNull(position)
             ) {
@@ -115,6 +116,7 @@ export class CategoryController {
                 categoryName,
                 status,
                 iconId,
+                colorId,
                 budget,
                 position,
             });

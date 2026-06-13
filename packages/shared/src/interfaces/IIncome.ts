@@ -6,6 +6,7 @@ export interface IIncome {
     incomeName: string;
     currencyId: number;
     iconId: string;
+    colorId?: string | null;
     status: AccountStatusType;
     position: number;
     createdAt: Date;

@@ -17,7 +17,7 @@ const accountsRouter = express.Router({ mergeParams: true });
 accountRouter.post(
     '/',
     validateQuery({}),
-    sanitizeRequestBody(['currencyId', 'accountName', 'amount', 'iconId']),
+    sanitizeRequestBody(['currencyId', 'accountName', 'amount', 'iconId', 'colorId']),
     routesInputValidation(createAccountValidationRules, accountConvertValidationMessageToErrorCode),
     AccountController.post,
 );
@@ -39,7 +39,7 @@ accountRouter.delete(
 accountRouter.patch(
     '/:accountId',
     validateQuery({}),
-    sanitizeRequestBody(['accountName', 'amount', 'status', 'iconId', 'position']),
+    sanitizeRequestBody(['accountName', 'amount', 'status', 'iconId', 'colorId', 'position']),
     routesInputValidation(patchAccountValidationRules, accountConvertValidationMessageToErrorCode),
     routesInputValidation([validatePathQueryProperty('accountId')]),
     AccountController.patch,

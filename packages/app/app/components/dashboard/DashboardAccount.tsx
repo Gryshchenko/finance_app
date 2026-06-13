@@ -48,6 +48,7 @@ export default memo(function DashboardAccount(props: IDashboardItem<IAccountList
                     key={item.accountName}
                     title={item.accountName}
                     icon={item.iconId as CategoryIconType}
+                    colorId={item.colorId}
                     value={CurrencyUtils.formatWithDelimiter(item.amount, getCurrencySymbol(item.currencyId), 2, true)}
                     isDraggable={true}
                     onDragStart={() => {
