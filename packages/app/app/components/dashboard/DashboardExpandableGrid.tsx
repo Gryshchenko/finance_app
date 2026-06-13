@@ -1,4 +1,4 @@
-import { useEffect, useRef, useCallback } from 'react';
+import { useEffect, useRef, useCallback, useMemo } from 'react';
 import { View, ViewStyle } from 'react-native';
 import { Gesture, GestureDetector } from 'react-native-gesture-handler';
 import Animated, {
@@ -47,7 +47,10 @@ export default function DashboardExpandableGrid({ rowHeight, rows, children, id,
     const showHandle = rows >= 2;
 
     const viewRef = useRef<View>(null);
-    const isOpened = useRef(false);
+    // Shared value (NOT a ref!) so the pan-gesture worklet reads the live open
+    // state on the UI thread. A plain ref is frozen when captured by a worklet, so
+    // the close branch saw a stale value and the grid was impossible to drag shut.
+    const isOpened = useSharedValue(false);
     const height = useSharedValue(MIN_HEIGHT);
     // 0 → 1 while a compatible item hovers, driving the "charging" border/fill cue.
     const hoverProgress = useSharedValue(0);
@@ -67,10 +70,10 @@ export default function DashboardExpandableGrid({ rowHeight, rows, children, id,
     }, []);
 
     const openGrid = useCallback(() => {
-        if (isOpened.current) return;
-        isOpened.current = true;
+        if (isOpened.value) return;
+        isOpened.value = true;
         height.value = withSpring(MAX_HEIGHT, { damping: 15, stiffness: 150 });
-    }, [MAX_HEIGHT, height]);
+    }, [MAX_HEIGHT, height, isOpened]);
 
     // Opens the grid and marks it as drag-triggered so it can be auto-closed later.
     const openGridByDrag = useCallback(() => {
@@ -81,11 +84,11 @@ export default function DashboardExpandableGrid({ rowHeight, rows, children, id,
     }, [openGrid, hoverProgress]);
 
     const closeGrid = useCallback(() => {
-        if (!isOpened.current) return;
-        isOpened.current = false;
+        if (!isOpened.value) return;
+        isOpened.value = false;
         wasAutoOpenedByDragRef.current = false;
         height.value = withSpring(MIN_HEIGHT, { damping: 15, stiffness: 150 });
-    }, [MIN_HEIGHT, height]);
+    }, [MIN_HEIGHT, height, isOpened]);
 
     /**
      * Returns true if the currently dragged item type is allowed to trigger
@@ -107,7 +110,7 @@ export default function DashboardExpandableGrid({ rowHeight, rows, children, id,
             // 2. The dragged type is accepted by this section.
             // 3. The grid is not already open.
             // 4. No timer is already running (clearHoverTimer before scheduling).
-            if (draggingItemType && !isOpened.current && isDragTypeAccepted()) {
+            if (draggingItemType && !isOpened.value && isDragTypeAccepted()) {
                 clearHoverTimer();
                 // Visual "charging" cue over the same delay: the border thickens and
                 // the fill blends toward the border colour. The timer firing (= the
@@ -133,6 +136,10 @@ export default function DashboardExpandableGrid({ rowHeight, rows, children, id,
         return () => {
             clearHoverTimer();
         };
+        // isOpened is a shared value; its .value is read here only to gate the cue
+        // and can't be a hook dependency. The effect already re-runs on the inputs
+        // that matter (activeZones / draggingItemType).
+        // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [activeZones, id, isDragTypeAccepted, openGridByDrag, closeGrid, clearHoverTimer, draggingItemType, hoverProgress]);
 
     // Re-measure the zone whenever layout changes so drag detection stays
@@ -160,24 +167,30 @@ export default function DashboardExpandableGrid({ rowHeight, rows, children, id,
 
     // Manual pan gesture: allows the user to swipe open / close the grid
     // without relying on the drag-and-drop hover path.
-    const gesture = Gesture.Pan()
-        .onUpdate((e) => {
-            if (!showHandle) return;
-            if (isOpened.current && e.translationY > 0) return;
-            if (!isOpened.current && e.translationY < 0) return;
+    // Memoised so GestureDetector keeps a stable handler instead of re-attaching a
+    // fresh gesture on every render (which could drop an in-progress pan).
+    const gesture = useMemo(
+        () =>
+            Gesture.Pan()
+                .onUpdate((e) => {
+                    if (!showHandle) return;
+                    if (isOpened.value && e.translationY > 0) return;
+                    if (!isOpened.value && e.translationY < 0) return;
 
-            const newHeight = (isOpened.current ? MAX_HEIGHT : MIN_HEIGHT) + e.translationY;
-            height.value = clamp(newHeight, MIN_HEIGHT, MAX_HEIGHT);
-        })
-        .onEnd((e) => {
-            if (!showHandle) return;
-            const mid = (MIN_HEIGHT + MAX_HEIGHT) / 2;
-            if (height.value > mid || e.velocityY > 300) {
-                scheduleOnRN(openGrid);
-            } else {
-                scheduleOnRN(closeGrid);
-            }
-        });
+                    const newHeight = (isOpened.value ? MAX_HEIGHT : MIN_HEIGHT) + e.translationY;
+                    height.value = clamp(newHeight, MIN_HEIGHT, MAX_HEIGHT);
+                })
+                .onEnd((e) => {
+                    if (!showHandle) return;
+                    const mid = (MIN_HEIGHT + MAX_HEIGHT) / 2;
+                    if (height.value > mid || e.velocityY > 300) {
+                        scheduleOnRN(openGrid);
+                    } else {
+                        scheduleOnRN(closeGrid);
+                    }
+                }),
+        [showHandle, MIN_HEIGHT, MAX_HEIGHT, openGrid, closeGrid, isOpened, height],
+    );
 
     const animatedStyle = useAnimatedStyle(() => ({
         height: height.value,
