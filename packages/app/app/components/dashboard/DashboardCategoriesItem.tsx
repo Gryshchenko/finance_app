@@ -3,6 +3,7 @@ import { ICategoryStats, IStatsResponse, StatsPeriod, Time } from 'tenpercent/sh
 
 import { boxDataItemAdapter } from '@/components/dashboard/Box/boxDataItemAdapter';
 import { ItemType } from '@/components/dashboard/Box/ItemBox';
+import { DashboardBlockSkeleton } from '@/components/dashboard/DashboardBlockSkeleton';
 import DashboardCategory from '@/components/dashboard/DashboardCategory';
 import DashboardItem, { IDashboardItem } from '@/components/dashboard/DashboardItem';
 import { useAppQuery } from '@/hooks/useAppQuery';
@@ -44,6 +45,11 @@ export default function DashboardCategoriesItem() {
     const categories = useAppQuery<IStatsResponse<ICategoryStats>>(QueryKeys.categoriesStats(), fetchCategories, {
         staleTime: QueryStaleTimes.dashboard,
     });
+
+    if (categories.isPending) {
+        return <DashboardBlockSkeleton />;
+    }
+
     return (
         <DashboardItem
             id={'categories'}

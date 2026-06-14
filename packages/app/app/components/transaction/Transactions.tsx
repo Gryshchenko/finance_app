@@ -6,6 +6,7 @@ import { IEntityStats, IPagination, ITransactionListItem, StatsPeriod, StatsType
 import { EmptyState } from '@/components/EmptyState';
 import { Text } from '@/components/Text';
 import TransactionSectionList, { fetchTransactionType } from '@/components/transaction/TransactionSectionList';
+import { TransactionListSkeleton, TransactionStatsSkeleton } from '@/components/transaction/TransactionsSkeleton';
 import { TransactionStats } from '@/components/transaction/TransactionStats';
 import { useAppQuery } from '@/hooks/useAppQuery';
 import { translate } from '@/i18n/translate';
@@ -26,6 +27,7 @@ interface ITransactionsPros {
     };
     fetch?: fetchTransactionType;
     onPress?: (id: number, name: string) => void;
+    isLoading?: boolean;
 }
 export async function fetchStats(entityId: number, statsType: StatsType): Promise<IEntityStats | null> {
     try {
@@ -57,15 +59,32 @@ export const Transactions: FC<ITransactionsPros> = function Transactions(_props)
         data: { transactions, statsType, entityId, currencyId },
         fetch,
         onPress,
+        isLoading,
     } = _props;
     const navigation = useNavigation();
-    const { data: stats } = useAppQuery<IEntityStats | null>(
+    const { data: stats, isPending: statsPending } = useAppQuery<IEntityStats | null>(
         QueryKeys.entityStats(entityId, statsType),
         async () => fetchStats(entityId, statsType),
         {
             staleTime: QueryStaleTimes.transactions,
         },
     );
+
+    if (isLoading) {
+        return (
+            <View style={themed([$container])}>
+                <View style={$statsBarWrapper}>
+                    <TransactionStatsSkeleton />
+                </View>
+
+                <View style={themed([$header])}>
+                    <Text style={themed([$headerLabel])} text={translate('transactionScreen:recentActivity' as const)} />
+                </View>
+
+                <TransactionListSkeleton />
+            </View>
+        );
+    }
 
     if (!transactions || transactions?.data?.length <= 0) {
         return (
@@ -79,7 +98,11 @@ export const Transactions: FC<ITransactionsPros> = function Transactions(_props)
     return (
         <View style={themed([$container])}>
             <View style={$statsBarWrapper}>
-                <TransactionStats statsType={statsType} stats={stats} currencyId={currencyId} />
+                {statsPending ? (
+                    <TransactionStatsSkeleton />
+                ) : (
+                    <TransactionStats statsType={statsType} stats={stats} currencyId={currencyId} />
+                )}
             </View>
 
             <View style={themed([$header])}>

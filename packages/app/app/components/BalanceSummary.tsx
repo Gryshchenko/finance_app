@@ -1,6 +1,7 @@
 import { TextStyle, View, ViewStyle } from 'react-native';
 import { IBalance, ISummary, StatsPeriod, Time } from 'tenpercent/shared';
 
+import { Skeleton } from '@/components/Skeleton';
 import { Text } from '@/components/Text';
 import { useCurrency } from '@/context/CurrencyContext';
 import { useAppQuery } from '@/hooks/useAppQuery';
@@ -54,14 +55,36 @@ export async function fetchBalance(): Promise<IBalance | null> {
 }
 
 export const BalanceSummary: React.FC = () => {
-    const { data: statsData } = useAppQuery<ISummary | null>(QueryKeys.stats(), fetchStats, {
+    const { data: statsData, isPending: statsPending } = useAppQuery<ISummary | null>(QueryKeys.stats(), fetchStats, {
         staleTime: QueryStaleTimes.dashboard,
     });
-    const { data: balanceData } = useAppQuery<IBalance | null>(QueryKeys.balance(), fetchBalance, {
+    const { data: balanceData, isPending: balancePending } = useAppQuery<IBalance | null>(QueryKeys.balance(), fetchBalance, {
         staleTime: QueryStaleTimes.dashboard,
     });
     const { themed } = useAppTheme();
     const { defaultCurrency } = useCurrency();
+
+    if (statsPending || balancePending) {
+        return (
+            <View style={themed($container)}>
+                <View style={themed($left)}>
+                    <Skeleton width={90} height={10} radius={5} style={$skeletonLabelGap} />
+                    <Skeleton width={160} height={32} radius={8} />
+                </View>
+                <View style={themed($right)}>
+                    <View style={themed($statBlock)}>
+                        <Skeleton width={48} height={10} radius={5} style={$skeletonStatGap} />
+                        <Skeleton width={64} height={18} radius={6} />
+                    </View>
+                    <View style={themed($statBlock)}>
+                        <Skeleton width={48} height={10} radius={5} style={$skeletonStatGap} />
+                        <Skeleton width={64} height={18} radius={6} />
+                    </View>
+                </View>
+            </View>
+        );
+    }
+
     const total = Number(balanceData?.balance) ?? 0;
     const expenses = statsData?.expense_total ?? 0;
     const income = statsData?.income_total ?? 0;
@@ -95,6 +118,9 @@ export const BalanceSummary: React.FC = () => {
         </View>
     );
 };
+
+const $skeletonLabelGap: ViewStyle = { marginBottom: 8 };
+const $skeletonStatGap: ViewStyle = { marginBottom: 6 };
 
 export const $container: ThemedStyle<ViewStyle> = () => ({
     flexDirection: 'row',

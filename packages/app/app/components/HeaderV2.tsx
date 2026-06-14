@@ -2,6 +2,7 @@ import { View, Pressable, ViewStyle, TextStyle, Image, ImageStyle } from 'react-
 import { MaterialIcons } from '@expo/vector-icons';
 import { useNavigation } from '@react-navigation/native';
 
+import { Skeleton } from '@/components/Skeleton';
 import { Text } from '@/components/Text';
 import { TxKeyPath } from '@/i18n/index';
 import { useAppTheme } from '@/theme/context';
@@ -16,6 +17,19 @@ export const HeaderV2: React.FC<Props> = ({ tx }) => {
     const { themed, theme } = useAppTheme();
     const { colors } = theme;
     const navigation = useNavigation();
+
+    if (false) {
+        return (
+            <View style={themed($container)}>
+                <View style={themed($left)}>
+                    <Skeleton width={40} height={40} radius={20} />
+                    <Skeleton width={120} height={14} radius={7} />
+                </View>
+                <Skeleton width={40} height={40} radius={8} />
+            </View>
+        );
+    }
+
     return (
         <View style={themed($container)}>
             <View style={themed($left)}>

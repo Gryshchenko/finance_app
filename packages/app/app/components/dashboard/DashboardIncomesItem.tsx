@@ -2,6 +2,7 @@ import { ComponentType } from 'react';
 import { IIncomeStats, IStatsResponse, StatsPeriod, Time } from 'tenpercent/shared';
 
 import { boxDataItemAdapter } from '@/components/dashboard/Box/boxDataItemAdapter';
+import { DashboardBlockSkeleton } from '@/components/dashboard/DashboardBlockSkeleton';
 import DashboardIncome from '@/components/dashboard/DashboardIncome';
 import DashboardItem, { IDashboardItem } from '@/components/dashboard/DashboardItem';
 import { useAppQuery } from '@/hooks/useAppQuery';
@@ -43,6 +44,11 @@ export default function DashboardIncomesItem() {
     const incomes = useAppQuery<IStatsResponse<IIncomeStats>>(QueryKeys.incomesStats(), fetchIncomes, {
         staleTime: QueryStaleTimes.dashboard,
     });
+
+    if (incomes.isPending) {
+        return <DashboardBlockSkeleton />;
+    }
+
     return (
         <DashboardItem
             id={'incomes'}

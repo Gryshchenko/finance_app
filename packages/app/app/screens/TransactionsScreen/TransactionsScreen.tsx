@@ -92,7 +92,9 @@ export const TransactionsScreen = function TransactionsScreen(_props: Props) {
         <GenericListScreen
             name={translate('transactionScreen:title', { name })}
             isError={isError}
-            isPending={isPending}
+            // Skeletons (inside Transactions) handle the loading UI instead of the dots
+            // spinner: keep the screen mounted during initial load and pass isPending down.
+            isPending={false}
             props={{
                 onPress: (idEdit: number, nameEdit: string) => {
                     navigation.getParent()?.navigate(OverviewPath.Transactions, {
@@ -117,6 +119,7 @@ export const TransactionsScreen = function TransactionsScreen(_props: Props) {
                     currencyId,
                 },
                 fetch: async ({ cursor, limit }) => await fetchTransactions(id, type, cursor, limit),
+                isLoading: isPending,
             }}
             onBack={() => {
                 navigation.getParent()?.navigate(OverviewPath.Dashboard);

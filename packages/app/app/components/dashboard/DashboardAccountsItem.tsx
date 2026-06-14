@@ -4,6 +4,7 @@ import { IAccount, IAccountListItem } from 'tenpercent/shared';
 import { boxDataItemAdapter } from '@/components/dashboard/Box/boxDataItemAdapter';
 import { ItemType } from '@/components/dashboard/Box/ItemBox';
 import DashboardAccount from '@/components/dashboard/DashboardAccount';
+import { DashboardBlockSkeleton } from '@/components/dashboard/DashboardBlockSkeleton';
 import DashboardItem, { IDashboardItem } from '@/components/dashboard/DashboardItem';
 import { useAppQuery } from '@/hooks/useAppQuery';
 import { IBoxDataItem } from '@/interfaces/IBoxDataItem';
@@ -35,6 +36,11 @@ export default function DashboardAccountsItem() {
     const accounts = useAppQuery<IAccountListItem[]>(QueryKeys.accounts(), fetchAccounts, {
         staleTime: QueryStaleTimes.list,
     });
+
+    if (accounts.isPending) {
+        return <DashboardBlockSkeleton />;
+    }
+
     return (
         <DashboardItem
             id={'accounts'}
