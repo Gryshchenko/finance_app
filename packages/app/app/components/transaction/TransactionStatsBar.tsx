@@ -11,12 +11,12 @@ import { CurrencyUtils } from '@/utils/CurrencyUtils';
 export interface TransactionStatsBarProps {
     /** Amount spent so far this month */
     spentMtd?: number;
-    /** Same-period spending last month - used to compute Δ */
-    lastMonthSpent?: number;
+    /** Pre-computed MoM % change in spending. null = no comparable base (last month was 0) → delta tile is hidden. */
+    lastMonthSpent?: number | null;
     /** Amount income so far this month */
     incomeMtd?: number;
-    /** Same-period income last month - used to compute Δ */
-    lastMonthIncome?: number;
+    /** Pre-computed MoM % change in income. null = no comparable base (last month was 0) → delta tile is hidden. */
+    lastMonthIncome?: number | null;
     /** Projected end-of-month spending */
     forecastEom?: number;
     /** Monthly budget cap. Omit or pass 0 to hide the budget tile. */
@@ -25,7 +25,8 @@ export interface TransactionStatsBarProps {
     transferMtd?: number;
     /** ISO currency code, e.g. "USD" */
     currency: string;
-    savingsRate?: number;
+    /** Average month-end savings rate (%) YTD. null = not enough months to average → "no data". */
+    savingsRate?: number | null;
 }
 
 type DeltaDirection = 'up' | 'down' | 'flat' | 'none';
@@ -35,12 +36,16 @@ interface DeltaInfo {
     label: string;
 }
 
-function computeDelta(current: number, previous: number): DeltaInfo {
-    if (!previous) {
+/**
+ * Formats an already-computed MoM % change (from the backend) for display.
+ * The percentage is NOT recomputed here - `pct` is the delta itself.
+ * `null`/`undefined` means there is no comparable base (e.g. last month was 0).
+ */
+function formatDelta(pct: number | null | undefined): DeltaInfo {
+    if (pct == null) {
         return { direction: 'none', label: translate('transactionStatsBar:noData') };
     }
-    const pct = ((current - previous) / previous) * 100;
-    const rounded = Math.round(Math.abs(pct) * 10) / 10;
+    const rounded = Math.round(Math.abs(pct) * 100) / 100;
 
     if (pct > 0) return { direction: 'up', label: `+${rounded} %` };
     if (pct < 0) return { direction: 'down', label: `-${rounded} %` };
@@ -133,7 +138,7 @@ export const TransactionStatsBar: FC<TransactionStatsBarProps> = function Transa
                         return colors.textDim;
                 }
             };
-            const delta = computeDelta(spentMtd, lastMonthSpent);
+            const delta = formatDelta(lastMonthSpent);
             const deltaColor = getDeltaColor(delta);
 
             arr.push(
@@ -170,7 +175,7 @@ export const TransactionStatsBar: FC<TransactionStatsBarProps> = function Transa
                         return colors.textDim;
                 }
             };
-            const delta = computeDelta(incomeMtd, lastMonthIncome);
+            const delta = formatDelta(lastMonthIncome);
             const deltaColor = getDeltaColor(delta);
             arr.push(
                 // Δ vs Last Month
@@ -214,12 +219,22 @@ export const TransactionStatsBar: FC<TransactionStatsBarProps> = function Transa
                 value: CurrencyUtils.formatWithDelimiter(forecastEom, currency),
             });
         }
-        if (Utils.isNotNull(savingsRate)) {
-            arr.push({
-                label: translate('transactionStatsBar:savingRate'),
-                value: savingsRate ? `${savingsRate} %` : translate('transactionStatsBar:noData'),
-                valueColor: savingsRate > 0 ? colors.palette.green400 : savingsRate < 0 ? colors.palette.angry500 : colors.text,
-            });
+        if (savingsRate !== undefined) {
+            // null = account view but not enough months yet to average → show "no data"
+            if (savingsRate === null) {
+                arr.push({
+                    label: translate('transactionStatsBar:savingRate'),
+                    value: translate('transactionStatsBar:noData'),
+                    valueColor: colors.textDim,
+                });
+            } else {
+                arr.push({
+                    label: translate('transactionStatsBar:savingRate'),
+                    value: `${savingsRate} %`,
+                    valueColor:
+                        savingsRate > 0 ? colors.palette.green400 : savingsRate < 0 ? colors.palette.angry500 : colors.text,
+                });
+            }
         }
         return arr;
     }, [

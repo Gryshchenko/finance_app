@@ -85,6 +85,7 @@ export default class TransactionService extends LoggerBase implements ITransacti
             }
             switch (trs.transactionTypeId) {
                 case TransactionType.Expense: {
+                    await this._accountService.addAmount(userId, trs.accountId, trs.amount, trx);
                     await this._statsOrchestratorService.delete({
                         type: TransactionType.Expense,
                         userId,
@@ -100,6 +101,7 @@ export default class TransactionService extends LoggerBase implements ITransacti
                     break;
                 }
                 case TransactionType.Income: {
+                    await this._accountService.addAmount(userId, trs.accountId, -trs.amount, trx);
                     await this._statsOrchestratorService.delete({
                         type: TransactionType.Income,
                         userId,
@@ -115,6 +117,8 @@ export default class TransactionService extends LoggerBase implements ITransacti
                     break;
                 }
                 case TransactionType.Transafer: {
+                    await this._accountService.addAmount(userId, trs.accountId, trs.amount, trx);
+                    await this._accountService.addAmount(userId, trs.targetAccountId as number, -trs.targetAmount, trx);
                     await this._statsOrchestratorService.delete({
                         type: TransactionType.Transafer,
                         userId,
@@ -197,9 +201,14 @@ export default class TransactionService extends LoggerBase implements ITransacti
     ): Promise<void> {
         switch (before.transactionTypeId) {
             case TransactionType.Income:
+                // revert old income, apply new income
+                await this._accountService.addAmount(userId, before.accountId, -before.amount, trx);
+                await this._accountService.addAmount(userId, after.accountId, after.amount, trx);
+                break;
             case TransactionType.Expense:
-                await this._accountService.patchAccount(userId, before.accountId, { amount: before.amount }, trx);
-                await this._accountService.patchAccount(userId, after.accountId, { amount: -after.amount }, trx);
+                // revert old expense (give money back), apply new expense (take money)
+                await this._accountService.addAmount(userId, before.accountId, before.amount, trx);
+                await this._accountService.addAmount(userId, after.accountId, -after.amount, trx);
                 break;
             case TransactionType.Transafer:
                 if (!before.targetAccountId) {
@@ -223,11 +232,11 @@ export default class TransactionService extends LoggerBase implements ITransacti
                     });
                 }
                 // revert
-                await this._accountService.patchAccount(userId, before.accountId, { amount: before.amount }, trx);
-                await this._accountService.patchAccount(userId, before.targetAccountId, { amount: -before.amount }, trx);
+                await this._accountService.addAmount(userId, before.accountId, before.amount, trx);
+                await this._accountService.addAmount(userId, before.targetAccountId, -before.targetAmount, trx);
                 // apply
-                await this._accountService.patchAccount(userId, after.accountId, { amount: -after.amount }, trx);
-                await this._accountService.patchAccount(userId, after.targetAccountId, { amount: after.amount }, trx);
+                await this._accountService.addAmount(userId, after.accountId, -after.amount, trx);
+                await this._accountService.addAmount(userId, after.targetAccountId, after.targetAmount, trx);
                 break;
         }
     }
@@ -295,7 +304,7 @@ export default class TransactionService extends LoggerBase implements ITransacti
 
                 this.validateAccount(accountInWork);
                 this.validateAccountCurrency(accountInWork as IAccount, targetCurrencyId, 'accountId');
-                await this._accountService.patchAccount(userId, accountId as number, { amount: targetAmount }, trx);
+                await this._accountService.addAmount(userId, accountId as number, targetAmount, trx);
                 await this._statsOrchestratorService.create({
                     type: TransactionType.Income,
                     userId,
@@ -324,7 +333,7 @@ export default class TransactionService extends LoggerBase implements ITransacti
                 this.validateAccount(accountInWork);
                 this.validateAccountCurrency(accountInWork as IAccount, currencyId, 'accountId');
 
-                await this._accountService.patchAccount(userId, accountId as number, { amount: sourceAmount * -1 }, trx);
+                await this._accountService.addAmount(userId, accountId as number, sourceAmount * -1, trx);
                 await this._statsOrchestratorService.create({
                     type: TransactionType.Expense,
                     userId,
@@ -381,8 +390,8 @@ export default class TransactionService extends LoggerBase implements ITransacti
                     userId,
                     trx,
                 });
-                await this._accountService.patchAccount(userId, accountId, { amount: sourceAmount * -1 }, trx);
-                await this._accountService.patchAccount(userId, targetAccountId, { amount: targetAmount }, trx);
+                await this._accountService.addAmount(userId, accountId, sourceAmount * -1, trx);
+                await this._accountService.addAmount(userId, targetAccountId, targetAmount, trx);
             },
             'transfare',
         );

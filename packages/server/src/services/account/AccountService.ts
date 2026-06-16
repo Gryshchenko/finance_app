@@ -15,6 +15,7 @@ export interface IAccountService {
     getAccount(userId: number, accountId: number): Promise<IAccount | undefined>;
     deleteAccount(userId: number, accountId: number, trx?: IDBTransaction): Promise<boolean>;
     patchAccount(userId: number, accountId: number, properties: Partial<IAccount>, trx?: IDBTransaction): Promise<number>;
+    addAmount(userId: number, accountId: number, amount: number, trx?: IDBTransaction): Promise<number>;
 }
 
 export default class AccountService extends LoggerBase implements IAccountService {
@@ -43,6 +44,9 @@ export default class AccountService extends LoggerBase implements IAccountServic
     }
     async patchAccount(userId: number, accountId: number, properties: Partial<IAccount>, trx?: IDBTransaction): Promise<number> {
         return await this._accountDataAccess.patchAccount(userId, accountId, properties, trx);
+    }
+    async addAmount(userId: number, accountId: number, amount: number, trx?: IDBTransaction): Promise<number> {
+        return await this._accountDataAccess.addAmount(userId, accountId, amount, trx);
     }
     async getAccount(userId: number, accountId: number): Promise<IAccount | undefined> {
         try {

@@ -187,7 +187,6 @@ export const TransactionFields: FC<IProps> = function TransactionFields(_props) 
                                 onChangeCleaned: (v: string) => {
                                     handleChange?.('amount', v);
                                     if (rates && rates.rate && !isNaN(Number(v))) {
-                                        console.log(rates.rate);
                                         handleChange?.('targetAmount', String(Utils.roundNumber(Number(v) * rates.rate)));
                                     }
                                 },

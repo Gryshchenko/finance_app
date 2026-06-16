@@ -53,33 +53,33 @@ describe('PATCH /user/:userId/profile/ - body validation', () => {
     const url = () => `/user/${userId}/profile/`;
 
     // locale
-    it('400 — locale invalid format (not xx-XX)', async () => {
+    it('400 - locale invalid format (not xx-XX)', async () => {
         await agent.patch(url()).set('authorization', authorization).send({ locale: 'english' }).expect(HttpCode.BAD_REQUEST);
     });
 
-    it('400 — locale too short (< 4)', async () => {
+    it('400 - locale too short (< 4)', async () => {
         await agent.patch(url()).set('authorization', authorization).send({ locale: 'en' }).expect(HttpCode.BAD_REQUEST);
     });
 
-    it('400 — locale too long (> 6)', async () => {
+    it('400 - locale too long (> 6)', async () => {
         await agent.patch(url()).set('authorization', authorization).send({ locale: 'en-USABC' }).expect(HttpCode.BAD_REQUEST);
     });
 
-    it('400 — locale is a number', async () => {
+    it('400 - locale is a number', async () => {
         await agent.patch(url()).set('authorization', authorization).send({ locale: 123456 }).expect(HttpCode.BAD_REQUEST);
     });
 
     // currencyId
-    it('400 — currencyId is a string', async () => {
+    it('400 - currencyId is a string', async () => {
         await agent.patch(url()).set('authorization', authorization).send({ currencyId: 'abc' }).expect(HttpCode.BAD_REQUEST);
     });
 
     // publicName
-    it('400 — publicName too short (< 3)', async () => {
+    it('400 - publicName too short (< 3)', async () => {
         await agent.patch(url()).set('authorization', authorization).send({ publicName: 'ab' }).expect(HttpCode.BAD_REQUEST);
     });
 
-    it('400 — publicName too long (> 128)', async () => {
+    it('400 - publicName too long (> 128)', async () => {
         await agent
             .patch(url())
             .set('authorization', authorization)
@@ -87,12 +87,12 @@ describe('PATCH /user/:userId/profile/ - body validation', () => {
             .expect(HttpCode.BAD_REQUEST);
     });
 
-    it('400 — publicName is a number', async () => {
+    it('400 - publicName is a number', async () => {
         await agent.patch(url()).set('authorization', authorization).send({ publicName: 99999 }).expect(HttpCode.BAD_REQUEST);
     });
 
     // unknown field
-    it('400 — unknown field in body', async () => {
+    it('400 - unknown field in body', async () => {
         await agent
             .patch(url())
             .set('authorization', authorization)
@@ -101,7 +101,7 @@ describe('PATCH /user/:userId/profile/ - body validation', () => {
     });
 
     // query string
-    it('400 — unexpected query param', async () => {
+    it('400 - unexpected query param', async () => {
         await agent
             .patch(`${url()}?foo=bar`)
             .set('authorization', authorization)
@@ -110,21 +110,21 @@ describe('PATCH /user/:userId/profile/ - body validation', () => {
     });
 
     // valid case
-    it('204 — valid patch with publicName only', async () => {
+    it('204 - valid patch with publicName only', async () => {
         await agent.patch(url()).set('authorization', authorization).send({ publicName: 'NewName' }).expect(HttpCode.NO_CONTENT);
     });
 });
 
 // ─── POST /user/:userId/profile/email-change ──────────────────────────────────
 
-describe('POST /user/:userId/profile/email-change — body validation', () => {
+describe('POST /user/:userId/profile/email-change - body validation', () => {
     const url = () => `/user/${userId}/profile/email-change`;
 
-    it('400 — missing newEmail', async () => {
+    it('400 - missing newEmail', async () => {
         await agent.post(url()).set('authorization', authorization).send({}).expect(HttpCode.BAD_REQUEST);
     });
 
-    it('400 — newEmail not a valid email', async () => {
+    it('400 - newEmail not a valid email', async () => {
         await agent
             .post(url())
             .set('authorization', authorization)
@@ -132,21 +132,21 @@ describe('POST /user/:userId/profile/email-change — body validation', () => {
             .expect(HttpCode.BAD_REQUEST);
     });
 
-    it('400 — newEmail exceeds 100 chars', async () => {
+    it('400 - newEmail exceeds 100 chars', async () => {
         const longEmail = `${'a'.repeat(95)}@b.com`;
         await agent.post(url()).set('authorization', authorization).send({ newEmail: longEmail }).expect(HttpCode.BAD_REQUEST);
     });
 
-    it('400 — newEmail is a number', async () => {
+    it('400 - newEmail is a number', async () => {
         await agent.post(url()).set('authorization', authorization).send({ newEmail: 12345 }).expect(HttpCode.BAD_REQUEST);
     });
 
-    it('400 — unknown field in body', async () => {
+    it('400 - unknown field in body', async () => {
         const newEmail = `change_${Date.now()}@example.com`;
         await agent.post(url()).set('authorization', authorization).send({ newEmail, hack: true }).expect(HttpCode.BAD_REQUEST);
     });
 
-    it('400 — unexpected query param', async () => {
+    it('400 - unexpected query param', async () => {
         await agent
             .post(`${url()}?foo=bar`)
             .set('authorization', authorization)
@@ -157,22 +157,22 @@ describe('POST /user/:userId/profile/email-change — body validation', () => {
 
 // ─── POST /user/:userId/profile/email-change/resend ───────────────────────────
 
-describe('POST /user/:userId/profile/email-change/resend — body validation', () => {
+describe('POST /user/:userId/profile/email-change/resend - body validation', () => {
     const url = () => `/user/${userId}/profile/email-change/resend`;
 
-    it('400 — missing confirmationId', async () => {
+    it('400 - missing confirmationId', async () => {
         await agent.post(url()).set('authorization', authorization).send({}).expect(HttpCode.BAD_REQUEST);
     });
 
-    it('400 — confirmationId is a string', async () => {
+    it('400 - confirmationId is a string', async () => {
         await agent.post(url()).set('authorization', authorization).send({ confirmationId: 'abc' }).expect(HttpCode.BAD_REQUEST);
     });
 
-    it('400 — confirmationId is zero (< 1)', async () => {
+    it('400 - confirmationId is zero (< 1)', async () => {
         await agent.post(url()).set('authorization', authorization).send({ confirmationId: 0 }).expect(HttpCode.BAD_REQUEST);
     });
 
-    it('400 — unknown field in body', async () => {
+    it('400 - unknown field in body', async () => {
         await agent
             .post(url())
             .set('authorization', authorization)
@@ -180,7 +180,7 @@ describe('POST /user/:userId/profile/email-change/resend — body validation', (
             .expect(HttpCode.BAD_REQUEST);
     });
 
-    it('400 — unexpected query param', async () => {
+    it('400 - unexpected query param', async () => {
         await agent
             .post(`${url()}?foo=bar`)
             .set('authorization', authorization)
@@ -191,10 +191,10 @@ describe('POST /user/:userId/profile/email-change/resend — body validation', (
 
 // ─── POST /user/:userId/profile/password-change ───────────────────────────────
 
-describe('POST /user/:userId/profile/password-change — body validation', () => {
+describe('POST /user/:userId/profile/password-change - body validation', () => {
     const url = () => `/user/${userId}/profile/password-change`;
 
-    it('400 — missing password', async () => {
+    it('400 - missing password', async () => {
         await agent
             .post(url())
             .set('authorization', authorization)
@@ -202,15 +202,15 @@ describe('POST /user/:userId/profile/password-change — body validation', () =>
             .expect(HttpCode.BAD_REQUEST);
     });
 
-    it('400 — missing newPassword', async () => {
+    it('400 - missing newPassword', async () => {
         await agent.post(url()).set('authorization', authorization).send({ password: userPassword }).expect(HttpCode.BAD_REQUEST);
     });
 
-    it('400 — empty body', async () => {
+    it('400 - empty body', async () => {
         await agent.post(url()).set('authorization', authorization).send({}).expect(HttpCode.BAD_REQUEST);
     });
 
-    it('400 — newPassword too weak', async () => {
+    it('400 - newPassword too weak', async () => {
         await agent
             .post(url())
             .set('authorization', authorization)
@@ -218,7 +218,7 @@ describe('POST /user/:userId/profile/password-change — body validation', () =>
             .expect(HttpCode.BAD_REQUEST);
     });
 
-    it('400 — newPassword too short (< 5)', async () => {
+    it('400 - newPassword too short (< 5)', async () => {
         await agent
             .post(url())
             .set('authorization', authorization)
@@ -226,7 +226,7 @@ describe('POST /user/:userId/profile/password-change — body validation', () =>
             .expect(HttpCode.BAD_REQUEST);
     });
 
-    it('400 — newPassword too long (> 30)', async () => {
+    it('400 - newPassword too long (> 30)', async () => {
         await agent
             .post(url())
             .set('authorization', authorization)
@@ -234,7 +234,7 @@ describe('POST /user/:userId/profile/password-change — body validation', () =>
             .expect(HttpCode.BAD_REQUEST);
     });
 
-    it('400 — password is a number', async () => {
+    it('400 - password is a number', async () => {
         await agent
             .post(url())
             .set('authorization', authorization)
@@ -242,7 +242,7 @@ describe('POST /user/:userId/profile/password-change — body validation', () =>
             .expect(HttpCode.BAD_REQUEST);
     });
 
-    it('400 — unknown field in body', async () => {
+    it('400 - unknown field in body', async () => {
         await agent
             .post(url())
             .set('authorization', authorization)
@@ -250,7 +250,7 @@ describe('POST /user/:userId/profile/password-change — body validation', () =>
             .expect(HttpCode.BAD_REQUEST);
     });
 
-    it('400 — unexpected query param', async () => {
+    it('400 - unexpected query param', async () => {
         await agent
             .post(`${url()}?foo=bar`)
             .set('authorization', authorization)
@@ -261,22 +261,22 @@ describe('POST /user/:userId/profile/password-change — body validation', () =>
 
 // ─── POST /user/:userId/profile/password-change/resend ────────────────────────
 
-describe('POST /user/:userId/profile/password-change/resend — body validation', () => {
+describe('POST /user/:userId/profile/password-change/resend - body validation', () => {
     const url = () => `/user/${userId}/profile/password-change/resend`;
 
-    it('400 — missing confirmationId', async () => {
+    it('400 - missing confirmationId', async () => {
         await agent.post(url()).set('authorization', authorization).send({}).expect(HttpCode.BAD_REQUEST);
     });
 
-    it('400 — confirmationId is a string', async () => {
+    it('400 - confirmationId is a string', async () => {
         await agent.post(url()).set('authorization', authorization).send({ confirmationId: 'abc' }).expect(HttpCode.BAD_REQUEST);
     });
 
-    it('400 — confirmationId is 0', async () => {
+    it('400 - confirmationId is 0', async () => {
         await agent.post(url()).set('authorization', authorization).send({ confirmationId: 0 }).expect(HttpCode.BAD_REQUEST);
     });
 
-    it('400 — unknown field in body', async () => {
+    it('400 - unknown field in body', async () => {
         await agent
             .post(url())
             .set('authorization', authorization)

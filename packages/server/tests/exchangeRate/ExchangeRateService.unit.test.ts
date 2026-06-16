@@ -265,7 +265,7 @@ describe('updateCurrencyRates', () => {
         expect(mockDataAccess.patch).toHaveBeenCalledWith('EUR', { USD: 1.08 });
     });
 
-    it('does not re-throw when currencyService.gets() throws — swallows the error', async () => {
+    it('does not re-throw when currencyService.gets() throws - swallows the error', async () => {
         mockCurrencyService.gets.mockRejectedValue(new Error('DB connection failed'));
 
         await expect(service.updateCurrencyRates()).resolves.toBeUndefined();
@@ -320,7 +320,7 @@ describe('updateCurrencyRates', () => {
         expect(mockDataAccess.post).toHaveBeenCalledWith('EUR', { USD: 1 });
     });
 
-    describe('logAndStoreRates — result logging', () => {
+    describe('logAndStoreRates - result logging', () => {
         it('completes without throwing when post returns false (logs error internally)', async () => {
             mockCurrencyService.gets.mockResolvedValue([makeCurrency('USD')]);
             mockDataAccess.gets.mockResolvedValue([]);

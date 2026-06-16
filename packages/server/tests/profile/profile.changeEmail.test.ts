@@ -249,7 +249,7 @@ describe('POST /user/:userId/profile/email-change/resend - resend confirmation c
         confirmationId = record.id;
     });
 
-    it('204 — resend generates a new confirmationCode', async () => {
+    it('204 - resend generates a new confirmationCode', async () => {
         const before = await db.engine()('email_changing').select('confirmationCode').where({ userId, email: newEmail }).first();
 
         await agent
@@ -272,7 +272,7 @@ describe('POST /user/:userId/profile/email-change/resend - resend confirmation c
         expect(after.confirmationCode).not.toBe(before.confirmationCode);
     });
 
-    it('400 — resend after the code has expired or no pending change', async () => {
+    it('400 - resend after the code has expired or no pending change', async () => {
         const agent4 = request.agent(server);
         const { userId: userId4, authorization: auth4 } = await createUser({ agent: agent4, databaseConnection: db });
         userIds.push(userId4);
@@ -285,12 +285,12 @@ describe('POST /user/:userId/profile/email-change/resend - resend confirmation c
             .expect(HttpCode.BAD_REQUEST);
     });
 
-    it('401 — unauthorized request is rejected', async () => {
+    it('401 - unauthorized request is rejected', async () => {
         await agent.post(`/user/${userId}/profile/email-change/resend`).send({ newEmail }).expect(HttpCode.UNAUTHORIZED);
     });
 });
 
-describe('Full flow — request → verify → login with new email', () => {
+describe('Full flow - request → verify → login with new email', () => {
     it('new email works for login after change; old email does not', async () => {
         const agent = request.agent(server);
         const password = 'ValidPass1!';
@@ -305,29 +305,29 @@ describe('Full flow — request → verify → login with new email', () => {
         });
         userIds.push(userId);
 
-        // Step 1 — request email change
+        // Step 1 - request email change
         await agent
             .post(`/user/${userId}/profile/email-change`)
             .set('authorization', authorization)
             .send({ newEmail })
             .expect(HttpCode.OK);
 
-        // Step 2 — get code from DB
+        // Step 2 - get code from DB
         const record = await db.engine()('email_changing').select('confirmationCode').where({ userId, email: newEmail }).first();
 
-        // Step 3 — confirm change
+        // Step 3 - confirm change
         await agent
             .post(`/user/${userId}/profile/email-change/verify`)
             .set('authorization', authorization)
             .send({ confirmationCode: record.confirmationCode, newEmail })
             .expect(HttpCode.NO_CONTENT);
 
-        // Step 4 — login with new email succeeds
+        // Step 4 - login with new email succeeds
         const loginNew = await agent.post('/auth/login').send({ email: newEmail, password });
         expect(loginNew.status).toBe(HttpCode.OK);
         expect(loginNew.body.data.token).toEqual(expect.any(String));
 
-        // Step 5 — login with old email fails (user record now holds newEmail)
+        // Step 5 - login with old email fails (user record now holds newEmail)
         const loginOld = await agent.post('/auth/login').send({ email: oldEmail, password });
         expect(loginOld.status).toBe(HttpCode.BAD_REQUEST);
     });

@@ -101,6 +101,8 @@ export class TransactionController {
                         amount: transaction?.amount,
                         description: transaction?.description,
                         createdAt: transaction?.createdAt,
+                        targetAmount: transaction?.targetAmount,
+                        targetCurrencyId: transaction?.targetCurrencyId,
                     })),
                 };
                 res.status(HttpCode.OK).json(responseBuilder.setStatus(ResponseStatusType.OK).setData(response).build());

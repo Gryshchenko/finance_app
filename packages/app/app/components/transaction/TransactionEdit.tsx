@@ -1,6 +1,6 @@
 import { FC } from 'react';
 import { StyleProp, ViewStyle } from 'react-native';
-import { ITransaction } from 'tenpercent/shared';
+import { ITransaction, StatsType } from 'tenpercent/shared';
 
 import { EmptyState } from '@/components/EmptyState';
 import { TransactionFields } from '@/components/transaction/TransactionFields';
@@ -35,6 +35,24 @@ export const TransactionEdit: FC<ITransactionPros> = function TransactionEdit(_p
         }),
     );
 
+    const invalidateEntityStats = async (): Promise<void> => {
+        switch (back?.params?.statsType) {
+            case StatsType.Expense: {
+                await invalidateQuery(InvalidationGroups.entityStats(form.categoryId as number, StatsType.Expense));
+                break;
+            }
+            case StatsType.Income: {
+                await invalidateQuery(InvalidationGroups.entityStats(form.incomeId as number, StatsType.Income));
+                break;
+            }
+            case StatsType.Account: {
+                await invalidateQuery(InvalidationGroups.entityStats(form.accountId as number, StatsType.Account));
+                await invalidateQuery(InvalidationGroups.entityStats(form.targetAccountId as number, StatsType.Account));
+                break;
+            }
+        }
+    };
+
     const handlePatch = async () => {
         const transactionService = TransactionService.instance();
         const sameCurrency = !form.targetCurrencyId || form.targetCurrencyId === form.currencyId;
@@ -55,7 +73,8 @@ export const TransactionEdit: FC<ITransactionPros> = function TransactionEdit(_p
                 title: 'common:info',
                 message: 'transactionScreen:updateSuccess',
             });
-            await invalidateQuery(InvalidationGroups.transaction(form.transactionId));
+            await invalidateQuery(InvalidationGroups.transaction(form.transactionId!));
+            await invalidateEntityStats();
             goBackSmart();
         } else if (response.kind === GeneralApiProblemKind.BadData) {
             handleBadDataResponse(response.errors, setErrors);
@@ -74,7 +93,8 @@ export const TransactionEdit: FC<ITransactionPros> = function TransactionEdit(_p
                 title: 'common:info',
                 message: 'transactionScreen:deleteSuccess',
             });
-            await invalidateQuery(InvalidationGroups.transaction(form.transactionId));
+            await invalidateQuery(InvalidationGroups.transaction());
+            await invalidateEntityStats();
             goBackSmart();
         } else {
             ToastService.error({

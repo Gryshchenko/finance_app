@@ -228,7 +228,7 @@ describe('3. POST /auth/forget-refresh - resend code', () => {
     });
 });
 
-describe('4. POST /auth/forget-confirm — confirm code', () => {
+describe('4. POST /auth/forget-confirm - confirm code', () => {
     it('returns error for wrong confirmation code', async () => {
         const agent = request.agent(server);
         const email = generateRandomEmail();
@@ -273,16 +273,16 @@ describe('4. POST /auth/forget-confirm — confirm code', () => {
             .orderBy('id', 'desc')
             .first();
 
-        // First confirm — should succeed
+        // First confirm - should succeed
         await agent.post('/auth/forget-confirm').send({ confirmationCode: record.confirmationCode, email }).expect(HttpCode.OK);
 
-        // Second confirm — should fail (already used)
+        // Second confirm - should fail (already used)
         const res = await agent.post('/auth/forget-confirm').send({ confirmationCode: record.confirmationCode, email });
         expect(res.status).not.toBe(HttpCode.OK);
     });
 });
 
-describe('5. POST /auth/:userId/forget-change — reset token security', () => {
+describe('5. POST /auth/:userId/forget-change - reset token security', () => {
     let userId: number;
     let email: string;
     let agent: ReturnType<typeof request.agent>;
@@ -370,7 +370,7 @@ describe('5. POST /auth/:userId/forget-change — reset token security', () => {
     });
 });
 
-describe('6. POST /auth/:userId/forget-change — password validation', () => {
+describe('6. POST /auth/:userId/forget-change - password validation', () => {
     it('returns 400 when newPassword is missing', async () => {
         const agent = request.agent(server);
         const email = generateRandomEmail();
@@ -426,14 +426,14 @@ describe('7. Reset token replay & reuse', () => {
 
         const resetToken = await runForgetFlowUntilResetToken(agent, email, userId);
 
-        // First change — should succeed
+        // First change - should succeed
         await agent
             .post(`/auth/${userId}/forget-change`)
             .set('authorization', `Bearer ${resetToken}`)
             .send({ newPassword: NEW_PASSWORD })
             .expect(HttpCode.NO_CONTENT);
 
-        // Second change with same token — should fail (token blacklisted after use)
+        // Second change with same token - should fail (token blacklisted after use)
         const res = await agent
             .post(`/auth/${userId}/forget-change`)
             .set('authorization', `Bearer ${resetToken}`)
@@ -460,7 +460,7 @@ describe('7. Reset token replay & reuse', () => {
     });
 });
 
-describe('8. Reset token isolation — cannot be used on protected endpoints', () => {
+describe('8. Reset token isolation - cannot be used on protected endpoints', () => {
     it('reset token is rejected on GET /user/:userId/profile', async () => {
         const agent = request.agent(server);
         const email = generateRandomEmail();

@@ -1,5 +1,5 @@
 /**
- * Validation tests — Stats, Currency & Exchange-rate routes
+ * Validation tests - Stats, Currency & Exchange-rate routes
  *
  * GET /user/:userId/incomes/stats
  * GET /user/:userId/categories/stats
@@ -51,59 +51,59 @@ afterAll((done) => {
 
 // ─── GET /user/:userId/incomes/stats ──────────────────────────────────────────
 
-describe('GET /user/:userId/incomes/stats — query validation', () => {
+describe('GET /user/:userId/incomes/stats - query validation', () => {
     const url = (q: string) => `/user/${userId}/incomes/stats?${q}`;
 
-    it('400 — missing from', async () => {
+    it('400 - missing from', async () => {
         await agent
             .get(url(`to=${validTo}&period=${validPeriod}`))
             .set('authorization', authorization)
             .expect(HttpCode.BAD_REQUEST);
     });
 
-    it('400 — missing to', async () => {
+    it('400 - missing to', async () => {
         await agent
             .get(url(`from=${validFrom}&period=${validPeriod}`))
             .set('authorization', authorization)
             .expect(HttpCode.BAD_REQUEST);
     });
 
-    it('400 — missing period', async () => {
+    it('400 - missing period', async () => {
         await agent
             .get(url(`from=${validFrom}&to=${validTo}`))
             .set('authorization', authorization)
             .expect(HttpCode.BAD_REQUEST);
     });
 
-    it('400 — from is not ISO8601', async () => {
+    it('400 - from is not ISO8601', async () => {
         await agent
             .get(url(`from=not-a-date&to=${validTo}&period=${validPeriod}`))
             .set('authorization', authorization)
             .expect(HttpCode.BAD_REQUEST);
     });
 
-    it('400 — to is not ISO8601', async () => {
+    it('400 - to is not ISO8601', async () => {
         await agent
             .get(url(`from=${validFrom}&to=not-a-date&period=${validPeriod}`))
             .set('authorization', authorization)
             .expect(HttpCode.BAD_REQUEST);
     });
 
-    it('400 — from is greater than to', async () => {
+    it('400 - from is greater than to', async () => {
         await agent
             .get(url(`from=${validTo}&to=${validFrom}&period=${validPeriod}`))
             .set('authorization', authorization)
             .expect(HttpCode.BAD_REQUEST);
     });
 
-    it('400 — unknown query param', async () => {
+    it('400 - unknown query param', async () => {
         await agent
             .get(url(`from=${validFrom}&to=${validTo}&period=${validPeriod}&hack=true`))
             .set('authorization', authorization)
             .expect(HttpCode.BAD_REQUEST);
     });
 
-    it('200 — valid query returns stats', async () => {
+    it('200 - valid query returns stats', async () => {
         const res = await agent
             .get(url(`from=${validFrom}&to=${validTo}&period=${validPeriod}`))
             .set('authorization', authorization);
@@ -113,45 +113,45 @@ describe('GET /user/:userId/incomes/stats — query validation', () => {
 
 // ─── GET /user/:userId/categories/stats ───────────────────────────────────────
 
-describe('GET /user/:userId/categories/stats — query validation', () => {
+describe('GET /user/:userId/categories/stats - query validation', () => {
     const url = (q: string) => `/user/${userId}/categories/stats?${q}`;
 
-    it('400 — missing from', async () => {
+    it('400 - missing from', async () => {
         await agent
             .get(url(`to=${validTo}&period=${validPeriod}`))
             .set('authorization', authorization)
             .expect(HttpCode.BAD_REQUEST);
     });
 
-    it('400 — missing to', async () => {
+    it('400 - missing to', async () => {
         await agent
             .get(url(`from=${validFrom}&period=${validPeriod}`))
             .set('authorization', authorization)
             .expect(HttpCode.BAD_REQUEST);
     });
 
-    it('400 — missing period', async () => {
+    it('400 - missing period', async () => {
         await agent
             .get(url(`from=${validFrom}&to=${validTo}`))
             .set('authorization', authorization)
             .expect(HttpCode.BAD_REQUEST);
     });
 
-    it('400 — from is not ISO8601', async () => {
+    it('400 - from is not ISO8601', async () => {
         await agent
             .get(url(`from=bad&to=${validTo}&period=${validPeriod}`))
             .set('authorization', authorization)
             .expect(HttpCode.BAD_REQUEST);
     });
 
-    it('400 — from is greater than to', async () => {
+    it('400 - from is greater than to', async () => {
         await agent
             .get(url(`from=${validTo}&to=${validFrom}&period=${validPeriod}`))
             .set('authorization', authorization)
             .expect(HttpCode.BAD_REQUEST);
     });
 
-    it('400 — unknown query param', async () => {
+    it('400 - unknown query param', async () => {
         await agent
             .get(url(`from=${validFrom}&to=${validTo}&period=${validPeriod}&x=1`))
             .set('authorization', authorization)
@@ -161,85 +161,85 @@ describe('GET /user/:userId/categories/stats — query validation', () => {
 
 // ─── GET /user/:userId/stats/summary ─────────────────────────────────────────
 
-describe('GET /user/:userId/stats/summary — query validation', () => {
+describe('GET /user/:userId/stats/summary - query validation', () => {
     const url = (q: string) => `/user/${userId}/stats/summary?${q}`;
 
-    it('400 — missing from', async () => {
+    it('400 - missing from', async () => {
         await agent
             .get(url(`to=${validTo}&period=${validPeriod}`))
             .set('authorization', authorization)
             .expect(HttpCode.BAD_REQUEST);
     });
 
-    it('400 — missing to', async () => {
+    it('400 - missing to', async () => {
         await agent
             .get(url(`from=${validFrom}&period=${validPeriod}`))
             .set('authorization', authorization)
             .expect(HttpCode.BAD_REQUEST);
     });
 
-    it('400 — missing period', async () => {
+    it('400 - missing period', async () => {
         await agent
             .get(url(`from=${validFrom}&to=${validTo}`))
             .set('authorization', authorization)
             .expect(HttpCode.BAD_REQUEST);
     });
 
-    it('400 — from is not ISO8601', async () => {
+    it('400 - from is not ISO8601', async () => {
         await agent
             .get(url(`from=not-a-date&to=${validTo}&period=${validPeriod}`))
             .set('authorization', authorization)
             .expect(HttpCode.BAD_REQUEST);
     });
 
-    it('400 — from is greater than to', async () => {
+    it('400 - from is greater than to', async () => {
         await agent
             .get(url(`from=${validTo}&to=${validFrom}&period=${validPeriod}`))
             .set('authorization', authorization)
             .expect(HttpCode.BAD_REQUEST);
     });
 
-    it('400 — unknown query param', async () => {
+    it('400 - unknown query param', async () => {
         await agent
             .get(url(`from=${validFrom}&to=${validTo}&period=${validPeriod}&x=1`))
             .set('authorization', authorization)
             .expect(HttpCode.BAD_REQUEST);
     });
 
-    it('401 — no authorization header', async () => {
+    it('401 - no authorization header', async () => {
         await agent.get(url(`from=${validFrom}&to=${validTo}&period=${validPeriod}`)).expect(HttpCode.UNAUTHORIZED);
     });
 });
 
 // ─── GET /currencies ─────────────────────────────────────────────────────────
 
-describe('GET /currencies — route validation', () => {
-    it('200 — returns list of currencies', async () => {
+describe('GET /currencies - route validation', () => {
+    it('200 - returns list of currencies', async () => {
         const res = await agent.get('/currencies').set('authorization', authorization);
         expect(res.status).toBe(HttpCode.OK);
     });
 
-    it('400 — unexpected query param', async () => {
+    it('400 - unexpected query param', async () => {
         await agent.get('/currencies?foo=bar').set('authorization', authorization).expect(HttpCode.BAD_REQUEST);
     });
 });
 
 // ─── GET /exchange-rates ──────────────────────────────────────────────────────
 
-describe('GET /exchange-rates — query validation', () => {
-    it('400 — missing currency param', async () => {
+describe('GET /exchange-rates - query validation', () => {
+    it('400 - missing currency param', async () => {
         await agent.get('/exchange-rates?targetCurrency=EUR').set('authorization', authorization).expect(HttpCode.BAD_REQUEST);
     });
 
-    it('400 — missing targetCurrency param', async () => {
+    it('400 - missing targetCurrency param', async () => {
         await agent.get('/exchange-rates?currency=USD').set('authorization', authorization).expect(HttpCode.BAD_REQUEST);
     });
 
-    it('400 — empty query string', async () => {
+    it('400 - empty query string', async () => {
         await agent.get('/exchange-rates').set('authorization', authorization).expect(HttpCode.BAD_REQUEST);
     });
 
-    it('400 — unknown extra query param', async () => {
+    it('400 - unknown extra query param', async () => {
         await agent
             .get('/exchange-rates?currency=USD&targetCurrency=EUR&hack=true')
             .set('authorization', authorization)
@@ -247,22 +247,22 @@ describe('GET /exchange-rates — query validation', () => {
     });
 });
 
-// ─── GET /user/:userId — path param validation ────────────────────────────────
+// ─── GET /user/:userId - path param validation ────────────────────────────────
 
-describe('GET /user/:userId — path param validation', () => {
-    it('403 — userId is a string', async () => {
+describe('GET /user/:userId - path param validation', () => {
+    it('403 - userId is a string', async () => {
         await agent.get('/user/abc').set('authorization', authorization).expect(HttpCode.FORBIDDEN);
     });
 
-    it('403 — userId is negative', async () => {
+    it('403 - userId is negative', async () => {
         await agent.get('/user/-1').set('authorization', authorization).expect(HttpCode.FORBIDDEN);
     });
 
-    it('400 — unexpected query param', async () => {
+    it('400 - unexpected query param', async () => {
         await agent.get(`/user/${userId}?foo=bar`).set('authorization', authorization).expect(HttpCode.BAD_REQUEST);
     });
 
-    it('401 — no authorization header', async () => {
+    it('401 - no authorization header', async () => {
         await agent.get(`/user/${userId}`).expect(HttpCode.UNAUTHORIZED);
     });
 });

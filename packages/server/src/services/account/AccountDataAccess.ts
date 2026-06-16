@@ -23,6 +23,7 @@ export interface IAccountDataAccess {
     getAccounts(userId: number, status?: AccountStatusType): Promise<IAccountListItem[] | undefined>;
     getAccount(userId: number, accountId: number, status?: AccountStatusType): Promise<IAccount>;
     patchAccount(userId: number, accountId: number, properties: Partial<IAccount>, trx?: IDBTransaction): Promise<number>;
+    addAmount(userId: number, accountId: number, amount: number, trx?: IDBTransaction): Promise<number>;
     deleteAccount(userId: number, accountId: number, trx?: IDBTransaction): Promise<boolean>;
 }
 
@@ -174,9 +175,6 @@ export default class AccountDataAccess extends LoggerBase implements IAccountDat
             const allowedKeys = ['accountName', 'amount', 'iconId', 'colorId', 'updatedAt', 'status', 'position'];
             validateAllowedProperties(allowedProperties, allowedKeys);
             const properestForUpdate = getOnlyNotEmptyProperties(allowedProperties, allowedKeys);
-            if (properestForUpdate.amount !== undefined) {
-                properestForUpdate.amount = this._db.engine().raw('amount + ?', [properestForUpdate.amount]) as unknown;
-            }
             const query = trx || this._db.engine();
             const data = await query('accounts').update(properestForUpdate).where({ userId, accountId, isDeleted: false });
 
@@ -201,6 +199,41 @@ export default class AccountDataAccess extends LoggerBase implements IAccountDat
             });
         }
     }
+
+    async addAmount(userId: number, accountId: number, amount: number, trx?: IDBTransaction): Promise<number> {
+        try {
+            this._logger.info(`Add amount ${amount} to accountId: ${accountId} for userId: ${userId}`);
+
+            const query = trx || this._db.engine();
+            const data = await query('accounts')
+                .update({
+                    amount: this._db.engine().raw('amount + ?', [amount]),
+                    updatedAt: Time.getISODateNowUTC(),
+                })
+                .where({ userId, accountId, isDeleted: false });
+
+            if (!data) {
+                throw new NotFoundError({
+                    errorCode: ErrorCode.ACCOUNT_ERROR,
+                    message: `Account with accountId: ${accountId} not found for userId: ${userId}`,
+                });
+            } else {
+                this._logger.info(`Account accountId: ${accountId} for userId: ${userId} amount updated successful`);
+            }
+
+            return data;
+        } catch (e) {
+            this._logger.error(
+                `Failed to add amount to account with accountId: ${accountId} for userId: ${userId}. Error: ${(e as { message: string }).message}`,
+            );
+            throw new DBError({
+                message: `Add amount to account failed due to a database error: ${(e as { message: string }).message}`,
+                statusCode: isBaseError(e) ? (e as unknown as BaseError)?.getStatusCode() : undefined,
+                errorCode: isBaseError(e) ? (e as unknown as BaseError)?.getErrorCode() : ErrorCode.ACCOUNT_ERROR,
+            });
+        }
+    }
+
     async deleteAccount(userId: number, accountId: number, trx?: IDBTransaction): Promise<boolean> {
         try {
             this._logger.info(`Delete accountID: ${accountId} for userId: ${userId}`);

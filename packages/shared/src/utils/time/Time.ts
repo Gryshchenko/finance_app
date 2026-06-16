@@ -159,6 +159,10 @@ class Time {
         return Time.parseISO(dateISO).startOf('month').toISO();
     }
 
+    public static toYearStart(dateISO: string): string | null {
+        return Time.parseISO(dateISO).startOf('year').toISO();
+    }
+
     public static toMonthEndExclusive(dateISO: string): string | null {
         return Time.parseISO(dateISO).startOf('month').plus({ months: 1 }).toISO();
     }

@@ -149,11 +149,11 @@ describe('POST /auth/:userId/refresh - body & param validation', () => {
         await agent.post(url('abc')).send({ token: longToken }).expect(HttpCode.BAD_REQUEST);
     });
 
-    it('400 — userId is negative', async () => {
+    it('400 - userId is negative', async () => {
         await agent.post(url(-1)).send({ token: longToken }).expect(HttpCode.BAD_REQUEST);
     });
 
-    it('400 — unexpected query param', async () => {
+    it('400 - unexpected query param', async () => {
         await agent
             .post(`${url(userId)}?foo=bar`)
             .send({ token: longToken })
@@ -161,7 +161,7 @@ describe('POST /auth/:userId/refresh - body & param validation', () => {
     });
 
     // valid case
-    it('200 — valid long-token returns new access token', async () => {
+    it('200 - valid long-token returns new access token', async () => {
         const res = await agent.post(url(userId)).send({ token: longToken });
         expect(res.status).toBe(HttpCode.OK);
         expect(res.body.data.token).toEqual(expect.any(String));

@@ -127,6 +127,26 @@ export interface IStatsOrchestratorService {
     entityStats(userId: number, type: StatsType, id: number, from: string, to: string): Promise<IEntityStats>;
 }
 
+/**
+ * Month-over-month percentage change.
+ *
+ * Returns `null` when the previous period is 0 while the current one is not: a jump
+ * from zero has no finite percentage - it is neither "+100%" nor "+<amount>%" - so the
+ * UI should render a "new" indicator / the absolute value instead of a misleading number.
+ * When both periods are 0 the change is 0.
+ */
+const vsLastMonthPct = (current: number, previous: number): number | null => {
+    const curr = Number(current);
+    const prev = Number(previous);
+    if (prev === 0) {
+        return curr === 0 ? 0 : null;
+    }
+    return Math.round(((curr - prev) / prev) * 100);
+};
+
+/** Round to at most 2 decimal places. */
+const round2 = (value: number): number => Math.round(Number(value) * 100) / 100;
+
 export default class StatsOrchestratorService extends LoggerBase implements IStatsOrchestratorService {
     private readonly _dailyCategoryStatsService: IDailyCategoryStatsService;
     private readonly _dailyIncomeStatsService: IDailyIncomeStatsService;
@@ -170,13 +190,13 @@ export default class StatsOrchestratorService extends LoggerBase implements ISta
     public async create(command: CreateStatsCommand): Promise<boolean> {
         const { trx, userId, type } = command;
         // NOTE: sourceAmount = the "from" amount in currencyId (money leaving); targetAmount = the "to" amount in
-        // targetCurrencyId (money arriving). No swapping — every leg passes sourceAmount/targetAmount straight
+        // targetCurrencyId (money arriving). No swapping - every leg passes sourceAmount/targetAmount straight
         // through, and every per-entity table stores BOTH legs: income/category/transfer keep source_total +
         // target_total; an account keeps them per direction (income_source_total/income_target_total when it
         // receives, expense_source_total/expense_target_total when it sends). Summaries read the entity's
-        // own-currency column (income → source_total; category → target_total; account → income_target_total +
+        // own-currency column (income → source_total; category → target_total; account → income_source_total +
         // expense_source_total) and are never converted/merged across currencies. The global daily_stats aggregate
-        // currently sums sourceAmount across currencies — handled in a separate redesign (per-currency + % trends).
+        // currently sums sourceAmount across currencies - handled in a separate redesign (per-currency + % trends).
         switch (type) {
             case TransactionType.Income: {
                 const { accountId, incomeId, sourceAmount, targetAmount, currencyId, targetCurrencyId, date } = command.data;
@@ -711,15 +731,9 @@ export default class StatsOrchestratorService extends LoggerBase implements ISta
             case StatsType.Income: {
                 const current = await this._dailyIncomeStatsService.summary(userId, id, startDate, endDate);
                 const previous = await this._dailyIncomeStatsService.summary(userId, id, prevStartDate, prevEndDate);
-                const vsLastMonthIncomePct =
-                    previous.total === 0
-                        ? current.total === 0
-                            ? 0
-                            : 100
-                        : Math.round(((current.total - previous.total) / previous.total) * 100);
                 return {
                     incomeMTD: current.total,
-                    vsLastMonthIncomePct,
+                    vsLastMonthIncomePct: vsLastMonthPct(current.total, previous.total),
                 };
             }
             case StatsType.Expense: {
@@ -727,46 +741,42 @@ export default class StatsOrchestratorService extends LoggerBase implements ISta
                 const budget = category?.budget ?? 0;
                 const current = await this._dailyCategoryStatsService.summary(userId, id, startDate, endDate);
                 const previous = await this._dailyCategoryStatsService.summary(userId, id, prevStartDate, prevEndDate);
-                const vsLastMonthSpendPct =
-                    previous.total === 0
-                        ? current.total === 0
-                            ? 0
-                            : 100
-                        : Math.round(((current.total - previous.total) / previous.total) * 100);
+
                 return {
                     spendMTD: current.total,
-                    vsLastMonthSpendPct,
+                    vsLastMonthSpendPct: vsLastMonthPct(current.total, previous.total),
                     budgetTotal: budget > 0 ? budget : undefined,
                 };
             }
-            case StatsType.Account:
+            case StatsType.Account: {
                 const currentTransfer = await this._dailyTransferStatsService.summary(userId, id, startDate, endDate);
                 const currentAccount = await this._dailyAccountStatsService.summary(userId, id, startDate, endDate);
                 const previousAccount = await this._dailyAccountStatsService.summary(userId, id, prevStartDate, prevEndDate);
-                const vsLastMonthSpendPctAccount =
-                    previousAccount.totalExpanse === 0
-                        ? currentAccount.totalExpanse === 0
-                            ? 0
-                            : 100
-                        : Math.round(
-                              ((currentAccount.totalExpanse - previousAccount.totalExpanse) / previousAccount.totalExpanse) * 100,
-                          );
-                const vsLastMonthIncomePctAccount =
-                    previousAccount.totalIncome === 0
-                        ? currentAccount.totalIncome === 0
-                            ? 0
-                            : 100
-                        : Math.round(
-                              ((currentAccount.totalIncome - previousAccount.totalIncome) / previousAccount.totalIncome) * 100,
-                          );
+
+                // Average month-end savings rate, year-to-date: mean of (income − expense) / income per month.
+                // Only months with income contribute; the current (partial) month is included. We need at least
+                // two such months to show a meaningful average - fewer ⇒ null (UI shows "no data").
+                const yearStart = Time.toYearStart(from);
+                const monthly = yearStart
+                    ? await this._dailyAccountStatsService.monthlyTotals(userId, id, yearStart, endDate)
+                    : [];
+                const monthlySavingsRates = monthly
+                    .map((month) => ({ income: Number(month.totalIncome), expense: Number(month.totalExpanse) }))
+                    .filter((month) => month.income > 0)
+                    .map((month) => ((month.income - month.expense) / month.income) * 100);
+                const savingsRate =
+                    monthlySavingsRates.length >= 2
+                        ? round2(monthlySavingsRates.reduce((sum, rate) => sum + rate, 0) / monthlySavingsRates.length)
+                        : null;
                 return {
                     spendMTD: currentAccount.totalExpanse,
-                    vsLastMonthSpendPct: vsLastMonthSpendPctAccount,
+                    vsLastMonthSpendPct: vsLastMonthPct(currentAccount.totalExpanse, previousAccount.totalExpanse),
                     transferMTD: currentTransfer.source_total,
                     incomeMTD: currentAccount.totalIncome,
-                    vsLastMonthIncomePct: vsLastMonthIncomePctAccount,
-                    savingsRate: (currentAccount.totalIncome - currentAccount.totalExpanse) * 0.1,
+                    vsLastMonthIncomePct: vsLastMonthPct(currentAccount.totalIncome, previousAccount.totalIncome),
+                    savingsRate,
                 };
+            }
             default: {
                 throw new ValidationError({
                     statusCode: HttpCode.BAD_REQUEST,

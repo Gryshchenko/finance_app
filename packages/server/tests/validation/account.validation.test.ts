@@ -122,7 +122,7 @@ describe('POST /user/:userId/account/ - body validation', () => {
     });
 
     // amount constraints
-    it('400 — amount is a string', async () => {
+    it('400 - amount is a string', async () => {
         await agent
             .post(url())
             .set('authorization', authorization)
@@ -130,7 +130,7 @@ describe('POST /user/:userId/account/ - body validation', () => {
             .expect(HttpCode.BAD_REQUEST);
     });
 
-    it('400 — amount exceeds MAX_SAFE_INTEGER', async () => {
+    it('400 - amount exceeds MAX_SAFE_INTEGER', async () => {
         await agent
             .post(url())
             .set('authorization', authorization)
@@ -139,7 +139,7 @@ describe('POST /user/:userId/account/ - body validation', () => {
     });
 
     // currencyId
-    it('400 — currencyId is a string', async () => {
+    it('400 - currencyId is a string', async () => {
         await agent
             .post(url())
             .set('authorization', authorization)
@@ -148,7 +148,7 @@ describe('POST /user/:userId/account/ - body validation', () => {
     });
 
     // iconId constraints
-    it('400 — iconId is not a supported icon value', async () => {
+    it('400 - iconId is not a supported icon value', async () => {
         await agent
             .post(url())
             .set('authorization', authorization)
@@ -156,7 +156,7 @@ describe('POST /user/:userId/account/ - body validation', () => {
             .expect(HttpCode.BAD_REQUEST);
     });
 
-    it('400 — iconId unknown short string', async () => {
+    it('400 - iconId unknown short string', async () => {
         await agent
             .post(url())
             .set('authorization', authorization)
@@ -164,7 +164,7 @@ describe('POST /user/:userId/account/ - body validation', () => {
             .expect(HttpCode.BAD_REQUEST);
     });
 
-    it('400 — iconId unknown long string', async () => {
+    it('400 - iconId unknown long string', async () => {
         await agent
             .post(url())
             .set('authorization', authorization)
@@ -172,7 +172,7 @@ describe('POST /user/:userId/account/ - body validation', () => {
             .expect(HttpCode.BAD_REQUEST);
     });
 
-    it('400 — iconId is a number', async () => {
+    it('400 - iconId is a number', async () => {
         await agent
             .post(url())
             .set('authorization', authorization)
@@ -181,7 +181,7 @@ describe('POST /user/:userId/account/ - body validation', () => {
     });
 
     // unknown fields
-    it('400 — extra unknown field', async () => {
+    it('400 - extra unknown field', async () => {
         await agent
             .post(url())
             .set('authorization', authorization)
@@ -190,28 +190,28 @@ describe('POST /user/:userId/account/ - body validation', () => {
     });
 
     // query string
-    it('400 — unexpected query param', async () => {
+    it('400 - unexpected query param', async () => {
         await agent.post(`${url()}?foo=bar`).set('authorization', authorization).send(validCreate).expect(HttpCode.BAD_REQUEST);
     });
 
     // auth
-    it('401 — no authorization header', async () => {
+    it('401 - no authorization header', async () => {
         await agent.post(url()).send(validCreate).expect(HttpCode.UNAUTHORIZED);
     });
 });
 
 // ─── PATCH /user/:userId/account/:accountId ───────────────────────────────────
 
-describe('PATCH /user/:userId/account/:accountId — body & param validation', () => {
+describe('PATCH /user/:userId/account/:accountId - body & param validation', () => {
     const url = (id: number | string) => `/user/${userId}/account/${id}`;
 
     // empty body
-    it('400 — empty body (at least one field required)', async () => {
+    it('400 - empty body (at least one field required)', async () => {
         await agent.patch(url(existingAccountId)).set('authorization', authorization).send({}).expect(HttpCode.BAD_REQUEST);
     });
 
     // accountName
-    it('400 — accountName too short', async () => {
+    it('400 - accountName too short', async () => {
         await agent
             .patch(url(existingAccountId))
             .set('authorization', authorization)
@@ -219,7 +219,7 @@ describe('PATCH /user/:userId/account/:accountId — body & param validation', (
             .expect(HttpCode.BAD_REQUEST);
     });
 
-    it('400 — accountName too long', async () => {
+    it('400 - accountName too long', async () => {
         await agent
             .patch(url(existingAccountId))
             .set('authorization', authorization)
@@ -228,7 +228,7 @@ describe('PATCH /user/:userId/account/:accountId — body & param validation', (
     });
 
     // amount
-    it('400 — amount is a string', async () => {
+    it('400 - amount is a string', async () => {
         await agent
             .patch(url(existingAccountId))
             .set('authorization', authorization)
@@ -237,7 +237,7 @@ describe('PATCH /user/:userId/account/:accountId — body & param validation', (
     });
 
     // status
-    it('400 — status out of range (< 2)', async () => {
+    it('400 - status out of range (< 2)', async () => {
         await agent
             .patch(url(existingAccountId))
             .set('authorization', authorization)
@@ -245,7 +245,7 @@ describe('PATCH /user/:userId/account/:accountId — body & param validation', (
             .expect(HttpCode.BAD_REQUEST);
     });
 
-    it('400 — status out of range (> 3)', async () => {
+    it('400 - status out of range (> 3)', async () => {
         await agent
             .patch(url(existingAccountId))
             .set('authorization', authorization)
@@ -253,7 +253,7 @@ describe('PATCH /user/:userId/account/:accountId — body & param validation', (
             .expect(HttpCode.BAD_REQUEST);
     });
 
-    it('400 — status is a string', async () => {
+    it('400 - status is a string', async () => {
         await agent
             .patch(url(existingAccountId))
             .set('authorization', authorization)
@@ -262,7 +262,7 @@ describe('PATCH /user/:userId/account/:accountId — body & param validation', (
     });
 
     // iconId
-    it('400 — iconId is not a supported icon value', async () => {
+    it('400 - iconId is not a supported icon value', async () => {
         await agent
             .patch(url(existingAccountId))
             .set('authorization', authorization)
@@ -271,7 +271,7 @@ describe('PATCH /user/:userId/account/:accountId — body & param validation', (
     });
 
     // unknown fields
-    it('400 — unknown field in patch body', async () => {
+    it('400 - unknown field in patch body', async () => {
         await agent
             .patch(url(existingAccountId))
             .set('authorization', authorization)
@@ -280,7 +280,7 @@ describe('PATCH /user/:userId/account/:accountId — body & param validation', (
     });
 
     // path param :accountId
-    it('400 — accountId is a string', async () => {
+    it('400 - accountId is a string', async () => {
         await agent
             .patch(url('abc'))
             .set('authorization', authorization)
@@ -288,12 +288,12 @@ describe('PATCH /user/:userId/account/:accountId — body & param validation', (
             .expect(HttpCode.BAD_REQUEST);
     });
 
-    it('400 — accountId is negative', async () => {
+    it('400 - accountId is negative', async () => {
         await agent.patch(url(-1)).set('authorization', authorization).send({ accountName: 'Test' }).expect(HttpCode.BAD_REQUEST);
     });
 
     // query string
-    it('400 — unexpected query param', async () => {
+    it('400 - unexpected query param', async () => {
         await agent
             .patch(`${url(existingAccountId)}?foo=bar`)
             .set('authorization', authorization)
@@ -304,43 +304,43 @@ describe('PATCH /user/:userId/account/:accountId — body & param validation', (
 
 // ─── GET /user/:userId/account/:accountId ────────────────────────────────────
 
-describe('GET /user/:userId/account/:accountId — param validation', () => {
+describe('GET /user/:userId/account/:accountId - param validation', () => {
     const url = (id: number | string) => `/user/${userId}/account/${id}`;
 
-    it('400 — accountId is a string', async () => {
+    it('400 - accountId is a string', async () => {
         await agent.get(url('abc')).set('authorization', authorization).expect(HttpCode.BAD_REQUEST);
     });
 
-    it('400 — accountId is negative', async () => {
+    it('400 - accountId is negative', async () => {
         await agent.get(url(-1)).set('authorization', authorization).expect(HttpCode.BAD_REQUEST);
     });
 
-    it('400 — unexpected query param', async () => {
+    it('400 - unexpected query param', async () => {
         await agent
             .get(`${url(existingAccountId)}?foo=bar`)
             .set('authorization', authorization)
             .expect(HttpCode.BAD_REQUEST);
     });
 
-    it('404 — non-existent accountId', async () => {
+    it('404 - non-existent accountId', async () => {
         await agent.get(url(999999999)).set('authorization', authorization).expect(HttpCode.NOT_FOUND);
     });
 });
 
 // ─── DELETE /user/:userId/account/:accountId ──────────────────────────────────
 
-describe('DELETE /user/:userId/account/:accountId — param validation', () => {
+describe('DELETE /user/:userId/account/:accountId - param validation', () => {
     const url = (id: number | string) => `/user/${userId}/account/${id}`;
 
-    it('400 — accountId is a string (with trailing brace)', async () => {
+    it('400 - accountId is a string (with trailing brace)', async () => {
         await agent.delete(url('99999999}')).set('authorization', authorization).expect(HttpCode.BAD_REQUEST);
     });
 
-    it('400 — accountId is negative', async () => {
+    it('400 - accountId is negative', async () => {
         await agent.delete(url(-1)).set('authorization', authorization).expect(HttpCode.BAD_REQUEST);
     });
 
-    it('400 — unexpected query param', async () => {
+    it('400 - unexpected query param', async () => {
         await agent
             .delete(`${url(existingAccountId)}?foo=bar`)
             .set('authorization', authorization)

@@ -81,7 +81,7 @@ export const TransactionsScreen = function TransactionsScreen(_props: Props) {
 
     // TransactionStackNavigator is wrapped in ResetOnBlur, which remounts the
     // whole stack on tab blur. A fresh stack renders its initial route
-    // (TransactionsScreen) with no params — render nothing in that transient case.
+    // (TransactionsScreen) with no params - render nothing in that transient case.
     if (!params) {
         return null;
     }

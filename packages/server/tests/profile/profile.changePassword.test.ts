@@ -306,26 +306,26 @@ describe('Full flow - request → verify → login with new password', () => {
             .orderBy('id', 'desc')
             .first();
 
-        // Step 3 — confirm change (this also blacklists the current token)
+        // Step 3 - confirm change (this also blacklists the current token)
         await agent
             .post(`/user/${userId}/profile/password-change/verify`)
             .set('authorization', authorization)
             .send({ confirmationCode: record.confirmationCode })
             .expect(HttpCode.NO_CONTENT);
 
-        // Step 4 — logout after success
+        // Step 4 - logout after success
         await agent
             .post(`/user/${userId}/profile/password-change/verify`)
             .set('authorization', authorization)
             .send({ confirmationCode: record.confirmationCode })
             .expect(HttpCode.UNAUTHORIZED);
 
-        // Step 5 — login with new password succeeds
+        // Step 5 - login with new password succeeds
         const loginNew = await agent.post('/auth/login').send({ email, password: NEW_PASSWORD });
         expect(loginNew.status).toBe(HttpCode.OK);
         expect(loginNew.body.data.token).toEqual(expect.any(String));
 
-        // Step 6 — login with old password fails
+        // Step 6 - login with old password fails
         const loginOld = await agent.post('/auth/login').send({ email, password: OLD_PASSWORD });
         expect(loginOld.status).toBe(HttpCode.BAD_REQUEST);
     });

@@ -1,5 +1,5 @@
 /**
- * Validation tests — Income & Category routes
+ * Validation tests - Income & Category routes
  *
  * POST  /user/:userId/income/
  * PATCH /user/:userId/income/:incomeId
@@ -61,10 +61,10 @@ afterAll((done) => {
 
 // ─── POST /user/:userId/income/ ───────────────────────────────────────────────
 
-describe('POST /user/:userId/income/ — body validation', () => {
+describe('POST /user/:userId/income/ - body validation', () => {
     const url = () => `/user/${userId}/income/`;
 
-    it('400 — missing incomeName', async () => {
+    it('400 - missing incomeName', async () => {
         await agent
             .post(url())
             .set('authorization', authorization)
@@ -72,7 +72,7 @@ describe('POST /user/:userId/income/ — body validation', () => {
             .expect(HttpCode.BAD_REQUEST);
     });
 
-    it('400 — missing currencyId', async () => {
+    it('400 - missing currencyId', async () => {
         await agent
             .post(url())
             .set('authorization', authorization)
@@ -80,7 +80,7 @@ describe('POST /user/:userId/income/ — body validation', () => {
             .expect(HttpCode.BAD_REQUEST);
     });
 
-    it('400 — missing iconId', async () => {
+    it('400 - missing iconId', async () => {
         await agent
             .post(url())
             .set('authorization', authorization)
@@ -88,11 +88,11 @@ describe('POST /user/:userId/income/ — body validation', () => {
             .expect(HttpCode.BAD_REQUEST);
     });
 
-    it('400 — empty body', async () => {
+    it('400 - empty body', async () => {
         await agent.post(url()).set('authorization', authorization).send({}).expect(HttpCode.BAD_REQUEST);
     });
 
-    it('400 — incomeName too short (< 3)', async () => {
+    it('400 - incomeName too short (< 3)', async () => {
         await agent
             .post(url())
             .set('authorization', authorization)
@@ -100,7 +100,7 @@ describe('POST /user/:userId/income/ — body validation', () => {
             .expect(HttpCode.BAD_REQUEST);
     });
 
-    it('400 — incomeName too long (> 128)', async () => {
+    it('400 - incomeName too long (> 128)', async () => {
         await agent
             .post(url())
             .set('authorization', authorization)
@@ -108,7 +108,7 @@ describe('POST /user/:userId/income/ — body validation', () => {
             .expect(HttpCode.BAD_REQUEST);
     });
 
-    it('400 — incomeName is a number', async () => {
+    it('400 - incomeName is a number', async () => {
         await agent
             .post(url())
             .set('authorization', authorization)
@@ -116,7 +116,7 @@ describe('POST /user/:userId/income/ — body validation', () => {
             .expect(HttpCode.BAD_REQUEST);
     });
 
-    it('400 — iconId is not a supported icon value', async () => {
+    it('400 - iconId is not a supported icon value', async () => {
         await agent
             .post(url())
             .set('authorization', authorization)
@@ -124,7 +124,7 @@ describe('POST /user/:userId/income/ — body validation', () => {
             .expect(HttpCode.BAD_REQUEST);
     });
 
-    it('400 — iconId unknown short string', async () => {
+    it('400 - iconId unknown short string', async () => {
         await agent
             .post(url())
             .set('authorization', authorization)
@@ -132,7 +132,7 @@ describe('POST /user/:userId/income/ — body validation', () => {
             .expect(HttpCode.BAD_REQUEST);
     });
 
-    it('400 — iconId unknown long string', async () => {
+    it('400 - iconId unknown long string', async () => {
         await agent
             .post(url())
             .set('authorization', authorization)
@@ -140,7 +140,7 @@ describe('POST /user/:userId/income/ — body validation', () => {
             .expect(HttpCode.BAD_REQUEST);
     });
 
-    it('400 — iconId is a number', async () => {
+    it('400 - iconId is a number', async () => {
         await agent
             .post(url())
             .set('authorization', authorization)
@@ -148,7 +148,7 @@ describe('POST /user/:userId/income/ — body validation', () => {
             .expect(HttpCode.BAD_REQUEST);
     });
 
-    it('400 — currencyId is a string', async () => {
+    it('400 - currencyId is a string', async () => {
         await agent
             .post(url())
             .set('authorization', authorization)
@@ -156,7 +156,7 @@ describe('POST /user/:userId/income/ — body validation', () => {
             .expect(HttpCode.BAD_REQUEST);
     });
 
-    it('400 — extra unknown field', async () => {
+    it('400 - extra unknown field', async () => {
         await agent
             .post(url())
             .set('authorization', authorization)
@@ -164,25 +164,25 @@ describe('POST /user/:userId/income/ — body validation', () => {
             .expect(HttpCode.BAD_REQUEST);
     });
 
-    it('400 — unexpected query param', async () => {
+    it('400 - unexpected query param', async () => {
         await agent.post(`${url()}?foo=bar`).set('authorization', authorization).send(validIncome).expect(HttpCode.BAD_REQUEST);
     });
 
-    it('401 — no authorization header', async () => {
+    it('401 - no authorization header', async () => {
         await agent.post(url()).send(validIncome).expect(HttpCode.UNAUTHORIZED);
     });
 });
 
 // ─── PATCH /user/:userId/income/:incomeId ─────────────────────────────────────
 
-describe('PATCH /user/:userId/income/:incomeId — body & param validation', () => {
+describe('PATCH /user/:userId/income/:incomeId - body & param validation', () => {
     const url = (id: number | string) => `/user/${userId}/income/${id}`;
 
-    it('400 — empty body', async () => {
+    it('400 - empty body', async () => {
         await agent.patch(url(existingIncomeId)).set('authorization', authorization).send({}).expect(HttpCode.BAD_REQUEST);
     });
 
-    it('400 — incomeName too short', async () => {
+    it('400 - incomeName too short', async () => {
         await agent
             .patch(url(existingIncomeId))
             .set('authorization', authorization)
@@ -190,7 +190,7 @@ describe('PATCH /user/:userId/income/:incomeId — body & param validation', () 
             .expect(HttpCode.BAD_REQUEST);
     });
 
-    it('400 — incomeName too long', async () => {
+    it('400 - incomeName too long', async () => {
         await agent
             .patch(url(existingIncomeId))
             .set('authorization', authorization)
@@ -198,7 +198,7 @@ describe('PATCH /user/:userId/income/:incomeId — body & param validation', () 
             .expect(HttpCode.BAD_REQUEST);
     });
 
-    it('400 — status out of range (< 2)', async () => {
+    it('400 - status out of range (< 2)', async () => {
         await agent
             .patch(url(existingIncomeId))
             .set('authorization', authorization)
@@ -206,7 +206,7 @@ describe('PATCH /user/:userId/income/:incomeId — body & param validation', () 
             .expect(HttpCode.BAD_REQUEST);
     });
 
-    it('400 — status out of range (> 3)', async () => {
+    it('400 - status out of range (> 3)', async () => {
         await agent
             .patch(url(existingIncomeId))
             .set('authorization', authorization)
@@ -214,7 +214,7 @@ describe('PATCH /user/:userId/income/:incomeId — body & param validation', () 
             .expect(HttpCode.BAD_REQUEST);
     });
 
-    it('400 — status is a string', async () => {
+    it('400 - status is a string', async () => {
         await agent
             .patch(url(existingIncomeId))
             .set('authorization', authorization)
@@ -222,7 +222,7 @@ describe('PATCH /user/:userId/income/:incomeId — body & param validation', () 
             .expect(HttpCode.BAD_REQUEST);
     });
 
-    it('400 — iconId is not a supported icon value', async () => {
+    it('400 - iconId is not a supported icon value', async () => {
         await agent
             .patch(url(existingIncomeId))
             .set('authorization', authorization)
@@ -230,7 +230,7 @@ describe('PATCH /user/:userId/income/:incomeId — body & param validation', () 
             .expect(HttpCode.BAD_REQUEST);
     });
 
-    it('400 — unknown field in patch body', async () => {
+    it('400 - unknown field in patch body', async () => {
         await agent
             .patch(url(existingIncomeId))
             .set('authorization', authorization)
@@ -238,7 +238,7 @@ describe('PATCH /user/:userId/income/:incomeId — body & param validation', () 
             .expect(HttpCode.BAD_REQUEST);
     });
 
-    it('400 — incomeId is a string', async () => {
+    it('400 - incomeId is a string', async () => {
         await agent
             .patch(url('abc'))
             .set('authorization', authorization)
@@ -246,11 +246,11 @@ describe('PATCH /user/:userId/income/:incomeId — body & param validation', () 
             .expect(HttpCode.BAD_REQUEST);
     });
 
-    it('400 — incomeId is negative', async () => {
+    it('400 - incomeId is negative', async () => {
         await agent.patch(url(-1)).set('authorization', authorization).send({ incomeName: 'Test' }).expect(HttpCode.BAD_REQUEST);
     });
 
-    it('400 — unexpected query param', async () => {
+    it('400 - unexpected query param', async () => {
         await agent
             .patch(`${url(existingIncomeId)}?foo=bar`)
             .set('authorization', authorization)
@@ -261,25 +261,25 @@ describe('PATCH /user/:userId/income/:incomeId — body & param validation', () 
 
 // ─── GET/DELETE /user/:userId/income/:incomeId ────────────────────────────────
 
-describe('GET /user/:userId/income/:incomeId — param validation', () => {
+describe('GET /user/:userId/income/:incomeId - param validation', () => {
     const url = (id: number | string) => `/user/${userId}/income/${id}`;
 
-    it('400 — incomeId is a string', async () => {
+    it('400 - incomeId is a string', async () => {
         await agent.get(url('abc')).set('authorization', authorization).expect(HttpCode.BAD_REQUEST);
     });
 
-    it('400 — incomeId is negative', async () => {
+    it('400 - incomeId is negative', async () => {
         await agent.get(url(-1)).set('authorization', authorization).expect(HttpCode.BAD_REQUEST);
     });
 
-    it('400 — unexpected query param', async () => {
+    it('400 - unexpected query param', async () => {
         await agent
             .get(`${url(existingIncomeId)}?foo=bar`)
             .set('authorization', authorization)
             .expect(HttpCode.BAD_REQUEST);
     });
 
-    it('404 — non-existent incomeId', async () => {
+    it('404 - non-existent incomeId', async () => {
         await agent.get(url(999999999)).set('authorization', authorization).expect(HttpCode.NOT_FOUND);
     });
 });
@@ -288,10 +288,10 @@ describe('GET /user/:userId/income/:incomeId — param validation', () => {
 // CATEGORY
 // ═══════════════════════════════════════════════════════════════════════════════
 
-describe('POST /user/:userId/category/ — body validation', () => {
+describe('POST /user/:userId/category/ - body validation', () => {
     const url = () => `/user/${userId}/category/`;
 
-    it('400 — missing categoryName', async () => {
+    it('400 - missing categoryName', async () => {
         await agent
             .post(url())
             .set('authorization', authorization)
@@ -299,7 +299,7 @@ describe('POST /user/:userId/category/ — body validation', () => {
             .expect(HttpCode.BAD_REQUEST);
     });
 
-    it('400 — missing currencyId', async () => {
+    it('400 - missing currencyId', async () => {
         await agent
             .post(url())
             .set('authorization', authorization)
@@ -307,7 +307,7 @@ describe('POST /user/:userId/category/ — body validation', () => {
             .expect(HttpCode.BAD_REQUEST);
     });
 
-    it('400 — missing iconId', async () => {
+    it('400 - missing iconId', async () => {
         await agent
             .post(url())
             .set('authorization', authorization)
@@ -315,11 +315,11 @@ describe('POST /user/:userId/category/ — body validation', () => {
             .expect(HttpCode.BAD_REQUEST);
     });
 
-    it('400 — empty body', async () => {
+    it('400 - empty body', async () => {
         await agent.post(url()).set('authorization', authorization).send({}).expect(HttpCode.BAD_REQUEST);
     });
 
-    it('400 — categoryName too short (< 3)', async () => {
+    it('400 - categoryName too short (< 3)', async () => {
         await agent
             .post(url())
             .set('authorization', authorization)
@@ -327,7 +327,7 @@ describe('POST /user/:userId/category/ — body validation', () => {
             .expect(HttpCode.BAD_REQUEST);
     });
 
-    it('400 — categoryName too long (> 128)', async () => {
+    it('400 - categoryName too long (> 128)', async () => {
         await agent
             .post(url())
             .set('authorization', authorization)
@@ -335,7 +335,7 @@ describe('POST /user/:userId/category/ — body validation', () => {
             .expect(HttpCode.BAD_REQUEST);
     });
 
-    it('400 — categoryName is a number', async () => {
+    it('400 - categoryName is a number', async () => {
         await agent
             .post(url())
             .set('authorization', authorization)
@@ -343,7 +343,7 @@ describe('POST /user/:userId/category/ — body validation', () => {
             .expect(HttpCode.BAD_REQUEST);
     });
 
-    it('400 — iconId is not a supported icon value', async () => {
+    it('400 - iconId is not a supported icon value', async () => {
         await agent
             .post(url())
             .set('authorization', authorization)
@@ -351,7 +351,7 @@ describe('POST /user/:userId/category/ — body validation', () => {
             .expect(HttpCode.BAD_REQUEST);
     });
 
-    it('400 — iconId unknown short string', async () => {
+    it('400 - iconId unknown short string', async () => {
         await agent
             .post(url())
             .set('authorization', authorization)
@@ -359,7 +359,7 @@ describe('POST /user/:userId/category/ — body validation', () => {
             .expect(HttpCode.BAD_REQUEST);
     });
 
-    it('400 — iconId unknown long string', async () => {
+    it('400 - iconId unknown long string', async () => {
         await agent
             .post(url())
             .set('authorization', authorization)
@@ -367,7 +367,7 @@ describe('POST /user/:userId/category/ — body validation', () => {
             .expect(HttpCode.BAD_REQUEST);
     });
 
-    it('400 — currencyId is a string', async () => {
+    it('400 - currencyId is a string', async () => {
         await agent
             .post(url())
             .set('authorization', authorization)
@@ -375,7 +375,7 @@ describe('POST /user/:userId/category/ — body validation', () => {
             .expect(HttpCode.BAD_REQUEST);
     });
 
-    it('400 — extra unknown field', async () => {
+    it('400 - extra unknown field', async () => {
         await agent
             .post(url())
             .set('authorization', authorization)
@@ -383,19 +383,19 @@ describe('POST /user/:userId/category/ — body validation', () => {
             .expect(HttpCode.BAD_REQUEST);
     });
 
-    it('400 — unexpected query param', async () => {
+    it('400 - unexpected query param', async () => {
         await agent.post(`${url()}?foo=bar`).set('authorization', authorization).send(validCategory).expect(HttpCode.BAD_REQUEST);
     });
 });
 
-describe('PATCH /user/:userId/category/:categoryId — body & param validation', () => {
+describe('PATCH /user/:userId/category/:categoryId - body & param validation', () => {
     const url = (id: number | string) => `/user/${userId}/category/${id}`;
 
-    it('400 — empty body', async () => {
+    it('400 - empty body', async () => {
         await agent.patch(url(existingCategoryId)).set('authorization', authorization).send({}).expect(HttpCode.BAD_REQUEST);
     });
 
-    it('400 — categoryName too short', async () => {
+    it('400 - categoryName too short', async () => {
         await agent
             .patch(url(existingCategoryId))
             .set('authorization', authorization)
@@ -403,7 +403,7 @@ describe('PATCH /user/:userId/category/:categoryId — body & param validation',
             .expect(HttpCode.BAD_REQUEST);
     });
 
-    it('400 — categoryName too long', async () => {
+    it('400 - categoryName too long', async () => {
         await agent
             .patch(url(existingCategoryId))
             .set('authorization', authorization)
@@ -411,7 +411,7 @@ describe('PATCH /user/:userId/category/:categoryId — body & param validation',
             .expect(HttpCode.BAD_REQUEST);
     });
 
-    it('400 — status out of range (< 2)', async () => {
+    it('400 - status out of range (< 2)', async () => {
         await agent
             .patch(url(existingCategoryId))
             .set('authorization', authorization)
@@ -419,7 +419,7 @@ describe('PATCH /user/:userId/category/:categoryId — body & param validation',
             .expect(HttpCode.BAD_REQUEST);
     });
 
-    it('400 — status out of range (> 3)', async () => {
+    it('400 - status out of range (> 3)', async () => {
         await agent
             .patch(url(existingCategoryId))
             .set('authorization', authorization)
@@ -427,7 +427,7 @@ describe('PATCH /user/:userId/category/:categoryId — body & param validation',
             .expect(HttpCode.BAD_REQUEST);
     });
 
-    it('400 — status is a string', async () => {
+    it('400 - status is a string', async () => {
         await agent
             .patch(url(existingCategoryId))
             .set('authorization', authorization)
@@ -435,7 +435,7 @@ describe('PATCH /user/:userId/category/:categoryId — body & param validation',
             .expect(HttpCode.BAD_REQUEST);
     });
 
-    it('400 — iconId is not a supported icon value', async () => {
+    it('400 - iconId is not a supported icon value', async () => {
         await agent
             .patch(url(existingCategoryId))
             .set('authorization', authorization)
@@ -443,7 +443,7 @@ describe('PATCH /user/:userId/category/:categoryId — body & param validation',
             .expect(HttpCode.BAD_REQUEST);
     });
 
-    it('400 — unknown field in patch body', async () => {
+    it('400 - unknown field in patch body', async () => {
         await agent
             .patch(url(existingCategoryId))
             .set('authorization', authorization)
@@ -451,7 +451,7 @@ describe('PATCH /user/:userId/category/:categoryId — body & param validation',
             .expect(HttpCode.BAD_REQUEST);
     });
 
-    it('400 — categoryId is a string', async () => {
+    it('400 - categoryId is a string', async () => {
         await agent
             .patch(url('abc'))
             .set('authorization', authorization)
@@ -459,7 +459,7 @@ describe('PATCH /user/:userId/category/:categoryId — body & param validation',
             .expect(HttpCode.BAD_REQUEST);
     });
 
-    it('400 — categoryId is negative', async () => {
+    it('400 - categoryId is negative', async () => {
         await agent
             .patch(url(-1))
             .set('authorization', authorization)
@@ -467,7 +467,7 @@ describe('PATCH /user/:userId/category/:categoryId — body & param validation',
             .expect(HttpCode.BAD_REQUEST);
     });
 
-    it('400 — unexpected query param', async () => {
+    it('400 - unexpected query param', async () => {
         await agent
             .patch(`${url(existingCategoryId)}?foo=bar`)
             .set('authorization', authorization)
@@ -476,25 +476,25 @@ describe('PATCH /user/:userId/category/:categoryId — body & param validation',
     });
 });
 
-describe('GET /user/:userId/category/:categoryId — param validation', () => {
+describe('GET /user/:userId/category/:categoryId - param validation', () => {
     const url = (id: number | string) => `/user/${userId}/category/${id}`;
 
-    it('400 — categoryId is a string', async () => {
+    it('400 - categoryId is a string', async () => {
         await agent.get(url('abc')).set('authorization', authorization).expect(HttpCode.BAD_REQUEST);
     });
 
-    it('400 — categoryId is negative', async () => {
+    it('400 - categoryId is negative', async () => {
         await agent.get(url(-1)).set('authorization', authorization).expect(HttpCode.BAD_REQUEST);
     });
 
-    it('400 — unexpected query param', async () => {
+    it('400 - unexpected query param', async () => {
         await agent
             .get(`${url(existingCategoryId)}?foo=bar`)
             .set('authorization', authorization)
             .expect(HttpCode.BAD_REQUEST);
     });
 
-    it('404 — non-existent categoryId', async () => {
+    it('404 - non-existent categoryId', async () => {
         await agent.get(url(999999999)).set('authorization', authorization).expect(HttpCode.NOT_FOUND);
     });
 });

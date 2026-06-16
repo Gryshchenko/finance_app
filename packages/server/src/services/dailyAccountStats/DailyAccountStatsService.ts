@@ -15,6 +15,12 @@ export interface IDailyAccountStatsService {
         from: string,
         to: string,
     ) => Promise<{ id: number; totalIncome: number; totalExpanse: number }>;
+    monthlyTotals: (
+        userId: number,
+        id: number,
+        from: string,
+        to: string,
+    ) => Promise<Array<{ month: string; totalIncome: number; totalExpanse: number }>>;
 }
 
 export class DailyAccountStatsService extends LoggerBase implements IDailyAccountStatsService {
@@ -30,6 +36,17 @@ export class DailyAccountStatsService extends LoggerBase implements IDailyAccoun
         const fromDate: string = statsValidateDate(from);
         const toDate: string = statsValidateDate(to);
         return this.dataAccess.summary(userId, id, fromDate, toDate);
+    }
+
+    async monthlyTotals(
+        userId: number,
+        id: number,
+        from: string,
+        to: string,
+    ): Promise<Array<{ month: string; totalIncome: number; totalExpanse: number }>> {
+        const fromDate: string = statsValidateDate(from);
+        const toDate: string = statsValidateDate(to);
+        return this.dataAccess.monthlyTotals(userId, id, fromDate, toDate);
     }
 
     async updateTotal(params: IDailyAccountStatsScoreParams): Promise<boolean> {

@@ -27,6 +27,12 @@ export interface IDailyAccountStatsDataAccess {
         from: string,
         to: string,
     ) => Promise<{ id: number; totalIncome: number; totalExpanse: number }>;
+    monthlyTotals: (
+        userId: number,
+        id: number,
+        from: string,
+        to: string,
+    ) => Promise<Array<{ month: string; totalIncome: number; totalExpanse: number }>>;
 }
 
 export class DailyAccountStatsDataAccess extends LoggerBase implements IDailyAccountStatsDataAccess {
@@ -51,7 +57,7 @@ export class DailyAccountStatsDataAccess extends LoggerBase implements IDailyAcc
                 .where({ userId, accountId: id })
                 .andWhereBetween('date', [fromConverted, toConverted])
                 .sum({
-                    totalIncome: this._db.engine().raw('income_target_total'),
+                    totalIncome: this._db.engine().raw('income_source_total'),
                     totalExpanse: this._db.engine().raw('expense_source_total'),
                 })
                 .first();
@@ -65,6 +71,50 @@ export class DailyAccountStatsDataAccess extends LoggerBase implements IDailyAcc
             );
             throw new DBError({
                 message: `Failed to fetch summary due to a database error: ${(e as { message: string }).message}`,
+                errorCode: ErrorCode.STATS_ERROR,
+            });
+        }
+    }
+
+    /**
+     * Per-month income/expense buckets for one account over [from, to].
+     * Sums the *source* columns (income_source_total / expense_source_total) - those hold the
+     * account's own-currency amounts and are the ones actually populated by single-currency txns.
+     * Months with no activity simply have no row. Used to derive the YTD average savings rate.
+     */
+    async monthlyTotals(
+        userId: number,
+        id: number,
+        from: string,
+        to: string,
+    ): Promise<Array<{ month: string; totalIncome: number; totalExpanse: number }>> {
+        try {
+            const fromConverted = Time.toUTCISO(from);
+            const toConverted = Time.toUTCISO(to);
+            this._logger.info(
+                `Fetching monthly totals for userId: ${userId}, accountId: ${id}, from: ${fromConverted}, to: ${toConverted}`,
+            );
+            const { rows } = await this._db.engine().raw(
+                `
+                SELECT
+                    date_trunc('month', das.date) AS month,
+                    COALESCE(SUM(das.income_source_total), 0)  AS "totalIncome",
+                    COALESCE(SUM(das.expense_source_total), 0) AS "totalExpanse"
+                FROM daily_accounts_stats AS das
+                WHERE das."userId" = ? AND das."accountId" = ? AND das.date >= ?::date AND das.date <= ?::date
+                GROUP BY 1
+                ORDER BY 1
+                `,
+                [userId, id, fromConverted, toConverted],
+            );
+            this._logger.info(`Successfully fetched monthly totals for userId: ${userId}, accountId: ${id}`);
+            return rows;
+        } catch (e) {
+            this._logger.error(
+                `Failed to fetch monthly totals for userId: ${userId}, accountId: ${id}. Error: ${(e as { message: string }).message}`,
+            );
+            throw new DBError({
+                message: `Failed to fetch monthly totals due to a database error: ${(e as { message: string }).message}`,
                 errorCode: ErrorCode.STATS_ERROR,
             });
         }

@@ -67,11 +67,11 @@ afterAll((done) => {
 
 // ─── POST /user/:userId/transaction/ - transaction type rules ─────────────────
 
-describe('POST /user/:userId/transaction/ — transaction type validation', () => {
+describe('POST /user/:userId/transaction/ - transaction type validation', () => {
     const url = () => `/user/${userId}/transaction/`;
 
     // Income type
-    it('400 — Income type without incomeId', async () => {
+    it('400 - Income type without incomeId', async () => {
         await agent
             .post(url())
             .set('authorization', authorization)
@@ -84,7 +84,7 @@ describe('POST /user/:userId/transaction/ — transaction type validation', () =
             .expect(HttpCode.BAD_REQUEST);
     });
 
-    it('400 — Income type without accountId', async () => {
+    it('400 - Income type without accountId', async () => {
         await agent
             .post(url())
             .set('authorization', authorization)
@@ -97,7 +97,7 @@ describe('POST /user/:userId/transaction/ — transaction type validation', () =
             .expect(HttpCode.BAD_REQUEST);
     });
 
-    it('400 — Income type with categoryId present (not allowed)', async () => {
+    it('400 - Income type with categoryId present (not allowed)', async () => {
         await agent
             .post(url())
             .set('authorization', authorization)
@@ -113,7 +113,7 @@ describe('POST /user/:userId/transaction/ — transaction type validation', () =
     });
 
     // Expense type
-    it('400 — Expense type without categoryId', async () => {
+    it('400 - Expense type without categoryId', async () => {
         await agent
             .post(url())
             .set('authorization', authorization)
@@ -126,7 +126,7 @@ describe('POST /user/:userId/transaction/ — transaction type validation', () =
             .expect(HttpCode.BAD_REQUEST);
     });
 
-    it('400 — Expense type without accountId', async () => {
+    it('400 - Expense type without accountId', async () => {
         await agent
             .post(url())
             .set('authorization', authorization)
@@ -139,7 +139,7 @@ describe('POST /user/:userId/transaction/ — transaction type validation', () =
             .expect(HttpCode.BAD_REQUEST);
     });
 
-    it('400 — Expense type with incomeId present (not allowed)', async () => {
+    it('400 - Expense type with incomeId present (not allowed)', async () => {
         await agent
             .post(url())
             .set('authorization', authorization)
@@ -155,7 +155,7 @@ describe('POST /user/:userId/transaction/ — transaction type validation', () =
     });
 
     // Transfer type
-    it('400 — Transfer type without targetAccountId', async () => {
+    it('400 - Transfer type without targetAccountId', async () => {
         await agent
             .post(url())
             .set('authorization', authorization)
@@ -168,7 +168,7 @@ describe('POST /user/:userId/transaction/ — transaction type validation', () =
             .expect(HttpCode.BAD_REQUEST);
     });
 
-    it('400 — Transfer type without accountId', async () => {
+    it('400 - Transfer type without accountId', async () => {
         await agent
             .post(url())
             .set('authorization', authorization)
@@ -181,7 +181,7 @@ describe('POST /user/:userId/transaction/ — transaction type validation', () =
             .expect(HttpCode.BAD_REQUEST);
     });
 
-    it('400 — Transfer type with categoryId present (not allowed)', async () => {
+    it('400 - Transfer type with categoryId present (not allowed)', async () => {
         await agent
             .post(url())
             .set('authorization', authorization)
@@ -196,7 +196,7 @@ describe('POST /user/:userId/transaction/ — transaction type validation', () =
             .expect(HttpCode.BAD_REQUEST);
     });
 
-    it('400 — Transfer type with incomeId present (not allowed)', async () => {
+    it('400 - Transfer type with incomeId present (not allowed)', async () => {
         await agent
             .post(url())
             .set('authorization', authorization)
@@ -212,7 +212,7 @@ describe('POST /user/:userId/transaction/ — transaction type validation', () =
     });
 
     // missing required fields
-    it('400 — missing transactionTypeId', async () => {
+    it('400 - missing transactionTypeId', async () => {
         await agent
             .post(url())
             .set('authorization', authorization)
@@ -225,7 +225,7 @@ describe('POST /user/:userId/transaction/ — transaction type validation', () =
             .expect(HttpCode.BAD_REQUEST);
     });
 
-    it('400 — missing amount', async () => {
+    it('400 - missing amount', async () => {
         await agent
             .post(url())
             .set('authorization', authorization)
@@ -238,7 +238,7 @@ describe('POST /user/:userId/transaction/ — transaction type validation', () =
             .expect(HttpCode.BAD_REQUEST);
     });
 
-    it('400 — invalid transactionTypeId (does not exist)', async () => {
+    it('400 - invalid transactionTypeId (does not exist)', async () => {
         await agent
             .post(url())
             .set('authorization', authorization)
@@ -253,7 +253,7 @@ describe('POST /user/:userId/transaction/ — transaction type validation', () =
     });
 
     // field types
-    it('400 — amount is a string', async () => {
+    it('400 - amount is a string', async () => {
         await agent
             .post(url())
             .set('authorization', authorization)
@@ -267,7 +267,7 @@ describe('POST /user/:userId/transaction/ — transaction type validation', () =
             .expect(HttpCode.BAD_REQUEST);
     });
 
-    it('400 — transactionTypeId is a string', async () => {
+    it('400 - transactionTypeId is a string', async () => {
         await agent
             .post(url())
             .set('authorization', authorization)
@@ -282,7 +282,7 @@ describe('POST /user/:userId/transaction/ — transaction type validation', () =
     });
 
     // description
-    it('400 — description too short (< 3 chars)', async () => {
+    it('400 - description too short (< 3 chars)', async () => {
         await agent
             .post(url())
             .set('authorization', authorization)
@@ -297,7 +297,7 @@ describe('POST /user/:userId/transaction/ — transaction type validation', () =
             .expect(HttpCode.BAD_REQUEST);
     });
 
-    it('400 — description too long (> 200 chars)', async () => {
+    it('400 - description too long (> 200 chars)', async () => {
         await agent
             .post(url())
             .set('authorization', authorization)
@@ -313,7 +313,7 @@ describe('POST /user/:userId/transaction/ — transaction type validation', () =
     });
 
     // createdAt
-    it('400 — createdAt is not ISO8601', async () => {
+    it('400 - createdAt is not ISO8601', async () => {
         await agent
             .post(url())
             .set('authorization', authorization)
@@ -328,7 +328,7 @@ describe('POST /user/:userId/transaction/ — transaction type validation', () =
             .expect(HttpCode.BAD_REQUEST);
     });
 
-    it('400 — createdAt is a timestamp number', async () => {
+    it('400 - createdAt is a timestamp number', async () => {
         await agent
             .post(url())
             .set('authorization', authorization)
@@ -344,7 +344,7 @@ describe('POST /user/:userId/transaction/ — transaction type validation', () =
     });
 
     // unknown field
-    it('400 — extra unknown field in body', async () => {
+    it('400 - extra unknown field in body', async () => {
         await agent
             .post(url())
             .set('authorization', authorization)
@@ -360,7 +360,7 @@ describe('POST /user/:userId/transaction/ — transaction type validation', () =
     });
 
     // query string
-    it('400 — unexpected query param', async () => {
+    it('400 - unexpected query param', async () => {
         await agent
             .post(`${url()}?foo=bar`)
             .set('authorization', authorization)
@@ -375,7 +375,7 @@ describe('POST /user/:userId/transaction/ — transaction type validation', () =
     });
 
     // valid case
-    it('201 — valid income transaction is created', async () => {
+    it('201 - valid income transaction is created', async () => {
         const res = await agent.post(url()).set('authorization', authorization).send({
             transactionTypeId: TransactionType.Income,
             accountId,
@@ -391,14 +391,14 @@ describe('POST /user/:userId/transaction/ — transaction type validation', () =
 
 // ─── PATCH /user/:userId/transaction/:transactionId ───────────────────────────
 
-describe('PATCH /user/:userId/transaction/:transactionId — body & param validation', () => {
+describe('PATCH /user/:userId/transaction/:transactionId - body & param validation', () => {
     const url = (id: number | string) => `/user/${userId}/transaction/${id}`;
 
-    it('204 — empty body results in no-op update', async () => {
+    it('204 - empty body results in no-op update', async () => {
         await agent.patch(url(existingTransactionId)).set('authorization', authorization).send({}).expect(HttpCode.NO_CONTENT);
     });
 
-    it('400 — description too short', async () => {
+    it('400 - description too short', async () => {
         await agent
             .patch(url(existingTransactionId))
             .set('authorization', authorization)
@@ -406,7 +406,7 @@ describe('PATCH /user/:userId/transaction/:transactionId — body & param valida
             .expect(HttpCode.BAD_REQUEST);
     });
 
-    it('400 — description too long', async () => {
+    it('400 - description too long', async () => {
         await agent
             .patch(url(existingTransactionId))
             .set('authorization', authorization)
@@ -414,7 +414,7 @@ describe('PATCH /user/:userId/transaction/:transactionId — body & param valida
             .expect(HttpCode.BAD_REQUEST);
     });
 
-    it('400 — amount is a string', async () => {
+    it('400 - amount is a string', async () => {
         await agent
             .patch(url(existingTransactionId))
             .set('authorization', authorization)
@@ -422,7 +422,7 @@ describe('PATCH /user/:userId/transaction/:transactionId — body & param valida
             .expect(HttpCode.BAD_REQUEST);
     });
 
-    it('400 — createdAt is not ISO8601', async () => {
+    it('400 - createdAt is not ISO8601', async () => {
         await agent
             .patch(url(existingTransactionId))
             .set('authorization', authorization)
@@ -430,7 +430,7 @@ describe('PATCH /user/:userId/transaction/:transactionId — body & param valida
             .expect(HttpCode.BAD_REQUEST);
     });
 
-    it('400 — unknown field in body', async () => {
+    it('400 - unknown field in body', async () => {
         await agent
             .patch(url(existingTransactionId))
             .set('authorization', authorization)
@@ -439,15 +439,15 @@ describe('PATCH /user/:userId/transaction/:transactionId — body & param valida
     });
 
     // path param
-    it('400 — transactionId is a string', async () => {
+    it('400 - transactionId is a string', async () => {
         await agent.patch(url('abc')).set('authorization', authorization).send({ amount: 200 }).expect(HttpCode.BAD_REQUEST);
     });
 
-    it('400 — transactionId is negative', async () => {
+    it('400 - transactionId is negative', async () => {
         await agent.patch(url(-1)).set('authorization', authorization).send({ amount: 200 }).expect(HttpCode.BAD_REQUEST);
     });
 
-    it('400 — unexpected query param', async () => {
+    it('400 - unexpected query param', async () => {
         await agent
             .patch(`${url(existingTransactionId)}?foo=bar`)
             .set('authorization', authorization)
@@ -458,55 +458,55 @@ describe('PATCH /user/:userId/transaction/:transactionId — body & param valida
 
 // ─── GET /user/:userId/transaction/:transactionId ─────────────────────────────
 
-describe('GET /user/:userId/transaction/:transactionId — param validation', () => {
+describe('GET /user/:userId/transaction/:transactionId - param validation', () => {
     const url = (id: number | string) => `/user/${userId}/transaction/${id}`;
 
-    it('400 — transactionId is a string', async () => {
+    it('400 - transactionId is a string', async () => {
         await agent.get(url('abc')).set('authorization', authorization).expect(HttpCode.BAD_REQUEST);
     });
 
-    it('400 — transactionId is negative', async () => {
+    it('400 - transactionId is negative', async () => {
         await agent.get(url(-1)).set('authorization', authorization).expect(HttpCode.BAD_REQUEST);
     });
 
-    it('400 — unexpected query param', async () => {
+    it('400 - unexpected query param', async () => {
         await agent
             .get(`${url(existingTransactionId)}?foo=bar`)
             .set('authorization', authorization)
             .expect(HttpCode.BAD_REQUEST);
     });
 
-    it('404 — non-existent transactionId', async () => {
+    it('404 - non-existent transactionId', async () => {
         await agent.get(url(999999999)).set('authorization', authorization).expect(HttpCode.NOT_FOUND);
     });
 });
 
-// ─── GET /user/:userId/transactions/ — query param validation ─────────────────
+// ─── GET /user/:userId/transactions/ - query param validation ─────────────────
 
-describe('GET /user/:userId/transactions/ — query param validation', () => {
+describe('GET /user/:userId/transactions/ - query param validation', () => {
     const url = (q: string) => `/user/${userId}/transactions/?${q}`;
 
-    it('400 — missing limit', async () => {
+    it('400 - missing limit', async () => {
         await agent.get(url('')).set('authorization', authorization).expect(HttpCode.BAD_REQUEST);
     });
 
-    it('400 — limit is a string', async () => {
+    it('400 - limit is a string', async () => {
         await agent.get(url('limit=abc')).set('authorization', authorization).expect(HttpCode.BAD_REQUEST);
     });
 
-    it('400 — unknown query param', async () => {
+    it('400 - unknown query param', async () => {
         await agent.get(url('limit=10&foo=bar')).set('authorization', authorization).expect(HttpCode.BAD_REQUEST);
     });
 
-    it('400 — accountId is a string', async () => {
+    it('400 - accountId is a string', async () => {
         await agent.get(url('limit=10&accountId=abc')).set('authorization', authorization).expect(HttpCode.BAD_REQUEST);
     });
 
-    it('400 — malformed cursor', async () => {
+    it('400 - malformed cursor', async () => {
         await agent.get(url('limit=10&cursor=!!!not-valid!!!')).set('authorization', authorization).expect(HttpCode.BAD_REQUEST);
     });
 
-    it('200 — valid query without cursor returns first page', async () => {
+    it('200 - valid query without cursor returns first page', async () => {
         const res = await agent.get(url('limit=10')).set('authorization', authorization);
         expect(res.status).toBe(HttpCode.OK);
         expect(res.body.data).toBeDefined();

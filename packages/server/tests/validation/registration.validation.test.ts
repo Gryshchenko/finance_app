@@ -49,47 +49,47 @@ describe('POST /register/signup - body validation', () => {
     };
 
     // required fields
-    it('400 — missing email', async () => {
+    it('400 - missing email', async () => {
         await agent
             .post(url)
             .send({ password: valid.password, publicName: valid.publicName, currencyCode: valid.currencyCode })
             .expect(HttpCode.BAD_REQUEST);
     });
 
-    it('400 — missing password', async () => {
+    it('400 - missing password', async () => {
         await agent
             .post(url)
             .send({ email: valid.email(), publicName: valid.publicName, currencyCode: valid.currencyCode })
             .expect(HttpCode.BAD_REQUEST);
     });
 
-    it('400 — missing publicName', async () => {
+    it('400 - missing publicName', async () => {
         await agent
             .post(url)
             .send({ email: valid.email(), password: valid.password, currencyCode: valid.currencyCode })
             .expect(HttpCode.BAD_REQUEST);
     });
 
-    it('400 — missing currencyCode', async () => {
+    it('400 - missing currencyCode', async () => {
         await agent
             .post(url)
             .send({ email: valid.email(), password: valid.password, publicName: valid.publicName })
             .expect(HttpCode.BAD_REQUEST);
     });
 
-    it('400 — empty body', async () => {
+    it('400 - empty body', async () => {
         await agent.post(url).send({}).expect(HttpCode.BAD_REQUEST);
     });
 
     // email
-    it('400 — email not valid format', async () => {
+    it('400 - email not valid format', async () => {
         await agent
             .post(url)
             .send({ ...valid, email: 'not-email' })
             .expect(HttpCode.BAD_REQUEST);
     });
 
-    it('400 — email exceeds 150 chars', async () => {
+    it('400 - email exceeds 150 chars', async () => {
         const longEmail = `${'a'.repeat(150)}@example.com`;
         await agent
             .post(url)
@@ -98,21 +98,21 @@ describe('POST /register/signup - body validation', () => {
     });
 
     // password
-    it('400 — weak password (no uppercase/digit/special)', async () => {
+    it('400 - weak password (no uppercase/digit/special)', async () => {
         await agent
             .post(url)
             .send({ ...valid, email: valid.email(), password: 'weakpassword' })
             .expect(HttpCode.BAD_REQUEST);
     });
 
-    it('400 — password too short (< 5 chars)', async () => {
+    it('400 - password too short (< 5 chars)', async () => {
         await agent
             .post(url)
             .send({ ...valid, email: valid.email(), password: 'A1!' })
             .expect(HttpCode.BAD_REQUEST);
     });
 
-    it('400 — password too long (> 30 chars)', async () => {
+    it('400 - password too long (> 30 chars)', async () => {
         await agent
             .post(url)
             .send({ ...valid, email: valid.email(), password: `ValidPass1!${'a'.repeat(25)}` })
@@ -120,21 +120,21 @@ describe('POST /register/signup - body validation', () => {
     });
 
     // publicName
-    it('400 — publicName too short (< 2 chars)', async () => {
+    it('400 - publicName too short (< 2 chars)', async () => {
         await agent
             .post(url)
             .send({ ...valid, email: valid.email(), publicName: 'a' })
             .expect(HttpCode.BAD_REQUEST);
     });
 
-    it('400 — publicName too long (> 40 chars)', async () => {
+    it('400 - publicName too long (> 40 chars)', async () => {
         await agent
             .post(url)
             .send({ ...valid, email: valid.email(), publicName: 'a'.repeat(41) })
             .expect(HttpCode.BAD_REQUEST);
     });
 
-    it('400 — publicName is a number', async () => {
+    it('400 - publicName is a number', async () => {
         await agent
             .post(url)
             .send({ ...valid, email: valid.email(), publicName: 123 })
@@ -142,14 +142,14 @@ describe('POST /register/signup - body validation', () => {
     });
 
     // locale (optional)
-    it('400 — locale has invalid format (not xx-XX)', async () => {
+    it('400 - locale has invalid format (not xx-XX)', async () => {
         await agent
             .post(url)
             .send({ ...valid, email: valid.email(), locale: 'english' })
             .expect(HttpCode.BAD_REQUEST);
     });
 
-    it('400 — locale is too short', async () => {
+    it('400 - locale is too short', async () => {
         await agent
             .post(url)
             .send({ ...valid, email: valid.email(), locale: 'en' })
@@ -157,7 +157,7 @@ describe('POST /register/signup - body validation', () => {
     });
 
     // currencyCode
-    it('400 — currencyCode too long (> 10 chars)', async () => {
+    it('400 - currencyCode too long (> 10 chars)', async () => {
         await agent
             .post(url)
             .send({ ...valid, email: valid.email(), currencyCode: 'a'.repeat(11) })
@@ -165,7 +165,7 @@ describe('POST /register/signup - body validation', () => {
     });
 
     // unknown fields
-    it('400 — unknown extra field in body', async () => {
+    it('400 - unknown extra field in body', async () => {
         await agent
             .post(url)
             .send({ ...valid, email: valid.email(), hack: true })
@@ -173,7 +173,7 @@ describe('POST /register/signup - body validation', () => {
     });
 
     // query string
-    it('400 — unexpected query param', async () => {
+    it('400 - unexpected query param', async () => {
         await agent
             .post(`${url}?foo=bar`)
             .send({ ...valid, email: valid.email() })
@@ -183,7 +183,7 @@ describe('POST /register/signup - body validation', () => {
 
 // ─── POST /register/signup/:userId/email-confirmation/verify ─────────────────
 
-describe('POST /register/signup/:userId/email-confirmation/verify — validation', () => {
+describe('POST /register/signup/:userId/email-confirmation/verify - validation', () => {
     const url = (id: number | string) => `/register/signup/${id}/email-confirmation/verify`;
 
     let userId: number;
@@ -204,11 +204,11 @@ describe('POST /register/signup/:userId/email-confirmation/verify — validation
     });
 
     // confirmationCode
-    it('400 — missing confirmationCode', async () => {
+    it('400 - missing confirmationCode', async () => {
         await agent.post(url(userId)).set('authorization', authorization).send({}).expect(HttpCode.BAD_REQUEST);
     });
 
-    it('400 — confirmationCode is a string', async () => {
+    it('400 - confirmationCode is a string', async () => {
         await agent
             .post(url(userId))
             .set('authorization', authorization)
@@ -216,7 +216,7 @@ describe('POST /register/signup/:userId/email-confirmation/verify — validation
             .expect(HttpCode.BAD_REQUEST);
     });
 
-    it('400 — confirmationCode less than 8 digits', async () => {
+    it('400 - confirmationCode less than 8 digits', async () => {
         await agent
             .post(url(userId))
             .set('authorization', authorization)
@@ -224,7 +224,7 @@ describe('POST /register/signup/:userId/email-confirmation/verify — validation
             .expect(HttpCode.BAD_REQUEST);
     });
 
-    it('400 — confirmationCode more than 8 digits', async () => {
+    it('400 - confirmationCode more than 8 digits', async () => {
         await agent
             .post(url(userId))
             .set('authorization', authorization)
@@ -232,7 +232,7 @@ describe('POST /register/signup/:userId/email-confirmation/verify — validation
             .expect(HttpCode.BAD_REQUEST);
     });
 
-    it('400 — wrong confirmationCode value (8 digits but incorrect)', async () => {
+    it('400 - wrong confirmationCode value (8 digits but incorrect)', async () => {
         const wrong = confirmationCode === 12345678 ? 12345679 : 12345678;
         await agent
             .post(url(userId))
@@ -242,16 +242,16 @@ describe('POST /register/signup/:userId/email-confirmation/verify — validation
     });
 
     // path param :userId
-    it('400 — userId is a string', async () => {
+    it('400 - userId is a string', async () => {
         await agent.post(url('abc')).set('authorization', authorization).send({ confirmationCode }).expect(HttpCode.BAD_REQUEST);
     });
 
-    it('400 — userId is negative', async () => {
+    it('400 - userId is negative', async () => {
         await agent.post(url(-1)).set('authorization', authorization).send({ confirmationCode }).expect(HttpCode.BAD_REQUEST);
     });
 
     // query string
-    it('400 — unexpected query param', async () => {
+    it('400 - unexpected query param', async () => {
         await agent
             .post(`${url(userId)}?foo=bar`)
             .set('authorization', authorization)

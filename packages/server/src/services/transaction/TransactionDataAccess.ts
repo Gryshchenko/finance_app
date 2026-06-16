@@ -112,30 +112,32 @@ export default class TransactionDataAccess extends LoggerBase implements ITransa
 
             const query = this._db
                 .engine()('transactions')
-                .select<ITransactionListItem[]>(
-                    'transactions.transactionId',
-                    'transactions.amount',
-                    'transactions.description',
-                    'transactions.createdAt',
-                    'transactions.currencyId',
-                    'transactions.targetAccountId',
-                    'transactions.transactionTypeId',
-                    'incomes.incomeName',
-                    'categories.categoryName',
-                    'sourceAccount.accountName',
-                    'targetAccount.accountName as targetAccountName',
-                    'transactions.targetCurrencyId',
-                    'transactions.targetAmount',
-                )
+                .select<
+                    ITransactionListItem[]
+                >('transactions.transactionId', 'transactions.amount', 'transactions.description', 'transactions.createdAt', 'transactions.currencyId', 'transactions.targetAccountId', 'transactions.transactionTypeId', 'incomes.incomeName', 'categories.categoryName', 'sourceAccount.accountName', 'targetAccount.accountName as targetAccountName', 'transactions.targetCurrencyId', 'transactions.targetAmount')
                 .leftJoin('incomes', 'transactions.incomeId', 'incomes.incomeId')
                 .leftJoin('categories', 'transactions.categoryId', 'categories.categoryId')
                 .leftJoin({ sourceAccount: 'accounts' }, 'transactions.accountId', 'sourceAccount.accountId')
                 .leftJoin({ targetAccount: 'accounts' }, 'transactions.targetAccountId', 'targetAccount.accountId')
                 .where({
                     'transactions.userId': userId,
-                    ...cleanFilters,
                     'transactions.isDeleted': false,
                 });
+            if (incomeId !== undefined) {
+                query.where({
+                    'transactions.incomeId': incomeId,
+                });
+            }
+            if (categoryId !== undefined) {
+                query.where({
+                    'transactions.categoryId': categoryId,
+                });
+            }
+            if (accountId !== undefined) {
+                query.where(function () {
+                    this.where('transactions.accountId', accountId).orWhere('transactions.targetAccountId', accountId);
+                });
+            }
             if (cursor) {
                 const { createdAt: cursorCreatedAt, transactionId: cursorTransactionId } = decodeCursor(cursor);
                 query.andWhere(function () {

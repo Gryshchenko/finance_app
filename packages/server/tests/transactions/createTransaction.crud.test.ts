@@ -145,7 +145,7 @@ describe('PATCH /transaction/patch - amount', () => {
 
         expect(transactionIds.length).toStrictEqual(3 * 9);
 
-        // Verify filter isolation — no cross-contamination between entity types
+        // Verify filter isolation - no cross-contamination between entity types
         for (const query of [
             { name: 'accountId', id: accountId, not: ['categoryId', 'incomeId'] },
             { name: 'categoryId', id: categoryId, not: ['accountId', 'incomeId'] },
@@ -159,7 +159,7 @@ describe('PATCH /transaction/patch - amount', () => {
             }
         }
 
-        // Verify cursor pagination — no overlap between pages
+        // Verify cursor pagination - no overlap between pages
         const page1 = await fetchTransactionsAll(agent, userId, authorization, 10);
         expect(page1.data.length).toStrictEqual(10);
         expect(typeof page1.cursor).toStrictEqual('string');

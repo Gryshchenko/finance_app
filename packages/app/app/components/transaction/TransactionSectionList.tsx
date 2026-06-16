@@ -158,7 +158,10 @@ const TransactionSectionList = forwardRef<SectionList<ITransactionListItem>, Pro
         const getItemSides = (transaction: ITransactionListItem) => {
             const { amount, currencyId, targetAmount, targetCurrencyId, transactionTypeId } = transaction;
             const fromAmount = CurrencyUtils.formatWithDelimiter(Math.abs(amount), getCurrencySymbol(currencyId));
-
+            const toAmt = CurrencyUtils.formatWithDelimiter(
+                Math.abs(targetAmount ?? 0),
+                getCurrencySymbol(targetCurrencyId ?? currencyId),
+            );
             switch (transactionTypeId) {
                 case TransactionType.Expense:
                     return {
@@ -166,28 +169,26 @@ const TransactionSectionList = forwardRef<SectionList<ITransactionListItem>, Pro
                         fromAmount: `-${fromAmount}`,
                         fromAmountStyle: $transferAmountFrom,
                         toLabel: transaction.categoryName ?? '-',
-                        toAmount: ` `,
+                        toAmount: `+${toAmt}`,
+                        toAmountStyle: $transferAmountTo,
                     };
                 case TransactionType.Income:
                     return {
-                        fromAmount: ` `,
+                        fromAmountStyle: $transferAmountFrom,
+                        fromAmount: `-${fromAmount}`,
                         fromLabel: transaction.incomeName ?? '-',
                         toLabel: transaction.accountName ?? '-',
-                        toAmount: `+${fromAmount}`,
+                        toAmount: `+${toAmt}`,
                         toAmountStyle: $transferAmountTo,
                     };
                 case TransactionType.Transafer: {
-                    const toAmt = CurrencyUtils.formatWithDelimiter(
-                        Math.abs(targetAmount ?? amount),
-                        getCurrencySymbol(targetCurrencyId ?? currencyId),
-                    );
                     return {
                         fromLabel: transaction.accountName ?? '-',
                         fromAmount: `-${fromAmount}`,
                         fromAmountStyle: $transferAmountFrom,
                         toLabel: transaction.targetAccountName ?? '-',
-                        toAmount: `+${toAmt}`,
-                        toAmountStyle: $transferAmountTo,
+                        toAmount: Utils.isNotNull(targetAmount) ? `+${toAmt}` : '-',
+                        toAmountStyle: Utils.isNotNull(targetAmount) ? $transferAmountTo : undefined,
                     };
                 }
                 default:

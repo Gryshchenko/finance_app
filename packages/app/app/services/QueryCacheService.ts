@@ -1,3 +1,5 @@
+import { StatsType } from 'tenpercent/shared';
+
 export const QueryKeys = {
     accounts: () => ['accounts'] as const,
     incomes: () => ['incomes'] as const,
@@ -5,7 +7,7 @@ export const QueryKeys = {
     transactions: (entityId?: number, entityType?: string) =>
         entityId != null ? (['transactions', entityId, entityType] as const) : (['transactions'] as const),
     currencies: () => ['currencies'] as const,
-    entityStats: (entityId: number, statsType: string) => ['entityStats', entityId, statsType] as const,
+    entityStats: (entityId: number, statsType: StatsType) => ['entityStats', entityId, statsType] as const,
 
     stats: () => ['stats'] as const,
     balance: () => ['balance'] as const,
@@ -101,4 +103,7 @@ export const InvalidationGroups = {
     },
 
     profile: (): readonly (readonly unknown[])[] => [QueryKeys.profile()],
+    entityStats: (entityId: number, statsType: StatsType): readonly (readonly unknown[])[] => [
+        QueryKeys.entityStats(entityId, statsType),
+    ],
 } as const;

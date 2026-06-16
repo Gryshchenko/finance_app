@@ -58,7 +58,7 @@ export const TransactionEditScreen = function TransactionsScreen(_props: Props) 
           }
         : undefined;
 
-    // route.params here is a type cast — not runtime-guaranteed. Guard against undefined.
+    // route.params here is a type cast - not runtime-guaranteed. Guard against undefined.
     if (!params) {
         return null;
     }

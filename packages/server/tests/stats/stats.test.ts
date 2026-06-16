@@ -534,7 +534,7 @@ describe('entityStats - Expense edge cases', () => {
         expect(data).toEqual({ spendMTD: 0, vsLastMonthSpendPct: 0, budgetTotal: 100 });
     });
 
-    it('returns 100 pct when previous=0 and current>0 (first month)', async () => {
+    it('returns null pct when previous=0 and current>0 (first month, no comparable base)', async () => {
         const ctx = await setupUser();
         await createExpenseTransaction(
             ctx.agent,
@@ -553,7 +553,7 @@ describe('entityStats - Expense edge cases', () => {
             period: StatsPeriod.Month,
             type: StatsType.Expense,
         });
-        expect(data).toEqual({ spendMTD: '500.00', vsLastMonthSpendPct: 100, budgetTotal: 100 });
+        expect(data).toEqual({ spendMTD: '500.00', vsLastMonthSpendPct: null, budgetTotal: 100 });
     });
 
     it('returns negative pct when spending decreased', async () => {
@@ -841,15 +841,48 @@ describe('entityStats - Account', () => {
         expect(Number(data.spendMTD)).toEqual(450);
         expect(Number(data.transferMTD)).toEqual(150);
 
-        // ⚠️ KNOWN SERVER BUG: in Account branch, StatsOrchestratorService calls
-        //   _dailyIncomeStatsService.summary(userId, id /* = accountId */, ...)
-        // but that service filters by income_id, not account_id. So incomeMTD/
-        // vsLastMonthIncomePct/savingsRate are always 0 for the Account view.
-        // TODO: switch to _dailyAccountStatsService totalIncome when fixed.
-        expect(Number(data.incomeMTD)).toEqual(0);
-        expect(data.vsLastMonthIncomePct).toEqual(0);
-        // savingsRate = (0 - 450) * 0.1 = -45
-        expect(Number(data.savingsRate)).toBeCloseTo(-45, 5);
+        // Account income now reads income_source_total (the account's own-currency amount).
+        // Dec income = 1000; Nov income = 500 → vsLastMonthIncomePct = round((1000-500)/500*100) = 100.
+        expect(Number(data.incomeMTD)).toEqual(1000);
+        expect(data.vsLastMonthIncomePct).toEqual(100);
+        // Average month-end savings rate YTD across months with income (Nov, Dec):
+        //   Nov: (500-200)/500 = 60%   Dec: (1000-450)/1000 = 55%   → mean = 57.5%
+        expect(Number(data.savingsRate)).toBeCloseTo(57.5, 5);
+    });
+
+    it('returns null savingsRate when only one month has income (needs >= 2 months)', async () => {
+        const ctx = await setupUser();
+        // Only December has activity → a single month → not enough to average.
+        await createIncomeTransaction(
+            ctx.agent,
+            ctx.userId,
+            ctx.authorization,
+            ctx.accountId,
+            ctx.incomeIds[0],
+            ctx.currencyId,
+            1000,
+            DEC_DATE,
+        );
+        await createExpenseTransaction(
+            ctx.agent,
+            ctx.userId,
+            ctx.authorization,
+            ctx.accountId,
+            ctx.categoryIds[0],
+            ctx.currencyId,
+            400,
+            DEC_DATE,
+        );
+        const data = await getEntityStats(ctx.agent, ctx.userId, ctx.authorization, {
+            id: ctx.accountId,
+            from: DEC_FROM,
+            to: DEC_TO,
+            period: StatsPeriod.Month,
+            type: StatsType.Account,
+        });
+        // One month with income is not enough to average → no data.
+        expect(data.savingsRate).toBeNull();
+        expect(Number(data.incomeMTD)).toEqual(1000);
     });
 
     it('returns zero values when no activity in either period', async () => {
@@ -866,5 +899,6 @@ describe('entityStats - Account', () => {
         expect(Number(data.spendMTD)).toEqual(0);
         expect(Number(data.incomeMTD)).toEqual(0);
         expect(Number(data.transferMTD)).toEqual(0);
+        expect(data.savingsRate).toBeNull();
     });
 });

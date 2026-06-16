@@ -23,7 +23,7 @@ export const TransactionStats = ({ statsType, stats, currencyId }: IProps) => {
                     lastMonthIncome={vsLastMonthIncomePct}
                     transferMtd={transferMTD as number}
                     currency={getCurrencySymbol(currencyId)}
-                    savingsRate={savingsRate as number}
+                    savingsRate={savingsRate}
                 />
             );
         case StatsType.Income:
