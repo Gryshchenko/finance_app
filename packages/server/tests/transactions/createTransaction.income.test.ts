@@ -1,6 +1,7 @@
 import { createUser, deleteUserAfterTest, generateSecureRandom, getOverview } from '../TestsUtils.';
 import DatabaseConnection from '../../src/repositories/DatabaseConnection';
 import config from '../../src/config/dbConfig';
+import { KeyValueStoreBuilder } from '../../src/repositories/keyValueStore/KeyValueStoreBuilder';
 import { ErrorCode, TransactionType } from 'tenpercent/shared';
 import { ResponseStatusType } from 'tenpercent/shared';
 import { HttpCode } from 'tenpercent/shared';
@@ -25,15 +26,26 @@ beforeAll(() => {
     server = app.listen(port);
 });
 
-afterAll((done) => {
-    userIds.forEach(async (id) => {
-        await deleteUserAfterTest(id, DatabaseConnection.instance(config));
-    });
+afterAll(async () => {
+    const databaseConnection = DatabaseConnection.instance(config);
+    for (const id of userIds) {
+        await deleteUserAfterTest(id, databaseConnection);
+    }
     userIds = [];
-    // @ts-expect-error is necessary
-    server.closeAllConnections();
-    // @ts-expect-error is necessary
-    server.close(done);
+
+    await new Promise<void>((resolve) => {
+        // @ts-expect-error server is assigned in beforeAll
+        server.close(() => resolve());
+        // @ts-expect-error drop idle keep-alive sockets so close() can complete
+        server.closeAllConnections?.();
+    });
+
+    try {
+        await KeyValueStoreBuilder.build().disconnect();
+    } catch {
+        // redis client may already be closed
+    }
+    await databaseConnection.close();
 });
 
 describe('POST /transaction/create - income', () => {
@@ -78,6 +90,8 @@ describe('POST /transaction/create - income', () => {
                     currencyId,
                     transactionTypeId: TransactionType.Income,
                     amount: num,
+                    targetAmount: num,
+                    targetCurrencyId: currencyId,
                     description: 'Test',
                 })
                 .expect(HttpCode.CREATED);
@@ -98,11 +112,10 @@ describe('POST /transaction/create - income', () => {
             });
             const {
                 body: {
-                    data: { balanceId, balance },
+                    data: { balance },
                 },
             } = await agent.get(`/user/${userId}/balance`).set('authorization', authorization).send({}).expect(HttpCode.OK);
-            expect(balanceId).toBeTruthy();
-            expect(balance).toBe(String(num));
+            expect(balance).toStrictEqual(num);
         });
     }
 
@@ -327,8 +340,10 @@ describe('POST /transaction/create - income', () => {
             .send({
                 accountId: 21,
                 currencyId: 1,
+                targetCurrencyId: 1,
                 transactionTypeId: 1,
                 amount: 1000,
+                targetAmount: 1000,
                 description: 'Test',
             })
             .expect(HttpCode.BAD_REQUEST);
@@ -354,8 +369,10 @@ describe('POST /transaction/create - income', () => {
             .send({
                 incomeId: 21,
                 currencyId: 1,
+                targetCurrencyId: 1,
                 transactionTypeId: 1,
                 amount: 1000,
+                targetAmount: 1000,
                 description: 'Test',
             })
             .expect(HttpCode.BAD_REQUEST);
@@ -380,8 +397,10 @@ describe('POST /transaction/create - income', () => {
             .set('authorization', authorization)
             .send({
                 currencyId: 1,
+                targetCurrencyId: 1,
                 transactionTypeId: 1,
                 amount: 1000,
+                targetAmount: 1000,
                 description: 'Test',
             })
             .expect(HttpCode.BAD_REQUEST);
@@ -408,7 +427,9 @@ describe('POST /transaction/create - income', () => {
                 accountId: 5,
                 incomeId: 5,
                 currencyId: 1,
+                targetCurrencyId: 1,
                 transactionTypeId: 1,
+                targetAmount: 1000,
                 description: 'Test',
             })
             .expect(HttpCode.BAD_REQUEST);

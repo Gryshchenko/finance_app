@@ -139,7 +139,7 @@ const vsLastMonthPct = (current: number, previous: number): number | null => {
     const curr = Number(current);
     const prev = Number(previous);
     if (prev === 0) {
-        return curr === 0 ? 0 : null;
+        return 0;
     }
     return Math.round(((curr - prev) / prev) * 100);
 };

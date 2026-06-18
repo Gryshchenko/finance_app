@@ -1,4 +1,5 @@
 import {
+    closeTestApp,
     createUserNotVerify,
     deleteUserAfterTest,
     generateRandomEmail,
@@ -30,19 +31,13 @@ beforeAll(() => {
     server = app.listen(port);
 });
 
-afterAll((done) => {
-    userIds.forEach(async (id) => {
-        await deleteUserAfterTest(id, DatabaseConnection.instance(config));
-    });
-    // @ts-expect-error is necessary
-    server.closeAllConnections();
-    // @ts-expect-error is necessary
-    server.close(done);
+afterAll(async () => {
+    await closeTestApp(server, userIds);
 });
 
 describe('POST /register/signup/emailConfirm', () => {
     it(`verify email confirmation logic`, async () => {
-        const databaseConnection = new DatabaseConnection(config);
+        const databaseConnection = DatabaseConnection.instance(config);
         const timeManager = new TimeManagerUTC();
         timeManager.subtractTime(1, 1, 1);
         const agent = request.agent(server);

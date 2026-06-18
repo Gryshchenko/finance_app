@@ -6,7 +6,7 @@
  * POST /auth/:userId/refresh
  */
 
-import { createUser, deleteUserAfterTest, generateSecureRandom } from '../TestsUtils.';
+import { createUser, closeTestApp, generateSecureRandom } from '../TestsUtils.';
 import DatabaseConnection from '../../src/repositories/DatabaseConnection';
 import config from '../../src/config/dbConfig';
 import { HttpCode } from 'tenpercent/shared';
@@ -32,7 +32,7 @@ beforeAll(async () => {
     const port = Math.floor(generateSecureRandom() * (65535 - 1024) + 1024);
     server = app.listen(port);
     agent = request.agent(server);
-    const db = new DatabaseConnection(config);
+    const db = DatabaseConnection.instance(config);
     const result = await createUser({ agent, email: validEmail, password: validPassword, databaseConnection: db });
     userId = result.userId;
     authorization = result.authorization;
@@ -40,11 +40,8 @@ beforeAll(async () => {
     userIds.push(userId);
 });
 
-afterAll((done) => {
-    userIds.forEach(async (id) => {
-        await deleteUserAfterTest(id, DatabaseConnection.instance(config));
-    });
-    (server as { close: (cb: () => void) => void }).close(done);
+afterAll(async () => {
+    await closeTestApp(server, userIds);
 });
 
 // ─── POST /auth/login ────────────────────────────────────────────────────────

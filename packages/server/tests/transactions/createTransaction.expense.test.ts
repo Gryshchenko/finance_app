@@ -1,6 +1,7 @@
 import { createUser, deleteUserAfterTest, generateSecureRandom, getOverview } from '../TestsUtils.';
 import DatabaseConnection from '../../src/repositories/DatabaseConnection';
 import config from '../../src/config/dbConfig';
+import { KeyValueStoreBuilder } from '../../src/repositories/keyValueStore/KeyValueStoreBuilder';
 import { ErrorCode, TransactionType } from 'tenpercent/shared';
 import { ResponseStatusType } from 'tenpercent/shared';
 import { HttpCode } from 'tenpercent/shared';
@@ -25,15 +26,26 @@ beforeAll(() => {
     server = app.listen(port);
 });
 
-afterAll((done) => {
-    userIds.forEach(async (id) => {
-        await deleteUserAfterTest(id, DatabaseConnection.instance(config));
-    });
+afterAll(async () => {
+    const databaseConnection = DatabaseConnection.instance(config);
+    for (const id of userIds) {
+        await deleteUserAfterTest(id, databaseConnection);
+    }
     userIds = [];
-    // @ts-expect-error is necessary
-    server.closeAllConnections();
-    // @ts-expect-error is necessary
-    server.close(done);
+
+    await new Promise<void>((resolve) => {
+        // @ts-expect-error server is assigned in beforeAll
+        server.close(() => resolve());
+        // @ts-expect-error drop idle keep-alive sockets so close() can complete
+        server.closeAllConnections?.();
+    });
+
+    try {
+        await KeyValueStoreBuilder.build().disconnect();
+    } catch {
+        // redis client may already be closed
+    }
+    await databaseConnection.close();
 });
 
 describe('POST /transaction/create - expense', () => {
@@ -54,8 +66,10 @@ describe('POST /transaction/create - expense', () => {
             const response = await tryCreateTransaction(agent, userId, authorization, {
                 accountId,
                 currencyId,
+                targetCurrencyId: currencyId,
                 transactionTypeId: TransactionType.Expense,
                 amount: num,
+                targetAmount: num,
                 description: 'Test',
                 categoryId,
             });
@@ -250,8 +264,10 @@ describe('POST /transaction/create - expense', () => {
         const response = await tryCreateTransaction(agent, userId, authorization, {
             accountId: accounts[0].accountId,
             currencyId: accounts[0].currencyId,
+            targetCurrencyId: accounts[0].currencyId,
             transactionTypeId: TransactionType.Expense,
             amount: 1000,
+            targetAmount: 1000,
             description: 'Test',
         });
         expect(response.status).toBe(HttpCode.BAD_REQUEST);
@@ -274,8 +290,10 @@ describe('POST /transaction/create - expense', () => {
         const response = await tryCreateTransaction(agent, userId, authorization, {
             categoryId: categories[0].categoryId,
             currencyId: 1,
+            targetCurrencyId: 1,
             transactionTypeId: TransactionType.Expense,
             amount: 1000,
+            targetAmount: 1000,
             description: 'Test',
         });
         expect(response.status).toBe(HttpCode.BAD_REQUEST);
@@ -295,8 +313,10 @@ describe('POST /transaction/create - expense', () => {
 
         const response = await tryCreateTransaction(agent, userId, authorization, {
             currencyId: 1,
+            targetCurrencyId: 1,
             transactionTypeId: TransactionType.Expense,
             amount: 1000,
+            targetAmount: 1000,
             description: 'Test',
         });
         expect(response.status).toBe(HttpCode.BAD_REQUEST);
@@ -320,7 +340,9 @@ describe('POST /transaction/create - expense', () => {
             accountId: accounts[0].accountId,
             categoryId: categories[0].categoryId,
             currencyId: accounts[0].currencyId,
+            targetCurrencyId: accounts[0].currencyId,
             transactionTypeId: TransactionType.Expense,
+            targetAmount: 1000,
             description: 'Test',
         });
         expect(response.status).toBe(HttpCode.BAD_REQUEST);

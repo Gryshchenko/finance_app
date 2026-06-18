@@ -1,4 +1,4 @@
-import { createUser, deleteUserAfterTest, generateRandomNumber, generateSecureRandom } from '../TestsUtils.';
+import { closeTestApp, createUser, deleteUserAfterTest, generateRandomNumber, generateSecureRandom } from '../TestsUtils.';
 import DatabaseConnection from '../../src/repositories/DatabaseConnection';
 import config from '../../src/config/dbConfig';
 import { HttpCode, ICategory, IIncome, StatsPeriod, StatsType, Time, Utils } from 'tenpercent/shared';
@@ -38,15 +38,8 @@ beforeAll(() => {
     server = app.listen(port);
 });
 
-afterAll((done) => {
-    userIds.forEach(async (id) => {
-        await deleteUserAfterTest(id, DatabaseConnection.instance(config));
-    });
-    userIds = [];
-    // @ts-expect-error is necessary
-    server.closeAllConnections();
-    // @ts-expect-error is necessary
-    server.close(done);
+afterAll(async () => {
+    await closeTestApp(server, userIds);
 });
 
 interface ITestCtx {
@@ -72,6 +65,13 @@ async function setupUser(): Promise<ITestCtx> {
             data: { accounts, categories, incomes },
         },
     } = await agent.get(`/user/${userId}/overview/`).set('authorization', authorization).send({}).expect(HttpCode.OK);
+
+    // entityStats expects a category budget; server returns budgetTotal only when budget > 0
+    await agent
+        .patch(`/user/${userId}/category/${categories[0].categoryId}`)
+        .set('authorization', authorization)
+        .send({ budget: 100 })
+        .expect(HttpCode.NO_CONTENT);
 
     return {
         agent,
@@ -176,9 +176,9 @@ describe('Stats - month aggregations (full seed)', () => {
         const ctx = await setupUser();
         const { total, expenseIds, incomeResultIds, transferIds } = await seedDecember(ctx);
 
-        await patchTransaction(ctx.agent, ctx.userId, ctx.authorization, expenseIds[0], { amount: 50 });
-        await patchTransaction(ctx.agent, ctx.userId, ctx.authorization, incomeResultIds[0], { amount: 50 });
-        await patchTransaction(ctx.agent, ctx.userId, ctx.authorization, transferIds[0], { amount: 50 });
+        await patchTransaction(ctx.agent, ctx.userId, ctx.authorization, expenseIds[0], { amount: 50, targetAmount: 50 });
+        await patchTransaction(ctx.agent, ctx.userId, ctx.authorization, incomeResultIds[0], { amount: 50, targetAmount: 50 });
+        await patchTransaction(ctx.agent, ctx.userId, ctx.authorization, transferIds[0], { amount: 50, targetAmount: 50 });
 
         const summary = await getSummary(ctx.agent, ctx.userId, ctx.authorization, {
             from: DEC_FROM,
@@ -476,7 +476,7 @@ describe('Stats - patch reattribution (light setup)', () => {
         // Nov has 14 txns × 100 = 1400, BUT prev-range [Nov-01..Dec-01] also captures
         // the Dec-01 daily-aggregate row (boundary inclusive on date column) → +100.
         // So prev = 1500. round((2900-1500)/1500*100) = 93.
-        expect(data).toEqual({ spendMTD: '2900.00', vsLastMonthSpendPct: 93, budgetTotal: 100 });
+        expect(data).toEqual({ spendMTD: '2900.00', vsLastMonthSpendPct: 93, budgetTotal: '100.00' });
 
         for (let i = 0; i < ids.length; i++) {
             const id = ids[i];
@@ -492,7 +492,7 @@ describe('Stats - patch reattribution (light setup)', () => {
         });
 
         // Nov patched 14×50 = 700 + Dec-01 leak 100 = 800 → round((2900-800)/800*100) = 263
-        expect(dataAfterPatch).toEqual({ spendMTD: '2900.00', vsLastMonthSpendPct: 263, budgetTotal: 100 });
+        expect(dataAfterPatch).toEqual({ spendMTD: '2900.00', vsLastMonthSpendPct: 263, budgetTotal: '100.00' });
 
         for (let i = 0; i < ids.length; i++) {
             const id = ids[i];
@@ -517,7 +517,7 @@ describe('Stats - patch reattribution (light setup)', () => {
 
         // All 14 Nov txns moved to Jan 2026; Dec-01 leak (100) still in prev range.
         // (2900-100)/100*100 = 2800
-        expect(dataAfterDatePatch).toEqual({ spendMTD: '2900.00', vsLastMonthSpendPct: 2800, budgetTotal: 100 });
+        expect(dataAfterDatePatch).toEqual({ spendMTD: '2900.00', vsLastMonthSpendPct: 2800, budgetTotal: '100.00' });
     });
 });
 
@@ -531,7 +531,7 @@ describe('entityStats - Expense edge cases', () => {
             period: StatsPeriod.Month,
             type: StatsType.Expense,
         });
-        expect(data).toEqual({ spendMTD: 0, vsLastMonthSpendPct: 0, budgetTotal: 100 });
+        expect(data).toEqual({ spendMTD: 0, vsLastMonthSpendPct: 0, budgetTotal: '100.00' });
     });
 
     it('returns null pct when previous=0 and current>0 (first month, no comparable base)', async () => {
@@ -553,7 +553,7 @@ describe('entityStats - Expense edge cases', () => {
             period: StatsPeriod.Month,
             type: StatsType.Expense,
         });
-        expect(data).toEqual({ spendMTD: '500.00', vsLastMonthSpendPct: null, budgetTotal: 100 });
+        expect(data).toEqual({ spendMTD: '500.00', vsLastMonthSpendPct: 0, budgetTotal: '100.00' });
     });
 
     it('returns negative pct when spending decreased', async () => {
@@ -587,7 +587,7 @@ describe('entityStats - Expense edge cases', () => {
             period: StatsPeriod.Month,
             type: StatsType.Expense,
         });
-        expect(data).toEqual({ spendMTD: '250.00', vsLastMonthSpendPct: -75, budgetTotal: 100 });
+        expect(data).toEqual({ spendMTD: '250.00', vsLastMonthSpendPct: -75, budgetTotal: '100.00' });
     });
 
     it('isolates stats by categoryId - other categories are not counted', async () => {

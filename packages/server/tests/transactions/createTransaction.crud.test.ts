@@ -1,6 +1,7 @@
 import { createUser, deleteUserAfterTest, generateSecureRandom, getOverview } from '../TestsUtils.';
 import DatabaseConnection from '../../src/repositories/DatabaseConnection';
 import config from '../../src/config/dbConfig';
+import { KeyValueStoreBuilder } from '../../src/repositories/keyValueStore/KeyValueStoreBuilder';
 import { HttpCode, Time } from 'tenpercent/shared';
 import { createAllTransactions, fetchTransactions, fetchTransactionsAll, fetchTransactionsBad } from './TransactionsTestUtils';
 
@@ -22,15 +23,26 @@ beforeAll(() => {
     server = app.listen(port);
 });
 
-afterAll((done) => {
-    userIds.forEach(async (id) => {
-        await deleteUserAfterTest(id, DatabaseConnection.instance(config));
-    });
+afterAll(async () => {
+    const databaseConnection = DatabaseConnection.instance(config);
+    for (const id of userIds) {
+        await deleteUserAfterTest(id, databaseConnection);
+    }
     userIds = [];
-    // @ts-expect-error is necessary
-    server.closeAllConnections();
-    // @ts-expect-error is necessary
-    server.close(done);
+
+    await new Promise<void>((resolve) => {
+        // @ts-expect-error server is assigned in beforeAll
+        server.close(() => resolve());
+        // @ts-expect-error drop idle keep-alive sockets so close() can complete
+        server.closeAllConnections?.();
+    });
+
+    try {
+        await KeyValueStoreBuilder.build().disconnect();
+    } catch {
+        // redis client may already be closed
+    }
+    await databaseConnection.close();
 });
 
 describe('PATCH /transaction/patch - amount', () => {
@@ -62,7 +74,9 @@ describe('PATCH /transaction/patch - amount', () => {
                 currencyId,
                 transactionTypeId: 3,
                 targetAccountId,
+                targetCurrencyId: currencyId,
                 amount: 1000,
+                targetAmount: 1000,
                 description: 'Test',
                 createdAt: Time.getISODateNowUTC(),
             })

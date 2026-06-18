@@ -1,4 +1,4 @@
-import { createUser, deleteUserAfterTest, generateRandomEmail } from '../TestsUtils.';
+import { closeTestApp, createUser, deleteUserAfterTest, generateRandomEmail } from '../TestsUtils.';
 import DatabaseConnection from '../../src/repositories/DatabaseConnection';
 import config from '../../src/config/dbConfig';
 import { HttpCode } from 'tenpercent/shared';
@@ -27,13 +27,7 @@ beforeAll(() => {
 });
 
 afterAll(async () => {
-    await db.engine()('password_forgot').delete().whereIn('userId', userIds);
-    await db.engine()('password_changing').delete().whereIn('userId', userIds);
-    for (const id of userIds) {
-        await deleteUserAfterTest(id, db);
-    }
-    (server as any).closeAllConnections();
-    await new Promise<void>((resolve) => (server as { close: (cb: () => void) => void }).close(() => resolve()));
+    await closeTestApp(server, userIds);
 });
 
 function signResetToken(userId: number, overrides: Record<string, unknown> = {}, signOptions: Record<string, unknown> = {}) {

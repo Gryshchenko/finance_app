@@ -51,4 +51,23 @@ async function postAccount(
     return transactionId;
 }
 
-export { patchAccount, postAccount, deleteAccount, getAccount };
+async function createAccount(
+    agent: Agent,
+    userId: number,
+    authorization: string,
+    currencyId: number,
+    amount = 1000,
+    accountName = 'Test account',
+    iconId = 'wallet',
+): Promise<number> {
+    const {
+        body: { data },
+    } = await agent
+        .post(`/user/${userId}/account/`)
+        .set('authorization', authorization)
+        .send({ currencyId, accountName, amount, iconId })
+        .expect(HttpCode.OK);
+    return data.accountId;
+}
+
+export { patchAccount, postAccount, createAccount, deleteAccount, getAccount };

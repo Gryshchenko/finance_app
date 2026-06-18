@@ -1,4 +1,4 @@
-import { createUser, deleteUserAfterTest, generateSecureRandom } from '../TestsUtils.';
+import { closeTestApp, createUser, deleteUserAfterTest, generateSecureRandom } from '../TestsUtils.';
 import DatabaseConnection from '../../src/repositories/DatabaseConnection';
 import config from '../../src/config/dbConfig';
 import { TransactionType } from '../../src/types/TransactionType';
@@ -23,22 +23,15 @@ beforeAll(() => {
     server = app.listen(port);
 });
 
-afterAll((done) => {
-    userIds.forEach(async (id) => {
-        await deleteUserAfterTest(id, DatabaseConnection.instance(config));
-    });
-    userIds = [];
-    // @ts-expect-error is necessary
-    server.closeAllConnections();
-    // @ts-expect-error is necessary
-    server.close(done);
+afterAll(async () => {
+    await closeTestApp(server, userIds);
 });
 
 describe('Account', () => {
     it(`POST - create account`, async () => {
         const agent = request.agent(server);
 
-        const databaseConnection = new DatabaseConnection(config);
+        const databaseConnection = DatabaseConnection.instance(config);
         const { userId, authorization } = await createUser({
             agent,
             databaseConnection,
@@ -104,7 +97,7 @@ describe('Account', () => {
     it(`PATCH - update account`, async () => {
         const agent = request.agent(server);
 
-        const databaseConnection = new DatabaseConnection(config);
+        const databaseConnection = DatabaseConnection.instance(config);
         const { userId, authorization } = await createUser({
             agent,
             databaseConnection,
@@ -186,7 +179,7 @@ describe('Account', () => {
     it(`unknown properties`, async () => {
         const agent = request.agent(server);
 
-        const databaseConnection = new DatabaseConnection(config);
+        const databaseConnection = DatabaseConnection.instance(config);
         const { userId, authorization } = await createUser({
             agent,
             databaseConnection,
@@ -220,7 +213,7 @@ describe('Account', () => {
     });
     it(`DELETE - delete account - hide`, async () => {
         const agent = request.agent(server);
-        const databaseConnection = new DatabaseConnection(config);
+        const databaseConnection = DatabaseConnection.instance(config);
         const { userId, authorization } = await createUser({
             agent,
             databaseConnection,
@@ -277,7 +270,9 @@ describe('Account', () => {
                 .send({
                     accountId,
                     currencyId: 1,
+                    targetCurrencyId: 1,
                     amount: 1000,
+                    targetAmount: 1000,
                     description: 'Test',
                     ...transaction,
                 })
@@ -299,7 +294,7 @@ describe('Account', () => {
     });
     it(`DELETE - delete account - full`, async () => {
         const agent = request.agent(server);
-        const databaseConnection = new DatabaseConnection(config);
+        const databaseConnection = DatabaseConnection.instance(config);
         const { userId, authorization } = await createUser({
             agent,
             databaseConnection,
@@ -357,7 +352,9 @@ describe('Account', () => {
                 .send({
                     accountId,
                     currencyId: 1,
+                    targetCurrencyId: 1,
                     amount: 1000,
+                    targetAmount: 1000,
                     description: 'Test',
                     ...transaction,
                 })

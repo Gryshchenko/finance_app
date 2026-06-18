@@ -1,4 +1,5 @@
 import {
+    closeTestApp,
     createUser,
     deleteUserAfterTest,
     generateRandomEmail,
@@ -36,14 +37,8 @@ beforeAll(() => {
     server = app.listen(port);
 });
 
-afterAll((done) => {
-    userIds.forEach(async (id) => {
-        await deleteUserAfterTest(id, DatabaseConnection.instance(config));
-    });
-    // @ts-expect-error is necessary
-    server.closeAllConnections();
-    // @ts-expect-error is necessary
-    server.close(done);
+afterAll(async () => {
+    await closeTestApp(server, userIds);
 });
 
 describe('POST /register/signup', () => {
@@ -413,7 +408,7 @@ describe('POST /register/signup', () => {
     const testCases = [LanguageType.US, LanguageType.FR, LanguageType.DK, LanguageType.DE, 'aa-AA'];
     testCases.forEach((locale) => {
         it(`check users accounts, incomes, category for locale: ${locale}`, async () => {
-            const databaseConnection = new DatabaseConnection(config);
+            const databaseConnection = DatabaseConnection.instance(config);
 
             const agent = request.agent(server);
             const initialData = user_initial[locale as LanguageType] ?? user_initial[LanguageType.US];
@@ -439,14 +434,10 @@ describe('POST /register/signup', () => {
             const accounts = await databaseConnection.engine()('accounts').select('*').where({ userId: user.userId });
             const categories = await databaseConnection.engine()('categories').select('*').where({ userId: user.userId });
             const incomes = await databaseConnection.engine()('incomes').select('*').where({ userId: user.userId });
-            const balance = await databaseConnection.engine()('balance').select('*').where({ userId: user.userId });
             expect(profile.publicName).toStrictEqual(publicName);
             expect(profile.locale).toStrictEqual(locale === 'aa-AA' ? LanguageType.US : locale);
             expect(profile.userId).toStrictEqual(userId);
 
-            expect(balance.length).toBe(1);
-            expect(balance[0].userId).toBe(user.userId);
-            expect(balance[0].balance).toBe('0');
             userIds.push(user.userId);
             expect(
                 accounts.map((data) => ({

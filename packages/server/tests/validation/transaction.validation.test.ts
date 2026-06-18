@@ -8,7 +8,7 @@
  * GET    /user/:userId/transactions/ (query params)
  */
 
-import { createUser, deleteUserAfterTest, generateSecureRandom, getOverview } from '../TestsUtils.';
+import { closeTestApp, createUser, deleteUserAfterTest, generateSecureRandom, getOverview } from '../TestsUtils.';
 import DatabaseConnection from '../../src/repositories/DatabaseConnection';
 import config from '../../src/config/dbConfig';
 import { HttpCode, TransactionType } from 'tenpercent/shared';
@@ -35,7 +35,7 @@ beforeAll(async () => {
     const port = Math.floor(generateSecureRandom() * (65535 - 1024) + 1024);
     server = app.listen(port);
     agent = request.agent(server);
-    const db = new DatabaseConnection(config);
+    const db = DatabaseConnection.instance(config);
     const result = await createUser({ agent, databaseConnection: db });
     userId = result.userId;
     authorization = result.authorization;
@@ -52,17 +52,16 @@ beforeAll(async () => {
         accountId,
         incomeId,
         currencyId: 1,
+        targetCurrencyId: 1,
         amount: 100,
+        targetAmount: 100,
         description: 'Init',
     });
     existingTransactionId = res.body.data.transactionId;
 });
 
-afterAll((done) => {
-    userIds.forEach(async (id) => {
-        await deleteUserAfterTest(id, DatabaseConnection.instance(config));
-    });
-    (server as { close: (cb: () => void) => void }).close(done);
+afterAll(async () => {
+    await closeTestApp(server, userIds);
 });
 
 // ─── POST /user/:userId/transaction/ - transaction type rules ─────────────────
@@ -381,7 +380,9 @@ describe('POST /user/:userId/transaction/ - transaction type validation', () => 
             accountId,
             incomeId,
             currencyId: 1,
+            targetCurrencyId: 1,
             amount: 50,
+            targetAmount: 50,
             description: 'Valid test',
         });
         expect(res.status).toBe(HttpCode.CREATED);

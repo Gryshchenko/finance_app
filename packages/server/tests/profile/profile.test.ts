@@ -1,4 +1,4 @@
-import { createUser, createUserNotVerify, deleteUserAfterTest, generateSecureRandom } from '../TestsUtils.';
+import { closeTestApp, createUser, createUserNotVerify, deleteUserAfterTest, generateSecureRandom } from '../TestsUtils.';
 import DatabaseConnection from '../../src/repositories/DatabaseConnection';
 import config from '../../src/config/dbConfig';
 import { HttpCode, LanguageType } from 'tenpercent/shared';
@@ -19,15 +19,8 @@ beforeAll(() => {
     server = app.listen(port);
 });
 
-afterAll((done) => {
-    userIds.forEach(async (id) => {
-        await deleteUserAfterTest(id, DatabaseConnection.instance(config));
-    });
-    userIds = [];
-    // @ts-expect-error is necessary
-    server.closeAllConnections();
-    // @ts-expect-error is necessary
-    server.close(done);
+afterAll(async () => {
+    await closeTestApp(server, userIds);
 });
 
 describe('Profile', () => {

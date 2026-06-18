@@ -1,4 +1,4 @@
-import { createUser, deleteUserAfterTest, generateSecureRandom } from '../TestsUtils.';
+import { closeTestApp, createUser, deleteUserAfterTest, generateSecureRandom } from '../TestsUtils.';
 import DatabaseConnection from '../../src/repositories/DatabaseConnection';
 import config from '../../src/config/dbConfig';
 import { TransactionType } from '../../src/types/TransactionType';
@@ -23,15 +23,8 @@ beforeAll(() => {
     server = app.listen(port);
 });
 
-afterAll((done) => {
-    userIds.forEach(async (id) => {
-        await deleteUserAfterTest(id, DatabaseConnection.instance(config));
-    });
-    userIds = [];
-    // @ts-expect-error is necessary
-    server.closeAllConnections();
-    // @ts-expect-error is necessary
-    server.close(done);
+afterAll(async () => {
+    await closeTestApp(server, userIds);
 });
 
 describe('Category', () => {
@@ -260,6 +253,8 @@ describe('Category', () => {
                 .set('authorization', authorization)
                 .send({
                     currencyId: 1,
+                    targetCurrencyId: 1,
+                    targetAmount: 1000,
                     description: 'Test',
                     ...transaction,
                     categoryId,

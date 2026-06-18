@@ -1,10 +1,11 @@
 import { createUser, deleteUserAfterTest, generateSecureRandom, getOverview } from '../TestsUtils.';
 import DatabaseConnection from '../../src/repositories/DatabaseConnection';
 import config from '../../src/config/dbConfig';
+import { KeyValueStoreBuilder } from '../../src/repositories/keyValueStore/KeyValueStoreBuilder';
 import { ErrorCode } from 'tenpercent/shared';
 import { ResponseStatusType } from 'tenpercent/shared';
 import { HttpCode } from 'tenpercent/shared';
-import { getAccount } from '../account/AccountTestUtils';
+import { createAccount, getAccount } from '../account/AccountTestUtils';
 import { createTransferTransaction, patchTransaction, tryPatchTransaction } from './TransactionsTestUtils';
 
 // eslint-disable-next-line @typescript-eslint/no-require-imports
@@ -25,15 +26,26 @@ beforeAll(() => {
     server = app.listen(port);
 });
 
-afterAll((done) => {
-    userIds.forEach(async (id) => {
-        await deleteUserAfterTest(id, DatabaseConnection.instance(config));
-    });
+afterAll(async () => {
+    const databaseConnection = DatabaseConnection.instance(config);
+    for (const id of userIds) {
+        await deleteUserAfterTest(id, databaseConnection);
+    }
     userIds = [];
-    // @ts-expect-error is necessary
-    server.closeAllConnections();
-    // @ts-expect-error is necessary
-    server.close(done);
+
+    await new Promise<void>((resolve) => {
+        // @ts-expect-error server is assigned in beforeAll
+        server.close(() => resolve());
+        // @ts-expect-error drop idle keep-alive sockets so close() can complete
+        server.closeAllConnections?.();
+    });
+
+    try {
+        await KeyValueStoreBuilder.build().disconnect();
+    } catch {
+        // redis client may already be closed
+    }
+    await databaseConnection.close();
 });
 
 describe('POST /transaction/create - transfare', () => {
@@ -62,6 +74,7 @@ describe('POST /transaction/create - transfare', () => {
             const accountId = accounts[0].accountId;
             const currencyId = accounts[0].currencyId;
             const targetAccountId = accounts[1].accountId;
+            const targetCurrencyId = accounts[1].currencyId;
 
             const {
                 body: { data: accountBefor },
@@ -86,7 +99,9 @@ describe('POST /transaction/create - transfare', () => {
                     currencyId,
                     transactionTypeId: 3,
                     targetAccountId,
+                    targetCurrencyId,
                     amount: num,
+                    targetAmount: num,
                     description: 'Test',
                 })
                 .expect(HttpCode.CREATED);
@@ -123,9 +138,9 @@ describe('POST /transaction/create - transfare', () => {
 
         const { accounts } = await getOverview(agent, userId, authorization);
         const accountId = accounts[0].accountId;
-        const accountIdPatch = accounts[2]?.accountId ?? accounts[1].accountId;
         const targetAccountId = accounts[1].accountId;
         const currencyId = accounts[0].currencyId;
+        const accountIdPatch = await createAccount(agent, userId, authorization, currencyId, 1000, 'Patch source');
 
         const accountBefore = await getAccount(agent, userId, authorization, accountId);
         const accountPatchBefore = await getAccount(agent, userId, authorization, accountIdPatch);
@@ -156,8 +171,8 @@ describe('POST /transaction/create - transfare', () => {
         const { accounts } = await getOverview(agent, userId, authorization);
         const accountId = accounts[0].accountId;
         const targetAccountId = accounts[1].accountId;
-        const targetAccountIdPatch = accounts[2]?.accountId ?? accounts[1].accountId;
         const currencyId = accounts[0].currencyId;
+        const targetAccountIdPatch = await createAccount(agent, userId, authorization, currencyId, 1000, 'Patch target');
 
         const accountBefore = await getAccount(agent, userId, authorization, accountId);
         const targetBefore = await getAccount(agent, userId, authorization, targetAccountId);
@@ -195,7 +210,7 @@ describe('POST /transaction/create - transfare', () => {
 
         const id = await createTransferTransaction(agent, userId, authorization, accountId, targetAccountId, currencyId, 100);
 
-        await patchTransaction(agent, userId, authorization, id, { amount: 200 });
+        await patchTransaction(agent, userId, authorization, id, { amount: 200, targetAmount: 200 });
 
         const accountAfter = await getAccount(agent, userId, authorization, accountId);
         const targetAfter = await getAccount(agent, userId, authorization, targetAccountId);
@@ -212,9 +227,9 @@ describe('POST /transaction/create - transfare', () => {
 
         const { accounts } = await getOverview(agent, userId, authorization);
         const accountId = accounts[0].accountId;
-        const accountIdPatch = accounts[2]?.accountId ?? accounts[1].accountId;
         const targetAccountId = accounts[1].accountId;
         const currencyId = accounts[0].currencyId;
+        const accountIdPatch = await createAccount(agent, userId, authorization, currencyId, 1000, 'Patch source 2');
 
         const accountBefore = await getAccount(agent, userId, authorization, accountId);
         const accountPatchBefore = await getAccount(agent, userId, authorization, accountIdPatch);
@@ -222,7 +237,7 @@ describe('POST /transaction/create - transfare', () => {
 
         const id = await createTransferTransaction(agent, userId, authorization, accountId, targetAccountId, currencyId, 100);
 
-        await patchTransaction(agent, userId, authorization, id, { accountId: accountIdPatch, amount: 200 });
+        await patchTransaction(agent, userId, authorization, id, { accountId: accountIdPatch, amount: 200, targetAmount: 200 });
 
         const accountAfter = await getAccount(agent, userId, authorization, accountId);
         const accountPatchAfter = await getAccount(agent, userId, authorization, accountIdPatch);
@@ -338,8 +353,11 @@ describe('POST /transaction/create - transfare', () => {
             .set('authorization', authorization)
             .send({
                 accountId: 21,
+                currencyId: 1,
                 transactionTypeId: 3,
+                targetCurrencyId: 1,
                 amount: 1000,
+                targetAmount: 1000,
                 description: 'Test',
             })
             .expect(HttpCode.BAD_REQUEST);
@@ -369,8 +387,12 @@ describe('POST /transaction/create - transfare', () => {
             .post(`/user/${userId}/transaction/`)
             .set('authorization', authorization)
             .send({
+                targetAccountId: 22,
+                currencyId: 1,
                 transactionTypeId: 3,
+                targetCurrencyId: 1,
                 amount: 1000,
+                targetAmount: 1000,
                 description: 'Test',
             })
             .expect(HttpCode.BAD_REQUEST);
@@ -401,8 +423,11 @@ describe('POST /transaction/create - transfare', () => {
             .post(`/user/${userId}/transaction/`)
             .set('authorization', authorization)
             .send({
+                currencyId: 1,
                 transactionTypeId: 3,
+                targetCurrencyId: 1,
                 amount: 1000,
+                targetAmount: 1000,
                 description: 'Test',
             })
             .expect(HttpCode.BAD_REQUEST);
@@ -427,8 +452,11 @@ describe('POST /transaction/create - transfare', () => {
             .set('authorization', authorization)
             .send({
                 accountId: 5,
-                targetAccountId: 5,
+                targetAccountId: 6,
+                currencyId: 1,
                 transactionTypeId: 3,
+                targetCurrencyId: 1,
+                targetAmount: 1000,
                 description: 'Test',
             })
             .expect(HttpCode.BAD_REQUEST);

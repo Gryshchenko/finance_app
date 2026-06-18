@@ -1,6 +1,7 @@
 import { IDatabaseConnection } from '../src/interfaces/IDatabaseConnection';
 import { HttpCode } from 'tenpercent/shared';
 import DatabaseConnection from '../src/repositories/DatabaseConnection';
+import { KeyValueStoreBuilder } from '../src/repositories/keyValueStore/KeyValueStoreBuilder';
 import config from '../src/config/dbConfig';
 import { Agent } from 'supertest';
 import { LanguageType } from 'tenpercent/shared';
@@ -84,6 +85,34 @@ export async function deleteUserAfterTest(id: number, db: IDatabaseConnection) {
     await db.engine()('users').delete().where({ userId: id });
 }
 
+/**
+ * Tears down an integration-test app cleanly so no open handles (TCPWRAP) leak:
+ *  - deletes any users created during the suite,
+ *  - closes the HTTP server and drops idle keep-alive sockets,
+ *  - disconnects Redis,
+ *  - destroys the shared knex (Postgres) pool.
+ */
+export async function closeTestApp(server: unknown, userIds: number[] = []): Promise<void> {
+    const databaseConnection = DatabaseConnection.instance(config);
+    for (const id of userIds) {
+        await deleteUserAfterTest(id, databaseConnection);
+    }
+
+    await new Promise<void>((resolve) => {
+        const srv = server as { close: (cb: () => void) => void; closeAllConnections?: () => void };
+        srv.close(() => resolve());
+        // drop idle keep-alive sockets so close() can complete
+        srv.closeAllConnections?.();
+    });
+
+    try {
+        await KeyValueStoreBuilder.build().disconnect();
+    } catch {
+        // redis client may already be closed
+    }
+    await databaseConnection.close();
+}
+
 const createUserBase = async ({
     agent,
     password = generateRandomPassword(),
@@ -120,7 +149,7 @@ export const createUser = async ({
     email = generateRandomEmail(),
     publicName = generateRandomName(),
     locale = LanguageType.US,
-    databaseConnection = new DatabaseConnection(config),
+    databaseConnection = DatabaseConnection.instance(config),
     currencyCode = 'USD',
 }: {
     agent: Agent;

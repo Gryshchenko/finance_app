@@ -14,7 +14,7 @@
  * so they will FAIL until the bug is fixed.
  */
 
-import { createUser, deleteUserAfterTest, generateSecureRandom } from '../TestsUtils.';
+import { closeTestApp, createUser, deleteUserAfterTest, generateSecureRandom } from '../TestsUtils.';
 import DatabaseConnection from '../../src/repositories/DatabaseConnection';
 import config from '../../src/config/dbConfig';
 import { HttpCode, UserStatus } from 'tenpercent/shared';
@@ -39,12 +39,8 @@ beforeAll(() => {
     server = app.listen(port);
 });
 
-afterAll((done) => {
-    userIds.forEach(async (id) => {
-        await deleteUserAfterTest(id, DatabaseConnection.instance(config));
-    });
-    (server as any).closeAllConnections();
-    (server as { close: (cb: () => void) => void }).close(done);
+afterAll(async () => {
+    await closeTestApp(server, userIds);
 });
 
 // ─── helpers ─────────────────────────────────────────────────────────────────

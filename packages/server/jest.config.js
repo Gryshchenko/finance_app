@@ -27,7 +27,7 @@ module.exports = {
             statements: 70,
         },
     },
-    testPathIgnorePatterns: ['/node_modules/'],
+    testPathIgnorePatterns: ['/node_modules/', '/dist'],
     setupFiles: ['./jest.setup.ts'],
     transform: {
         '^.+\\.ts?$': [

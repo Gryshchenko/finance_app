@@ -7,7 +7,7 @@
  * GET  /register/signup/:userId/email-confirmation/
  */
 
-import { createUserNotVerify, deleteUserAfterTest, generateSecureRandom } from '../TestsUtils.';
+import { closeTestApp, createUserNotVerify, deleteUserAfterTest, generateSecureRandom } from '../TestsUtils.';
 import DatabaseConnection from '../../src/repositories/DatabaseConnection';
 import config from '../../src/config/dbConfig';
 import { HttpCode } from 'tenpercent/shared';
@@ -29,11 +29,8 @@ beforeAll(async () => {
     agent = request.agent(server);
 });
 
-afterAll((done) => {
-    userIds.forEach(async (id) => {
-        await deleteUserAfterTest(id, DatabaseConnection.instance(config));
-    });
-    (server as { close: (cb: () => void) => void }).close(done);
+afterAll(async () => {
+    await closeTestApp(server, userIds);
 });
 
 // ─── POST /register/signup ───────────────────────────────────────────────────
@@ -191,7 +188,7 @@ describe('POST /register/signup/:userId/email-confirmation/verify - validation',
     let confirmationCode: number;
 
     beforeAll(async () => {
-        const db = new DatabaseConnection(config);
+        const db = DatabaseConnection.instance(config);
         const localAgent = request.agent(server);
         const email = `verif_${Date.now()}@example.com`;
         const result = await createUserNotVerify({ agent: localAgent, email });

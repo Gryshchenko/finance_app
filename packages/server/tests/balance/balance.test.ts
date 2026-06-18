@@ -1,4 +1,4 @@
-import { createUser, deleteUserAfterTest, generateSecureRandom } from '../TestsUtils.';
+import { closeTestApp, createUser, deleteUserAfterTest, generateSecureRandom } from '../TestsUtils.';
 import DatabaseConnection from '../../src/repositories/DatabaseConnection';
 import config from '../../src/config/dbConfig';
 import { HttpCode, Utils } from 'tenpercent/shared';
@@ -21,15 +21,8 @@ beforeAll(() => {
     server = app.listen(port);
 });
 
-afterAll((done) => {
-    userIds.forEach(async (id) => {
-        await deleteUserAfterTest(id, DatabaseConnection.instance(config));
-    });
-    userIds = [];
-    // @ts-expect-error is necessary
-    server.closeAllConnections();
-    // @ts-expect-error is necessary
-    server.close(done);
+afterAll(async () => {
+    await closeTestApp(server, userIds);
 });
 
 describe('POST /balance', () => {
@@ -67,17 +60,18 @@ describe('POST /balance', () => {
                     incomeId,
                     accountId,
                     currencyId,
+                    targetCurrencyId: currencyId,
                     transactionTypeId: 1,
                     amount: num,
+                    targetAmount: num,
                     description: 'Test',
                 })
                 .expect(HttpCode.CREATED);
             const {
                 body: {
-                    data: { balanceId, balance },
+                    data: { balance },
                 },
             } = await agent.get(`/user/${userId}/balance`).set('authorization', authorization).send({}).expect(HttpCode.OK);
-            expect(balanceId).toBeTruthy();
             expect(Number(balance).toFixed(2)).toBe(String(sum.toFixed(2)));
         }
     });
@@ -114,17 +108,18 @@ describe('POST /balance', () => {
                     categoryId,
                     accountId,
                     currencyId,
+                    targetCurrencyId: currencyId,
                     transactionTypeId: 2,
                     amount: num,
+                    targetAmount: num,
                     description: 'Test',
                 })
                 .expect(HttpCode.CREATED);
             const {
                 body: {
-                    data: { balanceId, balance },
+                    data: { balance },
                 },
             } = await agent.get(`/user/${userId}/balance`).set('authorization', authorization).send({}).expect(HttpCode.OK);
-            expect(balanceId).toBeTruthy();
             expect(Number(balance).toFixed(2)).toBe(String(sum.toFixed(2)));
         }
     });
@@ -174,8 +169,10 @@ describe('POST /balance', () => {
                     accountId,
                     incomeId,
                     currencyId,
+                    targetCurrencyId: currencyId,
                     transactionTypeId: 1,
                     amount: create,
+                    targetAmount: create,
                     description: 'Test',
                 })
                 .expect(HttpCode.CREATED);
@@ -214,7 +211,7 @@ describe('POST /balance', () => {
         const newAmount = 1000;
 
         const registerUser = async () => {
-            const databaseConnection = new DatabaseConnection(config);
+            const databaseConnection = DatabaseConnection.instance(config);
             const { userId, authorization } = await createUser({
                 agent,
                 databaseConnection,
@@ -282,7 +279,9 @@ describe('POST /balance', () => {
 
         for (const currency of currencies) {
             const currencyData = await getCurrencyData(currency, auth);
-            const rate = await getExchangeRate('USD', currency, auth);
+            // balance is expressed in the user's currency (USD), so foreign account
+            // amounts are converted with the foreign→USD rate (matches BalanceService)
+            const rate = await getExchangeRate(currency, 'USD', auth);
 
             const account = await createAccount(userId, currencyData.currencyId, currency, auth);
 

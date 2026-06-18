@@ -1,4 +1,5 @@
 import {
+    closeTestApp,
     createUser,
     deleteUserAfterTest,
     generateRandomEmail,
@@ -9,6 +10,7 @@ import {
 import { ResponseStatusType } from 'tenpercent/shared';
 import { HttpCode } from 'tenpercent/shared';
 import DatabaseConnection from '../../src/repositories/DatabaseConnection';
+import { IDatabaseConnection } from '../../src/interfaces/IDatabaseConnection';
 import config from '../../src/config/dbConfig';
 import { LanguageType } from 'tenpercent/shared';
 import { UserStatus } from 'tenpercent/shared';
@@ -34,14 +36,8 @@ beforeAll(() => {
     server = app.listen(port);
 });
 
-afterAll((done) => {
-    userIds.forEach(async (id) => {
-        await deleteUserAfterTest(id, DatabaseConnection.instance(config));
-    });
-    // @ts-expect-error is necessary
-    server.closeAllConnections();
-    // @ts-expect-error is necessary
-    server.close(done);
+afterAll(async () => {
+    await closeTestApp(server, userIds);
 });
 
 describe('POST /auth', () => {
@@ -51,10 +47,10 @@ describe('POST /auth', () => {
     let password: string;
     let authorization: string;
     let longToken: string;
-    let databaseConnection: DatabaseConnection;
+    let databaseConnection: IDatabaseConnection;
 
     beforeAll(async () => {
-        databaseConnection = new DatabaseConnection(config);
+        databaseConnection = DatabaseConnection.instance(config);
         agent = request.agent(server);
         password = generateRandomPassword();
         email = generateRandomEmail();

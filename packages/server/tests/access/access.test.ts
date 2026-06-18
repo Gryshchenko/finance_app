@@ -1,4 +1,4 @@
-import { createUser, deleteUserAfterTest, generateSecureRandom } from '../TestsUtils.';
+import { closeTestApp, createUser, deleteUserAfterTest, generateSecureRandom } from '../TestsUtils.';
 import DatabaseConnection from '../../src/repositories/DatabaseConnection';
 import config from '../../src/config/dbConfig';
 import { HttpCode } from 'tenpercent/shared';
@@ -21,21 +21,14 @@ beforeAll(() => {
     server = app.listen(port);
 });
 
-afterAll((done) => {
-    userIds.forEach(async (id) => {
-        await deleteUserAfterTest(id, DatabaseConnection.instance(config));
-    });
-    userIds = [];
-    // @ts-expect-error is necessary
-    server.closeAllConnections();
-    // @ts-expect-error is necessary
-    server.close(done);
+afterAll(async () => {
+    await closeTestApp(server, userIds);
 });
 
 describe('Access control', () => {
     it("denies access to another user's account, category, balance and transaction", async () => {
         const agent = request.agent(server);
-        const databaseConnection = new DatabaseConnection(config);
+        const databaseConnection = DatabaseConnection.instance(config);
         const { userId, authorization } = await createUser({
             agent,
             databaseConnection,
@@ -75,9 +68,11 @@ describe('Access control', () => {
             .send({
                 accountId,
                 currencyId: 1,
+                targetCurrencyId: 1,
                 transactionTypeId: 2,
                 categoryId,
                 amount: 100,
+                targetAmount: 100,
                 description: 'Hidden from others',
             })
             .expect(HttpCode.CREATED);

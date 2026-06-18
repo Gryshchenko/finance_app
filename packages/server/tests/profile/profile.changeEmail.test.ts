@@ -6,7 +6,14 @@
  * POST /user/:userId/profile/email-change/resend  - resend code
  */
 
-import { createUser, createUserNotVerify, deleteUserAfterTest, generateSecureRandom, generateRandomEmail } from '../TestsUtils.';
+import {
+    closeTestApp,
+    createUser,
+    createUserNotVerify,
+    deleteUserAfterTest,
+    generateSecureRandom,
+    generateRandomEmail,
+} from '../TestsUtils.';
 import DatabaseConnection from '../../src/repositories/DatabaseConnection';
 import config from '../../src/config/dbConfig';
 import { HttpCode } from 'tenpercent/shared';
@@ -28,12 +35,7 @@ beforeAll(() => {
 });
 
 afterAll(async () => {
-    await db.engine()('email_changing').delete().whereIn('userId', userIds);
-    for (const id of userIds) {
-        await deleteUserAfterTest(id, db);
-    }
-    (server as any).closeAllConnections();
-    await new Promise<void>((resolve) => (server as { close: (cb: () => void) => void }).close(resolve));
+    await closeTestApp(server, userIds);
 });
 
 describe('POST /user/:userId/profile/email-change - request email change', () => {

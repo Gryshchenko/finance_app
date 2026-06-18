@@ -93,7 +93,9 @@ async function createTransferTransaction(
         currencyId,
         transactionTypeId: TransactionType.Transafer,
         targetAccountId,
+        targetCurrencyId: currencyId,
         amount,
+        targetAmount: amount,
         description: 'Test transfer',
         createdAt,
     });
@@ -118,7 +120,9 @@ async function createTransferTransactions(
             currencyId,
             transactionTypeId: TransactionType.Transafer,
             targetAccountId,
+            targetCurrencyId: currencyId,
             amount: amount,
+            targetAmount: amount,
             description: 'Test transfer',
             createdAt,
         });
@@ -143,6 +147,8 @@ async function createIncomeTransaction(
         transactionTypeId: TransactionType.Income,
         amount,
         currencyId,
+        targetAmount: amount,
+        targetCurrencyId: currencyId,
         description: 'Test income',
         createdAt,
     });
@@ -168,6 +174,8 @@ async function createIncomeTransactions(
             transactionTypeId: TransactionType.Income,
             amount,
             currencyId,
+            targetAmount: amount,
+            targetCurrencyId: currencyId,
             description: 'Test income',
             createdAt,
         });
@@ -192,6 +200,8 @@ async function createExpenseTransaction(
         transactionTypeId: TransactionType.Expense,
         amount,
         currencyId,
+        targetAmount: amount,
+        targetCurrencyId: currencyId,
         description: 'Test expense',
         createdAt,
     });
@@ -209,6 +219,7 @@ async function patchExpenseTransaction(
 ): Promise<void> {
     await patchTransaction(agent, userId, authorization, id, {
         amount,
+        targetAmount: amount,
         createdAt,
     });
 }
@@ -232,6 +243,8 @@ async function createExpenseTransactions(
             transactionTypeId: TransactionType.Expense,
             amount,
             currencyId,
+            targetAmount: amount,
+            targetCurrencyId: currencyId,
             description: 'Test expense',
             createdAt,
         });
