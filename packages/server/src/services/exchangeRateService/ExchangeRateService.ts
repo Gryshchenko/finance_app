@@ -1,30 +1,43 @@
-import { Time, TimeDuration, IRate } from 'tenpercent/shared';
+import { ICurrency, IRate, Time, TimeDuration } from 'tenpercent/shared';
 
 import { LoggerBase } from 'helper/logger/LoggerBase';
 import { IRateProvider } from 'interfaces/IRateProvider';
-import { ICurrencyService } from 'services/currency/CurrencyService';
 import { IExchangeRateDataAccess } from 'services/exchangeRateService/ExchangeRateDataAccess';
 import RateProviderBuilder from 'services/exchangeRateService/providers/RateProviderBuilder';
 
 export interface IExchangeRateService {
-    updateCurrencyRates(): Promise<void>;
     get(baseCurrency: string, targetCurrency: string): Promise<IRate | undefined>;
     post(baseCurrency: string, targetCurrencies: Record<string, number>): Promise<boolean>;
     patch(baseCurrency: string, targetCurrencies: Record<string, number>): Promise<boolean>;
     gets(baseCurrency: string): Promise<IRate[] | undefined>;
+    syncCurrenciesRates(currencies: ICurrency[]): Promise<void>;
 }
 
 export default class ExchangeRateService extends LoggerBase implements IExchangeRateService {
     private readonly _rateProvider: IRateProvider;
     private readonly _exchangeRateDataAccess: IExchangeRateDataAccess;
-    private readonly _currencyService: ICurrencyService;
 
-    public constructor(exchangeRateDataAccess: IExchangeRateDataAccess, currencyService: ICurrencyService) {
+    public constructor(exchangeRateDataAccess: IExchangeRateDataAccess) {
         super();
         this._rateProvider = RateProviderBuilder.build();
         this._exchangeRateDataAccess = exchangeRateDataAccess;
-        this._currencyService = currencyService;
     }
+    public async get(baseCurrency: string, targetCurrency: string): Promise<IRate | undefined> {
+        return await this._exchangeRateDataAccess.get(baseCurrency, targetCurrency);
+    }
+    public async gets(baseCurrency: string): Promise<IRate[] | undefined> {
+        return await this._exchangeRateDataAccess.gets(baseCurrency);
+    }
+    public async post(baseCurrency: string, targetCurrencies: Record<string, number>): Promise<boolean> {
+        return await this._exchangeRateDataAccess.post(baseCurrency, targetCurrencies);
+    }
+    public async patch(baseCurrency: string, targetCurrencies: Record<string, number>): Promise<boolean> {
+        return await this._exchangeRateDataAccess.patch(baseCurrency, targetCurrencies);
+    }
+    public async getRates(baseCurrency: string, currencies: string[]): Promise<Record<string, number>> {
+        return await this._rateProvider.getRates(baseCurrency, currencies);
+    }
+
     private async logAndStoreRates(
         action: 'insert' | 'update',
         currencyCode: string,
@@ -42,11 +55,10 @@ export default class ExchangeRateService extends LoggerBase implements IExchange
         }
     }
 
-    public async updateCurrencyRates(): Promise<void> {
+    public async syncCurrenciesRates(currencies: ICurrency[]): Promise<void> {
         try {
             this._logger.info('Start currency rates update process');
 
-            const currencies = await this._currencyService.gets();
             const currenciesCodes = currencies.map((c) => c.currencyCode);
 
             for (const { currencyCode } of currencies) {
@@ -84,17 +96,5 @@ export default class ExchangeRateService extends LoggerBase implements IExchange
         } catch (e) {
             this._logger.error(`Currency rate update failed: ${(e as { message: string }).message}`);
         }
-    }
-    public async get(baseCurrency: string, targetCurrency: string): Promise<IRate | undefined> {
-        return await this._exchangeRateDataAccess.get(baseCurrency, targetCurrency);
-    }
-    public async gets(baseCurrency: string): Promise<IRate[] | undefined> {
-        return await this._exchangeRateDataAccess.gets(baseCurrency);
-    }
-    public async post(baseCurrency: string, targetCurrencies: Record<string, number>): Promise<boolean> {
-        return await this._exchangeRateDataAccess.post(baseCurrency, targetCurrencies);
-    }
-    public async patch(baseCurrency: string, targetCurrencies: Record<string, number>): Promise<boolean> {
-        return await this._exchangeRateDataAccess.patch(baseCurrency, targetCurrencies);
     }
 }

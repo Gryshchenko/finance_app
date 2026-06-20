@@ -16,6 +16,7 @@ export class ExchangeService extends ApiAbstract {
     public async doGetRateForCurrency(
         sourceCurrency: string,
         targetCurrency: string,
+        date: string,
     ): Promise<
         | {
               kind: GeneralApiProblemKind.Ok;
@@ -25,7 +26,9 @@ export class ExchangeService extends ApiAbstract {
     > {
         return this.withErrorHandler(async () => {
             this._logger.info(`Start fetching rate for currency ${sourceCurrency}`);
-            const response = await this.authGet(`/exchange-rates?currency=${sourceCurrency}&targetCurrency=${targetCurrency}`);
+            const response = await this.authGet(
+                `/exchange-rates?currency=${sourceCurrency}&targetCurrency=${targetCurrency}&date=${date}`,
+            );
             if (response.kind === GeneralApiProblemKind.Ok) {
                 this._logger.info(`Fetching rate successfully`);
             } else {

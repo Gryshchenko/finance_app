@@ -36,6 +36,7 @@ interface IProps {
 const fetchRates = async (
     sourceCurrencySymbol: string | undefined,
     targetCurrencySymbol: string | undefined,
+    date: string,
 ): Promise<IRate | undefined> => {
     try {
         if (sourceCurrencySymbol === targetCurrencySymbol) return undefined;
@@ -44,7 +45,7 @@ const fetchRates = async (
 
         const exchangeService = ExchangeService.instance();
 
-        const response = await exchangeService.doGetRateForCurrency(sourceCurrencySymbol, targetCurrencySymbol);
+        const response = await exchangeService.doGetRateForCurrency(sourceCurrencySymbol, targetCurrencySymbol, date);
         if (response.kind === GeneralApiProblemKind.Ok) {
             return response.data as IRate;
         } else {
@@ -72,8 +73,8 @@ export const TransactionFields: FC<IProps> = function TransactionFields(_props) 
     const targetCurrencySymbol = hasDifferentCurrencies ? getCurrency(form.targetCurrencyId as number)?.currencyCode : undefined;
 
     const { data: rates } = useAppQuery<IRate | undefined>(
-        QueryKeys.rates(form.currencyId, form.targetCurrencyId),
-        () => fetchRates(sourceCurrencySymbol, targetCurrencySymbol),
+        [QueryKeys.rates(form.currencyId, form.targetCurrencyId), form.createdAt, sourceCurrencySymbol, targetCurrencySymbol],
+        () => fetchRates(sourceCurrencySymbol, targetCurrencySymbol, form.createdAt as string),
         { enabled: hasDifferentCurrencies, staleTime: QueryStaleTimes.rates },
     );
     const renderDropdownInputs = () => {

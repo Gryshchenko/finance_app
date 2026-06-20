@@ -3,7 +3,7 @@ import { ErrorCode, HttpCode, ResponseStatusType, Utils } from 'tenpercent/share
 
 import Logger from 'helper/logger/Logger';
 import ResponseBuilder from 'helper/responseBuilder/ResponseBuilder';
-import ExchangeRateServiceBuilder from 'services/exchangeRateService/ExchangeRateServiceBuilder';
+import { CurrencyOrchestratorServiceBuilder } from 'services/currencyOrchestrator/CurrencyOrchestratorServiceBuilder';
 import { BaseError } from 'src/utils/errors/BaseError';
 import { ValidationError } from 'src/utils/errors/ValidationError';
 import { generateErrorResponse } from 'src/utils/generateErrorResponse';
@@ -15,12 +15,13 @@ export class ExchangeRateController {
         try {
             const currency: string = String(req.query.currency) as string;
             const targetCurrency: string = String(req.query.targetCurrency) as string;
+            const date: string = String(req.query.date) as string;
             if (Utils.isEmpty(currency) || Utils.isEmpty(targetCurrency)) {
                 throw new ValidationError({
                     message: `Conversation failed currency: ${currency} or target currency should not be empty: ${targetCurrency}`,
                 });
             }
-            const rate = await ExchangeRateServiceBuilder.build().get(currency, targetCurrency);
+            const rate = await CurrencyOrchestratorServiceBuilder.build().get(currency, targetCurrency, date);
             res.status(HttpCode.OK).json(responseBuilder.setStatus(ResponseStatusType.OK).setData(rate).build());
         } catch (e: unknown) {
             ExchangeRateController.logger.error(`Convert failed due reason: ${(e as { message: string }).message}`);

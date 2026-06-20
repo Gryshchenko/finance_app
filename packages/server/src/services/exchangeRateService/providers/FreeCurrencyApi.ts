@@ -94,4 +94,45 @@ export class FreeCurrencyApi extends LoggerBase implements IRateProvider {
             throw e;
         }
     }
+    public async historical(base_currency: string, currencies: string[], date: string): Promise<Record<string, number>> {
+        try {
+            this.checkConfig();
+            if (!base_currency) {
+                throw new Error('Base currency missed');
+            }
+            if (Utils.isArrayEmpty(currencies) || currencies.length === 0) {
+                throw new Error('Currencies list missed');
+            }
+            this._logger.info(`Fetch historical rates for ${base_currency}, currencies count: ${currencies.length}`);
+            const { remaining } = await this.getStatus();
+            if (remaining <= 0) {
+                throw new Error('reach monthly quotas limits');
+            }
+            const response = await fetch(
+                `${this._URL}/historical?apikey=${this._API_KEY}&base_currency=${base_currency}&date=${date}&currencies=${encodeURIComponent(currencies.join(','))}`,
+            );
+            if (!response.ok) {
+                const { message, errors } = await response.json();
+                throw new Error(`response status: ${response.status}, ${this.buildErrorMessage(message, errors)}`);
+            }
+            const { data } = await response.json();
+            if (!data || Object.keys(data).length === 0) {
+                throw new Error(`currencies response is empty`);
+            }
+            const result: Record<string, number> = {};
+            for (const currency of currencies) {
+                const rate = data[currency];
+                if (!isNaN(rate) && rate > 0 && rate < Number.MAX_SAFE_INTEGER) {
+                    result[currency] = Number(rate);
+                } else {
+                    this._logger.error(`Invalid rate for currency: ${currency}, value: ${data[currency]}`);
+                }
+            }
+            this._logger.info('Successfully fetched currency rates');
+            return result as Record<string, number>;
+        } catch (e: unknown) {
+            this._logger.error(`Fetch historical rates failed due reason: ${(e as { message: string }).message}`);
+            throw e;
+        }
+    }
 }
