@@ -1,6 +1,6 @@
 export interface ICreateAccount {
     accountName: string;
-    currencyId: number;
+    currencyCode: string;
     amount: number;
     iconId?: string;
     colorId?: string;

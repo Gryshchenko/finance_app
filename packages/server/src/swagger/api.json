@@ -274,11 +274,6 @@
                         "description": "Account balance.",
                         "example": 1500.75
                     },
-                    "currencyId": {
-                        "type": "integer",
-                        "description": "Unique identifier for the currency.",
-                        "example": 840
-                    },
                     "currencyCode": {
                         "type": "string",
                         "description": "Currency code (e.g., USD, EUR).",
@@ -319,10 +314,10 @@
                         "description": "Name of the income source.",
                         "example": "Salary"
                     },
-                    "currencyId": {
-                        "type": "integer",
-                        "description": "Unique identifier for the currency.",
-                        "example": 840
+                    "currencyCode": {
+                        "type": "string",
+                        "description": "Currency code (e.g., USD, EUR).",
+                        "example": "USD"
                     }
                 }
             },
@@ -342,12 +337,12 @@
             "Profile": {
                 "type": "object",
                 "description": "User profile details, including locale, currency, and account settings.",
-                "required": ["profileId", "userId", "userName", "currencyId", "locale", "mailConfirmed"],
+                "required": ["profileId", "userId", "userName", "currencyCode", "locale", "mailConfirmed"],
                 "properties": {
                     "profileId": { "type": "integer", "example": 123 },
                     "userId": { "type": "integer", "example": 42 },
                     "userName": { "type": "string", "example": "John Doe" },
-                    "currencyId": { "type": "integer", "example": 840 },
+                    "currencyCode": { "type": "string", "example": "USD" },
                     "locale": { "type": "string", "enum": ["en-US", "fr-FR", "es-ES"], "example": "en-US" },
                     "mailConfirmed": { "type": "boolean", "example": true }
                 }
@@ -410,10 +405,6 @@
                         "type": "number",
                         "description": "ID of the transaction category."
                     },
-                    "currencyId": {
-                        "type": "number",
-                        "description": "ID of the currency for the transaction."
-                    },
                     "currencyName": {
                         "type": "string",
                         "description": "Name of the currency for the transaction."
@@ -453,7 +444,7 @@
                     "incomeId": { "type": "number", "description": "ID of the associated income." },
                     "accountId": { "type": "number", "description": "ID of the transaction account." },
                     "targetAccountId": { "type": "number", "description": "ID of the target account in transfers." },
-                    "currencyId": { "type": "number", "description": "ID of the currency for the transaction." },
+                    "currencyCode": { "type": "string", "description": "Currency code for the transaction (e.g., USD, EUR)." },
                     "transactionTypeId": {
                         "type": "number",
                         "example": 1,

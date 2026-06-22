@@ -54,7 +54,7 @@ type TransactionsRouteParams = {
     type: TransactionFieldType;
     path: OverviewPath;
     statsType: StatsType;
-    currencyId: number;
+    currencyCode: string;
 };
 
 export const TransactionsScreen = function TransactionsScreen(_props: Props) {
@@ -86,7 +86,7 @@ export const TransactionsScreen = function TransactionsScreen(_props: Props) {
         return null;
     }
 
-    const { id, type, name, path, statsType, currencyId } = params;
+    const { id, type, name, path, statsType, currencyCode } = params;
 
     return (
         <GenericListScreen
@@ -107,7 +107,7 @@ export const TransactionsScreen = function TransactionsScreen(_props: Props) {
                             back: {
                                 path: OverviewPath.Transactions,
                                 screen: TransactionPath.Transactions,
-                                params: { id, name, type, path, statsType, currencyId },
+                                params: { id, name, type, path, statsType, currencyCode },
                             },
                         },
                     });
@@ -116,7 +116,7 @@ export const TransactionsScreen = function TransactionsScreen(_props: Props) {
                     transactions: data,
                     entityId: id,
                     statsType,
-                    currencyId,
+                    currencyCode,
                 },
                 fetch: async ({ cursor, limit }) => await fetchTransactions(id, type, cursor, limit),
                 isLoading: isPending,
@@ -140,7 +140,7 @@ export const TransactionsScreen = function TransactionsScreen(_props: Props) {
                                 back: {
                                     path: OverviewPath.Transactions,
                                     screen: TransactionPath.Transactions,
-                                    params: { id, name, type, path, statsType, currencyId },
+                                    params: { id, name, type, path, statsType, currencyCode },
                                 },
                             },
                         });

@@ -3,6 +3,7 @@ import { useNavigation } from '@react-navigation/native';
 import { ITransaction, Time } from 'tenpercent/shared';
 
 import { TransactionFields } from '@/components/transaction/TransactionFields';
+import { useCurrency } from '@/context/CurrencyContext';
 import { useInvalidateQuery } from '@/hooks/useAppQuery';
 import { useEditView } from '@/hooks/useEditView';
 import { ITransactionClient } from '@/interfaces/ITransactionClient';
@@ -22,33 +23,35 @@ export const TransactionCreate: FC<IProps> = function TransactionCreate(_props: 
     const { data, uuid } = _props;
     const navigation = useNavigation();
     const invalidateQuery = useInvalidateQuery();
+    const { currencies } = useCurrency();
 
     const formInitial = {
         amount: '',
         createdAt: Time.getISODateNowUTC(),
         ...data,
         targetAmount: '0',
-        targetCurrencyId: data?.currencyId === data?.targetCurrencyId ? data?.currencyId : data?.targetCurrencyId,
+        targetCurrencyCode: data?.currencyCode === data?.targetCurrencyCode ? data?.currencyCode : data?.targetCurrencyCode,
     };
 
     const { form, handleChange, save, errors, setErrors } = useEditView<Partial<ITransactionClient>>(
         formInitial,
         buildTransactionCreateSchema({
-            targetCurrencyId: data?.targetCurrencyId,
-            currencyId: data?.currencyId!,
+            targetCurrencyCode: data?.targetCurrencyCode,
+            currencyCode: data?.currencyCode!,
+            currencyCodes: Array.from(currencies.keys()),
         }),
         uuid,
     );
 
     const handleCreate = async () => {
         const transactionService = TransactionService.instance();
-        const sameCurrency = !form.targetCurrencyId || form.targetCurrencyId === form.currencyId;
+        const sameCurrency = !form.targetCurrencyCode || form.targetCurrencyCode === form.currencyCode;
         const response = await transactionService.doCreateTransaction({
             accountId: Number(form.accountId),
             incomeId: Number(form.incomeId),
             categoryId: Number(form.categoryId),
-            currencyId: Number(form.currencyId),
-            targetCurrencyId: sameCurrency ? Number(form.currencyId) : Number(form.targetCurrencyId),
+            currencyCode: form.currencyCode,
+            targetCurrencyCode: sameCurrency ? form.currencyCode : form.targetCurrencyCode,
             transactionTypeId: Number(form.transactionTypeId),
             amount: Number(form.amount),
             targetAmount: sameCurrency ? Number(form.amount) : Number(form.targetAmount),

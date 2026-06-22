@@ -4,6 +4,7 @@ import { ITransaction, StatsType } from 'tenpercent/shared';
 
 import { EmptyState } from '@/components/EmptyState';
 import { TransactionFields } from '@/components/transaction/TransactionFields';
+import { useCurrency } from '@/context/CurrencyContext';
 import { useInvalidateQuery } from '@/hooks/useAppQuery';
 import { useEditView } from '@/hooks/useEditView';
 import { useGoBackSmart } from '@/hooks/useGoBackSmart';
@@ -26,12 +27,14 @@ export const TransactionEdit: FC<ITransactionPros> = function TransactionEdit(_p
     const { data, back } = _props;
     const goBackSmart = useGoBackSmart(back);
     const invalidateQuery = useInvalidateQuery();
+    const { currencies } = useCurrency();
 
     const { form, handleChange, save, errors, setErrors } = useEditView<Partial<ITransactionClient>>(
         data!,
         buildTransactionEditSchema({
-            targetCurrencyId: data?.targetCurrencyId,
-            currencyId: data?.currencyId!,
+            targetCurrencyCode: data?.targetCurrencyCode,
+            currencyCode: data?.currencyCode!,
+            currencyCodes: Array.from(currencies.keys()),
         }),
     );
 
@@ -55,13 +58,13 @@ export const TransactionEdit: FC<ITransactionPros> = function TransactionEdit(_p
 
     const handlePatch = async () => {
         const transactionService = TransactionService.instance();
-        const sameCurrency = !form.targetCurrencyId || form.targetCurrencyId === form.currencyId;
+        const sameCurrency = !form.targetCurrencyCode || form.targetCurrencyCode === form.currencyCode;
         const response = await transactionService.doPatchTransaction(form.transactionId!, {
             accountId: form.accountId,
             incomeId: form.incomeId,
             categoryId: form.categoryId,
-            currencyId: form.currencyId,
-            targetCurrencyId: sameCurrency ? form.currencyId : Number(form.targetCurrencyId),
+            currencyCode: form.currencyCode,
+            targetCurrencyCode: sameCurrency ? form.currencyCode : form.targetCurrencyCode,
             amount: Number(form.amount),
             targetAmount: sameCurrency ? Number(form.amount) : Number(form.targetAmount),
             createdAt: form.createdAt,

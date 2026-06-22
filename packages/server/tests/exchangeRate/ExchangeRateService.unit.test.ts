@@ -2,8 +2,21 @@ import ExchangeRateService from 'services/exchangeRateService/ExchangeRateServic
 import RateProviderBuilder from 'services/exchangeRateService/providers/RateProviderBuilder';
 import { IExchangeRateDataAccess } from 'services/exchangeRateService/ExchangeRateDataAccess';
 import { ICurrencyService } from 'services/currency/CurrencyService';
-import { Time } from 'tenpercent/shared';
+import { ICurrency, Time } from 'tenpercent/shared';
 import { IRate } from 'tenpercent/shared/dist/interfaces/IRate';
+
+const currencies: ICurrency[] = [
+    {
+        currencyCode: 'USD',
+        symbol: '$',
+        currencyName: 'US dollar',
+    },
+    {
+        currencyCode: 'EURO',
+        symbol: '€',
+        currencyName: 'Euro',
+    },
+];
 
 const mockRateProvider = {
     getRates: jest.fn<Promise<Record<string, number>>, [string, string[]]>(),
@@ -24,10 +37,7 @@ const mockCurrencyService = {
     getByCurrencyCode: jest.fn(),
 } as jest.Mocked<ICurrencyService>;
 
-// ─── Helpers ──────────────────────────────────────────────────────────────────
-
 const makeCurrency = (currencyCode: string) => ({
-    currencyId: 1,
     currencyCode,
     currencyName: currencyCode,
     symbol: currencyCode,
@@ -52,7 +62,7 @@ beforeEach(() => {
     // Default: rates are fresh (getDiff returns 0 hours)
     getDiffSpy = jest.spyOn(Time, 'getDiff').mockReturnValue(0);
 
-    service = new ExchangeRateService(mockDataAccess, mockCurrencyService);
+    service = new ExchangeRateService(mockDataAccess);
 });
 
 afterEach(() => {
@@ -166,11 +176,11 @@ describe('patch', () => {
     });
 });
 
-describe('updateCurrencyRates', () => {
+describe('syncCurrenciesRates', () => {
     it('does nothing when the currency list is empty', async () => {
         mockCurrencyService.gets.mockResolvedValue([]);
 
-        await service.updateCurrencyRates();
+        await service.syncCurrenciesRates(currencies);
 
         expect(mockDataAccess.gets).not.toHaveBeenCalled();
         expect(mockRateProvider.getRates).not.toHaveBeenCalled();
@@ -185,7 +195,7 @@ describe('updateCurrencyRates', () => {
         mockRateProvider.getRates.mockResolvedValue({ EUR: 0.92, USD: 1 });
         mockDataAccess.post.mockResolvedValue(true);
 
-        await service.updateCurrencyRates();
+        await service.syncCurrenciesRates(currencies);
 
         expect(mockRateProvider.getRates).toHaveBeenCalledWith('USD', ['USD', 'EUR']);
         expect(mockDataAccess.post).toHaveBeenCalledWith('USD', { EUR: 0.92, USD: 1 });
@@ -197,7 +207,7 @@ describe('updateCurrencyRates', () => {
         mockDataAccess.gets.mockResolvedValue([makeRate('USD', 'EUR'), makeRate('USD', 'GBP')]);
         // getDiff returns 0 → not outdated (default mock)
 
-        await service.updateCurrencyRates();
+        await service.syncCurrenciesRates(currencies);
 
         expect(mockRateProvider.getRates).not.toHaveBeenCalled();
         expect(mockDataAccess.patch).not.toHaveBeenCalled();
@@ -218,7 +228,7 @@ describe('updateCurrencyRates', () => {
         mockRateProvider.getRates.mockResolvedValue({ EUR: 0.91 });
         mockDataAccess.patch.mockResolvedValue(true);
 
-        await service.updateCurrencyRates();
+        await service.syncCurrenciesRates(currencies);
 
         // Only EUR was outdated → getRates called with only ['EUR']
         expect(mockRateProvider.getRates).toHaveBeenCalledWith('USD', ['EUR']);
@@ -235,7 +245,7 @@ describe('updateCurrencyRates', () => {
         mockRateProvider.getRates.mockResolvedValue({ EUR: 0.91, GBP: 0.79, JPY: 149.5 });
         mockDataAccess.patch.mockResolvedValue(true);
 
-        await service.updateCurrencyRates();
+        await service.syncCurrenciesRates(currencies);
 
         expect(mockRateProvider.getRates).toHaveBeenCalledWith('USD', ['EUR', 'GBP', 'JPY']);
         expect(mockDataAccess.patch).toHaveBeenCalledWith('USD', { EUR: 0.91, GBP: 0.79, JPY: 149.5 });
@@ -259,7 +269,7 @@ describe('updateCurrencyRates', () => {
         mockDataAccess.post.mockResolvedValue(true);
         mockDataAccess.patch.mockResolvedValue(true);
 
-        await service.updateCurrencyRates();
+        await service.syncCurrenciesRates(currencies);
 
         expect(mockDataAccess.post).toHaveBeenCalledWith('USD', { EUR: 0.92, USD: 1 });
         expect(mockDataAccess.patch).toHaveBeenCalledWith('EUR', { USD: 1.08 });
@@ -268,7 +278,7 @@ describe('updateCurrencyRates', () => {
     it('does not re-throw when currencyService.gets() throws - swallows the error', async () => {
         mockCurrencyService.gets.mockRejectedValue(new Error('DB connection failed'));
 
-        await expect(service.updateCurrencyRates()).resolves.toBeUndefined();
+        await expect(service.syncCurrenciesRates(currencies)).resolves.toBeUndefined();
 
         expect(mockDataAccess.gets).not.toHaveBeenCalled();
         expect(mockRateProvider.getRates).not.toHaveBeenCalled();
@@ -279,7 +289,7 @@ describe('updateCurrencyRates', () => {
         mockDataAccess.gets.mockResolvedValue([]);
         mockRateProvider.getRates.mockRejectedValue(new Error('API quota exceeded'));
 
-        await expect(service.updateCurrencyRates()).resolves.toBeUndefined();
+        await expect(service.syncCurrenciesRates(currencies)).resolves.toBeUndefined();
 
         expect(mockDataAccess.post).not.toHaveBeenCalled();
     });
@@ -290,7 +300,7 @@ describe('updateCurrencyRates', () => {
         mockRateProvider.getRates.mockResolvedValue({ EUR: 0.92 });
         mockDataAccess.post.mockRejectedValue(new Error('Insert constraint violation'));
 
-        await expect(service.updateCurrencyRates()).resolves.toBeUndefined();
+        await expect(service.syncCurrenciesRates(currencies)).resolves.toBeUndefined();
     });
 
     it('does not re-throw when dataAccess.patch throws', async () => {
@@ -301,7 +311,7 @@ describe('updateCurrencyRates', () => {
         mockRateProvider.getRates.mockResolvedValue({ EUR: 0.91 });
         mockDataAccess.patch.mockRejectedValue(new Error('Lock timeout'));
 
-        await expect(service.updateCurrencyRates()).resolves.toBeUndefined();
+        await expect(service.syncCurrenciesRates(currencies)).resolves.toBeUndefined();
     });
 
     it('continues to the next currency after one fails', async () => {
@@ -313,7 +323,7 @@ describe('updateCurrencyRates', () => {
         mockRateProvider.getRates.mockResolvedValue({ USD: 1 });
         mockDataAccess.post.mockResolvedValue(true);
 
-        await expect(service.updateCurrencyRates()).resolves.toBeUndefined();
+        await expect(service.syncCurrenciesRates(currencies)).resolves.toBeUndefined();
 
         // Despite USD failure the overall call must not throw
         // EUR should have been processed (gets called for EUR → no rates → post)
@@ -328,7 +338,7 @@ describe('updateCurrencyRates', () => {
             // post returns false → service logs an error but must not throw
             mockDataAccess.post.mockResolvedValue(false);
 
-            await expect(service.updateCurrencyRates()).resolves.toBeUndefined();
+            await expect(service.syncCurrenciesRates(currencies)).resolves.toBeUndefined();
         });
 
         it('completes without throwing when patch returns false (logs error internally)', async () => {
@@ -340,7 +350,7 @@ describe('updateCurrencyRates', () => {
             // patch returns false → service logs an error but must not throw
             mockDataAccess.patch.mockResolvedValue(false);
 
-            await expect(service.updateCurrencyRates()).resolves.toBeUndefined();
+            await expect(service.syncCurrenciesRates(currencies)).resolves.toBeUndefined();
         });
     });
 });

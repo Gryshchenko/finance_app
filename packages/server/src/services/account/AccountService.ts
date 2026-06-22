@@ -30,7 +30,7 @@ export default class AccountService extends LoggerBase implements IAccountServic
         validateAllowedProperties(account as unknown as Record<string, string | number>, [
             'accountName',
             'amount',
-            'currencyId',
+            'currencyCode',
             'iconId',
         ]);
         const accounts = await this._accountDataAccess.createAccounts(userId, [account], trx);

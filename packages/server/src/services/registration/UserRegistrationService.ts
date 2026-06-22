@@ -160,7 +160,7 @@ export default class UserRegistrationService extends LoggerBase {
                     await this.profileService.post(
                         {
                             userId: user.userId,
-                            currencyId: currency.currencyId,
+                            currencyCode: currency.currencyCode,
                             locale,
                             publicName,
                         },
@@ -277,7 +277,10 @@ export default class UserRegistrationService extends LoggerBase {
 
             const response = await Promise.all([
                 await this.userRoleService.createUserRole(user.userId, RoleType.Default, trx),
-                await this.profileService.post({ userId: user.userId, currencyId: currency.currencyId, locale, publicName }, trx),
+                await this.profileService.post(
+                    { userId: user.userId, currencyCode: currency.currencyCode, locale, publicName },
+                    trx,
+                ),
                 // ...(emailVerified ? [] : [await this.emailConfirmationService.refresh(user.userId, user.email, trx)]),
             ]);
 
@@ -349,7 +352,7 @@ export default class UserRegistrationService extends LoggerBase {
                     userId,
                     translatedDefaultData.income.map((incomeName, index) => ({
                         incomeName,
-                        currencyId: profile.currencyId,
+                        currencyCode: profile.currencyCode,
                         iconId: incomesIcons[index],
                     })),
                     trx,
@@ -359,7 +362,7 @@ export default class UserRegistrationService extends LoggerBase {
                     translatedDefaultData.accounts.map((accountName: string, index: number) => ({
                         accountName,
                         amount: 0,
-                        currencyId: profile.currencyId,
+                        currencyCode: profile.currencyCode,
                         iconId: accountIcons[index],
                     })),
                     trx,
@@ -368,7 +371,7 @@ export default class UserRegistrationService extends LoggerBase {
                     userId,
                     translatedDefaultData.categories.map((categoryName: string, index: number) => ({
                         categoryName,
-                        currencyId: profile.currencyId,
+                        currencyCode: profile.currencyCode,
                         iconId: categoryIcons[index] ?? SpendIcon.ShoppingBag,
                     })),
                     trx,

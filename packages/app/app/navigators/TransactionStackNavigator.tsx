@@ -16,7 +16,7 @@ export type TransactionStackParamList = {
         type: TransactionFieldType;
         path: OverviewPath;
         statsType: StatsType;
-        currencyId: number;
+        currencyCode: string;
     };
     transactionCreate: { payload: Record<string, unknown> } | undefined;
     transactionEdit: { id: number; name: string; payload: string };

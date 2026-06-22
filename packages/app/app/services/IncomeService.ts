@@ -125,7 +125,7 @@ export class IncomeService extends ApiAbstract {
         });
     }
 
-    public async doCreateIncome(body: { incomeName: string; currencyId: number; iconId: string }): Promise<
+    public async doCreateIncome(body: { incomeName: string; currencyCode: string; iconId: string }): Promise<
         | {
               kind: GeneralApiProblemKind.Ok;
               data: IIncome | undefined;
@@ -137,7 +137,7 @@ export class IncomeService extends ApiAbstract {
             const userId = this._authService.userId;
             const response = await this.authPost(`/user/${userId}/income`, {
                 incomeName: String(body.incomeName),
-                currencyId: Number(body.currencyId),
+                currencyCode: body.currencyCode,
                 iconId: String(body.iconId),
             });
             if (response.kind === GeneralApiProblemKind.Ok) {

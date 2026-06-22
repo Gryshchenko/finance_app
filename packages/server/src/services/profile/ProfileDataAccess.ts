@@ -25,9 +25,9 @@ export default class ProfileDataService extends LoggerBase implements IProfileDa
     async post(data: ICreateProfile, trx?: IDBTransaction): Promise<IProfile> {
         try {
             this._logger.info('Request to create profile');
-            const { userId, locale, currencyId, publicName } = data;
+            const { userId, locale, currencyCode, publicName } = data;
             const query = trx || this._db.engine();
-            const response = await query('profiles').insert({ userId, locale, currencyId, publicName }, ['*']);
+            const response = await query('profiles').insert({ userId, locale, currencyCode, publicName }, ['*']);
 
             if (!response?.[0]) {
                 throw new Error('Failed to create profile');
@@ -53,7 +53,7 @@ export default class ProfileDataService extends LoggerBase implements IProfileDa
                     'profiles.profileId',
                     'profiles.userId',
                     'profiles.publicName',
-                    'profiles.currencyId',
+                    'profiles.currencyCode',
                     'profiles.additionalInfo',
                     'profiles.locale',
                     'users.email',
@@ -78,7 +78,7 @@ export default class ProfileDataService extends LoggerBase implements IProfileDa
         try {
             this._logger.info(`Request to patch profile for userId: ${userId}`);
 
-            const allowedKeys = ['locale', 'currencyId', 'publicName'] as string[];
+            const allowedKeys = ['locale', 'currencyCode', 'publicName'] as string[];
 
             validateAllowedProperties(properties, allowedKeys);
 

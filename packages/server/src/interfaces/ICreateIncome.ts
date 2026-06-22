@@ -1,6 +1,6 @@
 export interface ICreateIncome {
     incomeName: string;
-    currencyId: number;
+    currencyCode: string;
     iconId: string;
     colorId?: string;
 }

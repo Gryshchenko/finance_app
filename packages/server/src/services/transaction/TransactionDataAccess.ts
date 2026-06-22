@@ -65,14 +65,14 @@ export default class TransactionDataAccess extends LoggerBase implements ITransa
                     accountId: transaction.accountId,
                     incomeId: transaction.incomeId,
                     categoryId: transaction.categoryId,
-                    currencyId: transaction.currencyId,
+                    currencyCode: transaction.currencyCode,
                     transactionTypeId: transaction.transactionTypeId,
                     amount: transaction.amount,
                     description: transaction.description,
                     userId: transaction.userId,
                     createdAt: transaction.createdAt,
                     targetAccountId: transaction.targetAccountId,
-                    targetCurrencyId: transaction.targetCurrencyId,
+                    targetCurrencyCode: transaction.targetCurrencyCode,
                     targetAmount: transaction.targetAmount,
                 },
                 ['transactionId'],
@@ -114,7 +114,7 @@ export default class TransactionDataAccess extends LoggerBase implements ITransa
                 .engine()('transactions')
                 .select<
                     ITransactionListItem[]
-                >('transactions.transactionId', 'transactions.amount', 'transactions.description', 'transactions.createdAt', 'transactions.currencyId', 'transactions.targetAccountId', 'transactions.transactionTypeId', 'incomes.incomeName', 'categories.categoryName', 'sourceAccount.accountName', 'targetAccount.accountName as targetAccountName', 'transactions.targetCurrencyId', 'transactions.targetAmount')
+                >('transactions.transactionId', 'transactions.amount', 'transactions.description', 'transactions.createdAt', 'transactions.currencyCode', 'transactions.targetAccountId', 'transactions.transactionTypeId', 'incomes.incomeName', 'categories.categoryName', 'sourceAccount.accountName', 'targetAccount.accountName as targetAccountName', 'transactions.targetCurrencyCode', 'transactions.targetAmount')
                 .leftJoin('incomes', 'transactions.incomeId', 'incomes.incomeId')
                 .leftJoin('categories', 'transactions.categoryId', 'categories.categoryId')
                 .leftJoin({ sourceAccount: 'accounts' }, 'transactions.accountId', 'sourceAccount.accountId')
@@ -200,10 +200,10 @@ export default class TransactionDataAccess extends LoggerBase implements ITransa
                     'transactions.description',
                     'transactions.createdAt',
                     'transactions.updatedAt',
-                    'transactions.currencyId',
+                    'transactions.currencyCode',
                     'transactions.targetAccountId',
                     'transactions.transactionTypeId',
-                    'transactions.targetCurrencyId',
+                    'transactions.targetCurrencyCode',
                     'transactions.targetAmount',
                 )
                 .where({ userId, transactionId, 'transactions.isDeleted': false })
@@ -248,7 +248,7 @@ export default class TransactionDataAccess extends LoggerBase implements ITransa
                 targetAccountId: properties.targetAccountId,
                 createdAt: properties.createdAt,
                 updatedAt: Time.getISODateNowUTC(),
-                targetCurrencyId: properties.targetCurrencyId,
+                targetCurrencyCode: properties.targetCurrencyCode,
                 targetAmount: properties.targetAmount,
             };
 
@@ -261,7 +261,7 @@ export default class TransactionDataAccess extends LoggerBase implements ITransa
                 'targetAccountId',
                 'createdAt',
                 'updatedAt',
-                'targetCurrencyId',
+                'targetCurrencyCode',
                 'targetAmount',
             ]);
             const data = await query('transactions').update(allowedProperties).where({ userId, transactionId, isDeleted: false });

@@ -61,12 +61,12 @@ export const IncomeFields: FC<IProps> = function IncomeFields(_props) {
                     preset={'underline'}
                     style={$fieldCurrency}
                     editable={isCreate}
-                    helperTx={errors?.currencyId}
-                    status={errors?.currencyId ? 'error' : undefined}
-                    value={form.currencyId}
+                    helperTx={errors?.currencyCode}
+                    status={errors?.currencyCode ? 'error' : undefined}
+                    value={form.currencyCode}
                     onChange={(item: ICurrency) => {
                         if (handleChange) {
-                            handleChange('currencyId', item.currencyId);
+                            handleChange('currencyCode', item.currencyCode);
                         }
                     }}
                 />

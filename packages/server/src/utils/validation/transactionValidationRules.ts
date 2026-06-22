@@ -98,8 +98,8 @@ const createTransactionValidationRules = [
         })
         .bail(),
     ...createSignupValidationRules('targetAmount', 'number', { gt: 0 }),
-    ...createSignupValidationRules('targetCurrencyId', 'number'),
-    ...createSignupValidationRules('currencyId', 'number', {}),
+    ...createSignupValidationRules('targetCurrencyCode', 'string', { min: 1, max: 10 }),
+    ...createSignupValidationRules('currencyCode', 'string', { min: 1, max: 10 }),
     ...createSignupValidationRules('transactionTypeId', 'number', {}),
     ...createSignupValidationRules('amount', 'number', { gt: 0 }),
     ...createSignupValidationRules('description', 'string', { max: 200, min: 3, optional: true }),
@@ -175,7 +175,7 @@ const patchTransactionValidationRules = [
     }),
 
     ...createSignupValidationRules('targetAmount', 'number', { optional: true, gt: 0 }),
-    ...createSignupValidationRules('targetCurrencyId', 'number', { optional: true }),
+    ...createSignupValidationRules('targetCurrencyCode', 'string', { min: 1, max: 10, optional: true }),
     body('createdAt')
         .custom((_, { req }) => {
             const { createdAt } = req.body;
@@ -195,7 +195,7 @@ const patchTransactionValidationRules = [
 
 export const transactionConvertValidationMessageToErrorCode = (path: string): ErrorCode => {
     switch (path) {
-        case 'targetCurrencyId': {
+        case 'targetCurrencyCode': {
             return ErrorCode.TRANSACTION_ERROR;
         }
         case 'targetAmount': {
@@ -213,7 +213,7 @@ export const transactionConvertValidationMessageToErrorCode = (path: string): Er
         case 'categoryId': {
             return ErrorCode.CATEGORY_ERROR;
         }
-        case 'currencyId': {
+        case 'currencyCode': {
             return ErrorCode.CURRENCY_ERROR;
         }
         case 'transactionTypeId': {

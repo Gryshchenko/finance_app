@@ -10,8 +10,8 @@ export interface IDailyCategoryStatsScoreParams {
     categoryId: number;
     sourceAmount: number;
     targetAmount: number;
-    currencyId?: number;
-    targetCurrencyId?: number;
+    currencyCode?: string;
+    targetCurrencyCode?: string;
     trx?: IDBTransaction;
 }
 
@@ -140,8 +140,8 @@ export class DailyCategoryStatsDataAccess extends LoggerBase implements IDailyCa
         categoryId,
         sourceAmount,
         targetAmount,
-        currencyId,
-        targetCurrencyId,
+        currencyCode,
+        targetCurrencyCode,
         trx,
     }: IDailyCategoryStatsScoreParams): Promise<boolean> {
         try {
@@ -149,17 +149,17 @@ export class DailyCategoryStatsDataAccess extends LoggerBase implements IDailyCa
             this._logger.info(`Starting update daily category stats userId: ${userId}, date: ${date}`);
             await query.raw(
                 `
-                INSERT INTO daily_categories_stats ("userId", date, "categoryId", source_total, target_total, "currencyId", "targetCurrencyId")
+                INSERT INTO daily_categories_stats ("userId", date, "categoryId", source_total, target_total, "currencyCode", "targetCurrencyCode")
                 VALUES (?, ?::date, ?, ?, ?, ?, ?)
                 ON CONFLICT ("userId", date, "categoryId")
                 DO UPDATE SET
                     source_total = daily_categories_stats.source_total + EXCLUDED.source_total,
                     target_total = daily_categories_stats.target_total + EXCLUDED.target_total,
-                    "currencyId" = EXCLUDED."currencyId",
-                    "targetCurrencyId" = EXCLUDED."targetCurrencyId",
+                    "currencyCode" = EXCLUDED."currencyCode",
+                    "targetCurrencyCode" = EXCLUDED."targetCurrencyCode",
                     "updatedAt" = NOW();
                 `,
-                [userId, date, categoryId, sourceAmount, targetAmount, currencyId, targetCurrencyId],
+                [userId, date, categoryId, sourceAmount, targetAmount, currencyCode, targetCurrencyCode],
             );
 
             this._logger.info(`Successfully update daily category stats for userId: ${userId}`);

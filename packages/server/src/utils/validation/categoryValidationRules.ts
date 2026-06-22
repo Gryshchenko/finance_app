@@ -1,5 +1,6 @@
 import { ErrorCode, VALID_COLOR_IDS, VALID_ICON_IDS } from 'tenpercent/shared';
 
+import { createCurrencyCodeExistsRule } from 'src/utils/validation/currencyCodeExistsRule';
 import { createSignupValidationRules } from 'src/utils/validation/routesInputValidation';
 
 const categoryConvertValidationMessageToErrorCode = (path: string): ErrorCode => {
@@ -10,7 +11,7 @@ const categoryConvertValidationMessageToErrorCode = (path: string): ErrorCode =>
         case 'status': {
             return ErrorCode.INCOME_ERROR;
         }
-        case 'currencyId': {
+        case 'currencyCode': {
             return ErrorCode.CURRENCY_ERROR;
         }
         case 'categoryName': {
@@ -26,9 +27,9 @@ const createCategoryValidationRules = [
         min: 3,
         max: 128,
     }),
-    ...createSignupValidationRules('currencyId', 'number', {
-        min: Number.MIN_SAFE_INTEGER,
-        max: Number.MAX_SAFE_INTEGER,
+    ...createSignupValidationRules('currencyCode', 'string', {
+        min: 1,
+        max: 10,
     }),
     ...createSignupValidationRules('iconId', 'string', {
         allowedValues: VALID_ICON_IDS,
@@ -42,6 +43,7 @@ const createCategoryValidationRules = [
         min: 0,
         max: Number.MAX_SAFE_INTEGER,
     }),
+    createCurrencyCodeExistsRule(),
 ];
 
 const patchCategoryValidationRules = [

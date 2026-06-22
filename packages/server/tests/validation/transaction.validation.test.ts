@@ -51,8 +51,8 @@ beforeAll(async () => {
         transactionTypeId: TransactionType.Income,
         accountId,
         incomeId,
-        currencyId: 1,
-        targetCurrencyId: 1,
+        currencyCode: 'USD',
+        targetCurrencyCode: 'USD',
         amount: 100,
         targetAmount: 100,
         description: 'Init',
@@ -77,7 +77,7 @@ describe('POST /user/:userId/transaction/ - transaction type validation', () => 
             .send({
                 transactionTypeId: TransactionType.Income,
                 accountId,
-                currencyId: 1,
+                currencyCode: 'USD',
                 amount: 100,
             })
             .expect(HttpCode.BAD_REQUEST);
@@ -90,7 +90,7 @@ describe('POST /user/:userId/transaction/ - transaction type validation', () => 
             .send({
                 transactionTypeId: TransactionType.Income,
                 incomeId,
-                currencyId: 1,
+                currencyCode: 'USD',
                 amount: 100,
             })
             .expect(HttpCode.BAD_REQUEST);
@@ -105,7 +105,7 @@ describe('POST /user/:userId/transaction/ - transaction type validation', () => 
                 accountId,
                 incomeId,
                 categoryId,
-                currencyId: 1,
+                currencyCode: 'USD',
                 amount: 100,
             })
             .expect(HttpCode.BAD_REQUEST);
@@ -119,7 +119,7 @@ describe('POST /user/:userId/transaction/ - transaction type validation', () => 
             .send({
                 transactionTypeId: TransactionType.Expense,
                 accountId,
-                currencyId: 1,
+                currencyCode: 'USD',
                 amount: 100,
             })
             .expect(HttpCode.BAD_REQUEST);
@@ -132,7 +132,7 @@ describe('POST /user/:userId/transaction/ - transaction type validation', () => 
             .send({
                 transactionTypeId: TransactionType.Expense,
                 categoryId,
-                currencyId: 1,
+                currencyCode: 'USD',
                 amount: 100,
             })
             .expect(HttpCode.BAD_REQUEST);
@@ -147,7 +147,7 @@ describe('POST /user/:userId/transaction/ - transaction type validation', () => 
                 accountId,
                 categoryId,
                 incomeId,
-                currencyId: 1,
+                currencyCode: 'USD',
                 amount: 100,
             })
             .expect(HttpCode.BAD_REQUEST);
@@ -161,7 +161,7 @@ describe('POST /user/:userId/transaction/ - transaction type validation', () => 
             .send({
                 transactionTypeId: TransactionType.Transafer,
                 accountId,
-                currencyId: 1,
+                currencyCode: 'USD',
                 amount: 100,
             })
             .expect(HttpCode.BAD_REQUEST);
@@ -174,7 +174,7 @@ describe('POST /user/:userId/transaction/ - transaction type validation', () => 
             .send({
                 transactionTypeId: TransactionType.Transafer,
                 targetAccountId,
-                currencyId: 1,
+                currencyCode: 'USD',
                 amount: 100,
             })
             .expect(HttpCode.BAD_REQUEST);
@@ -189,7 +189,7 @@ describe('POST /user/:userId/transaction/ - transaction type validation', () => 
                 accountId,
                 targetAccountId,
                 categoryId,
-                currencyId: 1,
+                currencyCode: 'USD',
                 amount: 100,
             })
             .expect(HttpCode.BAD_REQUEST);
@@ -204,7 +204,7 @@ describe('POST /user/:userId/transaction/ - transaction type validation', () => 
                 accountId,
                 targetAccountId,
                 incomeId,
-                currencyId: 1,
+                currencyCode: 'USD',
                 amount: 100,
             })
             .expect(HttpCode.BAD_REQUEST);
@@ -218,7 +218,7 @@ describe('POST /user/:userId/transaction/ - transaction type validation', () => 
             .send({
                 accountId,
                 incomeId,
-                currencyId: 1,
+                currencyCode: 'USD',
                 amount: 100,
             })
             .expect(HttpCode.BAD_REQUEST);
@@ -232,7 +232,7 @@ describe('POST /user/:userId/transaction/ - transaction type validation', () => 
                 transactionTypeId: TransactionType.Income,
                 accountId,
                 incomeId,
-                currencyId: 1,
+                currencyCode: 'USD',
             })
             .expect(HttpCode.BAD_REQUEST);
     });
@@ -245,7 +245,7 @@ describe('POST /user/:userId/transaction/ - transaction type validation', () => 
                 transactionTypeId: 999,
                 accountId,
                 incomeId,
-                currencyId: 1,
+                currencyCode: 'USD',
                 amount: 100,
             })
             .expect(HttpCode.BAD_REQUEST);
@@ -260,7 +260,7 @@ describe('POST /user/:userId/transaction/ - transaction type validation', () => 
                 transactionTypeId: TransactionType.Income,
                 accountId,
                 incomeId,
-                currencyId: 1,
+                currencyCode: 'USD',
                 amount: 'abc',
             })
             .expect(HttpCode.BAD_REQUEST);
@@ -274,7 +274,7 @@ describe('POST /user/:userId/transaction/ - transaction type validation', () => 
                 transactionTypeId: 'income',
                 accountId,
                 incomeId,
-                currencyId: 1,
+                currencyCode: 'USD',
                 amount: 100,
             })
             .expect(HttpCode.BAD_REQUEST);
@@ -289,7 +289,7 @@ describe('POST /user/:userId/transaction/ - transaction type validation', () => 
                 transactionTypeId: TransactionType.Income,
                 accountId,
                 incomeId,
-                currencyId: 1,
+                currencyCode: 'USD',
                 amount: 100,
                 description: 'ab',
             })
@@ -304,7 +304,7 @@ describe('POST /user/:userId/transaction/ - transaction type validation', () => 
                 transactionTypeId: TransactionType.Income,
                 accountId,
                 incomeId,
-                currencyId: 1,
+                currencyCode: 'USD',
                 amount: 100,
                 description: 'a'.repeat(201),
             })
@@ -320,7 +320,7 @@ describe('POST /user/:userId/transaction/ - transaction type validation', () => 
                 transactionTypeId: TransactionType.Income,
                 accountId,
                 incomeId,
-                currencyId: 1,
+                currencyCode: 'USD',
                 amount: 100,
                 createdAt: 'not-a-date',
             })
@@ -335,7 +335,7 @@ describe('POST /user/:userId/transaction/ - transaction type validation', () => 
                 transactionTypeId: TransactionType.Income,
                 accountId,
                 incomeId,
-                currencyId: 1,
+                currencyCode: 'USD',
                 amount: 100,
                 createdAt: 1700000000000,
             })
@@ -351,7 +351,7 @@ describe('POST /user/:userId/transaction/ - transaction type validation', () => 
                 transactionTypeId: TransactionType.Income,
                 accountId,
                 incomeId,
-                currencyId: 1,
+                currencyCode: 'USD',
                 amount: 100,
                 hack: true,
             })
@@ -367,7 +367,7 @@ describe('POST /user/:userId/transaction/ - transaction type validation', () => 
                 transactionTypeId: TransactionType.Income,
                 accountId,
                 incomeId,
-                currencyId: 1,
+                currencyCode: 'USD',
                 amount: 100,
             })
             .expect(HttpCode.BAD_REQUEST);
@@ -379,8 +379,8 @@ describe('POST /user/:userId/transaction/ - transaction type validation', () => 
             transactionTypeId: TransactionType.Income,
             accountId,
             incomeId,
-            currencyId: 1,
-            targetCurrencyId: 1,
+            currencyCode: 'USD',
+            targetCurrencyCode: 'USD',
             amount: 50,
             targetAmount: 50,
             description: 'Valid test',

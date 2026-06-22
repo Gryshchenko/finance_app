@@ -56,10 +56,10 @@ export class CategoryController {
     public static async post(req: Request, res: Response) {
         const responseBuilder = new ResponseBuilder();
         try {
-            const { categoryName, currencyId, iconId, budget } = req.body;
+            const { categoryName, currencyCode, iconId, budget } = req.body;
             const category = await CategoryServiceBuilder.build().create(req.user?.userId as number, {
                 categoryName,
-                currencyId,
+                currencyCode,
                 iconId,
                 budget,
             });

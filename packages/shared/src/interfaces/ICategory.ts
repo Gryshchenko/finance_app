@@ -4,7 +4,7 @@ export interface ICategory {
     categoryName: string;
     categoryId: number;
     userId: number;
-    currencyId: number;
+    currencyCode: string;
     iconId: string;
     colorId?: string | null;
     status: AccountStatusType;

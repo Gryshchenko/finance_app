@@ -493,7 +493,7 @@ describe('POST /register/signup', () => {
                     publicName: publicName,
                     email,
                     profileId: profile.profileId,
-                    currencyId: profile.currencyId,
+                    currencyCode: profile.currencyCode,
                     locale: profile.locale,
                     userId: expect.any(Number),
                 },

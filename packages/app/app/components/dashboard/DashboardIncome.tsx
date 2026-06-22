@@ -34,20 +34,20 @@ export default memo(function DashboardIncome(props: IDashboardItem<IIncomeStats>
                                 path: OverviewPath.Incomes,
                                 type: TransactionFieldType.Income,
                                 statsType: StatsType.Income,
-                                currencyId: item.currencyId,
+                                currencyCode: item.currencyCode,
                             },
                         });
                     }}
                     BoxProps={{
                         styles: BoxProps?.styles,
-                        payload: { currencyId: item.currencyId },
+                        payload: { currencyCode: item.currencyCode },
                     }}
                     icon={item.iconId as CategoryIconType}
                     id={String(item.incomeId)}
                     colorId={item.colorId}
                     key={item.incomeName}
                     title={item.incomeName}
-                    value={CurrencyUtils.formatWithDelimiter(item.amount, getCurrencySymbol(item.currencyId), 2, true)}
+                    value={CurrencyUtils.formatWithDelimiter(item.amount, getCurrencySymbol(item.currencyCode), 2, true)}
                     isDraggable={true}
                     onDragStart={() => {
                         setDraggingItemType(ItemType.Income);

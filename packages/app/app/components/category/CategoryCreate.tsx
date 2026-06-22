@@ -1,11 +1,12 @@
-import { FC } from 'react';
+import { FC, useMemo } from 'react';
 import { useNavigation } from '@react-navigation/native';
 import { ICategory, SpendIcon, Utils } from 'tenpercent/shared';
 
 import { CategoryFields } from '@/components/category/CategoryFields';
+import { useCurrency } from '@/context/CurrencyContext';
 import { useInvalidateQuery } from '@/hooks/useAppQuery';
 import { useEditView } from '@/hooks/useEditView';
-import { categoryCreateSchema } from '@/schems/validationSchemas';
+import { buildCategoryCreateSchema } from '@/schems/validationSchemas';
 import { buildGeneralApiBaseHandler, GeneralApiProblemKind, handleBadDataResponse } from '@/services/api/apiProblem';
 import { CategoryService } from '@/services/CategoryService';
 import { InvalidationGroups } from '@/services/QueryCacheService';
@@ -15,10 +16,12 @@ import { OverviewPath } from '@/types/OverviewPath';
 export const CategoryCreate: FC = function CategoryCreate(_props) {
     const navigation = useNavigation();
     const invalidateQuery = useInvalidateQuery();
+    const { currencies } = useCurrency();
+    const categoryCreateSchema = useMemo(() => buildCategoryCreateSchema(Array.from(currencies.keys())), [currencies]);
     const { form, handleChange, save, errors, setErrors } = useEditView<Partial<ICategory>>(
         {
             categoryName: '',
-            currencyId: 1,
+            currencyCode: 'USD',
             iconId: SpendIcon.ShoppingBag,
         },
         categoryCreateSchema,
@@ -26,17 +29,17 @@ export const CategoryCreate: FC = function CategoryCreate(_props) {
 
     const handleCreate = async () => {
         const categoryService = CategoryService.instance();
-        if (Utils.isEmpty(form.categoryName) || Utils.isNull(form.currencyId) || Utils.isNull(form.iconId)) {
+        if (Utils.isEmpty(form.categoryName) || Utils.isNull(form.currencyCode) || Utils.isNull(form.iconId)) {
             ToastService.error({
                 message: 'errorCode:UNKNOWN_ERROR',
-                systemMessage: `Validation error on create category, categoryName: ${form.categoryName}, currencyId: ${form.currencyId}, iconId: ${form.iconId}`,
+                systemMessage: `Validation error on create category, categoryName: ${form.categoryName}, currencyCode: ${form.currencyCode}, iconId: ${form.iconId}`,
             });
             return;
         }
 
         const response = await categoryService.doCreateCategory({
             categoryName: form.categoryName!,
-            currencyId: form.currencyId!,
+            currencyCode: form.currencyCode!,
             iconId: form.iconId ?? SpendIcon.ShoppingBag,
             budget: form.budget ?? undefined,
         });

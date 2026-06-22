@@ -47,7 +47,7 @@ describe('Profile', () => {
                 profileId: expect.any(Number),
                 publicName,
                 locale,
-                currencyId: expect.any(Number),
+                currencyCode: expect.any(String),
                 email: expect.any(String),
                 userId: expect.any(Number),
             });
@@ -170,7 +170,7 @@ describe('Profile', () => {
             expect(data.publicName).toBe('UpdatedName');
         });
 
-        it('should return 204 when updating currencyId', async () => {
+        it('should return 204 when updating currencyCode', async () => {
             const agent = request.agent(server);
             const databaseConnection = DatabaseConnection.instance(config);
 
@@ -184,7 +184,7 @@ describe('Profile', () => {
             await agent
                 .patch(`/user/${userId}/profile`)
                 .set('authorization', authorization)
-                .send({ currencyId: profile.currencyId })
+                .send({ currencyCode: profile.currencyCode })
                 .expect(HttpCode.NO_CONTENT);
         });
 
@@ -202,7 +202,7 @@ describe('Profile', () => {
             await agent
                 .patch(`/user/${userId}/profile`)
                 .set('authorization', authorization)
-                .send({ locale: LanguageType.UA, publicName: 'AllFields', currencyId: profile.currencyId })
+                .send({ locale: LanguageType.UA, publicName: 'AllFields', currencyCode: profile.currencyCode })
                 .expect(HttpCode.NO_CONTENT);
 
             const {

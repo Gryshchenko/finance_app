@@ -6,7 +6,6 @@ import { ICurrencyDataAccess } from 'services/currency/CurrencyDataAccess';
 export interface ICurrencyService {
     getByName(symbol: string): Promise<ICurrency | undefined>;
     getBySymbol(symbol: string): Promise<ICurrency | undefined>;
-    getById(id: number): Promise<ICurrency | undefined>;
     getByCurrencyCode(currencyCode: string): Promise<ICurrency | undefined>;
     gets(): Promise<ICurrency[]>;
 }
@@ -25,9 +24,6 @@ export default class CurrencyService extends LoggerBase implements ICurrencyServ
 
     public async getByCurrencyCode(currencyCode: string): Promise<ICurrency | undefined> {
         return await this._currencyDataAccess.getByCurrencyCode(currencyCode);
-    }
-    public async getById(id: number): Promise<ICurrency | undefined> {
-        return await this._currencyDataAccess.getById(id);
     }
     public async getByName(symbol: string): Promise<ICurrency | undefined> {
         return this._currencyDataAccess.getByName(symbol);

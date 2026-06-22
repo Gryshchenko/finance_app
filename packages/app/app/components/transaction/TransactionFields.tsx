@@ -60,20 +60,18 @@ const fetchRates = async (
 export const TransactionFields: FC<IProps> = function TransactionFields(_props) {
     const { isView, form, handleChange, handleSave, edit, cancel, onDelete, errors, isEdit, isCreate } = _props;
     const { getCurrencySymbol, getCurrency } = useCurrency();
-    const { targetCurrencyId, currencyId } = form;
+    const { targetCurrencyCode, currencyCode } = form;
 
     const hasDifferentCurrencies =
-        !!form.targetCurrencyId &&
-        !!form.currencyId &&
-        !isNaN(form.targetCurrencyId) &&
-        !isNaN(form.currencyId) &&
-        form.targetCurrencyId !== form.currencyId;
+        !!form.targetCurrencyCode && !!form.currencyCode && form.targetCurrencyCode !== form.currencyCode;
 
-    const sourceCurrencySymbol = hasDifferentCurrencies ? getCurrency(form.currencyId as number)?.currencyCode : undefined;
-    const targetCurrencySymbol = hasDifferentCurrencies ? getCurrency(form.targetCurrencyId as number)?.currencyCode : undefined;
+    const sourceCurrencySymbol = hasDifferentCurrencies ? getCurrency(form.currencyCode as string)?.currencyCode : undefined;
+    const targetCurrencySymbol = hasDifferentCurrencies
+        ? getCurrency(form.targetCurrencyCode as string)?.currencyCode
+        : undefined;
 
     const { data: rates } = useAppQuery<IRate | undefined>(
-        [QueryKeys.rates(form.currencyId, form.targetCurrencyId), form.createdAt, sourceCurrencySymbol, targetCurrencySymbol],
+        [QueryKeys.rates(form.currencyCode, form.targetCurrencyCode), form.createdAt, sourceCurrencySymbol, targetCurrencySymbol],
         () => fetchRates(sourceCurrencySymbol, targetCurrencySymbol, form.createdAt as string),
         { enabled: hasDifferentCurrencies, staleTime: QueryStaleTimes.rates },
     );
@@ -90,7 +88,7 @@ export const TransactionFields: FC<IProps> = function TransactionFields(_props) 
                             status={errors?.accountId ? 'error' : undefined}
                             onChange={(v) => {
                                 handleChange?.('accountId', v.accountId);
-                                handleChange?.('currencyId', v.currencyId);
+                                handleChange?.('currencyCode', v.currencyCode);
                             }}
                         />
                         <AccountDropdown
@@ -104,7 +102,7 @@ export const TransactionFields: FC<IProps> = function TransactionFields(_props) 
                             filter={(items) => items?.filter((item) => item.accountId !== form.accountId) ?? []}
                             onChange={(v) => {
                                 handleChange?.('targetAccountId', v.accountId);
-                                handleChange?.('targetCurrencyId', v.currencyId);
+                                handleChange?.('targetCurrencyCode', v.currencyCode);
                             }}
                         />
                     </>
@@ -120,7 +118,7 @@ export const TransactionFields: FC<IProps> = function TransactionFields(_props) 
                             status={errors?.accountId ? 'error' : undefined}
                             onChange={(v) => {
                                 handleChange?.('accountId', v.accountId);
-                                handleChange?.('currencyId', v.currencyId);
+                                handleChange?.('currencyCode', v.currencyCode);
                             }}
                         />
                         <CategoryDropdown
@@ -131,7 +129,7 @@ export const TransactionFields: FC<IProps> = function TransactionFields(_props) 
                             status={errors?.categoryId ? 'error' : undefined}
                             onChange={(v) => {
                                 handleChange?.('categoryId', v.categoryId);
-                                handleChange?.('targetCurrencyId', v.currencyId);
+                                handleChange?.('targetCurrencyCode', v.currencyCode);
                             }}
                         />
                     </>
@@ -147,7 +145,7 @@ export const TransactionFields: FC<IProps> = function TransactionFields(_props) 
                             status={errors?.incomeId ? 'error' : undefined}
                             onChange={(v) => {
                                 handleChange?.('incomeId', v.incomeId);
-                                handleChange?.('currencyId', v.currencyId);
+                                handleChange?.('currencyCode', v.currencyCode);
                             }}
                         />
                         <AccountDropdown
@@ -158,7 +156,7 @@ export const TransactionFields: FC<IProps> = function TransactionFields(_props) 
                             status={errors?.accountId ? 'error' : undefined}
                             onChange={(v) => {
                                 handleChange?.('accountId', v.accountId);
-                                handleChange?.('targetCurrencyId', v.currencyId);
+                                handleChange?.('targetCurrencyCode', v.currencyCode);
                             }}
                         />
                     </>
@@ -169,12 +167,7 @@ export const TransactionFields: FC<IProps> = function TransactionFields(_props) 
     };
 
     const renderAmountInputs = () => {
-        const showDualCurrency =
-            !!targetCurrencyId &&
-            !!currencyId &&
-            !isNaN(targetCurrencyId) &&
-            !isNaN(currencyId) &&
-            targetCurrencyId !== currencyId;
+        const showDualCurrency = !!targetCurrencyCode && !!currencyCode && targetCurrencyCode !== currencyCode;
 
         if (showDualCurrency) {
             return (
@@ -191,7 +184,7 @@ export const TransactionFields: FC<IProps> = function TransactionFields(_props) 
                                         handleChange?.('targetAmount', String(Utils.roundNumber(Number(v) * rates.rate)));
                                     }
                                 },
-                                currency: getCurrencySymbol(form.currencyId!),
+                                currency: getCurrencySymbol(form.currencyCode!),
                                 value: form.amount!,
                                 editable: !isView,
                                 helperTx: errors?.amount,
@@ -207,7 +200,7 @@ export const TransactionFields: FC<IProps> = function TransactionFields(_props) 
                                 preset: 'underline',
                                 focusOnMount: false,
                                 onChangeCleaned: (v: string) => handleChange?.('targetAmount', v),
-                                currency: getCurrencySymbol(form.targetCurrencyId!),
+                                currency: getCurrencySymbol(form.targetCurrencyCode!),
                                 value: form.targetAmount!,
                                 editable: !isView,
                                 helperTx: errors?.targetAmount,
@@ -229,7 +222,7 @@ export const TransactionFields: FC<IProps> = function TransactionFields(_props) 
                             handleChange?.('amount', v);
                             handleChange?.('targetAmount', v);
                         },
-                        currency: getCurrencySymbol(form.currencyId!),
+                        currency: getCurrencySymbol(form.currencyCode!),
                         value: String(form.amount!),
                         editable: !isView,
                         helperTx: errors?.amount,

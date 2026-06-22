@@ -51,7 +51,7 @@ describe('Account', () => {
                 .post(`/user/${userId}/account/`)
                 .set('authorization', authorization)
                 .send({
-                    currencyId: 1,
+                    currencyCode: 'USD',
                     accountName: name,
                     amount: newAmount,
                     iconId: 'wallet',
@@ -67,21 +67,21 @@ describe('Account', () => {
                 amount: 1,
             },
             {
-                currencyId: 1,
+                currencyCode: 'USD',
                 accountName: 'Test 1',
             },
             {
-                currencyId: 1,
+                currencyCode: 'USD',
                 amount: 1,
             },
             {},
             {
-                currencyId: '23',
+                currencyCode: '23',
                 amount: '213',
                 accountName: 123123,
             },
             {
-                currencyId: 1,
+                currencyCode: 'USD',
                 amount: 1231231231231231231231231232131231,
                 accountName:
                     'sdfsdfsdkjfdskfjhdsfkdsfhsdkfjhdsfkjdshfkdsfhdskfjhdskfjdshfdsjkfhdskjfhdsjkhfjkdshfjkhsdfjkdsjhfdjksfdshfjkdsfhdskfjhdsjkfjhdsfhkj',
@@ -119,7 +119,7 @@ describe('Account', () => {
                 .post(`/user/${userId}/account/`)
                 .set('authorization', authorization)
                 .send({
-                    currencyId: 1,
+                    currencyCode: 'USD',
                     accountName: name,
                     amount: newAmount,
                     iconId: 'wallet',
@@ -188,7 +188,7 @@ describe('Account', () => {
             .post(`/user/${userId}/account/`)
             .set('authorization', authorization)
             .send({
-                currencyId: 1,
+                currencyCode: 'USD',
                 accountName: 'Test',
                 amount: 10,
                 something: 200,
@@ -236,7 +236,7 @@ describe('Account', () => {
             .post(`/user/${userId}/account/`)
             .set('authorization', authorization)
             .send({
-                currencyId: 1,
+                currencyCode: 'USD',
                 accountName: 'Test 1',
                 amount: 20000,
                 iconId: 'wallet',
@@ -269,8 +269,8 @@ describe('Account', () => {
                 .set('authorization', authorization)
                 .send({
                     accountId,
-                    currencyId: 1,
-                    targetCurrencyId: 1,
+                    currencyCode: 'USD',
+                    targetCurrencyCode: 'USD',
                     amount: 1000,
                     targetAmount: 1000,
                     description: 'Test',
@@ -318,7 +318,7 @@ describe('Account', () => {
             .post(`/user/${userId}/account/`)
             .set('authorization', authorization)
             .send({
-                currencyId: 1,
+                currencyCode: 'USD',
                 accountName: 'Test 1',
                 amount: 20000,
                 iconId: 'wallet',
@@ -351,8 +351,8 @@ describe('Account', () => {
                 .set('authorization', authorization)
                 .send({
                     accountId,
-                    currencyId: 1,
-                    targetCurrencyId: 1,
+                    currencyCode: 'USD',
+                    targetCurrencyCode: 'USD',
                     amount: 1000,
                     targetAmount: 1000,
                     description: 'Test',

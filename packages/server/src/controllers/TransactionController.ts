@@ -42,8 +42,8 @@ export class TransactionController {
                             targetAccountId: transaction?.targetAccountId,
                             incomeId: transaction?.incomeId,
                             categoryId: transaction?.categoryId,
-                            currencyId: transaction?.currencyId,
-                            targetCurrencyId: transaction?.targetCurrencyId,
+                            currencyCode: transaction?.currencyCode,
+                            targetCurrencyCode: transaction?.targetCurrencyCode,
                             transactionTypeId: transaction?.transactionTypeId,
                             amount: transaction?.amount,
                             targetAmount: transaction?.targetAmount,
@@ -97,12 +97,12 @@ export class TransactionController {
                         targetAccountName: transaction?.targetAccountName,
                         transactionTypeId: transaction?.transactionTypeId,
                         transactionId: transaction?.transactionId,
-                        currencyId: transaction?.currencyId,
+                        currencyCode: transaction?.currencyCode,
                         amount: transaction?.amount,
                         description: transaction?.description,
                         createdAt: transaction?.createdAt,
                         targetAmount: transaction?.targetAmount,
-                        targetCurrencyId: transaction?.targetCurrencyId,
+                        targetCurrencyCode: transaction?.targetCurrencyCode,
                     })),
                 };
                 res.status(HttpCode.OK).json(responseBuilder.setStatus(ResponseStatusType.OK).setData(response).build());
@@ -120,20 +120,20 @@ export class TransactionController {
                 accountId,
                 incomeId,
                 categoryId,
-                currencyId,
+                currencyCode,
                 transactionTypeId,
                 amount,
                 description,
                 createdAt = Time.getISODateNowUTC(),
                 targetAccountId,
                 targetAmount,
-                targetCurrencyId,
+                targetCurrencyCode,
             } = req.body;
             const transactionId = await TransactionServiceBuilder.build().createTransaction({
                 accountId,
                 incomeId,
                 categoryId,
-                currencyId,
+                currencyCode,
                 transactionTypeId,
                 amount,
                 description,
@@ -141,7 +141,7 @@ export class TransactionController {
                 createdAt,
                 targetAccountId,
                 targetAmount,
-                targetCurrencyId,
+                targetCurrencyCode,
             });
             res.status(HttpCode.CREATED).json(
                 responseBuilder.setStatus(ResponseStatusType.OK).setData({ transactionId }).build(),
@@ -164,7 +164,7 @@ export class TransactionController {
                 createdAt,
                 targetAccountId,
                 targetAmount,
-                targetCurrencyId,
+                targetCurrencyCode,
             } = req.body;
             await TransactionServiceBuilder.build().patchTransaction(req.user?.userId as number, {
                 transactionId: Number(req.params.transactionId),
@@ -176,7 +176,7 @@ export class TransactionController {
                 createdAt,
                 targetAccountId,
                 targetAmount,
-                targetCurrencyId,
+                targetCurrencyCode,
             });
             res.status(HttpCode.NO_CONTENT).json(responseBuilder.setStatus(ResponseStatusType.OK).setData({}).build());
         } catch (e: unknown) {

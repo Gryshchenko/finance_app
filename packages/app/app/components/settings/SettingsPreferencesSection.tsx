@@ -39,7 +39,7 @@ export function SettingsPreferencesSection({
                 data={currencyList}
                 value={currencyValue}
                 displayValue={currencyDisplayValue}
-                keyExtractor={(item) => String(item.currencyId)}
+                keyExtractor={(item) => String(item.currencyCode)}
                 labelExtractor={(item) => `${item.currencyName} - ${item.symbol}`}
                 onChange={onCurrencyChange}
                 disabled={isSaving}

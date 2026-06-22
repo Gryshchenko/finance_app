@@ -12,8 +12,8 @@ export interface IDailyAccountStatsScoreParams {
     type: StatsTransactionType;
     sourceAmount: number;
     targetAmount: number;
-    currencyId?: number;
-    targetCurrencyId?: number;
+    currencyCode?: string;
+    targetCurrencyCode?: string;
     trx?: IDBTransaction;
 }
 
@@ -225,8 +225,8 @@ export class DailyAccountStatsDataAccess extends LoggerBase implements IDailyAcc
         type,
         sourceAmount,
         targetAmount,
-        currencyId,
-        targetCurrencyId,
+        currencyCode,
+        targetCurrencyCode,
         trx,
     }: IDailyAccountStatsScoreParams): Promise<boolean> {
         try {
@@ -237,7 +237,7 @@ export class DailyAccountStatsDataAccess extends LoggerBase implements IDailyAcc
             INSERT INTO daily_accounts_stats (
                 "userId", date, "accountId",
                 income_source_total, income_target_total, expense_source_total, expense_target_total,
-                "currencyId", "targetCurrencyId"
+                "currencyCode", "targetCurrencyCode"
             )
             VALUES (
                 ?, ?::date, ?,
@@ -253,8 +253,8 @@ export class DailyAccountStatsDataAccess extends LoggerBase implements IDailyAcc
                 income_target_total  = daily_accounts_stats.income_target_total  + EXCLUDED.income_target_total,
                 expense_source_total = daily_accounts_stats.expense_source_total + EXCLUDED.expense_source_total,
                 expense_target_total = daily_accounts_stats.expense_target_total + EXCLUDED.expense_target_total,
-                "currencyId" = EXCLUDED."currencyId",
-                "targetCurrencyId" = EXCLUDED."targetCurrencyId",
+                "currencyCode" = EXCLUDED."currencyCode",
+                "targetCurrencyCode" = EXCLUDED."targetCurrencyCode",
                 "updatedAt" = NOW();
             `,
                 [
@@ -269,8 +269,8 @@ export class DailyAccountStatsDataAccess extends LoggerBase implements IDailyAcc
                     sourceAmount,
                     type,
                     targetAmount,
-                    currencyId,
-                    targetCurrencyId,
+                    currencyCode,
+                    targetCurrencyCode,
                 ],
             );
             this._logger.info(`Successfully update daily account stats for userId: ${userId}`);

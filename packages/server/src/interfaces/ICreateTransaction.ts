@@ -3,8 +3,8 @@ export interface ICreateTransaction {
     targetAccountId?: number;
     incomeId?: number;
     categoryId?: number;
-    currencyId: number;
-    targetCurrencyId: number;
+    currencyCode: string;
+    targetCurrencyCode: string;
     transactionTypeId: number;
     amount: number;
     targetAmount: number;

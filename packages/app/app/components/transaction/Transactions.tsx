@@ -23,7 +23,7 @@ interface ITransactionsPros {
         transactions: IPagination<ITransactionListItem> | undefined;
         entityId: number;
         statsType: StatsType;
-        currencyId: number;
+        currencyCode: string;
     };
     fetch?: fetchTransactionType;
     onPress?: (id: number, name: string) => void;
@@ -56,7 +56,7 @@ export async function fetchStats(entityId: number, statsType: StatsType): Promis
 export const Transactions: FC<ITransactionsPros> = function Transactions(_props) {
     const { themed } = useAppTheme();
     const {
-        data: { transactions, statsType, entityId, currencyId },
+        data: { transactions, statsType, entityId, currencyCode },
         fetch,
         onPress,
         isLoading,
@@ -101,7 +101,7 @@ export const Transactions: FC<ITransactionsPros> = function Transactions(_props)
                 {statsPending ? (
                     <TransactionStatsSkeleton />
                 ) : (
-                    <TransactionStats statsType={statsType} stats={stats} currencyId={currencyId} />
+                    <TransactionStats statsType={statsType} stats={stats} currencyCode={currencyCode} />
                 )}
             </View>
 

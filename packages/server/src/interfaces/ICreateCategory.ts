@@ -1,6 +1,6 @@
 export interface ICreateCategory {
     categoryName: string;
-    currencyId: number;
+    currencyCode: string;
     iconId?: string;
     colorId?: string;
     budget?: number | null;

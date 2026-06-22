@@ -10,8 +10,8 @@ export interface IDailyIncomeStatsScoreParams {
     incomeId: number;
     sourceAmount: number;
     targetAmount: number;
-    currencyId?: number;
-    targetCurrencyId?: number;
+    currencyCode?: string;
+    targetCurrencyCode?: string;
     trx?: IDBTransaction;
 }
 
@@ -140,8 +140,8 @@ export class DailyIncomeStatsDataAccess extends LoggerBase implements IDailyInco
         incomeId,
         sourceAmount,
         targetAmount,
-        currencyId,
-        targetCurrencyId,
+        currencyCode,
+        targetCurrencyCode,
         trx,
     }: IDailyIncomeStatsScoreParams): Promise<boolean> {
         const query = trx || this._db.engine();
@@ -149,17 +149,17 @@ export class DailyIncomeStatsDataAccess extends LoggerBase implements IDailyInco
             this._logger.info(`Starting update daily income stats userId: ${userId}, date: ${date}`);
             await query.raw(
                 `
-                INSERT INTO daily_incomes_stats ("userId", date, "incomeId", source_total, target_total, "currencyId", "targetCurrencyId")
+                INSERT INTO daily_incomes_stats ("userId", date, "incomeId", source_total, target_total, "currencyCode", "targetCurrencyCode")
                 VALUES (?, ?::date, ?, ?, ?, ?, ?)
                 ON CONFLICT ("userId", date, "incomeId")
                 DO UPDATE SET
                     source_total = daily_incomes_stats.source_total + EXCLUDED.source_total,
                     target_total = daily_incomes_stats.target_total + EXCLUDED.target_total,
-                    "currencyId" = EXCLUDED."currencyId",
-                    "targetCurrencyId" = EXCLUDED."targetCurrencyId",
+                    "currencyCode" = EXCLUDED."currencyCode",
+                    "targetCurrencyCode" = EXCLUDED."targetCurrencyCode",
                     "updatedAt" = NOW();
             `,
-                [userId, date, incomeId, sourceAmount, targetAmount, currencyId, targetCurrencyId],
+                [userId, date, incomeId, sourceAmount, targetAmount, currencyCode, targetCurrencyCode],
             );
 
             this._logger.info(`Successfully update daily income stats for userId: ${userId}`);

@@ -1,7 +1,7 @@
 import { parseSortBy } from '../src/utils/validation/parseSortBy';
 
 describe('parseSortBy', () => {
-    const allowedFields = ['transactionId', 'amount', 'createdAt', 'currencyId'];
+    const allowedFields = ['transactionId', 'amount', 'createdAt', 'currencyCode'];
 
     it('returns an empty array if sortBy is missing', () => {
         expect(parseSortBy(undefined, allowedFields)).toEqual([]);

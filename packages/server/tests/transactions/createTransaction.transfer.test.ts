@@ -72,9 +72,9 @@ describe('POST /transaction/create - transfare', () => {
 
             // const incomeId = incomes[0].incomeId;
             const accountId = accounts[0].accountId;
-            const currencyId = accounts[0].currencyId;
+            const currencyCode = accounts[0].currencyCode;
             const targetAccountId = accounts[1].accountId;
-            const targetCurrencyId = accounts[1].currencyId;
+            const targetCurrencyCode = accounts[1].currencyCode;
 
             const {
                 body: { data: accountBefor },
@@ -96,10 +96,10 @@ describe('POST /transaction/create - transfare', () => {
                 .set('authorization', authorization)
                 .send({
                     accountId,
-                    currencyId,
+                    currencyCode,
                     transactionTypeId: 3,
                     targetAccountId,
-                    targetCurrencyId,
+                    targetCurrencyCode,
                     amount: num,
                     targetAmount: num,
                     description: 'Test',
@@ -139,14 +139,14 @@ describe('POST /transaction/create - transfare', () => {
         const { accounts } = await getOverview(agent, userId, authorization);
         const accountId = accounts[0].accountId;
         const targetAccountId = accounts[1].accountId;
-        const currencyId = accounts[0].currencyId;
-        const accountIdPatch = await createAccount(agent, userId, authorization, currencyId, 1000, 'Patch source');
+        const currencyCode = accounts[0].currencyCode;
+        const accountIdPatch = await createAccount(agent, userId, authorization, currencyCode, 1000, 'Patch source');
 
         const accountBefore = await getAccount(agent, userId, authorization, accountId);
         const accountPatchBefore = await getAccount(agent, userId, authorization, accountIdPatch);
         const targetBefore = await getAccount(agent, userId, authorization, targetAccountId);
 
-        const id = await createTransferTransaction(agent, userId, authorization, accountId, targetAccountId, currencyId, 100);
+        const id = await createTransferTransaction(agent, userId, authorization, accountId, targetAccountId, currencyCode, 100);
 
         await patchTransaction(agent, userId, authorization, id, { accountId: accountIdPatch });
 
@@ -171,14 +171,14 @@ describe('POST /transaction/create - transfare', () => {
         const { accounts } = await getOverview(agent, userId, authorization);
         const accountId = accounts[0].accountId;
         const targetAccountId = accounts[1].accountId;
-        const currencyId = accounts[0].currencyId;
-        const targetAccountIdPatch = await createAccount(agent, userId, authorization, currencyId, 1000, 'Patch target');
+        const currencyCode = accounts[0].currencyCode;
+        const targetAccountIdPatch = await createAccount(agent, userId, authorization, currencyCode, 1000, 'Patch target');
 
         const accountBefore = await getAccount(agent, userId, authorization, accountId);
         const targetBefore = await getAccount(agent, userId, authorization, targetAccountId);
         const targetPatchBefore = await getAccount(agent, userId, authorization, targetAccountIdPatch);
 
-        const id = await createTransferTransaction(agent, userId, authorization, accountId, targetAccountId, currencyId, 100);
+        const id = await createTransferTransaction(agent, userId, authorization, accountId, targetAccountId, currencyCode, 100);
 
         await patchTransaction(agent, userId, authorization, id, { targetAccountId: targetAccountIdPatch });
 
@@ -203,12 +203,12 @@ describe('POST /transaction/create - transfare', () => {
         const { accounts } = await getOverview(agent, userId, authorization);
         const accountId = accounts[0].accountId;
         const targetAccountId = accounts[1].accountId;
-        const currencyId = accounts[0].currencyId;
+        const currencyCode = accounts[0].currencyCode;
 
         const accountBefore = await getAccount(agent, userId, authorization, accountId);
         const targetBefore = await getAccount(agent, userId, authorization, targetAccountId);
 
-        const id = await createTransferTransaction(agent, userId, authorization, accountId, targetAccountId, currencyId, 100);
+        const id = await createTransferTransaction(agent, userId, authorization, accountId, targetAccountId, currencyCode, 100);
 
         await patchTransaction(agent, userId, authorization, id, { amount: 200, targetAmount: 200 });
 
@@ -228,14 +228,14 @@ describe('POST /transaction/create - transfare', () => {
         const { accounts } = await getOverview(agent, userId, authorization);
         const accountId = accounts[0].accountId;
         const targetAccountId = accounts[1].accountId;
-        const currencyId = accounts[0].currencyId;
-        const accountIdPatch = await createAccount(agent, userId, authorization, currencyId, 1000, 'Patch source 2');
+        const currencyCode = accounts[0].currencyCode;
+        const accountIdPatch = await createAccount(agent, userId, authorization, currencyCode, 1000, 'Patch source 2');
 
         const accountBefore = await getAccount(agent, userId, authorization, accountId);
         const accountPatchBefore = await getAccount(agent, userId, authorization, accountIdPatch);
         const targetBefore = await getAccount(agent, userId, authorization, targetAccountId);
 
-        const id = await createTransferTransaction(agent, userId, authorization, accountId, targetAccountId, currencyId, 100);
+        const id = await createTransferTransaction(agent, userId, authorization, accountId, targetAccountId, currencyCode, 100);
 
         await patchTransaction(agent, userId, authorization, id, { accountId: accountIdPatch, amount: 200, targetAmount: 200 });
 
@@ -257,9 +257,9 @@ describe('POST /transaction/create - transfare', () => {
         const { accounts } = await getOverview(agent, userId, authorization);
         const accountId = accounts[0].accountId;
         const targetAccountId = accounts[1].accountId;
-        const currencyId = accounts[0].currencyId;
+        const currencyCode = accounts[0].currencyCode;
 
-        const id = await createTransferTransaction(agent, userId, authorization, accountId, targetAccountId, currencyId, 100);
+        const id = await createTransferTransaction(agent, userId, authorization, accountId, targetAccountId, currencyCode, 100);
         const accountAfterCreate = await getAccount(agent, userId, authorization, accountId);
         const targetAfterCreate = await getAccount(agent, userId, authorization, targetAccountId);
 
@@ -303,7 +303,7 @@ describe('POST /transaction/create - transfare', () => {
             auth1,
             accounts1[0].accountId,
             accounts1[1].accountId,
-            accounts1[0].currencyId,
+            accounts1[0].currencyCode,
             100,
         );
 
@@ -325,7 +325,7 @@ describe('POST /transaction/create - transfare', () => {
             authorization,
             accounts[0].accountId,
             accounts[1].accountId,
-            accounts[0].currencyId,
+            accounts[0].currencyCode,
             100,
         );
 
@@ -353,9 +353,9 @@ describe('POST /transaction/create - transfare', () => {
             .set('authorization', authorization)
             .send({
                 accountId: 21,
-                currencyId: 1,
+                currencyCode: 'USD',
                 transactionTypeId: 3,
-                targetCurrencyId: 1,
+                targetCurrencyCode: 'USD',
                 amount: 1000,
                 targetAmount: 1000,
                 description: 'Test',
@@ -388,9 +388,9 @@ describe('POST /transaction/create - transfare', () => {
             .set('authorization', authorization)
             .send({
                 targetAccountId: 22,
-                currencyId: 1,
+                currencyCode: 'USD',
                 transactionTypeId: 3,
-                targetCurrencyId: 1,
+                targetCurrencyCode: 'USD',
                 amount: 1000,
                 targetAmount: 1000,
                 description: 'Test',
@@ -423,9 +423,9 @@ describe('POST /transaction/create - transfare', () => {
             .post(`/user/${userId}/transaction/`)
             .set('authorization', authorization)
             .send({
-                currencyId: 1,
+                currencyCode: 'USD',
                 transactionTypeId: 3,
-                targetCurrencyId: 1,
+                targetCurrencyCode: 'USD',
                 amount: 1000,
                 targetAmount: 1000,
                 description: 'Test',
@@ -453,9 +453,9 @@ describe('POST /transaction/create - transfare', () => {
             .send({
                 accountId: 5,
                 targetAccountId: 6,
-                currencyId: 1,
+                currencyCode: 'USD',
                 transactionTypeId: 3,
-                targetCurrencyId: 1,
+                targetCurrencyCode: 'USD',
                 targetAmount: 1000,
                 description: 'Test',
             })
@@ -481,7 +481,7 @@ describe('POST /transaction/create - transfare', () => {
             .send({
                 accountId: 5,
                 targetAccountId: 5,
-                currencyId: 1,
+                currencyCode: 'USD',
                 transactionTypeId: 3,
                 amount: 1000,
                 description: 'Test',

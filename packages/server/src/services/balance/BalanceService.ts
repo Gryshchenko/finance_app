@@ -35,20 +35,20 @@ export default class BalanceService extends LoggerBase implements IBalanceServic
         if (!user) {
             throw this.error(`User currency not found for userId: ${userId}`);
         }
-        const currencySymbolForCurrentUser = await this._currencyService.getById(user.currencyId);
+        const currencySymbolForCurrentUser = await this._currencyService.getByCurrencyCode(user.currencyCode);
         if (!currencySymbolForCurrentUser?.symbol) {
-            throw this.error(`Currency symbol not found for currencyId: ${user.currencyId}`);
+            throw this.error(`Currency symbol not found for currencyCode: ${user.currencyCode}`);
         }
-        const accountWithSameCurrency = accounts?.filter((acc) => acc.currencyId === user.currencyId);
-        const accountWithDiffCurrency = accounts?.filter((acc) => acc.currencyId !== user.currencyId);
+        const accountWithSameCurrency = accounts?.filter((acc) => acc.currencyCode === user.currencyCode);
+        const accountWithDiffCurrency = accounts?.filter((acc) => acc.currencyCode !== user.currencyCode);
         let sum = 0;
 
         if (Utils.isArrayNotEmpty(accountWithDiffCurrency)) {
             const numbers = await Promise.all(
                 accountWithDiffCurrency?.map(async (account) => {
-                    const currencySymbolForAccount = await this._currencyService.getById(account.currencyId);
+                    const currencySymbolForAccount = await this._currencyService.getByCurrencyCode(account.currencyCode);
                     if (!currencySymbolForAccount?.currencyCode) {
-                        throw this.error(`Currency symbol not found for account currencyId: ${account.currencyId}`);
+                        throw this.error(`Currency symbol not found for account currencyCode: ${account.currencyCode}`);
                     }
                     const rate = await this._exchangeRateService.get(
                         currencySymbolForAccount.currencyCode,

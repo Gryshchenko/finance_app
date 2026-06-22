@@ -55,7 +55,7 @@ async function createAccount(
     agent: Agent,
     userId: number,
     authorization: string,
-    currencyId: number,
+    currencyCode: string,
     amount = 1000,
     accountName = 'Test account',
     iconId = 'wallet',
@@ -65,7 +65,7 @@ async function createAccount(
     } = await agent
         .post(`/user/${userId}/account/`)
         .set('authorization', authorization)
-        .send({ currencyId, accountName, amount, iconId })
+        .send({ currencyCode, accountName, amount, iconId })
         .expect(HttpCode.OK);
     return data.accountId;
 }

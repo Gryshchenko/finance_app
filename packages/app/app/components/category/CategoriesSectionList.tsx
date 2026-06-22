@@ -39,12 +39,12 @@ const CategorySectionList = forwardRef<SectionList<ICategory>, Props>(({ categor
 
     const renderItem = ({ item: transaction }: { item: ICategory }) => {
         if (!transaction) return null;
-        const { categoryName, currencyId, categoryId } = transaction;
+        const { categoryName, currencyCode, categoryId } = transaction;
 
         return (
             <ListItem
-                key={currencyId}
-                disabled={!Utils.isNumber(currencyId as unknown as string)}
+                key={currencyCode}
+                disabled={!Utils.isNotEmpty(currencyCode)}
                 bottomSeparator
                 onPress={() => {
                     if (onPress) onPress?.(categoryId, categoryName);
@@ -52,7 +52,7 @@ const CategorySectionList = forwardRef<SectionList<ICategory>, Props>(({ categor
                 RightComponent={
                     <>
                         <Text style={themed([$center])}>
-                            {CurrencyUtils.formatWithDelimiter(0, getCurrencySymbol(currencyId))}
+                            {CurrencyUtils.formatWithDelimiter(0, getCurrencySymbol(currencyCode))}
                         </Text>
                         <View style={$buttons}>
                             <ViewButton

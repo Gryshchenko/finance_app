@@ -40,7 +40,7 @@ export default class IncomeService extends LoggerBase implements IIncomeService 
         validateAllowedProperties(income as unknown as Record<string, string | number>, [
             'incomeName',
             'amount',
-            'currencyId',
+            'currencyCode',
             'iconId',
         ]);
         const incomes = await this._incomeDataAccess.create(userId, [income], trx);

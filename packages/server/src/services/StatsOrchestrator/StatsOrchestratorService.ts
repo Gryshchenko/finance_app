@@ -22,8 +22,8 @@ interface ExpenseSnapshot {
     categoryId: number;
     sourceAmount: MoneyAmount;
     targetAmount: MoneyAmount;
-    currencyId?: number;
-    targetCurrencyId?: number;
+    currencyCode?: string;
+    targetCurrencyCode?: string;
 }
 
 interface IncomeSnapshot {
@@ -32,8 +32,8 @@ interface IncomeSnapshot {
     accountId: number;
     sourceAmount: MoneyAmount;
     targetAmount: MoneyAmount;
-    currencyId?: number;
-    targetCurrencyId?: number;
+    currencyCode?: string;
+    targetCurrencyCode?: string;
 }
 
 interface TransferSnapshot {
@@ -42,8 +42,8 @@ interface TransferSnapshot {
     targetAccountId: number;
     sourceAmount: MoneyAmount;
     targetAmount: MoneyAmount;
-    currencyId?: number;
-    targetCurrencyId?: number;
+    currencyCode?: string;
+    targetCurrencyCode?: string;
 }
 
 interface CreateExpenseCommand {
@@ -181,8 +181,8 @@ export default class StatsOrchestratorService extends LoggerBase implements ISta
 
     public async create(command: CreateStatsCommand): Promise<boolean> {
         const { trx, userId, type } = command;
-        // NOTE: sourceAmount = the "from" amount in currencyId (money leaving); targetAmount = the "to" amount in
-        // targetCurrencyId (money arriving). No swapping - every leg passes sourceAmount/targetAmount straight
+        // NOTE: sourceAmount = the "from" amount in currencyCode (money leaving); targetAmount = the "to" amount in
+        // targetCurrencyCode (money arriving). No swapping - every leg passes sourceAmount/targetAmount straight
         // through, and every per-entity table stores BOTH legs: income/category/transfer keep source_total +
         // target_total; an account keeps them per direction (income_source_total/income_target_total when it
         // receives, expense_source_total/expense_target_total when it sends). Summaries read the entity's
@@ -191,7 +191,7 @@ export default class StatsOrchestratorService extends LoggerBase implements ISta
         // currently sums sourceAmount across currencies - handled in a separate redesign (per-currency + % trends).
         switch (type) {
             case TransactionType.Income: {
-                const { accountId, incomeId, sourceAmount, targetAmount, currencyId, targetCurrencyId, date } = command.data;
+                const { accountId, incomeId, sourceAmount, targetAmount, currencyCode, targetCurrencyCode, date } = command.data;
                 const response = await Promise.all([
                     await this._dailyStatsService.updateTotal({
                         userId,
@@ -206,8 +206,8 @@ export default class StatsOrchestratorService extends LoggerBase implements ISta
                         incomeId,
                         sourceAmount,
                         targetAmount,
-                        currencyId,
-                        targetCurrencyId,
+                        currencyCode,
+                        targetCurrencyCode,
                         trx,
                     }),
                     await this._dailyAccountStatsService.updateTotal({
@@ -217,8 +217,8 @@ export default class StatsOrchestratorService extends LoggerBase implements ISta
                         type: StatsTransactionType.INCOME,
                         sourceAmount,
                         targetAmount,
-                        currencyId,
-                        targetCurrencyId,
+                        currencyCode,
+                        targetCurrencyCode,
                         trx,
                     }),
                 ]);
@@ -230,7 +230,8 @@ export default class StatsOrchestratorService extends LoggerBase implements ISta
                 return true;
             }
             case TransactionType.Expense: {
-                const { accountId, categoryId, sourceAmount, targetAmount, currencyId, targetCurrencyId, date } = command.data;
+                const { accountId, categoryId, sourceAmount, targetAmount, currencyCode, targetCurrencyCode, date } =
+                    command.data;
                 const response = await Promise.all([
                     await this._dailyStatsService.updateTotal({
                         userId,
@@ -246,8 +247,8 @@ export default class StatsOrchestratorService extends LoggerBase implements ISta
                         type: StatsTransactionType.EXPENSE,
                         sourceAmount,
                         targetAmount,
-                        currencyId,
-                        targetCurrencyId,
+                        currencyCode,
+                        targetCurrencyCode,
                         trx,
                     }),
                     await this._dailyCategoryStatsService.updateTotal({
@@ -256,8 +257,8 @@ export default class StatsOrchestratorService extends LoggerBase implements ISta
                         categoryId,
                         sourceAmount,
                         targetAmount,
-                        currencyId,
-                        targetCurrencyId,
+                        currencyCode,
+                        targetCurrencyCode,
                         trx,
                     }),
                 ]);
@@ -269,7 +270,7 @@ export default class StatsOrchestratorService extends LoggerBase implements ISta
                 return true;
             }
             case TransactionType.Transafer: {
-                const { accountId, targetAccountId, date, sourceAmount, targetAmount, currencyId, targetCurrencyId } =
+                const { accountId, targetAccountId, date, sourceAmount, targetAmount, currencyCode, targetCurrencyCode } =
                     command.data;
                 const response = await Promise.all([
                     await this._dailyStatsService.updateTotal({
@@ -286,8 +287,8 @@ export default class StatsOrchestratorService extends LoggerBase implements ISta
                         type: StatsTransactionType.EXPENSE,
                         sourceAmount,
                         targetAmount,
-                        currencyId,
-                        targetCurrencyId,
+                        currencyCode,
+                        targetCurrencyCode,
                         trx,
                     }),
                     await this._dailyAccountStatsService.updateTotal({
@@ -297,8 +298,8 @@ export default class StatsOrchestratorService extends LoggerBase implements ISta
                         type: StatsTransactionType.INCOME,
                         sourceAmount,
                         targetAmount,
-                        currencyId,
-                        targetCurrencyId,
+                        currencyCode,
+                        targetCurrencyCode,
                         trx,
                     }),
                     await this._dailyTransferStatsService.updateTotal({
@@ -308,8 +309,8 @@ export default class StatsOrchestratorService extends LoggerBase implements ISta
                         targetAccountId,
                         sourceAmount,
                         targetAmount,
-                        currencyId,
-                        targetCurrencyId,
+                        currencyCode,
+                        targetCurrencyCode,
                         trx,
                     }),
                 ]);

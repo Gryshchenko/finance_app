@@ -104,7 +104,6 @@ const convertFieldToReason = (field: string): string => {
         case 'locale':
             return 'validation:unsupportedLanguage';
         case 'currencyCode':
-        case 'currencyId':
         case 'currency':
             return 'validation:unsupportedCurrency';
         case 'confirmationCode':

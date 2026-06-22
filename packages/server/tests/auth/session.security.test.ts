@@ -316,7 +316,7 @@ describe('5. Cross-user resource isolation', () => {
         await agent
             .post(`/user/${userB.userId}/account/`)
             .set('authorization', userA.authorization)
-            .send({ currencyId: 1, accountName: 'Hack', amount: 0, iconId: 'wallet' })
+            .send({ currencyCode: 'USD', accountName: 'Hack', amount: 0, iconId: 'wallet' })
             .expect(HttpCode.FORBIDDEN);
     });
 });

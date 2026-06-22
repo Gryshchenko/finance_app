@@ -63,7 +63,7 @@ describe('PATCH /transaction/patch - amount', () => {
         } = await agent.get(`/user/${userId}/overview/`).set('authorization', authorization).send({}).expect(HttpCode.OK);
 
         const accountId = accounts[0].accountId;
-        const currencyId = accounts[0].currencyId;
+        const currencyCode = accounts[0].currencyCode;
         const targetAccountId = accounts[1].accountId;
 
         const response = await agent
@@ -71,10 +71,10 @@ describe('PATCH /transaction/patch - amount', () => {
             .set('authorization', authorization)
             .send({
                 accountId,
-                currencyId,
+                currencyCode,
                 transactionTypeId: 3,
                 targetAccountId,
-                targetCurrencyId: currencyId,
+                targetCurrencyCode: currencyCode,
                 amount: 1000,
                 targetAmount: 1000,
                 description: 'Test',
@@ -141,7 +141,7 @@ describe('PATCH /transaction/patch - amount', () => {
         const { accounts, incomes, categories } = await getOverview(agent, userId, authorization);
 
         const accountId = accounts[0].accountId;
-        const currencyId = accounts[0].currencyId;
+        const currencyCode = accounts[0].currencyCode;
         const categoryId = categories[0].categoryId;
         const incomeId = incomes[0].incomeId;
         const targetAccountId = accounts[1].accountId;
@@ -151,7 +151,7 @@ describe('PATCH /transaction/patch - amount', () => {
             userId,
             authorization,
             accountId,
-            currencyId,
+            currencyCode,
             categoryId,
             incomeId,
             targetAccountId,

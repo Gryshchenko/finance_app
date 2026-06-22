@@ -47,7 +47,7 @@ describe('Category', () => {
                 .post(`/user/${userId}/category/`)
                 .set('authorization', authorization)
                 .send({
-                    currencyId: 1,
+                    currencyCode: 'USD',
                     categoryName: name,
                     iconId: 'wallet',
                 })
@@ -60,15 +60,15 @@ describe('Category', () => {
                 categoryName: 'Test 1',
             },
             {
-                currencyId: 1,
+                currencyCode: 'USD',
             },
             {},
             {
-                currencyId: '23',
+                currencyCode: '23',
                 categoryName: 123123,
             },
             {
-                currencyId: 1,
+                currencyCode: 'USD',
                 categoryName:
                     'sdfsdfsdkjfdskfjhdsfkdsfhsdkfjhdsfkjdshfkdsfhdskfjhdskfjdshfdsjkfhdskjfhdsjkhfjkdshfjkhsdfjkdsjhfdjksfdshfjkdsfhdskfjhdsjkfjhdsfhkj',
             },
@@ -105,7 +105,7 @@ describe('Category', () => {
                 .post(`/user/${userId}/category/`)
                 .set('authorization', authorization)
                 .send({
-                    currencyId: 1,
+                    currencyCode: 'USD',
                     categoryName: name,
                     iconId: 'wallet',
                 })
@@ -170,7 +170,7 @@ describe('Category', () => {
             .post(`/user/${userId}/category/`)
             .set('authorization', authorization)
             .send({
-                currencyId: 1,
+                currencyCode: 'USD',
                 categoryName: 'Test',
                 something: 200,
             })
@@ -215,7 +215,7 @@ describe('Category', () => {
             .post(`/user/${userId}/category/`)
             .set('authorization', authorization)
             .send({
-                currencyId: 1,
+                currencyCode: 'USD',
                 categoryName: 'Test 1',
                 iconId: 'wallet',
             })
@@ -252,8 +252,8 @@ describe('Category', () => {
                 .post(`/user/${userId}/transaction/`)
                 .set('authorization', authorization)
                 .send({
-                    currencyId: 1,
-                    targetCurrencyId: 1,
+                    currencyCode: 'USD',
+                    targetCurrencyCode: 'USD',
                     targetAmount: 1000,
                     description: 'Test',
                     ...transaction,

@@ -35,7 +35,7 @@ export default class CategoryDataAccess extends LoggerBase implements ICategoryD
                     'categories.categoryId',
                     'categories.userId',
                     'categories.categoryName',
-                    'categories.currencyId',
+                    'categories.currencyCode',
                     'categories.iconId',
                     'categories.colorId',
                     'categories.budget',
@@ -52,7 +52,7 @@ export default class CategoryDataAccess extends LoggerBase implements ICategoryD
                     'categories.categoryId',
                     'categories.userId',
                     'categories.categoryName',
-                    'categories.currencyId',
+                    'categories.currencyCode',
                     'categories.iconId',
                     'categories.colorId',
                     'categories.budget',
@@ -85,10 +85,10 @@ export default class CategoryDataAccess extends LoggerBase implements ICategoryD
         try {
             const maxPositionRow = await query('categories').where({ userId }).max('position as maxPosition').first();
             const nextPosition = Number(maxPositionRow?.maxPosition ?? 0) + 1;
-            const formattedCategories = categories.map(({ categoryName, currencyId, iconId, colorId, budget }, index) => ({
+            const formattedCategories = categories.map(({ categoryName, currencyCode, iconId, colorId, budget }, index) => ({
                 userId,
                 categoryName,
-                currencyId,
+                currencyCode,
                 iconId,
                 colorId: colorId ?? null,
                 budget,
@@ -99,7 +99,7 @@ export default class CategoryDataAccess extends LoggerBase implements ICategoryD
                 'categoryId',
                 'userId',
                 'categoryName',
-                'currencyId',
+                'currencyCode',
                 'iconId',
                 'colorId',
                 'budget',
@@ -123,7 +123,7 @@ export default class CategoryDataAccess extends LoggerBase implements ICategoryD
 
         try {
             const data = await this.getCategoryBaseQuery()
-                .innerJoin('currencies', 'categories.currencyId', 'currencies.currencyId')
+                .innerJoin('currencies', 'categories.currencyCode', 'currencies.currencyCode')
                 .where({ userId, 'categories.isDeleted': false })
                 .orderBy('categories.position', 'asc')
                 .orderBy('categories.categoryId', 'asc');
@@ -148,7 +148,7 @@ export default class CategoryDataAccess extends LoggerBase implements ICategoryD
         this._logger.info(`Retrieving category ID ${categoryId} for user: ${userId}`);
         try {
             const data = await this.getCategoryBaseQuery()
-                .innerJoin('currencies', 'categories.currencyId', 'currencies.currencyId')
+                .innerJoin('currencies', 'categories.currencyCode', 'currencies.currencyCode')
                 .where({ userId, categoryId, 'categories.isDeleted': false })
                 .first();
 
@@ -250,7 +250,7 @@ export default class CategoryDataAccess extends LoggerBase implements ICategoryD
                 'categories.categoryId',
                 'categories.userId',
                 'categories.categoryName',
-                'categories.currencyId',
+                'categories.currencyCode',
                 'categories.iconId',
                 'categories.colorId',
                 'categories.budget',

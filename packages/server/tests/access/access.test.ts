@@ -43,7 +43,7 @@ describe('Access control', () => {
             .send({
                 accountName: 'Main',
                 amount: 1000,
-                currencyId: 1,
+                currencyCode: 'USD',
                 iconId: 'wallet',
             })
             .expect(HttpCode.OK);
@@ -55,7 +55,7 @@ describe('Access control', () => {
             .set('authorization', authA)
             .send({
                 categoryName: 'Groceries',
-                currencyId: 1,
+                currencyCode: 'USD',
                 iconId: 'wallet',
             })
             .expect(HttpCode.OK);
@@ -67,8 +67,8 @@ describe('Access control', () => {
             .set('authorization', authA)
             .send({
                 accountId,
-                currencyId: 1,
-                targetCurrencyId: 1,
+                currencyCode: 'USD',
+                targetCurrencyCode: 'USD',
                 transactionTypeId: 2,
                 categoryId,
                 amount: 100,

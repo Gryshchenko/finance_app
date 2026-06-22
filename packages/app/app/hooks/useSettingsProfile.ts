@@ -55,10 +55,10 @@ export function useSettingsProfile(): UseSettingsProfileResult {
     const currencyList = useMemo(() => Array.from(currencies.values()), [currencies]);
 
     const currencyDisplayValue = useMemo(() => {
-        if (profile?.currencyId == null) return undefined;
-        const c = currencies.get(profile.currencyId);
+        if (profile?.currencyCode == null) return undefined;
+        const c = currencies.get(profile.currencyCode);
         return c ? `${c.currencyName} - ${c.symbol}` : undefined;
-    }, [profile?.currencyId, currencies]);
+    }, [profile?.currencyCode, currencies]);
 
     const languageOptions: LanguageOption[] = config?.locales ?? [];
 
@@ -68,11 +68,11 @@ export function useSettingsProfile(): UseSettingsProfileResult {
     }, [profile?.locale, config?.locales]);
 
     async function handleCurrencyChange(item: ICurrency) {
-        if (!profile || item.currencyId === profile.currencyId || isSaving) return;
+        if (!profile || item.currencyCode === profile.currencyCode || isSaving) return;
         setIsSaving(true);
         try {
             const response = await ProfileService.instance().doPatchProfile({
-                currencyId: String(item.currencyId),
+                currencyCode: String(item.currencyCode),
                 locale: profile.locale,
                 publicName: profile.publicName,
             });
@@ -93,7 +93,7 @@ export function useSettingsProfile(): UseSettingsProfileResult {
         try {
             const response = await ProfileService.instance().doPatchProfile({
                 locale: item.locale,
-                currencyId: profile.currencyId != null ? String(profile.currencyId) : undefined,
+                currencyCode: profile.currencyCode != null ? String(profile.currencyCode) : undefined,
                 publicName: profile.publicName,
             });
             if (response.kind === GeneralApiProblemKind.Ok) {
@@ -111,7 +111,7 @@ export function useSettingsProfile(): UseSettingsProfileResult {
     return {
         profile,
         currencyList,
-        currencyValue: profile?.currencyId != null ? String(profile.currencyId) : undefined,
+        currencyValue: profile?.currencyCode != null ? String(profile.currencyCode) : undefined,
         currencyDisplayValue,
         languageOptions,
         languageValue: profile?.locale,

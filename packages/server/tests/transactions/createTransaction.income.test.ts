@@ -71,7 +71,7 @@ describe('POST /transaction/create - income', () => {
 
             const incomeId = incomes[0].incomeId;
             const accountId = accounts[0].accountId;
-            const currencyId = accounts[0].currencyId;
+            const currencyCode = accounts[0].currencyCode;
 
             const {
                 body: { data: accountBefor },
@@ -87,11 +87,11 @@ describe('POST /transaction/create - income', () => {
                 .send({
                     incomeId,
                     accountId,
-                    currencyId,
+                    currencyCode,
                     transactionTypeId: TransactionType.Income,
                     amount: num,
                     targetAmount: num,
-                    targetCurrencyId: currencyId,
+                    targetCurrencyCode: currencyCode,
                     description: 'Test',
                 })
                 .expect(HttpCode.CREATED);
@@ -129,13 +129,13 @@ describe('POST /transaction/create - income', () => {
         const incomeId = incomes[0].incomeId;
         const accountId = accounts[0].accountId;
         const accountIdPatch = accounts[1].accountId;
-        const currencyId = accounts[0].currencyId;
+        const currencyCode = accounts[0].currencyCode;
 
         const accountBefore = await getAccount(agent, userId, authorization, accountId);
 
         expect(accountBefore.amount).toStrictEqual(Number((0).toFixed(2)));
 
-        const id = await createIncomeTransaction(agent, userId, authorization, accountId, incomeId, currencyId, 100);
+        const id = await createIncomeTransaction(agent, userId, authorization, accountId, incomeId, currencyCode, 100);
 
         const accountAfterCreate = await getAccount(agent, userId, authorization, accountId);
         expect(accountAfterCreate.amount).toStrictEqual(Number((100).toFixed(2)));
@@ -159,13 +159,13 @@ describe('POST /transaction/create - income', () => {
         const incomeId = incomes[0].incomeId;
         const incomeIdPatch = incomes[0].incomeId;
         const accountId = accounts[0].accountId;
-        const currencyId = accounts[0].currencyId;
+        const currencyCode = accounts[0].currencyCode;
 
         const accountBefore = await getAccount(agent, userId, authorization, accountId);
 
         expect(accountBefore.amount).toStrictEqual(Number((0).toFixed(2)));
 
-        const id = await createIncomeTransaction(agent, userId, authorization, accountId, incomeId, currencyId, 100);
+        const id = await createIncomeTransaction(agent, userId, authorization, accountId, incomeId, currencyCode, 100);
 
         const accountAfterCreate = await getAccount(agent, userId, authorization, accountId);
 
@@ -191,13 +191,13 @@ describe('POST /transaction/create - income', () => {
         const { accounts, incomes } = await getOverview(agent, userId, authorization);
         const incomeId = incomes[0].incomeId;
         const accountId = accounts[0].accountId;
-        const currencyId = accounts[0].currencyId;
+        const currencyCode = accounts[0].currencyCode;
 
         const accountBefore = await getAccount(agent, userId, authorization, accountId);
 
         expect(accountBefore.amount).toStrictEqual(Number((0).toFixed(2)));
 
-        const id = await createIncomeTransaction(agent, userId, authorization, accountId, incomeId, currencyId, 100);
+        const id = await createIncomeTransaction(agent, userId, authorization, accountId, incomeId, currencyCode, 100);
 
         const accountPath = await getAccount(agent, userId, authorization, accountId);
 
@@ -220,12 +220,12 @@ describe('POST /transaction/create - income', () => {
         const incomeId = incomes[0].incomeId;
         const accountId = accounts[0].accountId;
         const accountIdPatch = accounts[1].accountId;
-        const currencyId = accounts[0].currencyId;
+        const currencyCode = accounts[0].currencyCode;
 
         const accountBefore = await getAccount(agent, userId, authorization, accountId);
         const accountPatchBefore = await getAccount(agent, userId, authorization, accountIdPatch);
 
-        const id = await createIncomeTransaction(agent, userId, authorization, accountId, incomeId, currencyId, 100);
+        const id = await createIncomeTransaction(agent, userId, authorization, accountId, incomeId, currencyCode, 100);
 
         await patchTransaction(agent, userId, authorization, id, { accountId: accountIdPatch, amount: 200 });
 
@@ -245,9 +245,9 @@ describe('POST /transaction/create - income', () => {
         const { accounts, incomes } = await getOverview(agent, userId, authorization);
         const incomeId = incomes[0].incomeId;
         const accountId = accounts[0].accountId;
-        const currencyId = accounts[0].currencyId;
+        const currencyCode = accounts[0].currencyCode;
 
-        const id = await createIncomeTransaction(agent, userId, authorization, accountId, incomeId, currencyId, 100);
+        const id = await createIncomeTransaction(agent, userId, authorization, accountId, incomeId, currencyCode, 100);
         const accountAfterCreate = await getAccount(agent, userId, authorization, accountId);
 
         await patchTransaction(agent, userId, authorization, id, {
@@ -289,7 +289,7 @@ describe('POST /transaction/create - income', () => {
             auth1,
             accounts1[0].accountId,
             incomes1[0].incomeId,
-            accounts1[0].currencyId,
+            accounts1[0].currencyCode,
             100,
         );
 
@@ -311,7 +311,7 @@ describe('POST /transaction/create - income', () => {
             authorization,
             accounts[0].accountId,
             incomes[0].incomeId,
-            accounts[0].currencyId,
+            accounts[0].currencyCode,
             100,
         );
 
@@ -339,8 +339,8 @@ describe('POST /transaction/create - income', () => {
             .set('authorization', authorization)
             .send({
                 accountId: 21,
-                currencyId: 1,
-                targetCurrencyId: 1,
+                currencyCode: 'USD',
+                targetCurrencyCode: 'USD',
                 transactionTypeId: 1,
                 amount: 1000,
                 targetAmount: 1000,
@@ -368,8 +368,8 @@ describe('POST /transaction/create - income', () => {
             .set('authorization', authorization)
             .send({
                 incomeId: 21,
-                currencyId: 1,
-                targetCurrencyId: 1,
+                currencyCode: 'USD',
+                targetCurrencyCode: 'USD',
                 transactionTypeId: 1,
                 amount: 1000,
                 targetAmount: 1000,
@@ -396,8 +396,8 @@ describe('POST /transaction/create - income', () => {
             .post(`/user/${userId}/transaction/`)
             .set('authorization', authorization)
             .send({
-                currencyId: 1,
-                targetCurrencyId: 1,
+                currencyCode: 'USD',
+                targetCurrencyCode: 'USD',
                 transactionTypeId: 1,
                 amount: 1000,
                 targetAmount: 1000,
@@ -426,8 +426,8 @@ describe('POST /transaction/create - income', () => {
             .send({
                 accountId: 5,
                 incomeId: 5,
-                currencyId: 1,
-                targetCurrencyId: 1,
+                currencyCode: 'USD',
+                targetCurrencyCode: 'USD',
                 transactionTypeId: 1,
                 targetAmount: 1000,
                 description: 'Test',
@@ -454,7 +454,7 @@ describe('POST /transaction/create - income', () => {
             .send({
                 accountId: 5,
                 incomeId: 5,
-                currencyId: 1,
+                currencyCode: 'USD',
                 transactionTypeId: 1,
                 amount: 1000,
                 description: 'Test',

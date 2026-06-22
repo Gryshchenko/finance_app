@@ -99,7 +99,7 @@ export class AccountService extends ApiAbstract {
         });
     }
 
-    public async doCreateAccount(body: { accountName: string; currencyId: number; amount: number; iconId: string }): Promise<
+    public async doCreateAccount(body: { accountName: string; currencyCode: string; amount: number; iconId: string }): Promise<
         | {
               kind: GeneralApiProblemKind.Ok;
               data: IAccount | undefined;
@@ -111,7 +111,7 @@ export class AccountService extends ApiAbstract {
             const userId = this._authService.userId;
             const response = await this.authPost(`/user/${userId}/account`, {
                 accountName: String(body.accountName),
-                currencyId: Number(body.currencyId),
+                currencyCode: body.currencyCode,
                 amount: Number(body.amount),
                 iconId: String(body.iconId),
             });

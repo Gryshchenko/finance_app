@@ -32,8 +32,8 @@ let authorization: string;
 let existingIncomeId: number;
 let existingCategoryId: number;
 
-const validIncome = { currencyId: 1, incomeName: 'ValidIncome', iconId: 'bnb' };
-const validCategory = { currencyId: 1, categoryName: 'ValidCategory', iconId: 'wallet' };
+const validIncome = { currencyCode: 'USD', incomeName: 'ValidIncome', iconId: 'bnb' };
+const validCategory = { currencyCode: 'USD', categoryName: 'ValidCategory', iconId: 'wallet' };
 
 beforeAll(async () => {
     const port = Math.floor(generateSecureRandom() * (65535 - 1024) + 1024);
@@ -65,11 +65,11 @@ describe('POST /user/:userId/income/ - body validation', () => {
         await agent
             .post(url())
             .set('authorization', authorization)
-            .send({ currencyId: 1, iconId: 'bnb' })
+            .send({ currencyCode: 'USD', iconId: 'bnb' })
             .expect(HttpCode.BAD_REQUEST);
     });
 
-    it('400 - missing currencyId', async () => {
+    it('400 - missing currencyCode', async () => {
         await agent
             .post(url())
             .set('authorization', authorization)
@@ -81,7 +81,7 @@ describe('POST /user/:userId/income/ - body validation', () => {
         await agent
             .post(url())
             .set('authorization', authorization)
-            .send({ currencyId: 1, incomeName: 'Test' })
+            .send({ currencyCode: 'USD', incomeName: 'Test' })
             .expect(HttpCode.BAD_REQUEST);
     });
 
@@ -145,11 +145,11 @@ describe('POST /user/:userId/income/ - body validation', () => {
             .expect(HttpCode.BAD_REQUEST);
     });
 
-    it('400 - currencyId is a string', async () => {
+    it('400 - currencyCode is a string', async () => {
         await agent
             .post(url())
             .set('authorization', authorization)
-            .send({ ...validIncome, currencyId: 'abc' })
+            .send({ ...validIncome, currencyCode: 'abc' })
             .expect(HttpCode.BAD_REQUEST);
     });
 
@@ -292,11 +292,11 @@ describe('POST /user/:userId/category/ - body validation', () => {
         await agent
             .post(url())
             .set('authorization', authorization)
-            .send({ currencyId: 1, iconId: 'bnb' })
+            .send({ currencyCode: 'USD', iconId: 'bnb' })
             .expect(HttpCode.BAD_REQUEST);
     });
 
-    it('400 - missing currencyId', async () => {
+    it('400 - missing currencyCode', async () => {
         await agent
             .post(url())
             .set('authorization', authorization)
@@ -308,7 +308,7 @@ describe('POST /user/:userId/category/ - body validation', () => {
         await agent
             .post(url())
             .set('authorization', authorization)
-            .send({ currencyId: 1, categoryName: 'Test' })
+            .send({ currencyCode: 'USD', categoryName: 'Test' })
             .expect(HttpCode.BAD_REQUEST);
     });
 
@@ -364,11 +364,11 @@ describe('POST /user/:userId/category/ - body validation', () => {
             .expect(HttpCode.BAD_REQUEST);
     });
 
-    it('400 - currencyId is a string', async () => {
+    it('400 - currencyCode is a string', async () => {
         await agent
             .post(url())
             .set('authorization', authorization)
-            .send({ ...validCategory, currencyId: 'abc' })
+            .send({ ...validCategory, currencyCode: 'abc' })
             .expect(HttpCode.BAD_REQUEST);
     });
 

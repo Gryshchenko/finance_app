@@ -10,7 +10,6 @@ import DatabaseConnectionBuilder from 'src/repositories/DatabaseConnectionBuilde
 export class CurrencyOrchestratorServiceBuilder {
     static build(db?: IDatabaseConnection): ICurrencyOrchestratorService {
         const database = db ?? DatabaseConnectionBuilder.build();
-
         return new CurrencyOrchestratorService({
             exchangeRateService: ExchangeRateServiceBuilder.build(database),
             currencyService: CurrencyServiceBuilder.build(database),

@@ -84,16 +84,16 @@ async function createTransferTransaction(
     authorization: string,
     accountId: number,
     targetAccountId: number,
-    currencyId: number,
+    currencyCode: string,
     amount = 100,
     createdAt?: string,
 ): Promise<number> {
     const id = await postTransaction(agent, userId, authorization, {
         accountId,
-        currencyId,
+        currencyCode,
         transactionTypeId: TransactionType.Transafer,
         targetAccountId,
-        targetCurrencyId: currencyId,
+        targetCurrencyCode: currencyCode,
         amount,
         targetAmount: amount,
         description: 'Test transfer',
@@ -108,7 +108,7 @@ async function createTransferTransactions(
     authorization: string,
     accountId: number,
     targetAccountId: number,
-    currencyId: number,
+    currencyCode: string,
     amount = 100,
     count = 9,
     createdAt?: string,
@@ -117,10 +117,10 @@ async function createTransferTransactions(
     for (const _ of Array(count)) {
         const id = await postTransaction(agent, userId, authorization, {
             accountId,
-            currencyId,
+            currencyCode,
             transactionTypeId: TransactionType.Transafer,
             targetAccountId,
-            targetCurrencyId: currencyId,
+            targetCurrencyCode: currencyCode,
             amount: amount,
             targetAmount: amount,
             description: 'Test transfer',
@@ -137,7 +137,7 @@ async function createIncomeTransaction(
     authorization: string,
     accountId: number,
     incomeId: number,
-    currencyId: number,
+    currencyCode: string,
     amount = 100,
     createdAt?: string,
 ): Promise<number> {
@@ -146,9 +146,9 @@ async function createIncomeTransaction(
         incomeId,
         transactionTypeId: TransactionType.Income,
         amount,
-        currencyId,
+        currencyCode,
         targetAmount: amount,
-        targetCurrencyId: currencyId,
+        targetCurrencyCode: currencyCode,
         description: 'Test income',
         createdAt,
     });
@@ -161,7 +161,7 @@ async function createIncomeTransactions(
     authorization: string,
     accountId: number,
     incomeId: number,
-    currencyId: number,
+    currencyCode: string,
     amount = 100,
     count = 9,
     createdAt?: string,
@@ -173,9 +173,9 @@ async function createIncomeTransactions(
             incomeId,
             transactionTypeId: TransactionType.Income,
             amount,
-            currencyId,
+            currencyCode,
             targetAmount: amount,
-            targetCurrencyId: currencyId,
+            targetCurrencyCode: currencyCode,
             description: 'Test income',
             createdAt,
         });
@@ -190,7 +190,7 @@ async function createExpenseTransaction(
     authorization: string,
     accountId: number,
     categoryId: number,
-    currencyId: number,
+    currencyCode: string,
     amount = 100,
     createdAt?: string,
 ): Promise<number> {
@@ -199,9 +199,9 @@ async function createExpenseTransaction(
         categoryId,
         transactionTypeId: TransactionType.Expense,
         amount,
-        currencyId,
+        currencyCode,
         targetAmount: amount,
-        targetCurrencyId: currencyId,
+        targetCurrencyCode: currencyCode,
         description: 'Test expense',
         createdAt,
     });
@@ -230,7 +230,7 @@ async function createExpenseTransactions(
     authorization: string,
     accountId: number,
     categoryId: number,
-    currencyId: number,
+    currencyCode: string,
     amount = 100,
     count = 9,
     createdAt?: string,
@@ -242,9 +242,9 @@ async function createExpenseTransactions(
             categoryId,
             transactionTypeId: TransactionType.Expense,
             amount,
-            currencyId,
+            currencyCode,
             targetAmount: amount,
-            targetCurrencyId: currencyId,
+            targetCurrencyCode: currencyCode,
             description: 'Test expense',
             createdAt,
         });
@@ -258,14 +258,14 @@ async function createAllTransactions(
     userId: number,
     authorization: string,
     accountId: number,
-    currencyId: number,
+    currencyCode: string,
     categoryId: number,
     incomeId: number,
     targetAccountId: number,
 ): Promise<number[]> {
-    const transferIds = await createTransferTransactions(agent, userId, authorization, accountId, targetAccountId, currencyId);
-    const incomeIds = await createIncomeTransactions(agent, userId, authorization, accountId, incomeId, currencyId);
-    const expenseIds = await createExpenseTransactions(agent, userId, authorization, accountId, categoryId, currencyId);
+    const transferIds = await createTransferTransactions(agent, userId, authorization, accountId, targetAccountId, currencyCode);
+    const incomeIds = await createIncomeTransactions(agent, userId, authorization, accountId, incomeId, currencyCode);
+    const expenseIds = await createExpenseTransactions(agent, userId, authorization, accountId, categoryId, currencyCode);
     return [...transferIds, ...incomeIds, ...expenseIds];
 }
 async function fetchTransactions(

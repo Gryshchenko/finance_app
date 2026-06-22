@@ -37,11 +37,11 @@ export class AccountOrchestrationService extends LoggerBase {
 
     public async create(userId: number, account: ICreateAccount): Promise<IAccount> {
         return await this.withTransaction(async (trx: IDBTransaction) => {
-            const { amount, currencyId } = account;
-            const currency = await this._currencyService.getById(currencyId);
+            const { amount, currencyCode } = account;
+            const currency = await this._currencyService.getByCurrencyCode(currencyCode);
             if (Utils.isNull(currency) || Utils.isNull(currency?.currencyCode)) {
                 throw new ValidationError({
-                    message: `Accounts creation failed due cant find currencyCode for currencyID: ${account.currencyId}`,
+                    message: `Accounts creation failed due cant find currencyCode for currencyID: ${account.currencyCode}`,
                 });
             }
             if (Utils.isNull(amount)) {

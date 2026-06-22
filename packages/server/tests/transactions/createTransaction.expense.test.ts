@@ -58,15 +58,15 @@ describe('POST /transaction/create - expense', () => {
 
             const { accounts, categories } = await getOverview(agent, userId, authorization);
             const accountId = accounts[0].accountId;
-            const currencyId = accounts[0].currencyId;
+            const currencyCode = accounts[0].currencyCode;
             const categoryId = categories[0].categoryId;
 
             const accountBefore = await getAccount(agent, userId, authorization, accountId);
 
             const response = await tryCreateTransaction(agent, userId, authorization, {
                 accountId,
-                currencyId,
-                targetCurrencyId: currencyId,
+                currencyCode,
+                targetCurrencyCode: currencyCode,
                 transactionTypeId: TransactionType.Expense,
                 amount: num,
                 targetAmount: num,
@@ -95,13 +95,13 @@ describe('POST /transaction/create - expense', () => {
         const { accounts, categories } = await getOverview(agent, userId, authorization);
         const accountId = accounts[0].accountId;
         const accountIdPatch = accounts[1].accountId;
-        const currencyId = accounts[0].currencyId;
+        const currencyCode = accounts[0].currencyCode;
         const categoryId = categories[0].categoryId;
 
         const accountBefore = await getAccount(agent, userId, authorization, accountId);
         const accountPatchBefore = await getAccount(agent, userId, authorization, accountIdPatch);
 
-        const id = await createExpenseTransaction(agent, userId, authorization, accountId, categoryId, currencyId, 100);
+        const id = await createExpenseTransaction(agent, userId, authorization, accountId, categoryId, currencyCode, 100);
 
         const accountAfterCreate = await getAccount(agent, userId, authorization, accountId);
         expect(accountAfterCreate.amount).toStrictEqual(Number((accountBefore.amount - 100).toFixed(2)));
@@ -123,11 +123,11 @@ describe('POST /transaction/create - expense', () => {
 
         const { accounts, categories } = await getOverview(agent, userId, authorization);
         const accountId = accounts[0].accountId;
-        const currencyId = accounts[0].currencyId;
+        const currencyCode = accounts[0].currencyCode;
         const categoryId = categories[0].categoryId;
 
         const accountBefore = await getAccount(agent, userId, authorization, accountId);
-        const id = await createExpenseTransaction(agent, userId, authorization, accountId, categoryId, currencyId, 100);
+        const id = await createExpenseTransaction(agent, userId, authorization, accountId, categoryId, currencyCode, 100);
 
         await patchTransaction(agent, userId, authorization, id, { amount: 200 });
 
@@ -145,13 +145,13 @@ describe('POST /transaction/create - expense', () => {
         const { accounts, categories } = await getOverview(agent, userId, authorization);
         const accountId = accounts[0].accountId;
         const accountIdPatch = accounts[1].accountId;
-        const currencyId = accounts[0].currencyId;
+        const currencyCode = accounts[0].currencyCode;
         const categoryId = categories[0].categoryId;
 
         const accountBefore = await getAccount(agent, userId, authorization, accountId);
         const accountPatchBefore = await getAccount(agent, userId, authorization, accountIdPatch);
 
-        const id = await createExpenseTransaction(agent, userId, authorization, accountId, categoryId, currencyId, 100);
+        const id = await createExpenseTransaction(agent, userId, authorization, accountId, categoryId, currencyCode, 100);
 
         await patchTransaction(agent, userId, authorization, id, { accountId: accountIdPatch, amount: 200 });
 
@@ -170,11 +170,11 @@ describe('POST /transaction/create - expense', () => {
 
         const { accounts, categories } = await getOverview(agent, userId, authorization);
         const accountId = accounts[0].accountId;
-        const currencyId = accounts[0].currencyId;
+        const currencyCode = accounts[0].currencyCode;
         const categoryId = categories[0].categoryId;
         const secondCategoryId = categories[1]?.categoryId ?? categoryId;
 
-        const id = await createExpenseTransaction(agent, userId, authorization, accountId, categoryId, currencyId, 100);
+        const id = await createExpenseTransaction(agent, userId, authorization, accountId, categoryId, currencyCode, 100);
         const accountAfterCreate = await getAccount(agent, userId, authorization, accountId);
 
         await patchTransaction(agent, userId, authorization, id, {
@@ -217,7 +217,7 @@ describe('POST /transaction/create - expense', () => {
             auth1,
             accounts1[0].accountId,
             categories1[0].categoryId,
-            accounts1[0].currencyId,
+            accounts1[0].currencyCode,
             100,
         );
 
@@ -239,7 +239,7 @@ describe('POST /transaction/create - expense', () => {
             authorization,
             accounts[0].accountId,
             categories[0].categoryId,
-            accounts[0].currencyId,
+            accounts[0].currencyCode,
             100,
         );
 
@@ -263,8 +263,8 @@ describe('POST /transaction/create - expense', () => {
 
         const response = await tryCreateTransaction(agent, userId, authorization, {
             accountId: accounts[0].accountId,
-            currencyId: accounts[0].currencyId,
-            targetCurrencyId: accounts[0].currencyId,
+            currencyCode: accounts[0].currencyCode,
+            targetCurrencyCode: accounts[0].currencyCode,
             transactionTypeId: TransactionType.Expense,
             amount: 1000,
             targetAmount: 1000,
@@ -289,8 +289,8 @@ describe('POST /transaction/create - expense', () => {
 
         const response = await tryCreateTransaction(agent, userId, authorization, {
             categoryId: categories[0].categoryId,
-            currencyId: 1,
-            targetCurrencyId: 1,
+            currencyCode: 'USD',
+            targetCurrencyCode: 'USD',
             transactionTypeId: TransactionType.Expense,
             amount: 1000,
             targetAmount: 1000,
@@ -312,8 +312,8 @@ describe('POST /transaction/create - expense', () => {
         userIds.push(userId);
 
         const response = await tryCreateTransaction(agent, userId, authorization, {
-            currencyId: 1,
-            targetCurrencyId: 1,
+            currencyCode: 'USD',
+            targetCurrencyCode: 'USD',
             transactionTypeId: TransactionType.Expense,
             amount: 1000,
             targetAmount: 1000,
@@ -339,8 +339,8 @@ describe('POST /transaction/create - expense', () => {
         const response = await tryCreateTransaction(agent, userId, authorization, {
             accountId: accounts[0].accountId,
             categoryId: categories[0].categoryId,
-            currencyId: accounts[0].currencyId,
-            targetCurrencyId: accounts[0].currencyId,
+            currencyCode: accounts[0].currencyCode,
+            targetCurrencyCode: accounts[0].currencyCode,
             transactionTypeId: TransactionType.Expense,
             targetAmount: 1000,
             description: 'Test',
@@ -364,7 +364,7 @@ describe('POST /transaction/create - expense', () => {
         const response = await tryCreateTransaction(agent, userId, authorization, {
             accountId: accounts[0].accountId,
             categoryId: categories[0].categoryId,
-            currencyId: accounts[0].currencyId,
+            currencyCode: accounts[0].currencyCode,
             transactionTypeId: TransactionType.Expense,
             amount: 1000,
             description: 'Test',

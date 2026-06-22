@@ -156,11 +156,11 @@ const TransactionSectionList = forwardRef<SectionList<ITransactionListItem>, Pro
         };
 
         const getItemSides = (transaction: ITransactionListItem) => {
-            const { amount, currencyId, targetAmount, targetCurrencyId, transactionTypeId } = transaction;
-            const fromAmount = CurrencyUtils.formatWithDelimiter(Math.abs(amount), getCurrencySymbol(currencyId));
+            const { amount, currencyCode, targetAmount, targetCurrencyCode, transactionTypeId } = transaction;
+            const fromAmount = CurrencyUtils.formatWithDelimiter(Math.abs(amount), getCurrencySymbol(currencyCode));
             const toAmt = CurrencyUtils.formatWithDelimiter(
                 Math.abs(targetAmount ?? 0),
-                getCurrencySymbol(targetCurrencyId ?? currencyId),
+                getCurrencySymbol(targetCurrencyCode ?? currencyCode),
             );
             switch (transactionTypeId) {
                 case TransactionType.Expense:

@@ -11,8 +11,8 @@ export interface IDailyTransferStatsUpdateTotalParams {
     targetAccountId: number;
     sourceAmount: number;
     targetAmount: number;
-    currencyId?: number;
-    targetCurrencyId?: number;
+    currencyCode?: string;
+    targetCurrencyCode?: string;
     trx?: IDBTransaction;
 }
 
@@ -39,8 +39,8 @@ export class DailyTransferStatsDataAccess extends LoggerBase implements IDailyTr
         targetAccountId,
         sourceAmount,
         targetAmount,
-        currencyId,
-        targetCurrencyId,
+        currencyCode,
+        targetCurrencyCode,
         trx,
     }: IDailyTransferStatsUpdateTotalParams): Promise<boolean> {
         const query = trx || this.db.engine();
@@ -48,18 +48,18 @@ export class DailyTransferStatsDataAccess extends LoggerBase implements IDailyTr
         await query.raw(
             `
             INSERT INTO daily_transfer_stats (
-                "userId", date, "accountId", "targetAccountId", source_total, target_total, "currencyId", "targetCurrencyId"
+                "userId", date, "accountId", "targetAccountId", source_total, target_total, "currencyCode", "targetCurrencyCode"
             )
             VALUES (?, ?::date, ?, ?, ?, ?, ?, ?)
             ON CONFLICT ("userId", "accountId", "targetAccountId", date)
             DO UPDATE SET
                 source_total = daily_transfer_stats.source_total + EXCLUDED.source_total,
                 target_total = daily_transfer_stats.target_total + EXCLUDED.target_total,
-                "currencyId" = EXCLUDED."currencyId",
-                "targetCurrencyId" = EXCLUDED."targetCurrencyId",
+                "currencyCode" = EXCLUDED."currencyCode",
+                "targetCurrencyCode" = EXCLUDED."targetCurrencyCode",
                 "updatedAt" = NOW();
             `,
-            [userId, date, accountId, targetAccountId, sourceAmount, targetAmount, currencyId, targetCurrencyId],
+            [userId, date, accountId, targetAccountId, sourceAmount, targetAmount, currencyCode, targetCurrencyCode],
         );
 
         return true;

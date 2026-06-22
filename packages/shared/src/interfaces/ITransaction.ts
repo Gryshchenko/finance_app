@@ -2,11 +2,11 @@ export interface ITransaction {
     transactionId: number;
     targetAccountId?: number;
     targetAmount: number;
-    targetCurrencyId?: number;
+    targetCurrencyCode?: string;
     accountId: number;
     incomeId?: number;
     categoryId?: number;
-    currencyId: number;
+    currencyCode: string;
     transactionTypeId: number;
     amount: number;
     description: string;

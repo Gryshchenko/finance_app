@@ -4,6 +4,6 @@ export interface IProfile {
     profileId: number;
     userId: number;
     publicName: string;
-    currencyId: number;
+    currencyCode: string;
     locale: LanguageType;
 }

@@ -49,7 +49,7 @@ describe('POST /balance', () => {
 
         const incomeId = incomes[0].incomeId;
         const accountId = accounts[0].accountId;
-        const currencyId = accounts[0].currencyId;
+        const currencyCode = accounts[0].currencyCode;
 
         for (const num of [10, 20, 32, 42.23, 4342, 342425, 32424.34, 324234.54, 5345345.345345, 5345345346.4554]) {
             sum += num;
@@ -59,8 +59,8 @@ describe('POST /balance', () => {
                 .send({
                     incomeId,
                     accountId,
-                    currencyId,
-                    targetCurrencyId: currencyId,
+                    currencyCode,
+                    targetCurrencyCode: currencyCode,
                     transactionTypeId: 1,
                     amount: num,
                     targetAmount: num,
@@ -96,7 +96,7 @@ describe('POST /balance', () => {
         } = overview;
 
         const accountId = accounts[0].accountId;
-        const currencyId = accounts[0].currencyId;
+        const currencyCode = accounts[0].currencyCode;
         const categoryId = categories[0].categoryId;
 
         for (const num of [10, 20, 32, 42.23, 4342, 342425, 32424.34, 324234.54, 5345345.345345, 5345345346.4554]) {
@@ -107,8 +107,8 @@ describe('POST /balance', () => {
                 .send({
                     categoryId,
                     accountId,
-                    currencyId,
-                    targetCurrencyId: currencyId,
+                    currencyCode,
+                    targetCurrencyCode: currencyCode,
                     transactionTypeId: 2,
                     amount: num,
                     targetAmount: num,
@@ -152,7 +152,7 @@ describe('POST /balance', () => {
         } = overview;
 
         const accountId = accounts[0].accountId;
-        const currencyId = accounts[0].currencyId;
+        const currencyCode = accounts[0].currencyCode;
         const incomeId = incomes[0].incomeId;
 
         for (const num of [[1000, 400]]) {
@@ -168,8 +168,8 @@ describe('POST /balance', () => {
                 .send({
                     accountId,
                     incomeId,
-                    currencyId,
-                    targetCurrencyId: currencyId,
+                    currencyCode,
+                    targetCurrencyCode: currencyCode,
                     transactionTypeId: 1,
                     amount: create,
                     targetAmount: create,
@@ -244,30 +244,30 @@ describe('POST /balance', () => {
             return Number(res.body.data.balance);
         };
 
-        const createAccount = async (userId: number, currencyId: string, currency: string, auth: string) => {
+        const createAccount = async (userId: number, currencyCode: string, currency: string, auth: string) => {
             const res = await agent
                 .post(`/user/${userId}/account/`)
                 .set('authorization', auth)
                 .send({
                     accountName: `Test EURO ${currency}`,
                     amount: newAmount,
-                    currencyId: Number(currencyId),
+                    currencyCode,
                     iconId: 'wallet',
                 })
                 .expect(HttpCode.OK);
             return res.body.data;
         };
-        const createAccountFailed = async (userId: number, currencyId: string, currency: string, auth: string) => {
+        const createAccountFailed = async (userId: number, currencyCode: string, currency: string, auth: string) => {
             return await agent
                 .post(`/user/${userId}/account/`)
                 .set('authorization', auth)
                 .send({
                     accountName: `Test EURO ${currency}`,
                     amount: newAmount,
-                    currencyId,
+                    currencyCode,
                     iconId: 'wallet',
                 })
-                .expect(HttpCode.NOT_FOUND);
+                .expect(HttpCode.BAD_REQUEST);
         };
 
         const { userId, auth } = await registerUser();
@@ -283,7 +283,7 @@ describe('POST /balance', () => {
             // amounts are converted with the foreign→USD rate (matches BalanceService)
             const rate = await getExchangeRate(currency, 'USD', auth);
 
-            const account = await createAccount(userId, currencyData.currencyId, currency, auth);
+            const account = await createAccount(userId, currencyData.currencyCode, currency, auth);
 
             expectedBalance += Utils.roundNumber(newAmount * rate);
 

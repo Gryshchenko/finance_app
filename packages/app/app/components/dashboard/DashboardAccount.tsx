@@ -36,20 +36,20 @@ export default memo(function DashboardAccount(props: IDashboardItem<IAccountList
                                 path: OverviewPath.Accounts,
                                 type: TransactionFieldType.Account,
                                 statsType: StatsType.Account,
-                                currencyId: item.currencyId,
+                                currencyCode: item.currencyCode,
                             },
                         });
                     }}
                     BoxProps={{
                         styles: BoxProps?.styles,
-                        payload: { currencyId: item.currencyId },
+                        payload: { currencyCode: item.currencyCode },
                     }}
                     id={String(item.accountId)}
                     key={item.accountName}
                     title={item.accountName}
                     icon={item.iconId as CategoryIconType}
                     colorId={item.colorId}
-                    value={CurrencyUtils.formatWithDelimiter(item.amount, getCurrencySymbol(item.currencyId), 2, true)}
+                    value={CurrencyUtils.formatWithDelimiter(item.amount, getCurrencySymbol(item.currencyCode), 2, true)}
                     isDraggable={true}
                     onDragStart={() => {
                         setDraggingItemType(ItemType.Account);
@@ -78,8 +78,8 @@ export default memo(function DashboardAccount(props: IDashboardItem<IAccountList
                                                     transactionTypeId: TransactionType.Transafer,
                                                     accountId: inWorkDropItem.id,
                                                     targetAccountId: item.accountId,
-                                                    targetCurrencyId: item.currencyId,
-                                                    currencyId: inWorkDropItem.payload?.currencyId,
+                                                    targetCurrencyCode: item.currencyCode,
+                                                    currencyCode: inWorkDropItem.payload?.currencyCode,
                                                 },
                                                 uuid: new Date().getMilliseconds(),
                                             },
@@ -96,8 +96,8 @@ export default memo(function DashboardAccount(props: IDashboardItem<IAccountList
                                                 transactionTypeId: TransactionType.Income,
                                                 accountId: item.accountId,
                                                 incomeId: inWorkDropItem.id,
-                                                targetCurrencyId: item.currencyId,
-                                                currencyId: inWorkDropItem.payload?.currencyId,
+                                                targetCurrencyCode: item.currencyCode,
+                                                currencyCode: inWorkDropItem.payload?.currencyCode,
                                             },
                                             uuid: new Date().getMilliseconds(),
                                         },

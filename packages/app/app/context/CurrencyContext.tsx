@@ -10,11 +10,11 @@ import { ValidationError } from '@/utils/errors/ValidationError';
 import { Logger } from '@/utils/logger/Logger';
 
 export interface CurrencyContextType {
-    getCurrency: (currencyId: number) => ICurrency | undefined;
-    getCurrencySymbol: (currencyId: number) => string;
+    getCurrency: (currencyCode: string) => ICurrency | undefined;
+    getCurrencySymbol: (currencyCode: string) => string;
     defaultCurrency: string;
-    defaultCurrencyId: number;
-    currencies: Map<number, ICurrency>;
+    defaultCurrencyCode: string;
+    currencies: Map<string, ICurrency>;
     isLoading: boolean;
     isError: boolean;
 }
@@ -58,40 +58,39 @@ export const CurrencyProvider: FC<PropsWithChildren<CurrencyProviderProps>> = ({
     const { data: profile } = useAppQuery<IProfileClient | undefined>(QueryKeys.profile(), fetchProfile, {
         staleTime: QueryStaleTimes.detail,
     });
-    const [currencies, setCurrencies] = useState<Map<number, ICurrency>>(new Map());
+    const [currencies, setCurrencies] = useState<Map<string, ICurrency>>(new Map());
     const getDefaultCurrency = (): ICurrency => {
         return {
-            currencyId: -1,
             currencyCode: 'UNK',
             currencyName: 'UNK',
             symbol: 'UNK',
         };
     };
-    const getCurrency = (currencyId: number): ICurrency | undefined => {
-        if (Utils.isNull(currencyId)) return undefined;
-        if (!currencies.has(currencyId)) return getDefaultCurrency();
-        return currencies.get(currencyId);
+    const getCurrency = (currencyCode: string): ICurrency | undefined => {
+        if (Utils.isNull(currencyCode)) return undefined;
+        if (!currencies.has(currencyCode)) return getDefaultCurrency();
+        return currencies.get(currencyCode);
     };
-    const getCurrencySymbol = (currencyId: number): string => {
-        if (Utils.isNull(currencyId)) return getDefaultCurrency().symbol;
-        if (!currencies.has(currencyId)) return getDefaultCurrency().symbol;
-        return currencies.get(currencyId)?.symbol ?? getDefaultCurrency().symbol;
+    const getCurrencySymbol = (currencyCode: string): string => {
+        if (Utils.isNull(currencyCode)) return getDefaultCurrency().symbol;
+        if (!currencies.has(currencyCode)) return getDefaultCurrency().symbol;
+        return currencies.get(currencyCode)?.symbol ?? getDefaultCurrency().symbol;
     };
     const value = {
         getCurrency,
         getCurrencySymbol,
         currencies,
-        defaultCurrency: currencies.get(profile?.currencyId ?? -1)?.currencyCode ?? 'UNK',
-        defaultCurrencyId: profile?.currencyId ?? -1,
+        defaultCurrency: currencies.get(profile?.currencyCode ?? 'UNK')?.currencyCode ?? 'UNK',
+        defaultCurrencyCode: profile?.currencyCode ?? 'UNK',
         isLoading,
         isError,
     };
 
     useEffect(() => {
         if (!data) return;
-        const result: Map<number, ICurrency> = new Map();
+        const result: Map<string, ICurrency> = new Map();
         data?.forEach((currency) => {
-            result.set(currency.currencyId, currency);
+            result.set(currency.currencyCode, currency);
         });
         setCurrencies(result);
     }, [data]);

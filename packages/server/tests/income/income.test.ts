@@ -46,7 +46,7 @@ describe('Income', () => {
                 .post(`/user/${userId}/income/`)
                 .set('authorization', authorization)
                 .send({
-                    currencyId: 1,
+                    currencyCode: 'USD',
                     incomeName: name,
                     iconId: 'bnb',
                 })
@@ -59,15 +59,15 @@ describe('Income', () => {
                 incomeName: 'Test 1',
             },
             {
-                currencyId: 1,
+                currencyCode: 'USD',
             },
             {},
             {
-                currencyId: '23',
+                currencyCode: '23',
                 incomeName: 123123,
             },
             {
-                currencyId: 1,
+                currencyCode: 'USD',
                 incomeName:
                     'sdfsdfsdkjfdskfjhdsfkdsfhsdkfjhdsfkjdshfkdsfhdskfjhdskfjdshfdsjkfhdskjfhdsjkhfjkdshfjkhsdfjkdsjhfdjksfdshfjkdsfhdskfjhdsjkfjhdsfhkj',
             },
@@ -104,7 +104,7 @@ describe('Income', () => {
                 .post(`/user/${userId}/income/`)
                 .set('authorization', authorization)
                 .send({
-                    currencyId: 1,
+                    currencyCode: 'USD',
                     incomeName: name,
                     iconId: 'bnb',
                 })
@@ -166,7 +166,7 @@ describe('Income', () => {
             .post(`/user/${userId}/income/`)
             .set('authorization', authorization)
             .send({
-                currencyId: 1,
+                currencyCode: 'USD',
                 incomeName: 'Test',
                 something: 200,
             })
@@ -211,7 +211,7 @@ describe('Income', () => {
             .post(`/user/${userId}/income/`)
             .set('authorization', authorization)
             .send({
-                currencyId: 1,
+                currencyCode: 'USD',
                 incomeName: 'Test 1',
                 iconId: 'bnb',
             })
@@ -248,8 +248,8 @@ describe('Income', () => {
                 .post(`/user/${userId}/transaction/`)
                 .set('authorization', authorization)
                 .send({
-                    currencyId: 1,
-                    targetCurrencyId: 1,
+                    currencyCode: 'USD',
+                    targetCurrencyCode: 'USD',
                     targetAmount: 1000,
                     description: 'Test',
                     ...transaction,

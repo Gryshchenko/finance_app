@@ -172,7 +172,7 @@ export default class TransactionService extends LoggerBase implements ITransacti
                 createdAt: transaction.createdAt ?? before.createdAt,
                 targetAccountId: transaction.targetAccountId ?? (before.targetAccountId as number),
                 targetAmount: transaction.targetAmount ?? (before.targetAmount as number),
-                targetCurrencyId: transaction.targetCurrencyId ?? (before.targetCurrencyId as number),
+                targetCurrencyCode: transaction.targetCurrencyCode ?? (before.targetCurrencyCode as string),
             };
 
             await this.repatchAccounts(userId, before, after, trx);
@@ -299,11 +299,11 @@ export default class TransactionService extends LoggerBase implements ITransacti
     private async createIncomeTransaction(transaction: ICreateTransaction): Promise<number> {
         return this.processTransaction(
             transaction,
-            async ({ sourceAmount, accountId, userId, trx, targetAmount, targetCurrencyId }) => {
+            async ({ sourceAmount, accountId, userId, trx, targetAmount, targetCurrencyCode }) => {
                 const accountInWork = await this._accountService.getAccount(userId, accountId as number);
 
                 this.validateAccount(accountInWork);
-                this.validateAccountCurrency(accountInWork as IAccount, targetCurrencyId, 'accountId');
+                this.validateAccountCurrency(accountInWork as IAccount, targetCurrencyCode, 'accountId');
                 await this._accountService.addAmount(userId, accountId as number, targetAmount, trx);
                 await this._statsOrchestratorService.create({
                     type: TransactionType.Income,
@@ -314,8 +314,8 @@ export default class TransactionService extends LoggerBase implements ITransacti
                         incomeId: transaction.incomeId as number,
                         accountId,
                         date: transaction.createdAt,
-                        currencyId: transaction.currencyId,
-                        targetCurrencyId: transaction.targetCurrencyId,
+                        currencyCode: transaction.currencyCode,
+                        targetCurrencyCode: transaction.targetCurrencyCode,
                     },
                     trx,
                 });
@@ -327,11 +327,11 @@ export default class TransactionService extends LoggerBase implements ITransacti
     private async createExpenseTransaction(transaction: ICreateTransaction): Promise<number> {
         return this.processTransaction(
             transaction,
-            async ({ sourceAmount, targetAmount, accountId, userId, trx, currencyId }) => {
+            async ({ sourceAmount, targetAmount, accountId, userId, trx, currencyCode }) => {
                 const accountInWork = await this._accountService.getAccount(userId, accountId as number);
 
                 this.validateAccount(accountInWork);
-                this.validateAccountCurrency(accountInWork as IAccount, currencyId, 'accountId');
+                this.validateAccountCurrency(accountInWork as IAccount, currencyCode, 'accountId');
 
                 await this._accountService.addAmount(userId, accountId as number, sourceAmount * -1, trx);
                 await this._statsOrchestratorService.create({
@@ -343,8 +343,8 @@ export default class TransactionService extends LoggerBase implements ITransacti
                         categoryId: transaction.categoryId as number,
                         sourceAmount,
                         targetAmount,
-                        currencyId: transaction.currencyId,
-                        targetCurrencyId: transaction.targetCurrencyId,
+                        currencyCode: transaction.currencyCode,
+                        targetCurrencyCode: transaction.targetCurrencyCode,
                     },
                     trx,
                 });
@@ -356,7 +356,7 @@ export default class TransactionService extends LoggerBase implements ITransacti
     private async createTransfareTransaction(transaction: ICreateTransaction): Promise<number> {
         return this.processTransaction(
             transaction,
-            async ({ sourceAmount, targetAmount, accountId, userId, trx, targetAccountId, currencyId, targetCurrencyId }) => {
+            async ({ sourceAmount, targetAmount, accountId, userId, trx, targetAccountId, currencyCode, targetCurrencyCode }) => {
                 if (!targetAccountId) {
                     throw new ValidationError({
                         message: 'Target account is required for transfer transaction',
@@ -373,8 +373,8 @@ export default class TransactionService extends LoggerBase implements ITransacti
 
                 this.validateAccount(sourceAccount);
                 this.validateAccount(targetAccount);
-                this.validateAccountCurrency(sourceAccount as IAccount, currencyId, 'accountId');
-                this.validateAccountCurrency(targetAccount as IAccount, targetCurrencyId, 'targetAccountId');
+                this.validateAccountCurrency(sourceAccount as IAccount, currencyCode, 'accountId');
+                this.validateAccountCurrency(targetAccount as IAccount, targetCurrencyCode, 'targetAccountId');
 
                 await this._statsOrchestratorService.create({
                     type: TransactionType.Transafer,
@@ -384,8 +384,8 @@ export default class TransactionService extends LoggerBase implements ITransacti
                         targetAccountId: targetAccountId,
                         sourceAmount,
                         targetAmount,
-                        currencyId: transaction.currencyId,
-                        targetCurrencyId: transaction.targetCurrencyId,
+                        currencyCode: transaction.currencyCode,
+                        targetCurrencyCode: transaction.targetCurrencyCode,
                     },
                     userId,
                     trx,
@@ -405,23 +405,23 @@ export default class TransactionService extends LoggerBase implements ITransacti
             accountId,
             userId,
             targetAccountId,
-            currencyId,
-            targetCurrencyId,
+            currencyCode,
+            targetCurrencyCode,
         }: {
             sourceAmount: number;
-            currencyId?: number;
+            currencyCode?: string;
             trx: IDBTransaction;
             accountId: number;
             userId: number;
             targetAccountId?: number;
             targetAmount: number;
-            targetCurrencyId: number;
+            targetCurrencyCode: string;
         }) => Promise<void>,
         transactionType: 'income' | 'expense' | 'transfare',
     ): Promise<number> {
         const uow = new UnitOfWork(this._db);
         try {
-            const { amount, userId, targetAccountId, accountId, currencyId, targetAmount, targetCurrencyId } = transaction;
+            const { amount, userId, targetAccountId, accountId, currencyCode, targetAmount, targetCurrencyCode } = transaction;
             await uow.start();
 
             const trxInProcess = uow.getTransaction();
@@ -432,11 +432,11 @@ export default class TransactionService extends LoggerBase implements ITransacti
             await operation({
                 sourceAmount: amount,
                 targetAmount: targetAmount,
-                targetCurrencyId: targetCurrencyId,
+                targetCurrencyCode: targetCurrencyCode,
                 accountId,
                 userId,
                 targetAccountId,
-                currencyId,
+                currencyCode,
                 trx,
             });
 
@@ -456,23 +456,23 @@ export default class TransactionService extends LoggerBase implements ITransacti
     }
 
     private validateAccount(account: IAccount | undefined): void {
-        if (Utils.isNull(account) || Utils.isNull(account?.amount) || Utils.isNull(account?.currencyId)) {
+        if (Utils.isNull(account) || Utils.isNull(account?.amount) || Utils.isNull(account?.currencyCode)) {
             throw new ValidationError({
-                message: 'Transaction failed: account is missing or has no amount/currencyId',
+                message: 'Transaction failed: account is missing or has no amount/currencyCode',
                 errorCode: ErrorCode.TRANSACTION_ERROR,
             });
         }
     }
 
-    private validateAccountCurrency(account: IAccount, expectedCurrencyId: number | undefined, field: string): void {
-        if (Utils.isNull(expectedCurrencyId)) {
+    private validateAccountCurrency(account: IAccount, expectedCurrencyCode: string | undefined, field: string): void {
+        if (Utils.isNull(expectedCurrencyCode)) {
             throw new ValidationError({
                 message: `Missing currency for transaction (${field})`,
                 errorCode: ErrorCode.TRANSACTION_ERROR,
                 payload: { field, reason: 'validation:valueRequired' },
             });
         }
-        if (account.currencyId !== expectedCurrencyId) {
+        if (account.currencyCode !== expectedCurrencyCode) {
             throw new ValidationError({
                 message: `Account currency mismatch on transaction create (${field})`,
                 errorCode: ErrorCode.TRANSACTION_ERROR,

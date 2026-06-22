@@ -42,11 +42,11 @@ export class ProfileController {
         const responseBuilder = new ResponseBuilder();
         try {
             const userFromSession = req.user as IUser;
-            const { locale, currencyId, publicName } = req.body;
-            if (Utils.isEmpty(locale) && Utils.isEmpty(currencyId) && Utils.isEmpty(publicName)) {
+            const { locale, currencyCode, publicName } = req.body;
+            if (Utils.isEmpty(locale) && Utils.isEmpty(currencyCode) && Utils.isEmpty(publicName)) {
                 throw new ValidationError({ message: 'Patch profile failed due reason: empty body' });
             }
-            await ProfileServiceBuilder.build().patch(userFromSession.userId, { locale, currencyId, publicName });
+            await ProfileServiceBuilder.build().patch(userFromSession.userId, { locale, currencyCode, publicName });
             res.status(HttpCode.NO_CONTENT).json(responseBuilder.setStatus(ResponseStatusType.OK).setData({}).build());
         } catch (e: unknown) {
             ProfileController.logger.error(`Patch profile failed due reason: ${(e as { message: string }).message}`);

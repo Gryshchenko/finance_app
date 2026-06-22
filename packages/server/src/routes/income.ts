@@ -18,7 +18,7 @@ const incomesRouter = express.Router({ mergeParams: true });
 incomeRouter.post(
     '/',
     validateQuery({}),
-    sanitizeRequestBody(['currencyId', 'incomeName', 'amount', 'iconId', 'colorId']),
+    sanitizeRequestBody(['currencyCode', 'incomeName', 'amount', 'iconId', 'colorId']),
     routesInputValidation(createIncomeValidationRules, incomeConvertValidationMessageToErrorCode),
     IncomeController.post,
 );

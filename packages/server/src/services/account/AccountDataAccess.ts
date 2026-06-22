@@ -41,7 +41,7 @@ export default class AccountDataAccess extends LoggerBase implements IAccountDat
                 validateAllowedProperties(account as unknown as Record<string, string | number>, [
                     'accountName',
                     'amount',
-                    'currencyId',
+                    'currencyCode',
                     'iconId',
                     'colorId',
                 ]);
@@ -50,17 +50,17 @@ export default class AccountDataAccess extends LoggerBase implements IAccountDat
             const maxPositionRow = await query('accounts').where({ userId }).max('position as maxPosition').first();
             const nextPosition = Number(maxPositionRow?.maxPosition ?? 0) + 1;
             const data = await query('accounts').insert(
-                accounts.map(({ accountName, currencyId, amount, iconId, colorId }, index) => ({
+                accounts.map(({ accountName, currencyCode, amount, iconId, colorId }, index) => ({
                     userId,
                     accountName,
-                    currencyId,
+                    currencyCode,
                     iconId,
                     colorId: colorId ?? DEFAULT_ACCOUNT_COLOR_IDS[(nextPosition + index - 1) % DEFAULT_ACCOUNT_COLOR_IDS.length],
                     status: AccountStatusType.Enable,
                     amount: Number(amount.toFixed(2)),
                     position: nextPosition + index,
                 })),
-                ['accountId', 'userId', 'accountName', 'currencyId', 'amount', 'iconId', 'colorId', 'position'],
+                ['accountId', 'userId', 'accountName', 'currencyCode', 'amount', 'iconId', 'colorId', 'position'],
             );
 
             this._logger.info(`Successfully created ${data.length} accounts for userId: ${userId}`);
@@ -85,7 +85,7 @@ export default class AccountDataAccess extends LoggerBase implements IAccountDat
                     'accounts.accountId',
                     'accounts.amount',
                     'accounts.accountName',
-                    'accounts.currencyId',
+                    'accounts.currencyCode',
                     'accounts.iconId',
                     'accounts.colorId',
                     'accounts.position',
@@ -121,7 +121,7 @@ export default class AccountDataAccess extends LoggerBase implements IAccountDat
                     'accounts.accountId',
                     'accounts.amount',
                     'accounts.accountName',
-                    'accounts.currencyId',
+                    'accounts.currencyCode',
                     'accounts.iconId',
                     'accounts.colorId',
                     'accounts.position',
@@ -130,7 +130,7 @@ export default class AccountDataAccess extends LoggerBase implements IAccountDat
                     'currencies.currencyCode',
                     'currencies.symbol',
                 )
-                .innerJoin('currencies', 'accounts.currencyId', 'currencies.currencyId')
+                .innerJoin('currencies', 'accounts.currencyCode', 'currencies.currencyCode')
                 .where({ userId, accountId, 'status': AccountStatusType.Enable, 'accounts.isDeleted': false })
                 .first();
 

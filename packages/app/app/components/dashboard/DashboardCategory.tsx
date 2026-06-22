@@ -44,7 +44,7 @@ export default memo(function DashboardCategory(props: IDashboardItem<ICategorySt
                                 path: OverviewPath.Categories,
                                 type: TransactionFieldType.Category,
                                 statsType: StatsType.Expense,
-                                currencyId: item.currencyId,
+                                currencyCode: item.currencyCode,
                             },
                         });
                     }}
@@ -53,12 +53,12 @@ export default memo(function DashboardCategory(props: IDashboardItem<ICategorySt
                     }}
                     BoxProps={{
                         styles: BoxProps?.styles,
-                        payload: { currencyId: item.currencyId },
+                        payload: { currencyCode: item.currencyCode },
                     }}
                     id={String(item.categoryId)}
                     title={item.categoryName}
                     icon={item.iconId as CategoryIconType}
-                    value={CurrencyUtils.formatWithDelimiter(item.amount, getCurrencySymbol(item.currencyId), 2, true)}
+                    value={CurrencyUtils.formatWithDelimiter(item.amount, getCurrencySymbol(item.currencyCode), 2, true)}
                     isDroppable={draggingItemType === ItemType.Account}
                     onDrop={(dropItem: unknown) => {
                         const inWorkDropItem: IDrag = dropItem as unknown as IDrag;
@@ -78,8 +78,8 @@ export default memo(function DashboardCategory(props: IDashboardItem<ICategorySt
                                             transactionTypeId: TransactionType.Expense,
                                             categoryId: item.categoryId,
                                             accountId: inWorkDropItem.id,
-                                            targetCurrencyId: item.currencyId,
-                                            currencyId: inWorkDropItem.payload?.currencyId,
+                                            targetCurrencyCode: item.currencyCode,
+                                            currencyCode: inWorkDropItem.payload?.currencyCode,
                                         },
 
                                         uuid: new Date().getMilliseconds(),

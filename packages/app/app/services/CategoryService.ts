@@ -106,7 +106,7 @@ export class CategoryService extends ApiAbstract {
 
     public async doCreateCategory(body: {
         categoryName: string;
-        currencyId: number;
+        currencyCode: string;
         iconId: string;
         budget?: number | null;
     }): Promise<
@@ -121,7 +121,7 @@ export class CategoryService extends ApiAbstract {
             const userId = this._authService.userId;
             const response = await this.authPost(`/user/${userId}/category`, {
                 categoryName: String(body.categoryName),
-                currencyId: Number(body.currencyId),
+                currencyCode: body.currencyCode,
                 iconId: String(body.iconId),
                 budget: body.budget ?? undefined,
             });

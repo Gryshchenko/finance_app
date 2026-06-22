@@ -137,7 +137,7 @@ export const SignUpScreen: FC<SignUpScreenProps> = (_props) => {
                     if (payload?.field === 'publicName') {
                         setErrors((prev) => ({ ...prev, publicName: ValidationTypes.REQUIRED }));
                     }
-                    if (payload?.field === 'currencyId') {
+                    if (payload?.field === 'currencyCode') {
                         setErrors((prev) => ({ ...prev, currency: ValidationTypes.REQUIRED }));
                     }
                 }

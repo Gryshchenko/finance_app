@@ -5,7 +5,7 @@ export default class ProfileServiceUtils {
         return {
             profileId: profile.profileId ?? undefined,
             publicName: profile.publicName ?? undefined,
-            currencyId: profile.currencyId ?? undefined,
+            currencyCode: profile.currencyCode ?? undefined,
             locale: profile.locale ?? undefined,
             email: profile.email ?? undefined,
             userId: profile.userId ?? undefined,

@@ -43,7 +43,7 @@ export const Accounts: FC<IAccountsPros> = function Accounts(_props) {
 
     return (
         <>
-            {data.map(({ accountName, accountId, amount, currencyId }) => {
+            {data.map(({ accountName, accountId, amount, currencyCode }) => {
                 return (
                     <ListItem
                         key={accountId}
@@ -53,7 +53,7 @@ export const Accounts: FC<IAccountsPros> = function Accounts(_props) {
                         RightComponent={
                             <>
                                 <Text style={themed([$centerAlign])}>
-                                    {CurrencyUtils.formatWithDelimiter(amount, getCurrencySymbol(currencyId))}
+                                    {CurrencyUtils.formatWithDelimiter(amount, getCurrencySymbol(currencyCode))}
                                 </Text>
                                 <View style={$buttons}>
                                     <ViewButton

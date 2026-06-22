@@ -11,7 +11,6 @@ import { ValidationError } from 'src/utils/errors/ValidationError';
 export interface ICurrencyDataAccess {
     getByName(symbol: string): Promise<ICurrency | undefined>;
     getBySymbol(symbol: string): Promise<ICurrency | undefined>;
-    getById(id: number): Promise<ICurrency | undefined>;
     getByCurrencyCode(currencyCode: string): Promise<ICurrency | undefined>;
     gets(): Promise<ICurrency[]>;
 }
@@ -30,7 +29,7 @@ export default class CurrencyDataAccess extends LoggerBase implements ICurrencyD
         try {
             const data = await this._db
                 .engine()<ICurrency>('currencies')
-                .select<ICurrency[]>(['currencyId', 'symbol', 'currencyCode', 'currencyName']);
+                .select<ICurrency[]>(['symbol', 'currencyCode', 'currencyName']);
             this._logger.info(`Successfully fetched list ${data.length} of currencies`);
             return data;
         } catch (e) {
@@ -43,7 +42,6 @@ export default class CurrencyDataAccess extends LoggerBase implements ICurrencyD
     }
     protected async genericGet(
         obj: Partial<{
-            currencyId: number;
             symbol: string;
             currencyCode: string;
             currencyName: string;
@@ -59,7 +57,7 @@ export default class CurrencyDataAccess extends LoggerBase implements ICurrencyD
 
         try {
             this._logger.info(`Fetching currency by property: ${key}`);
-            const whiteList = ['currencyId', 'currencyCode', 'currencyName', 'symbol'];
+            const whiteList = ['currencyCode', 'currencyName', 'symbol'];
             if (!whiteList.includes(key)) {
                 throw new ValidationError({
                     message: `Key not pass white list check : ${JSON.stringify(obj)}`,
@@ -68,7 +66,7 @@ export default class CurrencyDataAccess extends LoggerBase implements ICurrencyD
             const data = await this._db
                 .engine()<ICurrency>('currencies')
                 .where(obj)
-                .select<ICurrency>(['currencyId', 'currencyCode', 'currencyName', 'symbol'])
+                .select<ICurrency>(['currencyCode', 'currencyName', 'symbol'])
                 .first();
 
             if (data) {
@@ -92,9 +90,6 @@ export default class CurrencyDataAccess extends LoggerBase implements ICurrencyD
 
     public async getByCurrencyCode(currencyCode: string): Promise<ICurrency | undefined> {
         return await this.genericGet({ currencyCode: currencyCode });
-    }
-    public async getById(id: number): Promise<ICurrency | undefined> {
-        return await this.genericGet({ currencyId: id });
     }
     public async getBySymbol(symbol: string): Promise<ICurrency | undefined> {
         return await this.genericGet({ symbol: symbol });

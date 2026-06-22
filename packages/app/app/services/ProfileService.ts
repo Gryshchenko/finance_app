@@ -45,7 +45,7 @@ export class ProfileService extends ApiAbstract {
             const userId = this._authService.userId;
             const response = await this.authPatch<undefined>(`/user/${userId}/profile`, {
                 ...(body.locale !== undefined && { locale: body.locale }),
-                ...(body.currencyId !== undefined && { currencyId: body.currencyId }),
+                ...(body.currencyCode !== undefined && { currencyCode: body.currencyCode }),
                 ...(body.publicName !== undefined && { publicName: body.publicName }),
             });
             if (response.kind === GeneralApiProblemKind.Ok) {

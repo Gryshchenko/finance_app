@@ -23,7 +23,7 @@ const validateCurrency = (currency: string, field: string): void => {
     }
 };
 
-export class CurrencyOrchestratorService extends LoggerBase implements ICurrencyOrchestratorService {
+class CurrencyOrchestratorService extends LoggerBase implements ICurrencyOrchestratorService {
     private readonly _exchangeRateService: IExchangeRateService;
     private readonly _currencyService: ICurrencyService;
     private readonly _historicalRateService: IHistoricalRateService;

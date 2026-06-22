@@ -65,46 +65,51 @@ const translationsKeys = {
     passwordsDoNotMatch: 'validation:passwordsDoNotMatch',
 };
 
-const incomeCreate = {
-    incomeName: Yup.string()
-        .required(translationsKeys.nameRequired)
-        .min(3, translationsKeys.nameTooShort)
-        .max(50, translationsKeys.nameTooLong),
-    currencyId: Yup.number()
-        .min(1, translationsKeys.currencyInvalid)
-        .max(Number.MAX_SAFE_INTEGER, translationsKeys.currencyInvalid)
-        .required(translationsKeys.currencyRequired),
-    iconId: Yup.string().required(translationsKeys.iconRequired),
+// Strict currency validation: a code must be one of the currencies available from
+// the (public) config. Falls back to a loose length check while the list is still loading.
+const buildCurrencyCodeSchema = (currencyCodes: string[], required = false) => {
+    const base =
+        currencyCodes.length > 0
+            ? Yup.string().oneOf(currencyCodes, translationsKeys.unsupportedCurrency)
+            : Yup.string().max(10, translationsKeys.currencyInvalid);
+    return required ? base.required(translationsKeys.currencyRequired) : base;
 };
 
-const accountCreate = {
-    amount: Yup.number()
-        .min(Number.MIN_SAFE_INTEGER, translationsKeys.amountTooSmall)
-        .max(Number.MAX_SAFE_INTEGER, translationsKeys.amountTooLarge),
-    accountName: Yup.string()
-        .required(translationsKeys.nameRequired)
-        .min(3, translationsKeys.nameTooShort)
-        .max(50, translationsKeys.nameTooLong),
-    currencyId: Yup.number()
-        .min(1, translationsKeys.currencyInvalid)
-        .max(Number.MAX_SAFE_INTEGER, translationsKeys.currencyInvalid)
-        .required(translationsKeys.currencyRequired),
-};
-const categoryCreate = {
-    categoryName: Yup.string()
-        .required(translationsKeys.nameRequired)
-        .min(3, translationsKeys.nameTooShort)
-        .max(50, translationsKeys.nameTooLong),
-    currencyId: Yup.number()
-        .min(Number.MIN_SAFE_INTEGER, translationsKeys.currencyInvalid)
-        .max(Number.MAX_SAFE_INTEGER, translationsKeys.currencyInvalid)
-        .required(translationsKeys.currencyRequired),
-    budget: Yup.number()
-        .transform((value, originalValue) => (originalValue === '' || originalValue === null ? null : value))
-        .nullable()
-        .min(0, translationsKeys.amountTooSmall)
-        .notRequired(),
-};
+const buildIncomeCreateSchema = (currencyCodes: string[] = []) =>
+    Yup.object({
+        incomeName: Yup.string()
+            .required(translationsKeys.nameRequired)
+            .min(3, translationsKeys.nameTooShort)
+            .max(50, translationsKeys.nameTooLong),
+        currencyCode: buildCurrencyCodeSchema(currencyCodes, true),
+        iconId: Yup.string().required(translationsKeys.iconRequired),
+    });
+
+const buildAccountCreateSchema = (currencyCodes: string[] = []) =>
+    Yup.object({
+        amount: Yup.number()
+            .min(Number.MIN_SAFE_INTEGER, translationsKeys.amountTooSmall)
+            .max(Number.MAX_SAFE_INTEGER, translationsKeys.amountTooLarge),
+        accountName: Yup.string()
+            .required(translationsKeys.nameRequired)
+            .min(3, translationsKeys.nameTooShort)
+            .max(50, translationsKeys.nameTooLong),
+        currencyCode: buildCurrencyCodeSchema(currencyCodes, true),
+    });
+
+const buildCategoryCreateSchema = (currencyCodes: string[] = []) =>
+    Yup.object({
+        categoryName: Yup.string()
+            .required(translationsKeys.nameRequired)
+            .min(3, translationsKeys.nameTooShort)
+            .max(50, translationsKeys.nameTooLong),
+        currencyCode: buildCurrencyCodeSchema(currencyCodes, true),
+        budget: Yup.number()
+            .transform((value, originalValue) => (originalValue === '' || originalValue === null ? null : value))
+            .nullable()
+            .min(0, translationsKeys.amountTooSmall)
+            .notRequired(),
+    });
 const incomeEdit = {
     incomeName: Yup.string().min(3, translationsKeys.nameTooShort).max(50, translationsKeys.nameTooLong).notRequired(),
 };
@@ -223,25 +228,25 @@ const categoryEdit = {
 };
 
 const buildTransactionCreateSchema = ({
-    targetCurrencyId,
-    currencyId,
+    targetCurrencyCode,
+    currencyCode,
+    currencyCodes,
 }: {
-    targetCurrencyId: number | undefined;
-    currencyId: number;
+    targetCurrencyCode: string | undefined;
+    currencyCode: string;
+    currencyCodes: string[];
 }) => {
     const now = new Date();
     const twentyYearsAgo = new Date();
     twentyYearsAgo.setFullYear(twentyYearsAgo.getFullYear() - 20);
 
     const transactionsCreate = {
-        ...(currencyId !== targetCurrencyId
+        ...(currencyCode !== targetCurrencyCode
             ? {
                   targetAmount: Yup.number()
                       .min(Number.MIN_SAFE_INTEGER, translationsKeys.amountTooSmall)
                       .max(Number.MAX_SAFE_INTEGER, translationsKeys.amountTooLarge),
-                  targetCurrencyId: Yup.number()
-                      .min(1, translationsKeys.currencyInvalid)
-                      .max(Number.MAX_SAFE_INTEGER, translationsKeys.currencyInvalid),
+                  targetCurrencyCode: buildCurrencyCodeSchema(currencyCodes),
               }
             : {}),
         transactionTypeId: Yup.number()
@@ -257,9 +262,7 @@ const buildTransactionCreateSchema = ({
             .notRequired()
             .min(3, translationsKeys.descriptionTooShort)
             .max(150, translationsKeys.descriptionTooLong),
-        currencyId: Yup.number()
-            .min(1, translationsKeys.currencyInvalid)
-            .max(Number.MAX_SAFE_INTEGER, translationsKeys.currencyInvalid),
+        currencyCode: buildCurrencyCodeSchema(currencyCodes),
         createdAt: Yup.date().min(twentyYearsAgo, translationsKeys.dateTooOld).max(now, translationsKeys.dateInFuture),
         accountId: Yup.number().when('transactionTypeId', (transactionTypeId, schema) => {
             if ((transactionTypeId as unknown as TransactionType) === TransactionType.Transafer)
@@ -294,25 +297,25 @@ const buildTransactionCreateSchema = ({
     return Yup.object(transactionsCreate);
 };
 const buildTransactionEditSchema = ({
-    targetCurrencyId,
-    currencyId,
+    targetCurrencyCode,
+    currencyCode,
+    currencyCodes,
 }: {
-    targetCurrencyId: number | undefined;
-    currencyId: number;
+    targetCurrencyCode: string | undefined;
+    currencyCode: string;
+    currencyCodes: string[];
 }) => {
     const now = new Date();
     const twentyYearsAgo = new Date();
     twentyYearsAgo.setFullYear(twentyYearsAgo.getFullYear() - 20);
 
     const transactionEdit = {
-        ...(currencyId !== targetCurrencyId
+        ...(currencyCode !== targetCurrencyCode
             ? {
                   targetAmount: Yup.number()
                       .min(Number.MIN_SAFE_INTEGER, translationsKeys.amountTooSmall)
                       .max(Number.MAX_SAFE_INTEGER, translationsKeys.amountTooLarge),
-                  targetCurrencyId: Yup.number()
-                      .min(1, translationsKeys.currencyInvalid)
-                      .max(Number.MAX_SAFE_INTEGER, translationsKeys.currencyInvalid),
+                  targetCurrencyCode: buildCurrencyCodeSchema(currencyCodes),
               }
             : {}),
         transactionTypeId: Yup.number()
@@ -331,10 +334,7 @@ const buildTransactionEditSchema = ({
             .max(150, translationsKeys.descriptionTooLong)
             .notRequired(),
 
-        currencyId: Yup.number()
-            .min(1, translationsKeys.currencyInvalid)
-            .max(Number.MAX_SAFE_INTEGER, translationsKeys.currencyInvalid)
-            .notRequired(),
+        currencyCode: buildCurrencyCodeSchema(currencyCodes),
 
         createdAt: Yup.date()
             .min(twentyYearsAgo, translationsKeys.dateTooOld)
@@ -378,13 +378,8 @@ const buildTransactionEditSchema = ({
     return Yup.object(transactionEdit);
 };
 
-const incomeCreateSchema = Yup.object(incomeCreate);
 const incomeEditSchema = Yup.object(incomeEdit);
-
-const accountCreateSchema = Yup.object(accountCreate);
 const accountEditSchema = Yup.object(accountEdit);
-
-const categoryCreateSchema = Yup.object(categoryCreate);
 const categoryEditSchema = Yup.object(categoryEdit);
 
 const signUpConfirmationShema = Yup.object(signUpConfirmation);
@@ -411,11 +406,11 @@ const settingsChangePasswordConfirmSchema = Yup.object(signUpConfirmation);
 
 export {
     incomeEditSchema,
-    incomeCreateSchema,
+    buildIncomeCreateSchema,
     accountEditSchema,
-    accountCreateSchema,
+    buildAccountCreateSchema,
     categoryEditSchema,
-    categoryCreateSchema,
+    buildCategoryCreateSchema,
     buildTransactionCreateSchema,
     buildTransactionEditSchema,
     signUpConfirmationShema,

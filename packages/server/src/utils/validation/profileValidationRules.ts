@@ -1,3 +1,4 @@
+import { createCurrencyCodeExistsRule } from 'src/utils/validation/currencyCodeExistsRule';
 import { createSignupValidationRules } from 'src/utils/validation/routesInputValidation';
 import { validatePathConfirmationCodeProperty } from 'src/utils/validation/validatePathConfirmationCodeProperty';
 
@@ -7,16 +8,17 @@ const patchProfileValidationRules = [
         min: 4,
         max: 6,
     }),
-    ...createSignupValidationRules('currencyId', 'number', {
+    ...createSignupValidationRules('currencyCode', 'string', {
         optional: true,
-        min: Number.MIN_SAFE_INTEGER,
-        max: Number.MAX_SAFE_INTEGER,
+        min: 1,
+        max: 10,
     }),
     ...createSignupValidationRules('publicName', 'string', {
         optional: true,
         min: 3,
         max: 128,
     }),
+    createCurrencyCodeExistsRule(true),
 ];
 
 const requestEmailChangeValidationRules = [...createSignupValidationRules('newEmail', 'email', { max: 100 })];

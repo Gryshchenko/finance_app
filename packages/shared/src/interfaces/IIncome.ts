@@ -4,7 +4,7 @@ export interface IIncome {
     incomeId: number;
     userId: number;
     incomeName: string;
-    currencyId: number;
+    currencyCode: string;
     iconId: string;
     colorId?: string | null;
     status: AccountStatusType;

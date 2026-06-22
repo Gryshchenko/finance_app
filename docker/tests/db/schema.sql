@@ -34,7 +34,7 @@ CREATE TABLE public.accounts (
     "userId" integer NOT NULL,
     "accountName" character varying(128) NOT NULL,
     amount numeric NOT NULL,
-    "currencyId" integer NOT NULL,
+    "currencyCode" character varying(3) NOT NULL,
     "iconId" character varying(64),
     "colorId" character varying(64),
     "createdAt" timestamp with time zone DEFAULT CURRENT_TIMESTAMP NOT NULL,
@@ -115,7 +115,7 @@ CREATE TABLE public.categories (
     "categoryId" integer NOT NULL,
     "categoryName" character varying(128) NOT NULL,
     "userId" integer NOT NULL,
-    "currencyId" integer NOT NULL,
+    "currencyCode" character varying(3) NOT NULL,
     "iconId" character varying(64),
     "createdAt" timestamp with time zone DEFAULT CURRENT_TIMESTAMP NOT NULL,
     "updatedAt" timestamp with time zone,
@@ -157,8 +157,7 @@ ALTER SEQUENCE public."categories_categoryId_seq" OWNED BY public.categories."ca
 --
 
 CREATE TABLE public.currencies (
-    "currencyId" integer NOT NULL,
-    "currencyCode" character varying(56) NOT NULL,
+    "currencyCode" character varying(3) NOT NULL,
     "currencyName" character varying(56) NOT NULL,
     symbol character varying(10) NOT NULL
 );
@@ -166,25 +165,17 @@ CREATE TABLE public.currencies (
 
 --
 -- TOC entry 225 (class 1259 OID 33047)
--- Name: currencies_currencyId_seq; Type: SEQUENCE; Schema: public; Owner: -
+-- (currencies surrogate sequence removed)
 --
 
-CREATE SEQUENCE public."currencies_currencyId_seq"
-    AS integer
-    START WITH 1
-    INCREMENT BY 1
-    NO MINVALUE
-    NO MAXVALUE
-    CACHE 1;
 
 
 --
 -- TOC entry 3577 (class 0 OID 0)
 -- Dependencies: 225
--- Name: currencies_currencyId_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: -
+-- (currencies surrogate sequence removed)
 --
 
-ALTER SEQUENCE public."currencies_currencyId_seq" OWNED BY public.currencies."currencyId";
 
 
 --
@@ -247,8 +238,8 @@ CREATE TABLE public.daily_accounts_stats (
     income_target_total numeric(18,2) DEFAULT 0 NOT NULL,
     expense_source_total numeric(18,2) DEFAULT 0 NOT NULL,
     expense_target_total numeric(18,2) DEFAULT 0 NOT NULL,
-    "currencyId" integer,
-    "targetCurrencyId" integer,
+    "currencyCode" character varying(3),
+    "targetCurrencyCode" character varying(3),
     "accountId" integer NOT NULL,
     "updatedAt" timestamp with time zone DEFAULT now() NOT NULL
 );
@@ -264,8 +255,8 @@ CREATE TABLE public.daily_categories_stats (
     date date NOT NULL,
     source_total numeric(18,2) DEFAULT 0 NOT NULL,
     target_total numeric(18,2) DEFAULT 0 NOT NULL,
-    "currencyId" integer,
-    "targetCurrencyId" integer,
+    "currencyCode" character varying(3),
+    "targetCurrencyCode" character varying(3),
     "categoryId" integer NOT NULL,
     "updatedAt" timestamp with time zone DEFAULT now() NOT NULL
 );
@@ -281,8 +272,8 @@ CREATE TABLE public.daily_incomes_stats (
     date date NOT NULL,
     source_total numeric(18,2) DEFAULT 0 NOT NULL,
     target_total numeric(18,2) DEFAULT 0 NOT NULL,
-    "currencyId" integer,
-    "targetCurrencyId" integer,
+    "currencyCode" character varying(3),
+    "targetCurrencyCode" character varying(3),
     "incomeId" integer NOT NULL,
     "updatedAt" timestamp with time zone DEFAULT now() NOT NULL
 );
@@ -313,8 +304,8 @@ CREATE TABLE public.daily_transfer_stats (
     date date NOT NULL,
     source_total numeric(18,2) DEFAULT 0 NOT NULL,
     target_total numeric(18,2) DEFAULT 0 NOT NULL,
-    "currencyId" integer,
-    "targetCurrencyId" integer,
+    "currencyCode" character varying(3),
+    "targetCurrencyCode" character varying(3),
     "accountId" integer NOT NULL,
     "targetAccountId" integer NOT NULL,
     "updatedAt" timestamp with time zone DEFAULT now() NOT NULL
@@ -408,7 +399,7 @@ CREATE TABLE public.incomes (
     "incomeId" integer NOT NULL,
     "userId" integer NOT NULL,
     "incomeName" character varying(128) NOT NULL,
-    "currencyId" integer NOT NULL,
+    "currencyCode" character varying(3) NOT NULL,
     "iconId" character varying(64),
     "colorId" character varying(64),
     "createdAt" timestamp with time zone DEFAULT CURRENT_TIMESTAMP NOT NULL,
@@ -468,7 +459,7 @@ CREATE TABLE public.profiles (
     "profileId" integer NOT NULL,
     "userId" integer NOT NULL,
     "publicName" character varying(50),
-    "currencyId" integer,
+    "currencyCode" character varying(3),
     "additionalInfo" jsonb,
     "createdAt" timestamp with time zone DEFAULT CURRENT_TIMESTAMP NOT NULL,
     "updatedAt" timestamp with time zone,
@@ -581,13 +572,13 @@ CREATE TABLE public.transactions (
     "incomeId" integer,
     amount numeric NOT NULL,
     description character varying(256),
-    "currencyId" integer NOT NULL,
+    "currencyCode" character varying(3) NOT NULL,
     "createdAt" timestamp with time zone DEFAULT now() NOT NULL,
     "updatedAt" timestamp with time zone,
     "transactionTypeId" integer NOT NULL,
     "targetAccountId" integer,
     "targetAmount" numeric,
-    "targetCurrencyId" integer,
+    "targetCurrencyCode" character varying(3),
     "isDeleted" boolean DEFAULT false NOT NULL,
     "deletedAt" timestamp with time zone
 );
@@ -754,10 +745,9 @@ ALTER TABLE ONLY public.categories ALTER COLUMN "categoryId" SET DEFAULT nextval
 
 --
 -- TOC entry 3285 (class 2604 OID 33051)
--- Name: currencies currencyId; Type: DEFAULT; Schema: public; Owner: -
+-- (currencies surrogate-key default removed)
 --
 
-ALTER TABLE ONLY public.currencies ALTER COLUMN "currencyId" SET DEFAULT nextval('public."currencies_currencyId_seq"'::regclass);
 
 
 --
@@ -880,8 +870,6 @@ ALTER TABLE ONLY public.categories
 -- Name: currencies currencies_currencyCode_key; Type: CONSTRAINT; Schema: public; Owner: -
 --
 
-ALTER TABLE ONLY public.currencies
-    ADD CONSTRAINT "currencies_currencyCode_key" UNIQUE ("currencyCode");
 
 
 --
@@ -899,7 +887,7 @@ ALTER TABLE ONLY public.currencies
 --
 
 ALTER TABLE ONLY public.currencies
-    ADD CONSTRAINT currencies_pkey PRIMARY KEY ("currencyId");
+    ADD CONSTRAINT currencies_pkey PRIMARY KEY ("currencyCode");
 
 
 --
@@ -1155,11 +1143,11 @@ CREATE UNIQUE INDEX uniq_email_confirmed ON public.email_confirmations USING btr
 
 --
 -- TOC entry 3399 (class 2606 OID 33115)
--- Name: accounts accounts_currencyId_fkey; Type: FK CONSTRAINT; Schema: public; Owner: -
+-- Name: accounts accounts_currencyCode_fkey; Type: FK CONSTRAINT; Schema: public; Owner: -
 --
 
 ALTER TABLE ONLY public.accounts
-    ADD CONSTRAINT "accounts_currencyId_fkey" FOREIGN KEY ("currencyId") REFERENCES public.currencies("currencyId");
+    ADD CONSTRAINT "accounts_currencyCode_fkey" FOREIGN KEY ("currencyCode") REFERENCES public.currencies("currencyCode");
 
 
 --
@@ -1182,11 +1170,11 @@ ALTER TABLE ONLY public.balance
 
 --
 -- TOC entry 3401 (class 2606 OID 33137)
--- Name: categories categories_currencyId_fkey; Type: FK CONSTRAINT; Schema: public; Owner: -
+-- Name: categories categories_currencyCode_fkey; Type: FK CONSTRAINT; Schema: public; Owner: -
 --
 
 ALTER TABLE ONLY public.categories
-    ADD CONSTRAINT "categories_currencyId_fkey" FOREIGN KEY ("currencyId") REFERENCES public.currencies("currencyId");
+    ADD CONSTRAINT "categories_currencyCode_fkey" FOREIGN KEY ("currencyCode") REFERENCES public.currencies("currencyCode");
 
 
 --
@@ -1335,11 +1323,11 @@ ALTER TABLE ONLY public.groupinvitations
 
 --
 -- TOC entry 3397 (class 2606 OID 33096)
--- Name: incomes incomes_currencyId_fkey; Type: FK CONSTRAINT; Schema: public; Owner: -
+-- Name: incomes incomes_currencyCode_fkey; Type: FK CONSTRAINT; Schema: public; Owner: -
 --
 
 ALTER TABLE ONLY public.incomes
-    ADD CONSTRAINT "incomes_currencyId_fkey" FOREIGN KEY ("currencyId") REFERENCES public.currencies("currencyId");
+    ADD CONSTRAINT "incomes_currencyCode_fkey" FOREIGN KEY ("currencyCode") REFERENCES public.currencies("currencyCode");
 
 
 --
@@ -1362,11 +1350,11 @@ ALTER TABLE ONLY public.monthly_stats
 
 --
 -- TOC entry 3395 (class 2606 OID 33079)
--- Name: profiles profiles_currencyId_fkey; Type: FK CONSTRAINT; Schema: public; Owner: -
+-- Name: profiles profiles_currencyCode_fkey; Type: FK CONSTRAINT; Schema: public; Owner: -
 --
 
 ALTER TABLE ONLY public.profiles
-    ADD CONSTRAINT "profiles_currencyId_fkey" FOREIGN KEY ("currencyId") REFERENCES public.currencies("currencyId");
+    ADD CONSTRAINT "profiles_currencyCode_fkey" FOREIGN KEY ("currencyCode") REFERENCES public.currencies("currencyCode");
 
 
 --
@@ -1398,11 +1386,11 @@ ALTER TABLE ONLY public.transactions
 
 --
 -- TOC entry 3407 (class 2606 OID 33161)
--- Name: transactions transactions_currencyId_fkey; Type: FK CONSTRAINT; Schema: public; Owner: -
+-- Name: transactions transactions_currencyCode_fkey; Type: FK CONSTRAINT; Schema: public; Owner: -
 --
 
 ALTER TABLE ONLY public.transactions
-    ADD CONSTRAINT "transactions_currencyId_fkey" FOREIGN KEY ("currencyId") REFERENCES public.currencies("currencyId");
+    ADD CONSTRAINT "transactions_currencyCode_fkey" FOREIGN KEY ("currencyCode") REFERENCES public.currencies("currencyCode");
 
 
 --

@@ -6,10 +6,10 @@ import { useCurrency } from '@/context/CurrencyContext';
 interface IProps {
     statsType: StatsType;
     stats: IEntityStats | null | undefined;
-    currencyId: number;
+    currencyCode: string;
 }
 
-export const TransactionStats = ({ statsType, stats, currencyId }: IProps) => {
+export const TransactionStats = ({ statsType, stats, currencyCode }: IProps) => {
     const { getCurrencySymbol } = useCurrency();
     if (!stats) return null;
     const { spendMTD, vsLastMonthSpendPct, incomeMTD, vsLastMonthIncomePct, budgetTotal, transferMTD, savingsRate } = stats;
@@ -22,7 +22,7 @@ export const TransactionStats = ({ statsType, stats, currencyId }: IProps) => {
                     incomeMtd={incomeMTD as number}
                     lastMonthIncome={vsLastMonthIncomePct}
                     transferMtd={transferMTD as number}
-                    currency={getCurrencySymbol(currencyId)}
+                    currency={getCurrencySymbol(currencyCode)}
                     savingsRate={savingsRate}
                 />
             );
@@ -31,7 +31,7 @@ export const TransactionStats = ({ statsType, stats, currencyId }: IProps) => {
                 <TransactionStatsBar
                     lastMonthIncome={vsLastMonthIncomePct}
                     incomeMtd={incomeMTD as number}
-                    currency={getCurrencySymbol(currencyId)}
+                    currency={getCurrencySymbol(currencyCode)}
                 />
             );
         default: {
@@ -40,7 +40,7 @@ export const TransactionStats = ({ statsType, stats, currencyId }: IProps) => {
                     spentMtd={spendMTD as number}
                     lastMonthSpent={vsLastMonthSpendPct}
                     budgetTotal={budgetTotal}
-                    currency={getCurrencySymbol(currencyId)}
+                    currency={getCurrencySymbol(currencyCode)}
                 />
             );
         }

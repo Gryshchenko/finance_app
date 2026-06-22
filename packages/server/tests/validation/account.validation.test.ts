@@ -27,7 +27,7 @@ let authorization: string;
 let existingAccountId: number;
 
 const validCreate = {
-    currencyId: 1,
+    currencyCode: 'USD',
     accountName: 'ValidName',
     amount: 100,
     iconId: 'wallet',
@@ -57,7 +57,7 @@ describe('POST /user/:userId/account/ - body validation', () => {
     const url = () => `/user/${userId}/account/`;
 
     // required fields
-    it('400 - missing currencyId', async () => {
+    it('400 - missing currencyCode', async () => {
         await agent
             .post(url())
             .set('authorization', authorization)
@@ -69,7 +69,7 @@ describe('POST /user/:userId/account/ - body validation', () => {
         await agent
             .post(url())
             .set('authorization', authorization)
-            .send({ currencyId: 1, amount: 0, iconId: 'wallet' })
+            .send({ currencyCode: 'USD', amount: 0, iconId: 'wallet' })
             .expect(HttpCode.BAD_REQUEST);
     });
 
@@ -77,7 +77,7 @@ describe('POST /user/:userId/account/ - body validation', () => {
         await agent
             .post(url())
             .set('authorization', authorization)
-            .send({ currencyId: 1, accountName: 'Test', iconId: 'wallet' })
+            .send({ currencyCode: 'USD', accountName: 'Test', iconId: 'wallet' })
             .expect(HttpCode.BAD_REQUEST);
     });
 
@@ -85,7 +85,7 @@ describe('POST /user/:userId/account/ - body validation', () => {
         await agent
             .post(url())
             .set('authorization', authorization)
-            .send({ currencyId: 1, accountName: 'Test', amount: 0 })
+            .send({ currencyCode: 'USD', accountName: 'Test', amount: 0 })
             .expect(HttpCode.BAD_REQUEST);
     });
 
@@ -135,12 +135,12 @@ describe('POST /user/:userId/account/ - body validation', () => {
             .expect(HttpCode.BAD_REQUEST);
     });
 
-    // currencyId
-    it('400 - currencyId is a string', async () => {
+    // currencyCode
+    it('400 - currencyCode is a string', async () => {
         await agent
             .post(url())
             .set('authorization', authorization)
-            .send({ ...validCreate, currencyId: 'abc' })
+            .send({ ...validCreate, currencyCode: 'abc' })
             .expect(HttpCode.BAD_REQUEST);
     });
 

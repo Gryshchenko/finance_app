@@ -67,7 +67,7 @@ export const AccountFields: FC<IProps> = function AccountFields(_props) {
                     helperTx={errors?.amount}
                     status={errors?.amount ? 'error' : undefined}
                     editable={!isView}
-                    currency={getCurrencySymbol(form?.currencyId as number)}
+                    currency={getCurrencySymbol(form?.currencyCode as string)}
                     onChangeCleaned={(v) => {
                         if (handleChange) {
                             handleChange('amount', v);
@@ -77,13 +77,13 @@ export const AccountFields: FC<IProps> = function AccountFields(_props) {
                 <CurrencyDropdown
                     preset={'underline'}
                     style={$fieldCurrency}
-                    helperTx={errors?.currencyId}
-                    status={errors?.currencyId ? 'error' : undefined}
-                    value={form.currencyId}
+                    helperTx={errors?.currencyCode}
+                    status={errors?.currencyCode ? 'error' : undefined}
+                    value={form.currencyCode}
                     editable={isCreate}
                     onChange={(item: ICurrency) => {
                         if (handleChange) {
-                            handleChange('currencyId', item.currencyId);
+                            handleChange('currencyCode', item.currencyCode);
                         }
                     }}
                 />

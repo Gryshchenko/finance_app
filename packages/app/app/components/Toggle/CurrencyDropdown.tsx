@@ -8,7 +8,7 @@ import { TxKeyPath } from '@/i18n';
 
 type CurrencyDropdownProps = {
     error?: TxKeyPath;
-    value?: number;
+    value?: string;
     onChange?: (item: ICurrency) => void;
     style?: StyleProp<TextStyle>;
     filter?: (items: ICurrency[] | undefined) => ICurrency[];
@@ -43,7 +43,7 @@ export const CurrencyDropdown: React.FC<CurrencyDropdownProps> = ({
             filter={filter}
             preset={preset}
             keyExtractor={(item: ICurrency) => {
-                return String(item.currencyId);
+                return String(item.currencyCode);
             }}
             labelExtractor={(item: ICurrency) => `${item.currencyName} - ${item.symbol}`}
         />

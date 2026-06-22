@@ -18,7 +18,7 @@ const categoriesRouter = express.Router({ mergeParams: true });
 categoryRouter.post(
     '/',
     validateQuery({}),
-    sanitizeRequestBody(['currencyId', 'categoryName', 'iconId', 'colorId', 'budget']),
+    sanitizeRequestBody(['currencyCode', 'categoryName', 'iconId', 'colorId', 'budget']),
     routesInputValidation(createCategoryValidationRules, categoryConvertValidationMessageToErrorCode),
     CategoryController.post,
 );

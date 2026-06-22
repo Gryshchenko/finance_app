@@ -35,11 +35,11 @@ export class AccountController {
     public static async post(req: Request, res: Response) {
         const responseBuilder = new ResponseBuilder();
         try {
-            const { accountName, amount, currencyId, iconId } = req.body;
+            const { accountName, amount, currencyCode, iconId } = req.body;
             const account = await AccountOrchestrationServiceBuilder.build().create(req.user?.userId as number, {
                 accountName,
                 amount,
-                currencyId,
+                currencyCode,
                 iconId,
             });
             res.status(HttpCode.OK).json(responseBuilder.setStatus(ResponseStatusType.OK).setData(account).build());

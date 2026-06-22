@@ -17,7 +17,7 @@ const accountsRouter = express.Router({ mergeParams: true });
 accountRouter.post(
     '/',
     validateQuery({}),
-    sanitizeRequestBody(['currencyId', 'accountName', 'amount', 'iconId', 'colorId']),
+    sanitizeRequestBody(['currencyCode', 'accountName', 'amount', 'iconId', 'colorId']),
     routesInputValidation(createAccountValidationRules, accountConvertValidationMessageToErrorCode),
     AccountController.post,
 );

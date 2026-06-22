@@ -106,8 +106,8 @@ export class TransactionService extends ApiAbstract {
         accountId: number | undefined;
         incomeId: number | undefined;
         categoryId: number | undefined;
-        currencyId: number | undefined;
-        targetCurrencyId: number | undefined;
+        currencyCode: string | undefined;
+        targetCurrencyCode: string | undefined;
         transactionTypeId: number | undefined;
         amount: number | undefined;
         targetAmount?: number | undefined;
@@ -129,8 +129,8 @@ export class TransactionService extends ApiAbstract {
                 accountId: body.accountId,
                 incomeId: body.incomeId,
                 categoryId: body.categoryId,
-                currencyId: body.currencyId,
-                targetCurrencyId: body.targetCurrencyId,
+                currencyCode: body.currencyCode,
+                targetCurrencyCode: body.targetCurrencyCode,
                 transactionTypeId: body.transactionTypeId,
                 targetAmount: body.targetAmount,
                 rate: body.rate,
@@ -154,8 +154,8 @@ export class TransactionService extends ApiAbstract {
             accountId: number | undefined;
             incomeId: number | undefined;
             categoryId: number | undefined;
-            currencyId: number | undefined;
-            targetCurrencyId: number | undefined;
+            currencyCode: string | undefined;
+            targetCurrencyCode: string | undefined;
             amount: number | undefined;
             createdAt: string | undefined;
             targetAccountId: number | undefined;
@@ -177,8 +177,8 @@ export class TransactionService extends ApiAbstract {
                 accountId: body.accountId,
                 incomeId: body.incomeId,
                 categoryId: body.categoryId,
-                currencyId: body.currencyId,
-                targetCurrencyId: body.targetCurrencyId,
+                currencyCode: body.currencyCode,
+                targetCurrencyCode: body.targetCurrencyCode,
                 amount: body.amount,
                 createdAt: body.createdAt,
                 targetAccountId: body.targetAccountId,

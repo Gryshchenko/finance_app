@@ -66,9 +66,9 @@ describe('PATCH /user/:userId/profile/ - body validation', () => {
         await agent.patch(url()).set('authorization', authorization).send({ locale: 123456 }).expect(HttpCode.BAD_REQUEST);
     });
 
-    // currencyId
-    it('400 - currencyId is a string', async () => {
-        await agent.patch(url()).set('authorization', authorization).send({ currencyId: 'abc' }).expect(HttpCode.BAD_REQUEST);
+    // currencyCode
+    it('400 - currencyCode is a string', async () => {
+        await agent.patch(url()).set('authorization', authorization).send({ currencyCode: 'abc' }).expect(HttpCode.BAD_REQUEST);
     });
 
     // publicName

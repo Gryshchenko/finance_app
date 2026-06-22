@@ -9,7 +9,7 @@ import { checkCors } from 'middleware/checkCors';
 import { checkOriginReferer } from 'middleware/checkOriginReferer';
 import { currenciesRouter, currencyRouter } from 'routes/currency';
 import exchangeRates from 'routes/exchangeRates';
-import ExchangeRateServiceBuilder from 'services/exchangeRateService/ExchangeRateServiceBuilder';
+import { CurrencyOrchestratorServiceBuilder } from 'services/currencyOrchestrator/CurrencyOrchestratorServiceBuilder';
 import { getConfig } from 'src/config/config';
 import { createServer } from 'src/createServer';
 import ResponseBuilder from 'src/helper/responseBuilder/ResponseBuilder';
@@ -79,9 +79,9 @@ const httpsServer = createServer(app);
 if (process.env.NODE_ENV !== 'test') {
     httpsServer.listen(port, async () => {
         const ip = getLocalIP();
-        ExchangeRateServiceBuilder.build()
-            .updateCurrencyRates()
-            .catch((e) => {
+        CurrencyOrchestratorServiceBuilder.build()
+            .syncCurrenciesRates()
+            .catch((e: unknown) => {
                 Logger.Of('App').info(`Update currency failed due reason: ${(e as { message: string }).message}`);
             });
         Logger.Of('App').info(`Server running at: ${ip}:${port}`);

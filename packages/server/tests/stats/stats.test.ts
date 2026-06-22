@@ -49,7 +49,7 @@ interface ITestCtx {
     authorization: string;
     accountId: number;
     targetAccountId: number;
-    currencyId: number;
+    currencyCode: string;
     incomeIds: number[];
     categoryIds: number[];
 }
@@ -79,7 +79,7 @@ async function setupUser(): Promise<ITestCtx> {
         authorization,
         accountId: accounts[0].accountId,
         targetAccountId: accounts[1].accountId,
-        currencyId: accounts[0].currencyId,
+        currencyCode: accounts[0].currencyCode,
         incomeIds: incomes.map((i: IIncome) => i.incomeId),
         categoryIds: categories.map((c: ICategory) => c.categoryId),
     };
@@ -107,7 +107,7 @@ async function seedDecember(ctx: ITestCtx) {
             ctx.authorization,
             ctx.accountId,
             catId,
-            ctx.currencyId,
+            ctx.currencyCode,
             100,
             1,
             utc,
@@ -118,7 +118,7 @@ async function seedDecember(ctx: ITestCtx) {
             ctx.authorization,
             ctx.accountId,
             incId,
-            ctx.currencyId,
+            ctx.currencyCode,
             100,
             1,
             utc,
@@ -129,7 +129,7 @@ async function seedDecember(ctx: ITestCtx) {
             ctx.authorization,
             ctx.accountId,
             ctx.targetAccountId,
-            ctx.currencyId,
+            ctx.currencyCode,
             100,
             1,
             utc,
@@ -283,7 +283,7 @@ describe('Stats - patch reattribution (light setup)', () => {
             ctx.authorization,
             ctx.accountId,
             catA,
-            ctx.currencyId,
+            ctx.currencyCode,
             100,
             DEC_DATE,
         );
@@ -316,7 +316,7 @@ describe('Stats - patch reattribution (light setup)', () => {
             ctx.authorization,
             ctx.accountId,
             incA,
-            ctx.currencyId,
+            ctx.currencyCode,
             100,
             DEC_DATE,
         );
@@ -346,7 +346,7 @@ describe('Stats - patch reattribution (light setup)', () => {
             ctx.authorization,
             ctx.accountId,
             ctx.categoryIds[0],
-            ctx.currencyId,
+            ctx.currencyCode,
             100,
             DEC_DATE,
         );
@@ -380,7 +380,7 @@ describe('Stats - patch reattribution (light setup)', () => {
             ctx.authorization,
             ctx.accountId,
             ctx.targetAccountId,
-            ctx.currencyId,
+            ctx.currencyCode,
             100,
             DEC_DATE,
         );
@@ -413,7 +413,7 @@ describe('Stats - patch reattribution (light setup)', () => {
             ctx.authorization,
             ctx.accountId,
             ctx.categoryIds[0],
-            ctx.currencyId,
+            ctx.currencyCode,
             100,
             Time.jsDateToUTCISO(new Date('2025-12-30T11:00:00')),
         );
@@ -424,7 +424,7 @@ describe('Stats - patch reattribution (light setup)', () => {
             ctx.authorization,
             ctx.accountId,
             ctx.categoryIds[0],
-            ctx.currencyId,
+            ctx.currencyCode,
             200,
             Time.jsDateToUTCISO(new Date('2026-01-05T11:00:00')),
         );
@@ -447,7 +447,7 @@ describe('Stats - patch reattribution (light setup)', () => {
                 ctx.authorization,
                 ctx.accountId,
                 ctx.categoryIds[0],
-                ctx.currencyId,
+                ctx.currencyCode,
                 100,
                 Time.jsDateToUTCISO(new Date(`2025-12-${i < 10 ? `0${i}` : i}T11:00:00`)),
             );
@@ -458,7 +458,7 @@ describe('Stats - patch reattribution (light setup)', () => {
                     ctx.authorization,
                     ctx.accountId,
                     ctx.categoryIds[0],
-                    ctx.currencyId,
+                    ctx.currencyCode,
                     100,
                     Time.jsDateToUTCISO(new Date(`2025-11-${i < 10 ? `0${i}` : i}T11:00:00`)),
                 );
@@ -542,7 +542,7 @@ describe('entityStats - Expense edge cases', () => {
             ctx.authorization,
             ctx.accountId,
             ctx.categoryIds[0],
-            ctx.currencyId,
+            ctx.currencyCode,
             500,
             DEC_DATE,
         );
@@ -565,7 +565,7 @@ describe('entityStats - Expense edge cases', () => {
             ctx.authorization,
             ctx.accountId,
             ctx.categoryIds[0],
-            ctx.currencyId,
+            ctx.currencyCode,
             1000,
             NOV_DATE,
         );
@@ -575,7 +575,7 @@ describe('entityStats - Expense edge cases', () => {
             ctx.authorization,
             ctx.accountId,
             ctx.categoryIds[0],
-            ctx.currencyId,
+            ctx.currencyCode,
             250,
             DEC_DATE,
         );
@@ -601,7 +601,7 @@ describe('entityStats - Expense edge cases', () => {
             ctx.authorization,
             ctx.accountId,
             catA,
-            ctx.currencyId,
+            ctx.currencyCode,
             300,
             DEC_DATE,
         );
@@ -612,7 +612,7 @@ describe('entityStats - Expense edge cases', () => {
             ctx.authorization,
             ctx.accountId,
             catB,
-            ctx.currencyId,
+            ctx.currencyCode,
             900,
             DEC_DATE,
         );
@@ -644,7 +644,7 @@ describe('entityStats - Expense edge cases', () => {
             ctx.authorization,
             ctx.accountId,
             ctx.categoryIds[0],
-            ctx.currencyId,
+            ctx.currencyCode,
             400,
             DEC_DATE,
         );
@@ -654,7 +654,7 @@ describe('entityStats - Expense edge cases', () => {
             ctx.authorization,
             ctx.accountId,
             ctx.categoryIds[0],
-            ctx.currencyId,
+            ctx.currencyCode,
             600,
             DEC_DATE,
         );
@@ -692,7 +692,7 @@ describe('entityStats - Income', () => {
             ctx.authorization,
             ctx.accountId,
             incId,
-            ctx.currencyId,
+            ctx.currencyCode,
             800,
             NOV_DATE,
         );
@@ -702,7 +702,7 @@ describe('entityStats - Income', () => {
             ctx.authorization,
             ctx.accountId,
             incId,
-            ctx.currencyId,
+            ctx.currencyCode,
             1200,
             DEC_DATE,
         );
@@ -743,7 +743,7 @@ describe('entityStats - Income', () => {
             ctx.authorization,
             ctx.accountId,
             incId,
-            ctx.currencyId,
+            ctx.currencyCode,
             1000,
             NOV_DATE,
         );
@@ -753,7 +753,7 @@ describe('entityStats - Income', () => {
             ctx.authorization,
             ctx.accountId,
             incId,
-            ctx.currencyId,
+            ctx.currencyCode,
             400,
             DEC_DATE,
         );
@@ -779,7 +779,7 @@ describe('entityStats - Account', () => {
             ctx.authorization,
             ctx.accountId,
             ctx.categoryIds[0],
-            ctx.currencyId,
+            ctx.currencyCode,
             200,
             NOV_DATE,
         );
@@ -789,7 +789,7 @@ describe('entityStats - Account', () => {
             ctx.authorization,
             ctx.accountId,
             ctx.incomeIds[0],
-            ctx.currencyId,
+            ctx.currencyCode,
             500,
             NOV_DATE,
         );
@@ -800,7 +800,7 @@ describe('entityStats - Account', () => {
             ctx.authorization,
             ctx.accountId,
             ctx.categoryIds[0],
-            ctx.currencyId,
+            ctx.currencyCode,
             300,
             DEC_DATE,
         );
@@ -810,7 +810,7 @@ describe('entityStats - Account', () => {
             ctx.authorization,
             ctx.accountId,
             ctx.incomeIds[0],
-            ctx.currencyId,
+            ctx.currencyCode,
             1000,
             DEC_DATE,
         );
@@ -820,7 +820,7 @@ describe('entityStats - Account', () => {
             ctx.authorization,
             ctx.accountId,
             ctx.targetAccountId,
-            ctx.currencyId,
+            ctx.currencyCode,
             150,
             DEC_DATE,
         );
@@ -859,7 +859,7 @@ describe('entityStats - Account', () => {
             ctx.authorization,
             ctx.accountId,
             ctx.incomeIds[0],
-            ctx.currencyId,
+            ctx.currencyCode,
             1000,
             DEC_DATE,
         );
@@ -869,7 +869,7 @@ describe('entityStats - Account', () => {
             ctx.authorization,
             ctx.accountId,
             ctx.categoryIds[0],
-            ctx.currencyId,
+            ctx.currencyCode,
             400,
             DEC_DATE,
         );

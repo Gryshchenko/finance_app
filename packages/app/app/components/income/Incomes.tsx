@@ -37,7 +37,7 @@ export const Incomes: FC<IIncomesPros> = function Incomes(_props) {
 
     return (
         <>
-            {data.map(({ incomeId, incomeName, currencyId }) => {
+            {data.map(({ incomeId, incomeName, currencyCode }) => {
                 return (
                     <ListItem
                         key={incomeId}
@@ -46,7 +46,7 @@ export const Incomes: FC<IIncomesPros> = function Incomes(_props) {
                         RightComponent={
                             <>
                                 <Text style={themed([$center])}>
-                                    {CurrencyUtils.formatWithDelimiter(0, getCurrencySymbol(currencyId))}
+                                    {CurrencyUtils.formatWithDelimiter(0, getCurrencySymbol(currencyCode))}
                                 </Text>
                                 <View style={$buttons}>
                                     <ViewButton

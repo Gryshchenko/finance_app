@@ -64,17 +64,17 @@ export const CategoryFields: FC<IProps> = function CategoryFields(_props) {
                     preset={'underline'}
                     style={$fieldCurrency}
                     editable={isCreate}
-                    helperTx={errors?.currencyId}
-                    status={errors?.currencyId ? 'error' : undefined}
-                    value={form.currencyId}
+                    helperTx={errors?.currencyCode}
+                    status={errors?.currencyCode ? 'error' : undefined}
+                    value={form.currencyCode}
                     onChange={(item: ICurrency) => {
                         if (handleChange) {
-                            handleChange('currencyId', item.currencyId);
+                            handleChange('currencyCode', item.currencyCode);
                         }
                     }}
                 />
                 <CurrencyField
-                    currency={getCurrencySymbol(form.currencyId!)}
+                    currency={getCurrencySymbol(form.currencyCode!)}
                     preset={'underline'}
                     labelTx={'common:categoryBudget'}
                     placeholderTx={'common:categoryBudgetPlaceholder'}
