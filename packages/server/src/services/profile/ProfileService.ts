@@ -28,6 +28,7 @@ export interface IProfileService {
     ): Promise<{ confirmationCode: number; expiresAt: Date }>;
     confirmPasswordChange(userId: number, confirmationCode: number, trx?: IDBTransaction): Promise<boolean>;
     refreshConfirmationCodeForPasswordChange(userId: number, confirmationCode: number): Promise<boolean>;
+    getUserCurrencyCode(userId: number): Promise<string>;
 }
 
 export default class ProfileService extends LoggerBase implements IProfileService {
@@ -95,5 +96,12 @@ export default class ProfileService extends LoggerBase implements IProfileServic
     }
     public async refreshConfirmationCodeForPasswordChange(userId: number, confirmationId: number): Promise<boolean> {
         return await this._passwordChangingService.refresh(userId, confirmationId);
+    }
+    public async getUserCurrencyCode(userId: number): Promise<string> {
+        const profile = await this.get(userId);
+        if (!profile) {
+            throw new Error(`Profile not found for userId: ${userId}`);
+        }
+        return profile.currencyCode;
     }
 }

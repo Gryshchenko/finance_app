@@ -5,7 +5,6 @@ import { LoggerBase } from 'src/helper/logger/LoggerBase';
 import { BaseError } from 'src/utils/errors/BaseError';
 import { DBError } from 'src/utils/errors/DBError';
 import { isBaseError } from 'src/utils/errors/isBaseError';
-import { NotFoundError } from 'src/utils/errors/NotFoundError';
 
 export interface IHistoricalRateDataAccess {
     get(baseCurrency: string, targetCurrency: string, data: string): Promise<IRate | undefined>;
@@ -81,15 +80,8 @@ export default class HistoricalRateDataAccess extends LoggerBase implements IHis
                     date,
                 })
                 .first();
-            if (data) {
-                this._logger.info(`Rate for code ${baseCurrency} fetched successfully - ${JSON.stringify(data)}`);
-                return data;
-            } else {
-                throw new NotFoundError({
-                    message: `Currency with code ${baseCurrency} - ${targetCurrency} not found`,
-                    errorCode: ErrorCode.HISTORICAL_CURRENCY_ERROR,
-                });
-            }
+            this._logger.info(`Rate for code ${baseCurrency} fetched successfully - ${JSON.stringify(data)}`);
+            return data;
         } catch (e) {
             throw new DBError({
                 message: `Fetch failed due reason: ${(e as { message: string }).message}`,

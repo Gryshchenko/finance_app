@@ -250,6 +250,7 @@ export default class TransactionDataAccess extends LoggerBase implements ITransa
                 updatedAt: Time.getISODateNowUTC(),
                 targetCurrencyCode: properties.targetCurrencyCode,
                 targetAmount: properties.targetAmount,
+                currencyCode: properties.currencyCode,
             };
 
             validateAllowedProperties(allowedProperties, [
@@ -263,6 +264,7 @@ export default class TransactionDataAccess extends LoggerBase implements ITransa
                 'updatedAt',
                 'targetCurrencyCode',
                 'targetAmount',
+                'currencyCode',
             ]);
             const data = await query('transactions').update(allowedProperties).where({ userId, transactionId, isDeleted: false });
 

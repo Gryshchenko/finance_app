@@ -61,7 +61,7 @@ class CurrencyOrchestratorService extends LoggerBase implements ICurrencyOrchest
             const rateFresh = await this._exchangeRateService.get(baseCurrency, targetCurrency);
             if (Utils.isNotNull(rateFresh) && Utils.greaterThen0(rateFresh.rate)) {
                 await this._historicalRateService.post(baseCurrency, targetCurrency, rateFresh.rate, date);
-                return historical;
+                return rateFresh;
             }
             throw new Error(`Can't get rate for baseCurrency: ${baseCurrency}, targetCurrency: ${targetCurrency}, date: ${date}`);
         } catch (e: unknown) {

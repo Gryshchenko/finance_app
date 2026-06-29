@@ -1,10 +1,12 @@
 import { IDatabaseConnection } from 'interfaces/IDatabaseConnection';
 import CategoryServiceBuilder from 'services/category/CategoryServiceBuilder';
+import { CurrencyOrchestratorServiceBuilder } from 'services/currencyOrchestrator/CurrencyOrchestratorServiceBuilder';
 import { DailyAccountStatsServiceBuilder } from 'services/dailyAccountStats/DailyAccountStatsServiceBuilder';
 import { DailyCategoryStatsServiceBuilder } from 'services/dailyCategoryStats/DailyCategoryStatsServiceBuilder';
 import { DailyIncomeStatsServiceBuilder } from 'services/dailyIncomeStats/DailyIncomeStatsServiceBuilder';
 import DailyStatsServiceBuilder from 'services/dailyStats/DailyStatsServiceBuilder';
 import { DailyTransferStatsServiceBuilder } from 'services/dailyTransferStats/DailyTransferStatsServiceBuilder';
+import ProfileServiceBuilder from 'services/profile/ProfileServiceBuilder';
 import StatsOrchestratorService from 'services/StatsOrchestrator/StatsOrchestratorService';
 import DatabaseConnectionBuilder from 'src/repositories/DatabaseConnectionBuilder';
 
@@ -19,6 +21,8 @@ export class StatsOrchestratorServiceBuilder {
             dailyIncomeStatsService: DailyIncomeStatsServiceBuilder.build(database),
             dailyTransferStatsService: DailyTransferStatsServiceBuilder.build(database),
             categoryService: CategoryServiceBuilder.build(database),
+            currencyOrchestratorService: CurrencyOrchestratorServiceBuilder.build(database),
+            profileService: ProfileServiceBuilder.build(database),
         });
     }
 }

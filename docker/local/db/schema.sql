@@ -184,6 +184,15 @@ CREATE TABLE public."currencyRates" (
 );
 
 
+CREATE TABLE public.historical_currency_rates (
+    "baseCurrency" character varying(3) NOT NULL,
+    "targetCurrency" character varying(3) NOT NULL,
+    rate numeric(18,6) NOT NULL,
+    date date NOT NULL,
+    "updatedAt" timestamp without time zone DEFAULT now() NOT NULL
+);
+
+
 --
 -- TOC entry 224 (class 1259 OID 33039)
 -- Name: currencytype; Type: TABLE; Schema: public; Owner: -
@@ -280,6 +289,7 @@ CREATE TABLE public.daily_incomes_stats (
 CREATE TABLE public.daily_stats (
     "userId" integer NOT NULL,
     date date NOT NULL,
+    "currencyCode" character varying(3) NOT NULL,
     income_total numeric(18,2) DEFAULT 0 NOT NULL,
     expense_total numeric(18,2) DEFAULT 0 NOT NULL,
     transfer_total numeric(18,2) DEFAULT 0 NOT NULL,
@@ -1071,7 +1081,7 @@ ALTER TABLE ONLY public.daily_incomes_stats
 --
 
 ALTER TABLE ONLY public.daily_stats
-    ADD CONSTRAINT "daily_stats_userId_date_key" UNIQUE ("userId", date);
+    ADD CONSTRAINT "daily_stats_userId_date_key" UNIQUE ("userId", date, "currencyCode");
 
 
 --

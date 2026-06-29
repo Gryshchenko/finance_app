@@ -91,6 +91,7 @@ export default class TransactionService extends LoggerBase implements ITransacti
                         userId,
                         data: {
                             date: trs.createdAt,
+                            currencyCode: trs.currencyCode,
                             accountId: trs.accountId,
                             categoryId: trs.categoryId as number,
                             sourceAmount: trs.amount,
@@ -107,6 +108,7 @@ export default class TransactionService extends LoggerBase implements ITransacti
                         userId,
                         data: {
                             date: trs.createdAt,
+                            currencyCode: trs.currencyCode,
                             accountId: trs.accountId,
                             incomeId: trs.incomeId as number,
                             sourceAmount: trs.amount,
@@ -124,6 +126,7 @@ export default class TransactionService extends LoggerBase implements ITransacti
                         userId,
                         data: {
                             date: trs.createdAt,
+                            currencyCode: trs.currencyCode,
                             accountId: trs.accountId,
                             targetAccountId: trs.targetAccountId as number,
                             sourceAmount: trs.amount,
@@ -174,6 +177,13 @@ export default class TransactionService extends LoggerBase implements ITransacti
                 targetAmount: transaction.targetAmount ?? (before.targetAmount as number),
                 targetCurrencyCode: transaction.targetCurrencyCode ?? (before.targetCurrencyCode as string),
             };
+
+            // currency follows the account: a transaction sitting in a USD account is a USD transaction.
+            // When the account changes, adopt the new account's currency (the amount value is kept as-is).
+            after.currencyCode =
+                after.accountId !== before.accountId
+                    ? ((await this._accountService.getAccount(userId, after.accountId))?.currencyCode ?? before.currencyCode)
+                    : before.currencyCode;
 
             await this.repatchAccounts(userId, before, after, trx);
 
@@ -252,12 +262,15 @@ export default class TransactionService extends LoggerBase implements ITransacti
             date: after.createdAt,
             sourceAmount: after.amount,
             targetAmount: after.targetAmount,
+            // currency follows the account (resolved in patchTransaction); falls back to the original
+            currencyCode: after.currencyCode ?? before.currencyCode,
         };
         const baseBefore = {
             accountId: before.accountId,
             date: before.createdAt,
             sourceAmount: before.amount,
             targetAmount: before.targetAmount,
+            currencyCode: before.currencyCode,
         };
 
         switch (before.transactionTypeId) {

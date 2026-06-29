@@ -1,6 +1,7 @@
-import { ISummary, StatsPeriod, ErrorCode } from 'tenpercent/shared';
+import { StatsPeriod, ErrorCode } from 'tenpercent/shared';
 
 import { IDatabaseConnection, IDBTransaction } from 'interfaces/IDatabaseConnection';
+import { ISummary } from 'interfaces/ISummary';
 import { LoggerBase } from 'src/helper/logger/LoggerBase';
 import { DBError } from 'src/utils/errors/DBError';
 import { StatsTransactionType } from 'types/StatsTransactionType';
@@ -8,6 +9,8 @@ import { StatsTransactionType } from 'types/StatsTransactionType';
 export interface IDailyStatsUpdateTotalParams {
     userId: number;
     date: string;
+    // source currency of the amount; daily_stats is aggregated per-currency (native amounts)
+    currencyCode: string;
     type: StatsTransactionType;
     amount: number;
     trx?: IDBTransaction;
@@ -16,6 +19,8 @@ export interface IDailyStatsUpdateTotalParams {
 export interface IDailyStatsScoreParams {
     userId: number;
     date: string;
+    // source currency of the totals; daily_stats is aggregated per-currency (native amounts)
+    currencyCode: string;
     incomeTotal: number;
     expenseTotal: number;
     transferTotal: number;
@@ -40,6 +45,7 @@ export default class DailyStatsDataAccess extends LoggerBase implements IDailySt
     public async addToScore({
         userId,
         date,
+        currencyCode,
         incomeTotal,
         expenseTotal,
         transferTotal,
@@ -52,11 +58,12 @@ export default class DailyStatsDataAccess extends LoggerBase implements IDailySt
                 .insert({
                     userId,
                     date,
+                    currencyCode,
                     income_total: incomeTotal,
                     expense_total: expenseTotal,
                     transfer_total: transferTotal,
                 })
-                .onConflict(['userId', 'date'])
+                .onConflict(['userId', 'date', 'currencyCode'])
                 .merge({
                     income_total: query.raw('daily_stats.income_total + ?', [incomeTotal]),
                     expense_total: query.raw('daily_stats.expense_total + ?', [expenseTotal]),
@@ -78,6 +85,7 @@ export default class DailyStatsDataAccess extends LoggerBase implements IDailySt
     public async subtractFromScore({
         userId,
         date,
+        currencyCode,
         incomeTotal,
         expenseTotal,
         transferTotal,
@@ -90,11 +98,12 @@ export default class DailyStatsDataAccess extends LoggerBase implements IDailySt
                 .insert({
                     userId,
                     date,
+                    currencyCode,
                     income_total: incomeTotal,
                     expense_total: expenseTotal,
                     transfer_total: transferTotal,
                 })
-                .onConflict(['userId', 'date'])
+                .onConflict(['userId', 'date', 'currencyCode'])
                 .merge({
                     income_total: query.raw('daily_stats.income_total - ?', [incomeTotal]),
                     expense_total: query.raw('daily_stats.expense_total - ?', [expenseTotal]),
@@ -123,19 +132,35 @@ export default class DailyStatsDataAccess extends LoggerBase implements IDailySt
                 SELECT
                     COALESCE(SUM(ds.income_total),0) as income_total,
                     COALESCE(SUM(ds.expense_total),0) as expense_total,
-                    COALESCE(SUM(ds.transfer_total),0) as transfer_total
+                    COALESCE(SUM(ds.transfer_total),0) as transfer_total,
+                    ds."currencyCode",
+                    to_char(ds.date, 'YYYY-MM-DD') as date
                 FROM daily_stats as ds
                 WHERE ds."userId" = ? AND ds.date >= ?::date AND ds.date <= ?::date
+                GROUP BY ds."currencyCode", ds.date
             `,
                 [userId, from, to],
             );
-            const data = rows[0];
             this._logger.info(`Successfully get daily stats for userId: ${userId}`);
             return {
-                ...data,
+                data: rows.map(
+                    (row: {
+                        income_total: string;
+                        expense_total: string;
+                        transfer_total: string;
+                        currencyCode: string;
+                        date: string;
+                    }) => ({
+                        income_total: Number(row.income_total),
+                        expense_total: Number(row.expense_total),
+                        transfer_total: Number(row.transfer_total),
+                        currencyCode: row.currencyCode,
+                        date: row.date,
+                    }),
+                ),
                 from,
                 to,
-            } as ISummary;
+            };
         } catch (e) {
             this._logger.error(`Failed get daily stats for userId: ${userId}. Error: ${(e as { message: string }).message}`);
             throw new DBError({
@@ -145,26 +170,26 @@ export default class DailyStatsDataAccess extends LoggerBase implements IDailySt
         }
     }
 
-    public async updateTotal({ userId, date, type, amount, trx }: IDailyStatsUpdateTotalParams): Promise<boolean> {
+    public async updateTotal({ userId, date, currencyCode, type, amount, trx }: IDailyStatsUpdateTotalParams): Promise<boolean> {
         try {
-            this._logger.info(`Starting update daily stats userId: ${userId}, date: ${date}`);
+            this._logger.info(`Starting update daily stats userId: ${userId}, date: ${date}, currencyCode: ${currencyCode}`);
 
             const query = trx || this._db.engine();
             await query.raw(
                 `
-                    INSERT INTO daily_stats ("userId", date, income_total, expense_total, transfer_total)
-                    VALUES (?, ?::date,
+                    INSERT INTO daily_stats ("userId", date, "currencyCode", income_total, expense_total, transfer_total)
+                    VALUES (?, ?::date, ?,
                             CASE WHEN ? = 'income' THEN ? ELSE 0::numeric END,
                             CASE WHEN ? = 'expense' THEN ? ELSE 0::numeric END,
                             CASE WHEN ? = 'transfer' THEN ? ELSE 0::numeric END)
-                    ON CONFLICT ("userId", date)
+                    ON CONFLICT ("userId", date, "currencyCode")
                     DO UPDATE SET
                         income_total = daily_stats.income_total + CASE WHEN EXCLUDED.income_total   <> 0 THEN EXCLUDED.income_total   ELSE 0 END,
                         expense_total  = daily_stats.expense_total + CASE WHEN EXCLUDED.expense_total  <> 0 THEN EXCLUDED.expense_total  ELSE 0 END,
                         transfer_total  = daily_stats.transfer_total + CASE WHEN EXCLUDED.transfer_total  <> 0 THEN EXCLUDED.transfer_total  ELSE 0 END,
                         "updatedAt" = NOW();
         `,
-                [userId, date, type, amount, type, amount, type, amount],
+                [userId, date, currencyCode, type, amount, type, amount, type, amount],
             );
             this._logger.info(`Successfully update daily stats for userId: ${userId}`);
             return true;

@@ -1,6 +1,7 @@
-import { DateFormat, ISummary, StatsPeriod, Time } from 'tenpercent/shared';
+import { DateFormat, StatsPeriod, Time } from 'tenpercent/shared';
 
 import { LoggerBase } from 'helper/logger/LoggerBase';
+import { ISummary } from 'interfaces/ISummary';
 import {
     IDailyStatsDataAccess,
     IDailyStatsScoreParams,

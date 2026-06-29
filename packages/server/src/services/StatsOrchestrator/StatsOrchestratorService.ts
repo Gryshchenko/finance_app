@@ -3,11 +3,13 @@ import { ErrorCode, HttpCode, IEntityStats, ISummary, StatsPeriod, StatsType, Ti
 import { LoggerBase } from 'helper/logger/LoggerBase';
 import { IDBTransaction } from 'interfaces/IDatabaseConnection';
 import { ICategoryService } from 'services/category/CategoryService';
+import { ICurrencyOrchestratorService } from 'services/currencyOrchestrator/CurrencyOrchestratorService';
 import { IDailyAccountStatsService } from 'services/dailyAccountStats/DailyAccountStatsService';
 import { IDailyCategoryStatsService } from 'services/dailyCategoryStats/DailyCategoryStatsService';
 import { IDailyIncomeStatsService } from 'services/dailyIncomeStats/DailyIncomeStatsService';
 import { IDailyStatsService } from 'services/dailyStats/DailyStatsService';
 import { IDailyTransferStatsService } from 'services/dailyTransferStats/DailyTransferStatsService';
+import { IProfileService } from 'services/profile/ProfileService';
 import { CustomError } from 'src/utils/errors/CustomError';
 import { DBError } from 'src/utils/errors/DBError';
 import { ValidationError } from 'src/utils/errors/ValidationError';
@@ -22,7 +24,7 @@ interface ExpenseSnapshot {
     categoryId: number;
     sourceAmount: MoneyAmount;
     targetAmount: MoneyAmount;
-    currencyCode?: string;
+    currencyCode: string;
     targetCurrencyCode?: string;
 }
 
@@ -32,7 +34,7 @@ interface IncomeSnapshot {
     accountId: number;
     sourceAmount: MoneyAmount;
     targetAmount: MoneyAmount;
-    currencyCode?: string;
+    currencyCode: string;
     targetCurrencyCode?: string;
 }
 
@@ -42,7 +44,7 @@ interface TransferSnapshot {
     targetAccountId: number;
     sourceAmount: MoneyAmount;
     targetAmount: MoneyAmount;
-    currencyCode?: string;
+    currencyCode: string;
     targetCurrencyCode?: string;
 }
 
@@ -152,6 +154,8 @@ export default class StatsOrchestratorService extends LoggerBase implements ISta
     private readonly _dailyTransferStatsService: IDailyTransferStatsService;
     private readonly _dailyStatsService: IDailyStatsService;
     private readonly _categoryService: ICategoryService;
+    private readonly _currencyOrchestratorService: ICurrencyOrchestratorService;
+    private readonly _profileService: IProfileService;
 
     public constructor({
         dailyCategoryStatsService,
@@ -160,13 +164,17 @@ export default class StatsOrchestratorService extends LoggerBase implements ISta
         dailyTransferStatsService,
         dailyStatsService,
         categoryService,
+        currencyOrchestratorService,
+        profileService,
     }: {
         dailyCategoryStatsService: IDailyCategoryStatsService;
         dailyIncomeStatsService: IDailyIncomeStatsService;
         dailyAccountStatsService: IDailyAccountStatsService;
         dailyTransferStatsService: IDailyTransferStatsService;
         dailyStatsService: IDailyStatsService;
+        currencyOrchestratorService: ICurrencyOrchestratorService;
         categoryService: ICategoryService;
+        profileService: IProfileService;
     }) {
         super();
         this._dailyAccountStatsService = dailyAccountStatsService;
@@ -175,8 +183,8 @@ export default class StatsOrchestratorService extends LoggerBase implements ISta
         this._dailyTransferStatsService = dailyTransferStatsService;
         this._dailyStatsService = dailyStatsService;
         this._categoryService = categoryService;
-        // this._exchangeRateService = exchangeRateService;
-        // this._currencyService = currencyService;
+        this._currencyOrchestratorService = currencyOrchestratorService;
+        this._profileService = profileService;
     }
 
     public async create(command: CreateStatsCommand): Promise<boolean> {
@@ -196,6 +204,7 @@ export default class StatsOrchestratorService extends LoggerBase implements ISta
                     await this._dailyStatsService.updateTotal({
                         userId,
                         date,
+                        currencyCode,
                         type: StatsTransactionType.INCOME,
                         amount: sourceAmount,
                         trx,
@@ -236,6 +245,7 @@ export default class StatsOrchestratorService extends LoggerBase implements ISta
                     await this._dailyStatsService.updateTotal({
                         userId,
                         date,
+                        currencyCode,
                         type: StatsTransactionType.EXPENSE,
                         amount: sourceAmount,
                         trx,
@@ -276,6 +286,7 @@ export default class StatsOrchestratorService extends LoggerBase implements ISta
                     await this._dailyStatsService.updateTotal({
                         userId,
                         date,
+                        currencyCode,
                         type: StatsTransactionType.TRANSFER,
                         amount: sourceAmount,
                         trx,
@@ -348,6 +359,7 @@ export default class StatsOrchestratorService extends LoggerBase implements ISta
                         await this._dailyStatsService.addToScore({
                             userId,
                             date: after.date,
+                            currencyCode: after.currencyCode,
                             incomeTotal: after.sourceAmount,
                             expenseTotal: 0,
                             transferTotal: 0,
@@ -373,6 +385,7 @@ export default class StatsOrchestratorService extends LoggerBase implements ISta
                         await this._dailyStatsService.subtractFromScore({
                             userId,
                             date: before.date,
+                            currencyCode: before.currencyCode,
                             incomeTotal: before.sourceAmount,
                             expenseTotal: 0,
                             transferTotal: 0,
@@ -416,6 +429,7 @@ export default class StatsOrchestratorService extends LoggerBase implements ISta
                         await this._dailyStatsService.addToScore({
                             userId,
                             date: after.date,
+                            currencyCode: after.currencyCode,
                             incomeTotal: 0,
                             expenseTotal: after.sourceAmount,
                             transferTotal: 0,
@@ -441,6 +455,7 @@ export default class StatsOrchestratorService extends LoggerBase implements ISta
                         await this._dailyStatsService.subtractFromScore({
                             userId,
                             date: before.date,
+                            currencyCode: before.currencyCode,
                             incomeTotal: 0,
                             expenseTotal: before.sourceAmount,
                             transferTotal: 0,
@@ -484,6 +499,7 @@ export default class StatsOrchestratorService extends LoggerBase implements ISta
                         await this._dailyStatsService.addToScore({
                             userId,
                             date: after.date,
+                            currencyCode: after.currencyCode,
                             incomeTotal: 0,
                             expenseTotal: 0,
                             transferTotal: after.sourceAmount,
@@ -510,6 +526,7 @@ export default class StatsOrchestratorService extends LoggerBase implements ISta
                         await this._dailyStatsService.subtractFromScore({
                             userId,
                             date: before.date,
+                            currencyCode: before.currencyCode,
                             incomeTotal: 0,
                             expenseTotal: 0,
                             transferTotal: before.sourceAmount,
@@ -557,11 +574,12 @@ export default class StatsOrchestratorService extends LoggerBase implements ISta
         switch (type) {
             case TransactionType.Income:
                 {
-                    const { date, sourceAmount, accountId, incomeId, targetAmount } = data;
+                    const { date, currencyCode, sourceAmount, accountId, incomeId, targetAmount } = data;
                     const response = await Promise.all([
                         await this._dailyStatsService.subtractFromScore({
                             userId,
                             date,
+                            currencyCode,
                             incomeTotal: sourceAmount,
                             expenseTotal: 0,
                             transferTotal: 0,
@@ -597,11 +615,12 @@ export default class StatsOrchestratorService extends LoggerBase implements ISta
                 return true;
             case TransactionType.Expense:
                 {
-                    const { date, sourceAmount, accountId, categoryId, targetAmount } = data;
+                    const { date, currencyCode, sourceAmount, accountId, categoryId, targetAmount } = data;
                     const response = await Promise.all([
                         await this._dailyStatsService.subtractFromScore({
                             userId,
                             date,
+                            currencyCode,
                             incomeTotal: 0,
                             expenseTotal: sourceAmount,
                             transferTotal: 0,
@@ -636,11 +655,12 @@ export default class StatsOrchestratorService extends LoggerBase implements ISta
                 }
                 return true;
             case TransactionType.Transafer: {
-                const { date, sourceAmount, accountId, targetAccountId, targetAmount } = data;
+                const { date, currencyCode, sourceAmount, accountId, targetAccountId, targetAmount } = data;
                 const response = await Promise.all([
                     await this._dailyStatsService.subtractFromScore({
                         userId,
                         date,
+                        currencyCode,
                         incomeTotal: 0,
                         expenseTotal: 0,
                         transferTotal: sourceAmount,
@@ -682,7 +702,48 @@ export default class StatsOrchestratorService extends LoggerBase implements ISta
         }
     }
     public async summary(userId: number, from: string, to: string, period: StatsPeriod): Promise<ISummary> {
-        return await this._dailyStatsService.summary(userId, from, to, period);
+        const baseCurrency = await this._profileService.getUserCurrencyCode(userId);
+        const stats = await this._dailyStatsService.summary(userId, from, to, period);
+
+        let incomeTotal = 0;
+        let expenseTotal = 0;
+        let transferTotal = 0;
+
+        // daily_stats is stored per-currency in native amounts. Convert every bucket whose
+        // currency differs from the user's base currency using the rate for that bucket's day
+        // (CurrencyOrchestrator resolves the historical rate for the date and falls back to any
+        // stored rate), then sum everything — including the base-currency buckets — into one summary.
+        for (const row of stats.data) {
+            const rate = row.currencyCode === baseCurrency ? 1 : await this.resolveRate(row.currencyCode, baseCurrency, row.date);
+            incomeTotal += Number(row.income_total) * rate;
+            expenseTotal += Number(row.expense_total) * rate;
+            transferTotal += Number(row.transfer_total) * rate;
+        }
+
+        return {
+            income_total: round2(incomeTotal),
+            expense_total: round2(expenseTotal),
+            transfer_total: round2(transferTotal),
+            from,
+            to,
+        };
+    }
+
+    /**
+     * Rate to convert `fromCurrency` into `toCurrency` for `date`. CurrencyOrchestrator returns the
+     * historical rate for that day, falling back to any rate already stored for the pair. Throws when
+     * no rate exists at all (rather than silently dropping or zeroing the bucket).
+     */
+    private async resolveRate(fromCurrency: string, toCurrency: string, date: string): Promise<number> {
+        const rate = await this._currencyOrchestratorService.get(fromCurrency, toCurrency, date);
+        if (rate && Number(rate.rate) > 0) {
+            return Number(rate.rate);
+        }
+        throw new CustomError({
+            statusCode: HttpCode.INTERNAL_SERVER_ERROR,
+            errorCode: ErrorCode.STATS_ERROR,
+            message: `No exchange rate to convert ${fromCurrency} -> ${toCurrency} for ${date}`,
+        });
     }
     public async entityStats(userId: number, type: StatsType, id: number, from: string, to: string): Promise<IEntityStats> {
         const startDate = Time.toMonthStart(from);

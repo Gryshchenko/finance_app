@@ -9,4 +9,6 @@ export interface IPatchTransaction {
     createdAt: string;
     targetAmount: number;
     targetCurrencyCode: string;
+    // resolved server-side from the account when the account changes (currency follows the account)
+    currencyCode?: string;
 }
