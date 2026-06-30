@@ -1,4 +1,4 @@
-import { ICategory, IGetStatsProperties, ICategoryStats, Time, ErrorCode } from 'tenpercent/shared';
+import { ICategory, Time, ErrorCode } from 'tenpercent/shared';
 
 import { ICreateCategory } from 'interfaces/ICreateCategory';
 import { IDatabaseConnection, IDBTransaction } from 'interfaces/IDatabaseConnection';
@@ -11,7 +11,6 @@ import { getOnlyNotEmptyProperties } from 'src/utils/validation/getOnlyNotEmptyP
 import { validateAllowedProperties } from 'src/utils/validation/validateAllowedProperties';
 
 export interface ICategoryDataAccess {
-    getStats(userId: number, properties: IGetStatsProperties): Promise<ICategoryStats[]>;
     delete(userId: number, incomeId: number, trx?: IDBTransaction): Promise<boolean>;
     patch(userId: number, incomeId: number, properties: Partial<ICategory>, trx?: IDBTransaction): Promise<number>;
     create(userId: number, categories: ICreateCategory[], trx?: IDBTransaction): Promise<ICategory[]>;
@@ -25,59 +24,6 @@ export default class CategoryDataAccess extends LoggerBase implements ICategoryD
         super();
         this._db = db;
     }
-    async getStats(userId: number, properties: IGetStatsProperties): Promise<ICategoryStats[]> {
-        this._logger.info(`Retrieving categories stats for user: ${userId}`);
-        try {
-            const { from, to } = properties;
-            const data = await this._db
-                .engine()('categories')
-                .select(
-                    'categories.categoryId',
-                    'categories.userId',
-                    'categories.categoryName',
-                    'categories.currencyCode',
-                    'categories.iconId',
-                    'categories.colorId',
-                    'categories.budget',
-                    'categories.position',
-                    this._db.engine().raw('COALESCE(SUM(dcs.target_total), 0) as amount'),
-                )
-                .leftJoin('daily_categories_stats as dcs', function () {
-                    this.on('categories.categoryId', '=', 'dcs.categoryId')
-                        .andOnVal('dcs.userId', '=', userId)
-                        .andOnBetween('dcs.date', [from, to]);
-                })
-                .where({ 'categories.userId': userId, 'categories.isDeleted': false })
-                .groupBy(
-                    'categories.categoryId',
-                    'categories.userId',
-                    'categories.categoryName',
-                    'categories.currencyCode',
-                    'categories.iconId',
-                    'categories.colorId',
-                    'categories.budget',
-                    'categories.position',
-                )
-                .orderBy('categories.position', 'asc')
-                .orderBy('categories.categoryId', 'asc');
-            if (data) {
-                this._logger.info(`Fetched ${data.length} categories retrieved successfully for user: ${userId}`);
-            } else {
-                this._logger.warn(`Categories stats not found for user: ${userId}`);
-            }
-            return data;
-        } catch (e) {
-            this._logger.error(
-                `Failed to retrieve categories stats for user: ${userId}. Error: ${(e as { message: string }).message}`,
-            );
-            throw new DBError({
-                message: `Failed to retrieve categories stats for user: ${userId}. Error: ${(e as { message: string }).message}`,
-                statusCode: isBaseError(e) ? (e as unknown as BaseError)?.getStatusCode() : undefined,
-                errorCode: isBaseError(e) ? (e as unknown as BaseError)?.getErrorCode() : ErrorCode.CATEGORY_ERROR,
-            });
-        }
-    }
-
     async create(userId: number, categories: ICreateCategory[], trx?: IDBTransaction): Promise<ICategory[]> {
         this._logger.info(`Creating categories for user: ${userId}`);
         const query = trx || this._db.engine();

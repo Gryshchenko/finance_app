@@ -1,6 +1,5 @@
 import { IDatabaseConnection } from 'interfaces/IDatabaseConnection';
 import AccountServiceBuilder from 'services/account/AccountServiceBuilder';
-import { StatsOrchestratorServiceBuilder } from 'services/StatsOrchestrator/StatsOrchestratorServiceBuilder';
 import TransactionDataAccess from 'services/transaction/TransactionDataAccess';
 import TransactionService from 'services/transaction/TransactionService';
 import DatabaseConnectionBuilder from 'src/repositories/DatabaseConnectionBuilder';
@@ -11,7 +10,6 @@ export default class TransactionServiceBuilder {
         return new TransactionService(
             new TransactionDataAccess(databaseConnection),
             AccountServiceBuilder.build(databaseConnection),
-            StatsOrchestratorServiceBuilder.build(databaseConnection),
             databaseConnection,
         );
     }

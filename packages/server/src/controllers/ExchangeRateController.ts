@@ -15,7 +15,9 @@ export class ExchangeRateController {
         try {
             const currency: string = String(req.query.currency) as string;
             const targetCurrency: string = String(req.query.targetCurrency) as string;
-            const date: string = String(req.query.date) as string;
+            // date is optional: when absent let the service default to "today" (current rate),
+            // rather than forwarding the literal string "undefined".
+            const date: string | undefined = Utils.isNotNull(req.query.date) ? String(req.query.date) : undefined;
             if (Utils.isEmpty(currency) || Utils.isEmpty(targetCurrency)) {
                 throw new ValidationError({
                     message: `Conversation failed currency: ${currency} or target currency should not be empty: ${targetCurrency}`,

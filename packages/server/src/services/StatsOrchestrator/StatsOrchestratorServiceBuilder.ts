@@ -1,13 +1,10 @@
 import { IDatabaseConnection } from 'interfaces/IDatabaseConnection';
 import CategoryServiceBuilder from 'services/category/CategoryServiceBuilder';
 import { CurrencyOrchestratorServiceBuilder } from 'services/currencyOrchestrator/CurrencyOrchestratorServiceBuilder';
-import { DailyAccountStatsServiceBuilder } from 'services/dailyAccountStats/DailyAccountStatsServiceBuilder';
-import { DailyCategoryStatsServiceBuilder } from 'services/dailyCategoryStats/DailyCategoryStatsServiceBuilder';
-import { DailyIncomeStatsServiceBuilder } from 'services/dailyIncomeStats/DailyIncomeStatsServiceBuilder';
-import DailyStatsServiceBuilder from 'services/dailyStats/DailyStatsServiceBuilder';
-import { DailyTransferStatsServiceBuilder } from 'services/dailyTransferStats/DailyTransferStatsServiceBuilder';
+import IncomeServiceBuilder from 'services/income/IncomeServiceBuilder';
 import ProfileServiceBuilder from 'services/profile/ProfileServiceBuilder';
 import StatsOrchestratorService from 'services/StatsOrchestrator/StatsOrchestratorService';
+import TransactionServiceBuilder from 'services/transaction/TransactionServiceBuilder';
 import DatabaseConnectionBuilder from 'src/repositories/DatabaseConnectionBuilder';
 
 export class StatsOrchestratorServiceBuilder {
@@ -15,12 +12,9 @@ export class StatsOrchestratorServiceBuilder {
         const database = db ?? DatabaseConnectionBuilder.build();
 
         return new StatsOrchestratorService({
-            dailyStatsService: DailyStatsServiceBuilder.build(database),
-            dailyCategoryStatsService: DailyCategoryStatsServiceBuilder.build(database),
-            dailyAccountStatsService: DailyAccountStatsServiceBuilder.build(database),
-            dailyIncomeStatsService: DailyIncomeStatsServiceBuilder.build(database),
-            dailyTransferStatsService: DailyTransferStatsServiceBuilder.build(database),
             categoryService: CategoryServiceBuilder.build(database),
+            incomeService: IncomeServiceBuilder.build(database),
+            transactionsService: TransactionServiceBuilder.build(database),
             currencyOrchestratorService: CurrencyOrchestratorServiceBuilder.build(database),
             profileService: ProfileServiceBuilder.build(database),
         });

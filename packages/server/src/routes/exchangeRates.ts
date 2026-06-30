@@ -13,7 +13,7 @@ exchangeRates.use(tokenVerify, userStatusVerify(UserStatus.ACTIVE));
 
 exchangeRates.get(
     '/',
-    validateQuery({ currency: 'string', targetCurrency: 'string', date: 'date' }),
+    validateQuery({ currency: 'string', targetCurrency: 'string', date: '?date' }),
     routesInputValidation([]),
     ExchangeRateController.get,
 );

@@ -1,7 +1,6 @@
 import ExchangeRateService from 'services/exchangeRateService/ExchangeRateService';
 import RateProviderBuilder from 'services/exchangeRateService/providers/RateProviderBuilder';
 import { IExchangeRateDataAccess } from 'services/exchangeRateService/ExchangeRateDataAccess';
-import { ICurrencyService } from 'services/currency/CurrencyService';
 import { ICurrency, Time } from 'tenpercent/shared';
 import { IRate } from 'tenpercent/shared/dist/interfaces/IRate';
 
@@ -12,7 +11,7 @@ const currencies: ICurrency[] = [
         currencyName: 'US dollar',
     },
     {
-        currencyCode: 'EURO',
+        currencyCode: 'EUR',
         symbol: '€',
         currencyName: 'Euro',
     },
@@ -28,20 +27,6 @@ const mockDataAccess: jest.Mocked<IExchangeRateDataAccess> = {
     post: jest.fn(),
     patch: jest.fn(),
 };
-
-const mockCurrencyService = {
-    gets: jest.fn(),
-    getById: jest.fn(),
-    getByName: jest.fn(),
-    getBySymbol: jest.fn(),
-    getByCurrencyCode: jest.fn(),
-} as jest.Mocked<ICurrencyService>;
-
-const makeCurrency = (currencyCode: string) => ({
-    currencyCode,
-    currencyName: currencyCode,
-    symbol: currencyCode,
-});
 
 const makeRate = (baseCurrency: string, targetCurrency: string, hoursOld = 0): IRate => ({
     baseCurrency,
@@ -178,9 +163,7 @@ describe('patch', () => {
 
 describe('syncCurrenciesRates', () => {
     it('does nothing when the currency list is empty', async () => {
-        mockCurrencyService.gets.mockResolvedValue([]);
-
-        await service.syncCurrenciesRates(currencies);
+        await service.syncCurrenciesRates([]);
 
         expect(mockDataAccess.gets).not.toHaveBeenCalled();
         expect(mockRateProvider.getRates).not.toHaveBeenCalled();
@@ -189,8 +172,7 @@ describe('syncCurrenciesRates', () => {
     });
 
     it('inserts a full rate set when no existing rates are found', async () => {
-        mockCurrencyService.gets.mockResolvedValue([makeCurrency('USD'), makeCurrency('EUR')]);
-        // No existing rates for USD
+        // No existing rates for either currency → both get inserted with the full code set.
         mockDataAccess.gets.mockResolvedValue([]);
         mockRateProvider.getRates.mockResolvedValue({ EUR: 0.92, USD: 1 });
         mockDataAccess.post.mockResolvedValue(true);
@@ -202,7 +184,6 @@ describe('syncCurrenciesRates', () => {
     });
 
     it('does not call getRates or patch when all existing rates are fresh', async () => {
-        mockCurrencyService.gets.mockResolvedValue([makeCurrency('USD')]);
         // Two fresh rates
         mockDataAccess.gets.mockResolvedValue([makeRate('USD', 'EUR'), makeRate('USD', 'GBP')]);
         // getDiff returns 0 → not outdated (default mock)
@@ -220,7 +201,6 @@ describe('syncCurrenciesRates', () => {
             return to.getTime() < Date.now() - 12 * 60 * 60 * 1000 ? 14 : 2;
         });
 
-        mockCurrencyService.gets.mockResolvedValue([makeCurrency('USD')]);
         mockDataAccess.gets.mockResolvedValue([
             { ...makeRate('USD', 'EUR'), updatedAt: new Date(Date.now() - 14 * 60 * 60 * 1000) },
             { ...makeRate('USD', 'GBP'), updatedAt: new Date(Date.now() - 2 * 60 * 60 * 1000) },
@@ -240,7 +220,6 @@ describe('syncCurrenciesRates', () => {
         // All getDiff calls return 13 → all outdated
         getDiffSpy.mockReturnValue(13);
 
-        mockCurrencyService.gets.mockResolvedValue([makeCurrency('USD')]);
         mockDataAccess.gets.mockResolvedValue([makeRate('USD', 'EUR'), makeRate('USD', 'GBP'), makeRate('USD', 'JPY')]);
         mockRateProvider.getRates.mockResolvedValue({ EUR: 0.91, GBP: 0.79, JPY: 149.5 });
         mockDataAccess.patch.mockResolvedValue(true);
@@ -252,8 +231,6 @@ describe('syncCurrenciesRates', () => {
     });
 
     it('processes each currency independently', async () => {
-        mockCurrencyService.gets.mockResolvedValue([makeCurrency('USD'), makeCurrency('EUR')]);
-
         // USD has no existing rates → will insert
         // EUR has outdated rates → will patch
         mockDataAccess.gets
@@ -275,17 +252,7 @@ describe('syncCurrenciesRates', () => {
         expect(mockDataAccess.patch).toHaveBeenCalledWith('EUR', { USD: 1.08 });
     });
 
-    it('does not re-throw when currencyService.gets() throws - swallows the error', async () => {
-        mockCurrencyService.gets.mockRejectedValue(new Error('DB connection failed'));
-
-        await expect(service.syncCurrenciesRates(currencies)).resolves.toBeUndefined();
-
-        expect(mockDataAccess.gets).not.toHaveBeenCalled();
-        expect(mockRateProvider.getRates).not.toHaveBeenCalled();
-    });
-
     it('does not re-throw when rateProvider.getRates() throws', async () => {
-        mockCurrencyService.gets.mockResolvedValue([makeCurrency('USD')]);
         mockDataAccess.gets.mockResolvedValue([]);
         mockRateProvider.getRates.mockRejectedValue(new Error('API quota exceeded'));
 
@@ -295,7 +262,6 @@ describe('syncCurrenciesRates', () => {
     });
 
     it('does not re-throw when dataAccess.post throws', async () => {
-        mockCurrencyService.gets.mockResolvedValue([makeCurrency('USD')]);
         mockDataAccess.gets.mockResolvedValue([]);
         mockRateProvider.getRates.mockResolvedValue({ EUR: 0.92 });
         mockDataAccess.post.mockRejectedValue(new Error('Insert constraint violation'));
@@ -306,7 +272,6 @@ describe('syncCurrenciesRates', () => {
     it('does not re-throw when dataAccess.patch throws', async () => {
         getDiffSpy.mockReturnValue(13); // all rates outdated
 
-        mockCurrencyService.gets.mockResolvedValue([makeCurrency('USD')]);
         mockDataAccess.gets.mockResolvedValue([makeRate('USD', 'EUR')]);
         mockRateProvider.getRates.mockResolvedValue({ EUR: 0.91 });
         mockDataAccess.patch.mockRejectedValue(new Error('Lock timeout'));
@@ -315,8 +280,6 @@ describe('syncCurrenciesRates', () => {
     });
 
     it('continues to the next currency after one fails', async () => {
-        mockCurrencyService.gets.mockResolvedValue([makeCurrency('USD'), makeCurrency('EUR')]);
-
         // USD fetch throws; EUR succeeds
         mockDataAccess.gets.mockRejectedValueOnce(new Error('Timeout')).mockResolvedValueOnce([]);
 
@@ -332,7 +295,6 @@ describe('syncCurrenciesRates', () => {
 
     describe('logAndStoreRates - result logging', () => {
         it('completes without throwing when post returns false (logs error internally)', async () => {
-            mockCurrencyService.gets.mockResolvedValue([makeCurrency('USD')]);
             mockDataAccess.gets.mockResolvedValue([]);
             mockRateProvider.getRates.mockResolvedValue({ EUR: 0.92 });
             // post returns false → service logs an error but must not throw
@@ -344,7 +306,6 @@ describe('syncCurrenciesRates', () => {
         it('completes without throwing when patch returns false (logs error internally)', async () => {
             getDiffSpy.mockReturnValue(13); // all rates outdated
 
-            mockCurrencyService.gets.mockResolvedValue([makeCurrency('USD')]);
             mockDataAccess.gets.mockResolvedValue([makeRate('USD', 'EUR')]);
             mockRateProvider.getRates.mockResolvedValue({ EUR: 0.91 });
             // patch returns false → service logs an error but must not throw

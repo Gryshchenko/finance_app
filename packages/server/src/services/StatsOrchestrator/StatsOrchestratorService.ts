@@ -1,130 +1,31 @@
-import { ErrorCode, HttpCode, IEntityStats, ISummary, StatsPeriod, StatsType, Time, TransactionType } from 'tenpercent/shared';
+import {
+    ErrorCode,
+    HttpCode,
+    ICategoryStats,
+    IEntityStats,
+    IIncomeStats,
+    IStatsResponse,
+    ISummary,
+    StatsPeriod,
+    StatsType,
+    Time,
+} from 'tenpercent/shared';
 
 import { LoggerBase } from 'helper/logger/LoggerBase';
-import { IDBTransaction } from 'interfaces/IDatabaseConnection';
 import { ICategoryService } from 'services/category/CategoryService';
 import { ICurrencyOrchestratorService } from 'services/currencyOrchestrator/CurrencyOrchestratorService';
-import { IDailyAccountStatsService } from 'services/dailyAccountStats/DailyAccountStatsService';
-import { IDailyCategoryStatsService } from 'services/dailyCategoryStats/DailyCategoryStatsService';
-import { IDailyIncomeStatsService } from 'services/dailyIncomeStats/DailyIncomeStatsService';
-import { IDailyStatsService } from 'services/dailyStats/DailyStatsService';
-import { IDailyTransferStatsService } from 'services/dailyTransferStats/DailyTransferStatsService';
+import { IIncomeService } from 'services/income/IncomeService';
 import { IProfileService } from 'services/profile/ProfileService';
+import { ITransactionStatsBucket } from 'services/transaction/TransactionDataAccess';
+import { ITransactionService } from 'services/transaction/TransactionService';
 import { CustomError } from 'src/utils/errors/CustomError';
-import { DBError } from 'src/utils/errors/DBError';
 import { ValidationError } from 'src/utils/errors/ValidationError';
-import { StatsTransactionType } from 'types/StatsTransactionType';
-
-type ISODateString = string;
-type MoneyAmount = number;
-
-interface ExpenseSnapshot {
-    date: ISODateString;
-    accountId: number;
-    categoryId: number;
-    sourceAmount: MoneyAmount;
-    targetAmount: MoneyAmount;
-    currencyCode: string;
-    targetCurrencyCode?: string;
-}
-
-interface IncomeSnapshot {
-    date: ISODateString;
-    incomeId: number;
-    accountId: number;
-    sourceAmount: MoneyAmount;
-    targetAmount: MoneyAmount;
-    currencyCode: string;
-    targetCurrencyCode?: string;
-}
-
-interface TransferSnapshot {
-    date: ISODateString;
-    accountId: number;
-    targetAccountId: number;
-    sourceAmount: MoneyAmount;
-    targetAmount: MoneyAmount;
-    currencyCode: string;
-    targetCurrencyCode?: string;
-}
-
-interface CreateExpenseCommand {
-    type: TransactionType.Expense;
-    userId: number;
-    data: ExpenseSnapshot;
-    trx?: IDBTransaction;
-}
-
-interface CreateIncomeCommand {
-    type: TransactionType.Income;
-    userId: number;
-    data: IncomeSnapshot;
-    trx?: IDBTransaction;
-}
-
-interface CreateTransferCommand {
-    type: TransactionType.Transafer;
-    userId: number;
-    data: TransferSnapshot;
-    trx?: IDBTransaction;
-}
-
-interface PatchExpenseCommand {
-    type: TransactionType.Expense;
-    userId: number;
-    before: ExpenseSnapshot;
-    after: ExpenseSnapshot;
-    trx?: IDBTransaction;
-}
-
-interface PatchIncomeCommand {
-    type: TransactionType.Income;
-    userId: number;
-    before: IncomeSnapshot;
-    after: IncomeSnapshot;
-    trx?: IDBTransaction;
-}
-
-interface PatchTransferCommand {
-    type: TransactionType.Transafer;
-    userId: number;
-    before: TransferSnapshot;
-    after: TransferSnapshot;
-    trx?: IDBTransaction;
-}
-
-interface DeleteExpenseCommand {
-    type: TransactionType.Expense;
-    userId: number;
-    data: ExpenseSnapshot;
-    trx?: IDBTransaction;
-}
-
-interface DeleteIncomeCommand {
-    type: TransactionType.Income;
-    userId: number;
-    data: IncomeSnapshot;
-    trx?: IDBTransaction;
-}
-
-interface DeleteTransferCommand {
-    type: TransactionType.Transafer;
-    userId: number;
-    data: TransferSnapshot;
-    trx?: IDBTransaction;
-}
-
-type CreateStatsCommand = CreateExpenseCommand | CreateIncomeCommand | CreateTransferCommand;
-type PatchStatsCommand = PatchExpenseCommand | PatchIncomeCommand | PatchTransferCommand;
-type DeleteStatsCommand = DeleteExpenseCommand | DeleteIncomeCommand | DeleteTransferCommand;
 
 export interface IStatsOrchestratorService {
-    // timeseries(userId: number, from: string, to: string, period: StatsPeriod, cursor: number, limit: number): Promise<IPagination<ITimeseries>>;
     summary(userId: number, from: string, to: string, period: StatsPeriod): Promise<ISummary>;
-    create(command: CreateStatsCommand): Promise<boolean>;
-    patch(command: PatchStatsCommand): Promise<boolean>;
-    delete(command: DeleteStatsCommand): Promise<boolean>;
     entityStats(userId: number, type: StatsType, id: number, from: string, to: string): Promise<IEntityStats>;
+    categoriesStats(userId: number, from: string, to: string): Promise<IStatsResponse<ICategoryStats>>;
+    incomesStats(userId: number, from: string, to: string): Promise<IStatsResponse<IIncomeStats>>;
 }
 
 /**
@@ -147,577 +48,62 @@ const vsLastMonthPct = (current: number, previous: number): number | null => {
 /** Round to at most 2 decimal places. */
 const round2 = (value: number): number => Math.round(Number(value) * 100) / 100;
 
+/** Sum native-amount buckets by type. Used for single-currency entity stats (no conversion). */
+const sumBuckets = (buckets: ITransactionStatsBucket[]) =>
+    buckets.reduce(
+        (acc, bucket) => ({
+            income: acc.income + bucket.income_total,
+            expense: acc.expense + bucket.expense_total,
+            transfer: acc.transfer + bucket.transfer_total,
+        }),
+        { income: 0, expense: 0, transfer: 0 },
+    );
+
 export default class StatsOrchestratorService extends LoggerBase implements IStatsOrchestratorService {
-    private readonly _dailyCategoryStatsService: IDailyCategoryStatsService;
-    private readonly _dailyIncomeStatsService: IDailyIncomeStatsService;
-    private readonly _dailyAccountStatsService: IDailyAccountStatsService;
-    private readonly _dailyTransferStatsService: IDailyTransferStatsService;
-    private readonly _dailyStatsService: IDailyStatsService;
     private readonly _categoryService: ICategoryService;
+    private readonly _incomeService: IIncomeService;
     private readonly _currencyOrchestratorService: ICurrencyOrchestratorService;
     private readonly _profileService: IProfileService;
+    private readonly _transactionsService: ITransactionService;
 
     public constructor({
-        dailyCategoryStatsService,
-        dailyIncomeStatsService,
-        dailyAccountStatsService,
-        dailyTransferStatsService,
-        dailyStatsService,
         categoryService,
+        incomeService,
         currencyOrchestratorService,
         profileService,
+        transactionsService,
     }: {
-        dailyCategoryStatsService: IDailyCategoryStatsService;
-        dailyIncomeStatsService: IDailyIncomeStatsService;
-        dailyAccountStatsService: IDailyAccountStatsService;
-        dailyTransferStatsService: IDailyTransferStatsService;
-        dailyStatsService: IDailyStatsService;
         currencyOrchestratorService: ICurrencyOrchestratorService;
         categoryService: ICategoryService;
+        incomeService: IIncomeService;
         profileService: IProfileService;
+        transactionsService: ITransactionService;
     }) {
         super();
-        this._dailyAccountStatsService = dailyAccountStatsService;
-        this._dailyCategoryStatsService = dailyCategoryStatsService;
-        this._dailyIncomeStatsService = dailyIncomeStatsService;
-        this._dailyTransferStatsService = dailyTransferStatsService;
-        this._dailyStatsService = dailyStatsService;
         this._categoryService = categoryService;
+        this._incomeService = incomeService;
         this._currencyOrchestratorService = currencyOrchestratorService;
         this._profileService = profileService;
+        this._transactionsService = transactionsService;
     }
 
-    public async create(command: CreateStatsCommand): Promise<boolean> {
-        const { trx, userId, type } = command;
-        // NOTE: sourceAmount = the "from" amount in currencyCode (money leaving); targetAmount = the "to" amount in
-        // targetCurrencyCode (money arriving). No swapping - every leg passes sourceAmount/targetAmount straight
-        // through, and every per-entity table stores BOTH legs: income/category/transfer keep source_total +
-        // target_total; an account keeps them per direction (income_source_total/income_target_total when it
-        // receives, expense_source_total/expense_target_total when it sends). Summaries read the entity's
-        // own-currency column (income → source_total; category → target_total; account → income_source_total +
-        // expense_source_total) and are never converted/merged across currencies. The global daily_stats aggregate
-        // currently sums sourceAmount across currencies - handled in a separate redesign (per-currency + % trends).
-        switch (type) {
-            case TransactionType.Income: {
-                const { accountId, incomeId, sourceAmount, targetAmount, currencyCode, targetCurrencyCode, date } = command.data;
-                const response = await Promise.all([
-                    await this._dailyStatsService.updateTotal({
-                        userId,
-                        date,
-                        currencyCode,
-                        type: StatsTransactionType.INCOME,
-                        amount: sourceAmount,
-                        trx,
-                    }),
-                    await this._dailyIncomeStatsService.updateTotal({
-                        userId,
-                        date,
-                        incomeId,
-                        sourceAmount,
-                        targetAmount,
-                        currencyCode,
-                        targetCurrencyCode,
-                        trx,
-                    }),
-                    await this._dailyAccountStatsService.updateTotal({
-                        userId,
-                        date,
-                        accountId,
-                        type: StatsTransactionType.INCOME,
-                        sourceAmount,
-                        targetAmount,
-                        currencyCode,
-                        targetCurrencyCode,
-                        trx,
-                    }),
-                ]);
-                const allSucceeded = response.every((r) => r === true);
-
-                if (!allSucceeded) {
-                    throw new DBError({ message: 'Not all incomes stats updates succeeded', errorCode: ErrorCode.STATS_ERROR });
-                }
-                return true;
-            }
-            case TransactionType.Expense: {
-                const { accountId, categoryId, sourceAmount, targetAmount, currencyCode, targetCurrencyCode, date } =
-                    command.data;
-                const response = await Promise.all([
-                    await this._dailyStatsService.updateTotal({
-                        userId,
-                        date,
-                        currencyCode,
-                        type: StatsTransactionType.EXPENSE,
-                        amount: sourceAmount,
-                        trx,
-                    }),
-                    await this._dailyAccountStatsService.updateTotal({
-                        userId,
-                        date,
-                        accountId,
-                        type: StatsTransactionType.EXPENSE,
-                        sourceAmount,
-                        targetAmount,
-                        currencyCode,
-                        targetCurrencyCode,
-                        trx,
-                    }),
-                    await this._dailyCategoryStatsService.updateTotal({
-                        userId,
-                        date,
-                        categoryId,
-                        sourceAmount,
-                        targetAmount,
-                        currencyCode,
-                        targetCurrencyCode,
-                        trx,
-                    }),
-                ]);
-                const allSucceeded = response.every((r) => r === true);
-
-                if (!allSucceeded) {
-                    throw new DBError({ message: 'Not all expanse stats updates succeeded', errorCode: ErrorCode.STATS_ERROR });
-                }
-                return true;
-            }
-            case TransactionType.Transafer: {
-                const { accountId, targetAccountId, date, sourceAmount, targetAmount, currencyCode, targetCurrencyCode } =
-                    command.data;
-                const response = await Promise.all([
-                    await this._dailyStatsService.updateTotal({
-                        userId,
-                        date,
-                        currencyCode,
-                        type: StatsTransactionType.TRANSFER,
-                        amount: sourceAmount,
-                        trx,
-                    }),
-                    await this._dailyAccountStatsService.updateTotal({
-                        userId,
-                        date,
-                        accountId,
-                        type: StatsTransactionType.EXPENSE,
-                        sourceAmount,
-                        targetAmount,
-                        currencyCode,
-                        targetCurrencyCode,
-                        trx,
-                    }),
-                    await this._dailyAccountStatsService.updateTotal({
-                        userId,
-                        date,
-                        accountId: targetAccountId,
-                        type: StatsTransactionType.INCOME,
-                        sourceAmount,
-                        targetAmount,
-                        currencyCode,
-                        targetCurrencyCode,
-                        trx,
-                    }),
-                    await this._dailyTransferStatsService.updateTotal({
-                        userId,
-                        date,
-                        accountId,
-                        targetAccountId,
-                        sourceAmount,
-                        targetAmount,
-                        currencyCode,
-                        targetCurrencyCode,
-                        trx,
-                    }),
-                ]);
-                const allSucceeded = response.every((r) => r === true);
-
-                if (!allSucceeded) {
-                    throw new DBError({ message: 'Not all transfer stats updates succeeded', errorCode: ErrorCode.STATS_ERROR });
-                }
-                return true;
-            }
-            default: {
-                throw new CustomError({
-                    statusCode: HttpCode.BAD_REQUEST,
-                    errorCode: ErrorCode.STATS_ERROR,
-                    message: 'Transaction unsupported create transaction type',
-                });
-            }
-        }
-    }
-
-    public async patch(command: PatchStatsCommand): Promise<boolean> {
-        const { trx, userId, type, before, after } = command;
-        // A patch mirrors a create: add the new snapshot to the score and subtract the previous one,
-        // using the exact same value -> column mapping as create().
-        switch (type) {
-            case TransactionType.Income: {
-                if (
-                    before.sourceAmount !== after.sourceAmount ||
-                    before.date !== after.date ||
-                    before.accountId !== after.accountId ||
-                    before?.incomeId !== after?.incomeId ||
-                    before?.targetAmount !== after?.targetAmount
-                ) {
-                    const response = await Promise.all([
-                        await this._dailyStatsService.addToScore({
-                            userId,
-                            date: after.date,
-                            currencyCode: after.currencyCode,
-                            incomeTotal: after.sourceAmount,
-                            expenseTotal: 0,
-                            transferTotal: 0,
-                            trx,
-                        }),
-                        await this._dailyIncomeStatsService.addToScore({
-                            userId,
-                            date: after.date,
-                            incomeId: after.incomeId,
-                            sourceAmount: after.sourceAmount,
-                            targetAmount: after.targetAmount,
-                            trx,
-                        }),
-                        await this._dailyAccountStatsService.addToScore({
-                            userId,
-                            date: after.date,
-                            accountId: after.accountId,
-                            type: StatsTransactionType.INCOME,
-                            sourceAmount: after.sourceAmount,
-                            targetAmount: after.targetAmount,
-                            trx,
-                        }),
-                        await this._dailyStatsService.subtractFromScore({
-                            userId,
-                            date: before.date,
-                            currencyCode: before.currencyCode,
-                            incomeTotal: before.sourceAmount,
-                            expenseTotal: 0,
-                            transferTotal: 0,
-                            trx,
-                        }),
-                        await this._dailyIncomeStatsService.subtractFromScore({
-                            userId,
-                            date: before.date,
-                            incomeId: before.incomeId,
-                            sourceAmount: before.sourceAmount,
-                            targetAmount: before.targetAmount,
-                            trx,
-                        }),
-                        await this._dailyAccountStatsService.subtractFromScore({
-                            userId,
-                            date: before.date,
-                            accountId: before.accountId,
-                            type: StatsTransactionType.INCOME,
-                            sourceAmount: before.sourceAmount,
-                            targetAmount: before.targetAmount,
-                            trx,
-                        }),
-                    ]);
-                    const allSucceeded = response.every((r) => r === true);
-
-                    if (!allSucceeded) {
-                        throw new DBError({ message: 'Not all patch stats updates succeeded', errorCode: ErrorCode.STATS_ERROR });
-                    }
-                }
-                return true;
-            }
-            case TransactionType.Expense: {
-                if (
-                    before.sourceAmount !== after.sourceAmount ||
-                    before.date !== after.date ||
-                    before.accountId !== after.accountId ||
-                    before?.categoryId !== after?.categoryId ||
-                    before?.targetAmount !== after?.targetAmount
-                ) {
-                    const response = await Promise.all([
-                        await this._dailyStatsService.addToScore({
-                            userId,
-                            date: after.date,
-                            currencyCode: after.currencyCode,
-                            incomeTotal: 0,
-                            expenseTotal: after.sourceAmount,
-                            transferTotal: 0,
-                            trx,
-                        }),
-                        await this._dailyAccountStatsService.addToScore({
-                            userId,
-                            date: after.date,
-                            accountId: after.accountId,
-                            type: StatsTransactionType.EXPENSE,
-                            sourceAmount: after.sourceAmount,
-                            targetAmount: after.targetAmount,
-                            trx,
-                        }),
-                        await this._dailyCategoryStatsService.addToScore({
-                            userId,
-                            date: after.date,
-                            categoryId: after.categoryId,
-                            sourceAmount: after.sourceAmount,
-                            targetAmount: after.targetAmount,
-                            trx,
-                        }),
-                        await this._dailyStatsService.subtractFromScore({
-                            userId,
-                            date: before.date,
-                            currencyCode: before.currencyCode,
-                            incomeTotal: 0,
-                            expenseTotal: before.sourceAmount,
-                            transferTotal: 0,
-                            trx,
-                        }),
-                        await this._dailyAccountStatsService.subtractFromScore({
-                            userId,
-                            date: before.date,
-                            accountId: before.accountId,
-                            type: StatsTransactionType.EXPENSE,
-                            sourceAmount: before.sourceAmount,
-                            targetAmount: before.targetAmount,
-                            trx,
-                        }),
-                        await this._dailyCategoryStatsService.subtractFromScore({
-                            userId,
-                            date: before.date,
-                            categoryId: before.categoryId,
-                            sourceAmount: before.sourceAmount,
-                            targetAmount: before.targetAmount,
-                            trx,
-                        }),
-                    ]);
-                    const allSucceeded = response.every((r) => r === true);
-
-                    if (!allSucceeded) {
-                        throw new DBError({ message: 'Not all patch stats updates succeeded', errorCode: ErrorCode.STATS_ERROR });
-                    }
-                }
-                return true;
-            }
-            case TransactionType.Transafer: {
-                if (
-                    before.sourceAmount !== after.sourceAmount ||
-                    before.date !== after.date ||
-                    before.accountId !== after.accountId ||
-                    before?.targetAccountId !== after?.targetAccountId ||
-                    before?.targetAmount !== after?.targetAmount
-                ) {
-                    const response = await Promise.all([
-                        await this._dailyStatsService.addToScore({
-                            userId,
-                            date: after.date,
-                            currencyCode: after.currencyCode,
-                            incomeTotal: 0,
-                            expenseTotal: 0,
-                            transferTotal: after.sourceAmount,
-                            trx,
-                        }),
-                        await this._dailyAccountStatsService.addToScore({
-                            userId,
-                            date: after.date,
-                            accountId: after.accountId,
-                            type: StatsTransactionType.EXPENSE,
-                            sourceAmount: after.sourceAmount,
-                            targetAmount: after.targetAmount,
-                            trx,
-                        }),
-                        await this._dailyAccountStatsService.addToScore({
-                            userId,
-                            date: after.date,
-                            accountId: after.targetAccountId,
-                            type: StatsTransactionType.INCOME,
-                            sourceAmount: after.sourceAmount,
-                            targetAmount: after.targetAmount,
-                            trx,
-                        }),
-                        await this._dailyStatsService.subtractFromScore({
-                            userId,
-                            date: before.date,
-                            currencyCode: before.currencyCode,
-                            incomeTotal: 0,
-                            expenseTotal: 0,
-                            transferTotal: before.sourceAmount,
-                            trx,
-                        }),
-                        await this._dailyAccountStatsService.subtractFromScore({
-                            userId,
-                            date: before.date,
-                            accountId: before.accountId,
-                            type: StatsTransactionType.EXPENSE,
-                            sourceAmount: before.sourceAmount,
-                            targetAmount: before.targetAmount,
-                            trx,
-                        }),
-                        await this._dailyAccountStatsService.subtractFromScore({
-                            userId,
-                            date: before.date,
-                            accountId: before.targetAccountId,
-                            type: StatsTransactionType.INCOME,
-                            sourceAmount: before.sourceAmount,
-                            targetAmount: before.targetAmount,
-                            trx,
-                        }),
-                    ]);
-                    const allSucceeded = response.every((r) => r === true);
-
-                    if (!allSucceeded) {
-                        throw new DBError({ message: 'Not all patch stats updates succeeded', errorCode: ErrorCode.STATS_ERROR });
-                    }
-                }
-                return true;
-            }
-            default: {
-                throw new CustomError({
-                    statusCode: HttpCode.BAD_REQUEST,
-                    errorCode: ErrorCode.STATS_ERROR,
-                    message: 'Transaction unsupported create transaction type',
-                });
-            }
-        }
-    }
-    public async delete(command: DeleteStatsCommand): Promise<boolean> {
-        const { trx, userId, type, data } = command;
-        // A delete reverses a create: subtract the snapshot from the score using the same mapping as create().
-        switch (type) {
-            case TransactionType.Income:
-                {
-                    const { date, currencyCode, sourceAmount, accountId, incomeId, targetAmount } = data;
-                    const response = await Promise.all([
-                        await this._dailyStatsService.subtractFromScore({
-                            userId,
-                            date,
-                            currencyCode,
-                            incomeTotal: sourceAmount,
-                            expenseTotal: 0,
-                            transferTotal: 0,
-                            trx,
-                        }),
-                        await this._dailyIncomeStatsService.subtractFromScore({
-                            userId,
-                            date,
-                            incomeId,
-                            sourceAmount,
-                            targetAmount,
-                            trx,
-                        }),
-                        await this._dailyAccountStatsService.subtractFromScore({
-                            userId,
-                            date,
-                            accountId,
-                            type: StatsTransactionType.INCOME,
-                            sourceAmount,
-                            targetAmount,
-                            trx,
-                        }),
-                    ]);
-                    const allSucceeded = response.every((r) => r === true);
-
-                    if (!allSucceeded) {
-                        throw new DBError({
-                            message: 'Not all delete stats updates succeeded',
-                            errorCode: ErrorCode.STATS_ERROR,
-                        });
-                    }
-                }
-                return true;
-            case TransactionType.Expense:
-                {
-                    const { date, currencyCode, sourceAmount, accountId, categoryId, targetAmount } = data;
-                    const response = await Promise.all([
-                        await this._dailyStatsService.subtractFromScore({
-                            userId,
-                            date,
-                            currencyCode,
-                            incomeTotal: 0,
-                            expenseTotal: sourceAmount,
-                            transferTotal: 0,
-                            trx,
-                        }),
-                        await this._dailyAccountStatsService.subtractFromScore({
-                            userId,
-                            date,
-                            accountId,
-                            type: StatsTransactionType.EXPENSE,
-                            sourceAmount,
-                            targetAmount,
-                            trx,
-                        }),
-                        await this._dailyCategoryStatsService.subtractFromScore({
-                            userId,
-                            date,
-                            categoryId,
-                            sourceAmount,
-                            targetAmount,
-                            trx,
-                        }),
-                    ]);
-                    const allSucceeded = response.every((r) => r === true);
-
-                    if (!allSucceeded) {
-                        throw new DBError({
-                            message: 'Not all delete stats updates succeeded',
-                            errorCode: ErrorCode.STATS_ERROR,
-                        });
-                    }
-                }
-                return true;
-            case TransactionType.Transafer: {
-                const { date, currencyCode, sourceAmount, accountId, targetAccountId, targetAmount } = data;
-                const response = await Promise.all([
-                    await this._dailyStatsService.subtractFromScore({
-                        userId,
-                        date,
-                        currencyCode,
-                        incomeTotal: 0,
-                        expenseTotal: 0,
-                        transferTotal: sourceAmount,
-                        trx,
-                    }),
-                    await this._dailyAccountStatsService.subtractFromScore({
-                        userId,
-                        date,
-                        accountId,
-                        type: StatsTransactionType.EXPENSE,
-                        sourceAmount,
-                        targetAmount,
-                        trx,
-                    }),
-                    await this._dailyAccountStatsService.subtractFromScore({
-                        userId,
-                        date,
-                        accountId: targetAccountId,
-                        type: StatsTransactionType.INCOME,
-                        sourceAmount,
-                        targetAmount,
-                        trx,
-                    }),
-                ]);
-                const allSucceeded = response.every((r) => r === true);
-
-                if (!allSucceeded) {
-                    throw new DBError({ message: 'Not all delete stats updates succeeded', errorCode: ErrorCode.STATS_ERROR });
-                }
-                return true;
-            }
-            default: {
-                throw new CustomError({
-                    statusCode: HttpCode.BAD_REQUEST,
-                    errorCode: ErrorCode.STATS_ERROR,
-                    message: 'Transaction unsupported create transaction type',
-                });
-            }
-        }
-    }
-    public async summary(userId: number, from: string, to: string, period: StatsPeriod): Promise<ISummary> {
+    public async summary(userId: number, from: string, to: string, _period: StatsPeriod): Promise<ISummary> {
         const baseCurrency = await this._profileService.getUserCurrencyCode(userId);
-        const stats = await this._dailyStatsService.summary(userId, from, to, period);
+        const buckets = await this._transactionsService.getStats({ userId, from, to });
 
         let incomeTotal = 0;
         let expenseTotal = 0;
         let transferTotal = 0;
 
-        // daily_stats is stored per-currency in native amounts. Convert every bucket whose
-        // currency differs from the user's base currency using the rate for that bucket's day
-        // (CurrencyOrchestrator resolves the historical rate for the date and falls back to any
-        // stored rate), then sum everything — including the base-currency buckets — into one summary.
-        for (const row of stats.data) {
-            const rate = row.currencyCode === baseCurrency ? 1 : await this.resolveRate(row.currencyCode, baseCurrency, row.date);
-            incomeTotal += Number(row.income_total) * rate;
-            expenseTotal += Number(row.expense_total) * rate;
-            transferTotal += Number(row.transfer_total) * rate;
+        // Each bucket is per (currency, day) in native amounts. Convert every bucket whose currency
+        // differs from the user's base currency at that day's rate, then sum everything — including the
+        // base-currency buckets — into one base-currency summary.
+        for (const bucket of buckets) {
+            const rate =
+                bucket.currencyCode === baseCurrency ? 1 : await this.resolveRate(bucket.currencyCode, baseCurrency, bucket.date);
+            incomeTotal += bucket.income_total * rate;
+            expenseTotal += bucket.expense_total * rate;
+            transferTotal += bucket.transfer_total * rate;
         }
 
         return {
@@ -781,41 +167,60 @@ export default class StatsOrchestratorService extends LoggerBase implements ISta
                 },
             });
         }
+        // An entity (income/category/account) has a single currency, so its stats need no conversion.
         switch (type) {
             case StatsType.Income: {
-                const current = await this._dailyIncomeStatsService.summary(userId, id, startDate, endDate);
-                const previous = await this._dailyIncomeStatsService.summary(userId, id, prevStartDate, prevEndDate);
+                const current = sumBuckets(
+                    await this._transactionsService.getStats({ userId, from: startDate, to: endDate, incomeId: id }),
+                );
+                const previous = sumBuckets(
+                    await this._transactionsService.getStats({ userId, from: prevStartDate, to: prevEndDate, incomeId: id }),
+                );
                 return {
-                    incomeMTD: current.total,
-                    vsLastMonthIncomePct: vsLastMonthPct(current.total, previous.total),
+                    incomeMTD: round2(current.income),
+                    vsLastMonthIncomePct: vsLastMonthPct(current.income, previous.income),
                 };
             }
             case StatsType.Expense: {
                 const category = await this._categoryService.get(userId, id);
                 const budget = category?.budget ?? 0;
-                const current = await this._dailyCategoryStatsService.summary(userId, id, startDate, endDate);
-                const previous = await this._dailyCategoryStatsService.summary(userId, id, prevStartDate, prevEndDate);
+                const current = sumBuckets(
+                    await this._transactionsService.getStats({ userId, from: startDate, to: endDate, categoryId: id }),
+                );
+                const previous = sumBuckets(
+                    await this._transactionsService.getStats({ userId, from: prevStartDate, to: prevEndDate, categoryId: id }),
+                );
 
                 return {
-                    spendMTD: current.total,
-                    vsLastMonthSpendPct: vsLastMonthPct(current.total, previous.total),
-                    budgetTotal: budget > 0 ? budget : undefined,
+                    spendMTD: round2(current.expense),
+                    vsLastMonthSpendPct: vsLastMonthPct(current.expense, previous.expense),
+                    budgetTotal: budget > 0 ? round2(budget) : undefined,
                 };
             }
             case StatsType.Account: {
-                const currentTransfer = await this._dailyTransferStatsService.summary(userId, id, startDate, endDate);
-                const currentAccount = await this._dailyAccountStatsService.summary(userId, id, startDate, endDate);
-                const previousAccount = await this._dailyAccountStatsService.summary(userId, id, prevStartDate, prevEndDate);
+                const current = sumBuckets(
+                    await this._transactionsService.getStats({ userId, from: startDate, to: endDate, accountId: id }),
+                );
+                const previous = sumBuckets(
+                    await this._transactionsService.getStats({ userId, from: prevStartDate, to: prevEndDate, accountId: id }),
+                );
 
                 // Average month-end savings rate, year-to-date: mean of (income − expense) / income per month.
                 // Only months with income contribute; the current (partial) month is included. We need at least
                 // two such months to show a meaningful average - fewer ⇒ null (UI shows "no data").
                 const yearStart = Time.toYearStart(from);
-                const monthly = yearStart
-                    ? await this._dailyAccountStatsService.monthlyTotals(userId, id, yearStart, endDate)
+                const yearBuckets = yearStart
+                    ? await this._transactionsService.getStats({ userId, from: yearStart, to: endDate, accountId: id })
                     : [];
-                const monthlySavingsRates = monthly
-                    .map((month) => ({ income: Number(month.totalIncome), expense: Number(month.totalExpanse) }))
+                const byMonth = new Map<string, { income: number; expense: number }>();
+                for (const bucket of yearBuckets) {
+                    const month = bucket.date.slice(0, 7); // YYYY-MM
+                    const acc = byMonth.get(month) ?? { income: 0, expense: 0 };
+                    acc.income += bucket.income_total;
+                    acc.expense += bucket.expense_total;
+                    byMonth.set(month, acc);
+                }
+                const monthlySavingsRates = [...byMonth.values()]
                     .filter((month) => month.income > 0)
                     .map((month) => ((month.income - month.expense) / month.income) * 100);
                 const savingsRate =
@@ -823,11 +228,11 @@ export default class StatsOrchestratorService extends LoggerBase implements ISta
                         ? round2(monthlySavingsRates.reduce((sum, rate) => sum + rate, 0) / monthlySavingsRates.length)
                         : null;
                 return {
-                    spendMTD: currentAccount.totalExpanse,
-                    vsLastMonthSpendPct: vsLastMonthPct(currentAccount.totalExpanse, previousAccount.totalExpanse),
-                    transferMTD: currentTransfer.source_total,
-                    incomeMTD: currentAccount.totalIncome,
-                    vsLastMonthIncomePct: vsLastMonthPct(currentAccount.totalIncome, previousAccount.totalIncome),
+                    spendMTD: round2(current.expense),
+                    vsLastMonthSpendPct: vsLastMonthPct(current.expense, previous.expense),
+                    transferMTD: round2(current.transfer),
+                    incomeMTD: round2(current.income),
+                    vsLastMonthIncomePct: vsLastMonthPct(current.income, previous.income),
                     savingsRate,
                 };
             }
@@ -839,5 +244,43 @@ export default class StatsOrchestratorService extends LoggerBase implements ISta
                 });
             }
         }
+    }
+
+    public async categoriesStats(userId: number, from: string, to: string): Promise<IStatsResponse<ICategoryStats>> {
+        const categories = (await this._categoryService.gets(userId)) ?? [];
+        const buckets = await this._transactionsService.getStatsByEntity({ userId, from, to, groupBy: 'categoryId' });
+
+        // A category's spend lives in expense_total; each category is single-currency, so no conversion.
+        // Start from the full category list so categories with no transactions still appear with amount 0.
+        const amountByCategory = new Map<number, number>();
+        for (const bucket of buckets) {
+            amountByCategory.set(bucket.entityId, (amountByCategory.get(bucket.entityId) ?? 0) + bucket.expense_total);
+        }
+
+        const items: ICategoryStats[] = categories.map((category) => ({
+            ...category,
+            amount: round2(amountByCategory.get(category.categoryId) ?? 0),
+        }));
+        // NOTE: total is a naive sum of native amounts (matches the previous behaviour); for a
+        // multi-currency user it is not converted to a single base currency.
+        const total = round2(items.reduce((sum, item) => sum + item.amount, 0));
+        return { from, to, items, total };
+    }
+
+    public async incomesStats(userId: number, from: string, to: string): Promise<IStatsResponse<IIncomeStats>> {
+        const incomes = (await this._incomeService.gets(userId)) ?? [];
+        const buckets = await this._transactionsService.getStatsByEntity({ userId, from, to, groupBy: 'incomeId' });
+
+        const amountByIncome = new Map<number, number>();
+        for (const bucket of buckets) {
+            amountByIncome.set(bucket.entityId, (amountByIncome.get(bucket.entityId) ?? 0) + bucket.income_total);
+        }
+
+        const items: IIncomeStats[] = incomes.map((income) => ({
+            ...income,
+            amount: round2(amountByIncome.get(income.incomeId) ?? 0),
+        }));
+        const total = round2(items.reduce((sum, item) => sum + item.amount, 0));
+        return { from, to, items, total };
     }
 }

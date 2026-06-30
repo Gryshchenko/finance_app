@@ -1,4 +1,4 @@
-import { IIncome, Utils, IStatsResponse, IGetStatsProperties, IIncomeStats } from 'tenpercent/shared';
+import { IIncome, Utils } from 'tenpercent/shared';
 
 import { LoggerBase } from 'helper/logger/LoggerBase';
 import { ICreateIncome } from 'interfaces/ICreateIncome';
@@ -8,7 +8,6 @@ import { ValidationError } from 'src/utils/errors/ValidationError';
 import { validateAllowedProperties } from 'src/utils/validation/validateAllowedProperties';
 
 export interface IIncomeService {
-    getStats(userId: number, properties: IGetStatsProperties): Promise<IStatsResponse<IIncomeStats>>;
     creates(userId: number, incomes: ICreateIncome[], trx?: IDBTransaction): Promise<IIncome[]>;
     create(userId: number, incomes: ICreateIncome, trx?: IDBTransaction): Promise<IIncome>;
     gets(userId: number): Promise<IIncome[] | undefined>;
@@ -25,17 +24,6 @@ export default class IncomeService extends LoggerBase implements IIncomeService 
         this._incomeDataAccess = incomeDataAccess;
     }
 
-    async getStats(userId: number, properties: IGetStatsProperties): Promise<IStatsResponse<IIncomeStats>> {
-        validateAllowedProperties(properties as unknown as Record<string, string | number>, ['from', 'to', 'period']);
-        const response = await this._incomeDataAccess.getStats(userId, properties);
-        const total = response.reduce((prev: number, current) => prev + Number(current.amount), 0);
-        return {
-            from: properties.from,
-            to: properties.to,
-            total,
-            items: response,
-        };
-    }
     async create(userId: number, income: ICreateIncome, trx?: IDBTransaction): Promise<IIncome> {
         validateAllowedProperties(income as unknown as Record<string, string | number>, [
             'incomeName',

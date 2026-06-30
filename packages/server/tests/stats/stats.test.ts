@@ -476,7 +476,7 @@ describe('Stats - patch reattribution (light setup)', () => {
         // Nov has 14 txns × 100 = 1400, BUT prev-range [Nov-01..Dec-01] also captures
         // the Dec-01 daily-aggregate row (boundary inclusive on date column) → +100.
         // So prev = 1500. round((2900-1500)/1500*100) = 93.
-        expect(data).toEqual({ spendMTD: '2900.00', vsLastMonthSpendPct: 93, budgetTotal: '100.00' });
+        expect(data).toEqual({ spendMTD: 2900, vsLastMonthSpendPct: 93, budgetTotal: 100 });
 
         for (let i = 0; i < ids.length; i++) {
             const id = ids[i];
@@ -492,7 +492,7 @@ describe('Stats - patch reattribution (light setup)', () => {
         });
 
         // Nov patched 14×50 = 700 + Dec-01 leak 100 = 800 → round((2900-800)/800*100) = 263
-        expect(dataAfterPatch).toEqual({ spendMTD: '2900.00', vsLastMonthSpendPct: 263, budgetTotal: '100.00' });
+        expect(dataAfterPatch).toEqual({ spendMTD: 2900, vsLastMonthSpendPct: 263, budgetTotal: 100 });
 
         for (let i = 0; i < ids.length; i++) {
             const id = ids[i];
@@ -517,7 +517,7 @@ describe('Stats - patch reattribution (light setup)', () => {
 
         // All 14 Nov txns moved to Jan 2026; Dec-01 leak (100) still in prev range.
         // (2900-100)/100*100 = 2800
-        expect(dataAfterDatePatch).toEqual({ spendMTD: '2900.00', vsLastMonthSpendPct: 2800, budgetTotal: '100.00' });
+        expect(dataAfterDatePatch).toEqual({ spendMTD: 2900, vsLastMonthSpendPct: 2800, budgetTotal: 100 });
     });
 });
 
@@ -531,7 +531,7 @@ describe('entityStats - Expense edge cases', () => {
             period: StatsPeriod.Month,
             type: StatsType.Expense,
         });
-        expect(data).toEqual({ spendMTD: 0, vsLastMonthSpendPct: 0, budgetTotal: '100.00' });
+        expect(data).toEqual({ spendMTD: 0, vsLastMonthSpendPct: 0, budgetTotal: 100 });
     });
 
     it('returns null pct when previous=0 and current>0 (first month, no comparable base)', async () => {
@@ -553,7 +553,7 @@ describe('entityStats - Expense edge cases', () => {
             period: StatsPeriod.Month,
             type: StatsType.Expense,
         });
-        expect(data).toEqual({ spendMTD: '500.00', vsLastMonthSpendPct: 0, budgetTotal: '100.00' });
+        expect(data).toEqual({ spendMTD: 500, vsLastMonthSpendPct: 0, budgetTotal: 100 });
     });
 
     it('returns negative pct when spending decreased', async () => {
@@ -587,7 +587,7 @@ describe('entityStats - Expense edge cases', () => {
             period: StatsPeriod.Month,
             type: StatsType.Expense,
         });
-        expect(data).toEqual({ spendMTD: '250.00', vsLastMonthSpendPct: -75, budgetTotal: '100.00' });
+        expect(data).toEqual({ spendMTD: 250, vsLastMonthSpendPct: -75, budgetTotal: 100 });
     });
 
     it('isolates stats by categoryId - other categories are not counted', async () => {
@@ -624,7 +624,7 @@ describe('entityStats - Expense edge cases', () => {
             period: StatsPeriod.Month,
             type: StatsType.Expense,
         });
-        expect(dataA.spendMTD).toEqual('300.00');
+        expect(dataA.spendMTD).toEqual(300);
 
         const dataB = await getEntityStats(ctx.agent, ctx.userId, ctx.authorization, {
             id: catB,
@@ -633,7 +633,7 @@ describe('entityStats - Expense edge cases', () => {
             period: StatsPeriod.Month,
             type: StatsType.Expense,
         });
-        expect(dataB.spendMTD).toEqual('900.00');
+        expect(dataB.spendMTD).toEqual(900);
     });
 
     it('recalculates correctly after delete', async () => {
@@ -666,7 +666,7 @@ describe('entityStats - Expense edge cases', () => {
             period: StatsPeriod.Month,
             type: StatsType.Expense,
         });
-        expect(before.spendMTD).toEqual('1000.00');
+        expect(before.spendMTD).toEqual(1000);
 
         await deleteTransaction(ctx.agent, ctx.userId, ctx.authorization, { transactionId: id1 });
 
@@ -677,7 +677,7 @@ describe('entityStats - Expense edge cases', () => {
             period: StatsPeriod.Month,
             type: StatsType.Expense,
         });
-        expect(after.spendMTD).toEqual('600.00');
+        expect(after.spendMTD).toEqual(600);
     });
 });
 
@@ -716,7 +716,7 @@ describe('entityStats - Income', () => {
         });
 
         // (1200 - 800) / 800 * 100 = 50
-        expect(data).toEqual({ incomeMTD: '1200.00', vsLastMonthIncomePct: 50 });
+        expect(data).toEqual({ incomeMTD: 1200, vsLastMonthIncomePct: 50 });
         expect(data).not.toHaveProperty('spendMTD');
         expect(data).not.toHaveProperty('budgetTotal');
     });
@@ -765,7 +765,7 @@ describe('entityStats - Income', () => {
             period: StatsPeriod.Month,
             type: StatsType.Income,
         });
-        expect(data).toEqual({ incomeMTD: '400.00', vsLastMonthIncomePct: -60 });
+        expect(data).toEqual({ incomeMTD: 400, vsLastMonthIncomePct: -60 });
     });
 });
 
@@ -833,21 +833,19 @@ describe('entityStats - Account', () => {
             type: StatsType.Account,
         });
 
-        // For Account: transfer-out is also recorded in account's expense_total.
-        // Nov: previousAccount.totalExpanse = 200 (only real expense)
-        // Dec: currentAccount.totalExpanse = 300 (expense) + 150 (transfer-out) = 450
-        // vsLastMonthSpendPct = round((450-200)/200*100) = 125
-        expect(data.vsLastMonthSpendPct).toEqual(125);
-        expect(Number(data.spendMTD)).toEqual(450);
+        // Read-time model keeps transfers separate from spend: a transfer between your own accounts
+        // is not "spending", so it lands in transferMTD, never folded into spendMTD/expense_total.
+        // Nov spend = 200, Dec spend = 300 → vsLastMonthSpendPct = round((300-200)/200*100) = 50.
+        expect(data.vsLastMonthSpendPct).toEqual(50);
+        expect(Number(data.spendMTD)).toEqual(300);
         expect(Number(data.transferMTD)).toEqual(150);
 
-        // Account income now reads income_source_total (the account's own-currency amount).
         // Dec income = 1000; Nov income = 500 → vsLastMonthIncomePct = round((1000-500)/500*100) = 100.
         expect(Number(data.incomeMTD)).toEqual(1000);
         expect(data.vsLastMonthIncomePct).toEqual(100);
-        // Average month-end savings rate YTD across months with income (Nov, Dec):
-        //   Nov: (500-200)/500 = 60%   Dec: (1000-450)/1000 = 55%   → mean = 57.5%
-        expect(Number(data.savingsRate)).toBeCloseTo(57.5, 5);
+        // Average month-end savings rate YTD across months with income (Nov, Dec), expense-only:
+        //   Nov: (500-200)/500 = 60%   Dec: (1000-300)/1000 = 70%   → mean = 65%
+        expect(Number(data.savingsRate)).toBeCloseTo(65, 5);
     });
 
     it('returns null savingsRate when only one month has income (needs >= 2 months)', async () => {

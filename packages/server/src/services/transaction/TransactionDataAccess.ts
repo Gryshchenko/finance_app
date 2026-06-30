@@ -6,6 +6,7 @@ import {
     ITransactionListItemsRequest,
     ITransactionListItem,
     ErrorCode,
+    TransactionType,
 } from 'tenpercent/shared';
 
 import { ICreateTransaction } from 'interfaces/ICreateTransaction';
@@ -39,8 +40,44 @@ function decodeCursor(cursor: string): ICursorData {
     }
 }
 
+export interface ITransactionStatsRequest {
+    userId: number;
+    from: string;
+    to: string;
+    incomeId?: number;
+    categoryId?: number;
+    accountId?: number;
+}
+
+// One (currency, day) bucket of native-amount sums per transaction type, computed on read from transactions.
+export interface ITransactionStatsBucket {
+    currencyCode: string;
+    date: string;
+    income_total: number;
+    expense_total: number;
+    transfer_total: number;
+}
+
+export interface ITransactionEntityStatsRequest {
+    userId: number;
+    from: string;
+    to: string;
+    groupBy: 'categoryId' | 'incomeId' | 'accountId';
+}
+
+// Per-entity (currency) sums over a period — for "all categories/incomes with stats" lists.
+export interface ITransactionEntityStatsBucket {
+    entityId: number;
+    currencyCode: string;
+    income_total: number;
+    expense_total: number;
+    transfer_total: number;
+}
+
 export interface ITransactionDataAccess {
     createTransaction(transaction: ICreateTransaction, trx?: IDBTransaction): Promise<number>;
+    getStats(request: ITransactionStatsRequest): Promise<ITransactionStatsBucket[]>;
+    getStatsByEntity(request: ITransactionEntityStatsRequest): Promise<ITransactionEntityStatsBucket[]>;
     getTransactions(data: ITransactionListItemsRequest): Promise<IPagination<ITransactionListItem>>;
     getTransaction(userId: number, transactionId: number, trx?: IDBTransaction): Promise<ITransaction | undefined>;
     patchTransaction(userId: number, properties: Partial<ITransaction>, trx?: IDBTransaction): Promise<number>;
@@ -54,6 +91,112 @@ export default class TransactionDataAccess extends LoggerBase implements ITransa
     public constructor(db: IDatabaseConnection) {
         super();
         this._db = db;
+    }
+
+    // Read-time analytics: per (currency, day) income/expense/transfer sums over [from, to],
+    // optionally narrowed to a single income / category / account. Replaces the materialized daily_* tables.
+    async getStats(request: ITransactionStatsRequest): Promise<ITransactionStatsBucket[]> {
+        const { userId, from, to, incomeId, categoryId, accountId } = request;
+        try {
+            const knex = this._db.engine();
+            const query = knex('transactions')
+                .select(
+                    'currencyCode',
+                    knex.raw(`to_char("createdAt", 'YYYY-MM-DD') as date`),
+                    knex.raw(`COALESCE(SUM(amount) FILTER (WHERE "transactionTypeId" = ?), 0) as income_total`, [
+                        TransactionType.Income,
+                    ]),
+                    knex.raw(`COALESCE(SUM(amount) FILTER (WHERE "transactionTypeId" = ?), 0) as expense_total`, [
+                        TransactionType.Expense,
+                    ]),
+                    knex.raw(`COALESCE(SUM(amount) FILTER (WHERE "transactionTypeId" = ?), 0) as transfer_total`, [
+                        TransactionType.Transafer,
+                    ]),
+                )
+                .where({ userId, isDeleted: false })
+                .whereRaw(`"createdAt"::date >= ?::date AND "createdAt"::date <= ?::date`, [from, to])
+                .groupBy('currencyCode')
+                .groupByRaw(`to_char("createdAt", 'YYYY-MM-DD')`);
+
+            if (Utils.isNotNull(incomeId)) query.andWhere({ incomeId });
+            if (Utils.isNotNull(categoryId)) query.andWhere({ categoryId });
+            if (Utils.isNotNull(accountId)) query.andWhere({ accountId });
+
+            const rows = await query;
+            return rows.map(
+                (row: {
+                    currencyCode: string;
+                    date: string;
+                    income_total: string;
+                    expense_total: string;
+                    transfer_total: string;
+                }) => ({
+                    currencyCode: row.currencyCode,
+                    date: row.date,
+                    income_total: Number(row.income_total),
+                    expense_total: Number(row.expense_total),
+                    transfer_total: Number(row.transfer_total),
+                }),
+            );
+        } catch (e) {
+            this._logger.error(`Get transaction stats failed for userId: ${userId}: ${(e as { message: string }).message}`);
+            throw new DBError({
+                message: `Get transaction stats failed: ${(e as { message: string }).message}`,
+                errorCode: ErrorCode.STATS_ERROR,
+            });
+        }
+    }
+    // Read-time analytics grouped by entity (category/income/account): one row per (entity, currency)
+    // with native-amount sums per type. Powers the "categories/incomes with stats" lists.
+    async getStatsByEntity(request: ITransactionEntityStatsRequest): Promise<ITransactionEntityStatsBucket[]> {
+        const { userId, from, to, groupBy } = request;
+        if (!['categoryId', 'incomeId', 'accountId'].includes(groupBy)) {
+            throw new ValidationError({ message: `Unsupported stats groupBy: ${groupBy}`, errorCode: ErrorCode.STATS_ERROR });
+        }
+        try {
+            const knex = this._db.engine();
+            const rows = await knex('transactions')
+                .select(
+                    knex.raw('?? as "entityId"', [groupBy]),
+                    'currencyCode',
+                    knex.raw(`COALESCE(SUM(amount) FILTER (WHERE "transactionTypeId" = ?), 0) as income_total`, [
+                        TransactionType.Income,
+                    ]),
+                    knex.raw(`COALESCE(SUM(amount) FILTER (WHERE "transactionTypeId" = ?), 0) as expense_total`, [
+                        TransactionType.Expense,
+                    ]),
+                    knex.raw(`COALESCE(SUM(amount) FILTER (WHERE "transactionTypeId" = ?), 0) as transfer_total`, [
+                        TransactionType.Transafer,
+                    ]),
+                )
+                .where({ userId, isDeleted: false })
+                .whereNotNull(groupBy)
+                .whereRaw(`"createdAt"::date >= ?::date AND "createdAt"::date <= ?::date`, [from, to])
+                .groupBy(groupBy)
+                .groupBy('currencyCode');
+
+            return rows.map(
+                (row: {
+                    entityId: number;
+                    currencyCode: string;
+                    income_total: string;
+                    expense_total: string;
+                    transfer_total: string;
+                }) => ({
+                    entityId: Number(row.entityId),
+                    currencyCode: row.currencyCode,
+                    income_total: Number(row.income_total),
+                    expense_total: Number(row.expense_total),
+                    transfer_total: Number(row.transfer_total),
+                }),
+            );
+        } catch (e) {
+            this._logger.error(`Get entity stats failed for userId: ${userId}: ${(e as { message: string }).message}`);
+            throw new DBError({
+                message: `Get entity stats failed: ${(e as { message: string }).message}`,
+                errorCode: ErrorCode.STATS_ERROR,
+            });
+        }
     }
     async createTransaction(transaction: ICreateTransaction, trx?: IDBTransaction): Promise<number> {
         try {

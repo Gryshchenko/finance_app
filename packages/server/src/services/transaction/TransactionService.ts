@@ -14,8 +14,13 @@ import { ICreateTransaction } from 'interfaces/ICreateTransaction';
 import { IDatabaseConnection, IDBTransaction } from 'interfaces/IDatabaseConnection';
 import { IPatchTransaction } from 'interfaces/IPatchTransaction';
 import { IAccountService } from 'services/account/AccountService';
-import { IStatsOrchestratorService } from 'services/StatsOrchestrator/StatsOrchestratorService';
-import { ITransactionDataAccess } from 'services/transaction/TransactionDataAccess';
+import {
+    ITransactionDataAccess,
+    ITransactionEntityStatsBucket,
+    ITransactionEntityStatsRequest,
+    ITransactionStatsBucket,
+    ITransactionStatsRequest,
+} from 'services/transaction/TransactionDataAccess';
 import { UnitOfWork } from 'src/repositories/UnitOfWork';
 import { CustomError } from 'src/utils/errors/CustomError';
 import { ValidationError } from 'src/utils/errors/ValidationError';
@@ -24,6 +29,8 @@ import { TransactionType } from 'types/TransactionType';
 export interface ITransactionService {
     createTransaction(transactions: ICreateTransaction): Promise<number | null>;
     getTransactions({ userId, limit, cursor }: ITransactionListItemsRequest): Promise<IPagination<ITransactionListItem | null>>;
+    getStats(request: ITransactionStatsRequest): Promise<ITransactionStatsBucket[]>;
+    getStatsByEntity(request: ITransactionEntityStatsRequest): Promise<ITransactionEntityStatsBucket[]>;
     getTransaction(userId: number, transactionId: number): Promise<ITransaction | undefined>;
     deleteTransaction(userId: number, transactionId: number): Promise<boolean>;
     patchTransaction(userId: number, transaction: IPatchTransaction): Promise<number | null>;
@@ -33,19 +40,12 @@ export interface ITransactionService {
 export default class TransactionService extends LoggerBase implements ITransactionService {
     private readonly _transactionDataAccess: ITransactionDataAccess;
     private readonly _accountService: IAccountService;
-    private readonly _statsOrchestratorService: IStatsOrchestratorService;
     private readonly _db: IDatabaseConnection;
 
-    public constructor(
-        transactionDataAccess: ITransactionDataAccess,
-        accountService: IAccountService,
-        statsOrchestratorService: IStatsOrchestratorService,
-        db: IDatabaseConnection,
-    ) {
+    public constructor(transactionDataAccess: ITransactionDataAccess, accountService: IAccountService, db: IDatabaseConnection) {
         super();
         this._transactionDataAccess = transactionDataAccess;
         this._accountService = accountService;
-        this._statsOrchestratorService = statsOrchestratorService;
         this._db = db;
     }
 
@@ -86,54 +86,15 @@ export default class TransactionService extends LoggerBase implements ITransacti
             switch (trs.transactionTypeId) {
                 case TransactionType.Expense: {
                     await this._accountService.addAmount(userId, trs.accountId, trs.amount, trx);
-                    await this._statsOrchestratorService.delete({
-                        type: TransactionType.Expense,
-                        userId,
-                        data: {
-                            date: trs.createdAt,
-                            currencyCode: trs.currencyCode,
-                            accountId: trs.accountId,
-                            categoryId: trs.categoryId as number,
-                            sourceAmount: trs.amount,
-                            targetAmount: trs.targetAmount,
-                        },
-                        trx,
-                    });
                     break;
                 }
                 case TransactionType.Income: {
                     await this._accountService.addAmount(userId, trs.accountId, -trs.amount, trx);
-                    await this._statsOrchestratorService.delete({
-                        type: TransactionType.Income,
-                        userId,
-                        data: {
-                            date: trs.createdAt,
-                            currencyCode: trs.currencyCode,
-                            accountId: trs.accountId,
-                            incomeId: trs.incomeId as number,
-                            sourceAmount: trs.amount,
-                            targetAmount: trs.targetAmount,
-                        },
-                        trx,
-                    });
                     break;
                 }
                 case TransactionType.Transafer: {
                     await this._accountService.addAmount(userId, trs.accountId, trs.amount, trx);
                     await this._accountService.addAmount(userId, trs.targetAccountId as number, -trs.targetAmount, trx);
-                    await this._statsOrchestratorService.delete({
-                        type: TransactionType.Transafer,
-                        userId,
-                        data: {
-                            date: trs.createdAt,
-                            currencyCode: trs.currencyCode,
-                            accountId: trs.accountId,
-                            targetAccountId: trs.targetAccountId as number,
-                            sourceAmount: trs.amount,
-                            targetAmount: trs.targetAmount,
-                        },
-                        trx,
-                    });
                     break;
                 }
             }
@@ -186,8 +147,6 @@ export default class TransactionService extends LoggerBase implements ITransacti
                     : before.currencyCode;
 
             await this.repatchAccounts(userId, before, after, trx);
-
-            await this.repatchStats(userId, before, after, trx);
 
             const result = await this._transactionDataAccess.patchTransaction(userId, after, trx);
 
@@ -251,87 +210,27 @@ export default class TransactionService extends LoggerBase implements ITransacti
         }
     }
 
-    private async repatchStats(
-        userId: number,
-        before: ITransaction,
-        after: IPatchTransaction,
-        trx: IDBTransaction,
-    ): Promise<void> {
-        const baseAfter = {
-            accountId: after.accountId,
-            date: after.createdAt,
-            sourceAmount: after.amount,
-            targetAmount: after.targetAmount,
-            // currency follows the account (resolved in patchTransaction); falls back to the original
-            currencyCode: after.currencyCode ?? before.currencyCode,
-        };
-        const baseBefore = {
-            accountId: before.accountId,
-            date: before.createdAt,
-            sourceAmount: before.amount,
-            targetAmount: before.targetAmount,
-            currencyCode: before.currencyCode,
-        };
-
-        switch (before.transactionTypeId) {
-            case TransactionType.Expense:
-                await this._statsOrchestratorService.patch({
-                    userId,
-                    type: TransactionType.Expense,
-                    after: { ...baseAfter, categoryId: after.categoryId as number },
-                    before: { ...baseBefore, categoryId: before.categoryId as number },
-                    trx,
-                });
-                break;
-            case TransactionType.Income:
-                await this._statsOrchestratorService.patch({
-                    userId,
-                    type: TransactionType.Income,
-                    after: { ...baseAfter, incomeId: after.incomeId as number },
-                    before: { ...baseBefore, incomeId: before.incomeId as number },
-                    trx,
-                });
-                break;
-            case TransactionType.Transafer:
-                await this._statsOrchestratorService.patch({
-                    userId,
-                    type: TransactionType.Transafer,
-                    after: { ...baseAfter, targetAccountId: after.targetAccountId as number },
-                    before: { ...baseBefore, targetAccountId: before.targetAccountId as number },
-                    trx,
-                });
-                break;
-        }
-    }
     async getTransaction(userId: number, transactionId: number): Promise<ITransaction | undefined> {
         return await this._transactionDataAccess.getTransaction(userId, transactionId);
     }
     async getTransactions(data: ITransactionListItemsRequest): Promise<IPagination<ITransactionListItem | null>> {
         return await this._transactionDataAccess.getTransactions(data);
     }
+    async getStats(request: ITransactionStatsRequest): Promise<ITransactionStatsBucket[]> {
+        return await this._transactionDataAccess.getStats(request);
+    }
+    async getStatsByEntity(request: ITransactionEntityStatsRequest): Promise<ITransactionEntityStatsBucket[]> {
+        return await this._transactionDataAccess.getStatsByEntity(request);
+    }
     private async createIncomeTransaction(transaction: ICreateTransaction): Promise<number> {
         return this.processTransaction(
             transaction,
-            async ({ sourceAmount, accountId, userId, trx, targetAmount, targetCurrencyCode }) => {
+            async ({ accountId, userId, trx, targetAmount, targetCurrencyCode }) => {
                 const accountInWork = await this._accountService.getAccount(userId, accountId as number);
 
                 this.validateAccount(accountInWork);
                 this.validateAccountCurrency(accountInWork as IAccount, targetCurrencyCode, 'accountId');
                 await this._accountService.addAmount(userId, accountId as number, targetAmount, trx);
-                await this._statsOrchestratorService.create({
-                    type: TransactionType.Income,
-                    userId,
-                    data: {
-                        sourceAmount,
-                        targetAmount,
-                        incomeId: transaction.incomeId as number,
-                        accountId,
-                        date: transaction.createdAt,
-                        currencyCode: transaction.currencyCode,
-                        targetCurrencyCode: transaction.targetCurrencyCode,
-                    },
-                    trx,
-                });
             },
             'income',
         );
@@ -340,27 +239,13 @@ export default class TransactionService extends LoggerBase implements ITransacti
     private async createExpenseTransaction(transaction: ICreateTransaction): Promise<number> {
         return this.processTransaction(
             transaction,
-            async ({ sourceAmount, targetAmount, accountId, userId, trx, currencyCode }) => {
+            async ({ sourceAmount, accountId, userId, trx, currencyCode }) => {
                 const accountInWork = await this._accountService.getAccount(userId, accountId as number);
 
                 this.validateAccount(accountInWork);
                 this.validateAccountCurrency(accountInWork as IAccount, currencyCode, 'accountId');
 
                 await this._accountService.addAmount(userId, accountId as number, sourceAmount * -1, trx);
-                await this._statsOrchestratorService.create({
-                    type: TransactionType.Expense,
-                    userId,
-                    data: {
-                        date: transaction.createdAt,
-                        accountId,
-                        categoryId: transaction.categoryId as number,
-                        sourceAmount,
-                        targetAmount,
-                        currencyCode: transaction.currencyCode,
-                        targetCurrencyCode: transaction.targetCurrencyCode,
-                    },
-                    trx,
-                });
             },
             'expense',
         );
@@ -389,20 +274,6 @@ export default class TransactionService extends LoggerBase implements ITransacti
                 this.validateAccountCurrency(sourceAccount as IAccount, currencyCode, 'accountId');
                 this.validateAccountCurrency(targetAccount as IAccount, targetCurrencyCode, 'targetAccountId');
 
-                await this._statsOrchestratorService.create({
-                    type: TransactionType.Transafer,
-                    data: {
-                        date: transaction.createdAt,
-                        accountId,
-                        targetAccountId: targetAccountId,
-                        sourceAmount,
-                        targetAmount,
-                        currencyCode: transaction.currencyCode,
-                        targetCurrencyCode: transaction.targetCurrencyCode,
-                    },
-                    userId,
-                    trx,
-                });
                 await this._accountService.addAmount(userId, accountId, sourceAmount * -1, trx);
                 await this._accountService.addAmount(userId, targetAccountId, targetAmount, trx);
             },

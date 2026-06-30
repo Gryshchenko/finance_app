@@ -1,10 +1,11 @@
 import { Request, Response } from 'express';
-import { ErrorCode, HttpCode, ResponseStatusType, Utils, StatsPeriod } from 'tenpercent/shared';
+import { ErrorCode, HttpCode, ResponseStatusType, Utils } from 'tenpercent/shared';
 
 import Logger from 'helper/logger/Logger';
 import ResponseBuilder from 'helper/responseBuilder/ResponseBuilder';
 import { IDatabaseConnection, IDBTransaction } from 'interfaces/IDatabaseConnection';
 import CategoryServiceBuilder from 'services/category/CategoryServiceBuilder';
+import { StatsOrchestratorServiceBuilder } from 'services/StatsOrchestrator/StatsOrchestratorServiceBuilder';
 import TransactionServiceBuilder from 'services/transaction/TransactionServiceBuilder';
 import DatabaseConnectionBuilder from 'src/repositories/DatabaseConnectionBuilder';
 import { UnitOfWork } from 'src/repositories/UnitOfWork';
@@ -20,12 +21,7 @@ export class CategoryController {
         try {
             const from = String(req.query?.from);
             const to = String(req.query?.to);
-            const period = String(req.query?.period) as StatsPeriod;
-            const category = await CategoryServiceBuilder.build().getStats(req.user?.userId as number, {
-                from,
-                to,
-                period,
-            });
+            const category = await StatsOrchestratorServiceBuilder.build().categoriesStats(req.user?.userId as number, from, to);
             res.status(HttpCode.OK).json(responseBuilder.setStatus(ResponseStatusType.OK).setData(category).build());
         } catch (e: unknown) {
             CategoryController.logger.error(`Get category stats failed due reason: ${(e as { message: string }).message}`);
