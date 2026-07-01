@@ -33,7 +33,7 @@ export const TransactionCreate: FC<IProps> = function TransactionCreate(_props: 
         targetCurrencyCode: data?.currencyCode === data?.targetCurrencyCode ? data?.currencyCode : data?.targetCurrencyCode,
     };
 
-    const { form, handleChange, save, errors, setErrors } = useEditView<Partial<ITransactionClient>>(
+    const { form, handleChange, save, errors, setErrors, withFetching, isFetching } = useEditView<Partial<ITransactionClient>>(
         formInitial,
         buildTransactionCreateSchema({
             targetCurrencyCode: data?.targetCurrencyCode,
@@ -44,29 +44,31 @@ export const TransactionCreate: FC<IProps> = function TransactionCreate(_props: 
     );
 
     const handleCreate = async () => {
-        const transactionService = TransactionService.instance();
-        const sameCurrency = !form.targetCurrencyCode || form.targetCurrencyCode === form.currencyCode;
-        const response = await transactionService.doCreateTransaction({
-            accountId: Number(form.accountId),
-            incomeId: Number(form.incomeId),
-            categoryId: Number(form.categoryId),
-            currencyCode: form.currencyCode,
-            targetCurrencyCode: sameCurrency ? form.currencyCode : form.targetCurrencyCode,
-            transactionTypeId: Number(form.transactionTypeId),
-            amount: Number(form.amount),
-            targetAmount: sameCurrency ? Number(form.amount) : Number(form.targetAmount),
-            createdAt: form.createdAt,
-            targetAccountId: Number(form.targetAccountId),
-            description: form.description,
+        await withFetching(async () => {
+            const transactionService = TransactionService.instance();
+            const sameCurrency = !form.targetCurrencyCode || form.targetCurrencyCode === form.currencyCode;
+            const response = await transactionService.doCreateTransaction({
+                accountId: Number(form.accountId),
+                incomeId: Number(form.incomeId),
+                categoryId: Number(form.categoryId),
+                currencyCode: form.currencyCode,
+                targetCurrencyCode: sameCurrency ? form.currencyCode : form.targetCurrencyCode,
+                transactionTypeId: Number(form.transactionTypeId),
+                amount: Number(form.amount),
+                targetAmount: sameCurrency ? Number(form.amount) : Number(form.targetAmount),
+                createdAt: form.createdAt,
+                targetAccountId: Number(form.targetAccountId),
+                description: form.description,
+            });
+            if (response.kind === GeneralApiProblemKind.Ok) {
+                await invalidateQuery(InvalidationGroups.transaction());
+                navigation.getParent()?.navigate(OverviewPath.Dashboard);
+            } else if (response.kind === GeneralApiProblemKind.BadData) {
+                handleBadDataResponse(response.errors, setErrors);
+            } else {
+                buildGeneralApiBaseHandler(response);
+            }
         });
-        if (response.kind === GeneralApiProblemKind.Ok) {
-            await invalidateQuery(InvalidationGroups.transaction());
-            navigation.getParent()?.navigate(OverviewPath.Dashboard);
-        } else if (response.kind === GeneralApiProblemKind.BadData) {
-            handleBadDataResponse(response.errors, setErrors);
-        } else {
-            buildGeneralApiBaseHandler(response);
-        }
     };
 
     const handleSave = async () => {
@@ -86,6 +88,7 @@ export const TransactionCreate: FC<IProps> = function TransactionCreate(_props: 
             errors={errors}
             isView={false}
             isEdit={true}
+            isSaveDisabled={isFetching}
             handleChange={(key: string, value: string | number) => {
                 handleChange(key as keyof ITransaction, value);
             }}

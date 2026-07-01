@@ -25,27 +25,29 @@ export const SettingsChangeEmail: FC<Props> = function SettingsChangeEmail(props
     const { email, originEmail } = props;
     const { themed } = useAppTheme();
     const navigation = useNavigation<NavigationProp<OverviewTabParamList>>();
-    const { form, handleChange, save, errors, setErrors } = useEditView<Partial<{ email: string }>>(
+    const { form, handleChange, save, errors, setErrors, withFetching, isFetching } = useEditView<Partial<{ email: string }>>(
         { email: email },
         settingsChangeEmailShema,
     );
 
     const handlePatch = async () => {
-        const changeEmailService = ChangeEmailService.instance();
-        if (Utils.isEmpty(form.email)) return setErrors({ email: 'validation:valueRequired' });
-        if (form.email === originEmail) return setErrors({ email: 'validation:sameEmail' });
+        await withFetching(async () => {
+            const changeEmailService = ChangeEmailService.instance();
+            if (Utils.isEmpty(form.email)) return setErrors({ email: 'validation:valueRequired' });
+            if (form.email === originEmail) return setErrors({ email: 'validation:sameEmail' });
 
-        const response = await changeEmailService.request(form.email!);
-        if (response.kind === GeneralApiProblemKind.Ok) {
-            navigation.navigate(OverviewPath.Settings, {
-                screen: SettingsPath.ChangeEmailConfirm,
-                params: { email: form.email!, originEmail },
-            });
-        } else if (response.kind === GeneralApiProblemKind.BadData) {
-            handleBadDataResponse(response.errors, setErrors);
-        } else {
-            buildGeneralApiBaseHandler(response);
-        }
+            const response = await changeEmailService.request(form.email!);
+            if (response.kind === GeneralApiProblemKind.Ok) {
+                navigation.navigate(OverviewPath.Settings, {
+                    screen: SettingsPath.ChangeEmailConfirm,
+                    params: { email: form.email!, originEmail },
+                });
+            } else if (response.kind === GeneralApiProblemKind.BadData) {
+                handleBadDataResponse(response.errors, setErrors);
+            } else {
+                buildGeneralApiBaseHandler(response);
+            }
+        });
     };
 
     const handleSave = async () => {
@@ -75,6 +77,7 @@ export const SettingsChangeEmail: FC<Props> = function SettingsChangeEmail(props
             <EditButtons
                 isCreate={false}
                 isView={false}
+                isSaveDisabled={isFetching}
                 onSave={handleSave}
                 onCancel={() => {
                     navigation.navigate(OverviewPath.Settings, { screen: SettingsPath.Settings });

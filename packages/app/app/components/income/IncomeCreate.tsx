@@ -18,7 +18,7 @@ export const IncomeCreate: FC = function IncomeCreate(_props) {
     const invalidateQuery = useInvalidateQuery();
     const { currencies } = useCurrency();
     const incomeCreateSchema = useMemo(() => buildIncomeCreateSchema(Array.from(currencies.keys())), [currencies]);
-    const { form, handleChange, save, errors, setErrors } = useEditView<Partial<IIncome>>(
+    const { form, handleChange, save, errors, setErrors, withFetching, isFetching } = useEditView<Partial<IIncome>>(
         {
             incomeName: '',
             iconId: IncomeIcon.P2P,
@@ -28,28 +28,30 @@ export const IncomeCreate: FC = function IncomeCreate(_props) {
     );
 
     const handleCreate = async () => {
-        const incomeService = IncomeService.instance();
-        if (Utils.isEmpty(form.incomeName) || Utils.isNull(form.currencyCode) || Utils.isNull(form.iconId)) {
-            ToastService.error({
-                message: 'errorCode:UNKNOWN_ERROR',
-                systemMessage: `Validation error on create income, incomeName: ${form.incomeName}, currencyCode: ${form.currencyCode}, iconId: ${form.iconId}`,
-            });
-            return;
-        }
+        await withFetching(async () => {
+            const incomeService = IncomeService.instance();
+            if (Utils.isEmpty(form.incomeName) || Utils.isNull(form.currencyCode) || Utils.isNull(form.iconId)) {
+                ToastService.error({
+                    message: 'errorCode:UNKNOWN_ERROR',
+                    systemMessage: `Validation error on create income, incomeName: ${form.incomeName}, currencyCode: ${form.currencyCode}, iconId: ${form.iconId}`,
+                });
+                return;
+            }
 
-        const response = await incomeService.doCreateIncome({
-            incomeName: form.incomeName!,
-            currencyCode: form.currencyCode!,
-            iconId: form.iconId!,
+            const response = await incomeService.doCreateIncome({
+                incomeName: form.incomeName!,
+                currencyCode: form.currencyCode!,
+                iconId: form.iconId!,
+            });
+            if (response.kind === GeneralApiProblemKind.Ok) {
+                await invalidateQuery(InvalidationGroups.income());
+                navigation.getParent()?.navigate(OverviewPath.Dashboard);
+            } else if (response.kind === GeneralApiProblemKind.BadData) {
+                handleBadDataResponse(response.errors, setErrors);
+            } else {
+                buildGeneralApiBaseHandler(response);
+            }
         });
-        if (response.kind === GeneralApiProblemKind.Ok) {
-            await invalidateQuery(InvalidationGroups.income());
-            navigation.getParent()?.navigate(OverviewPath.Dashboard);
-        } else if (response.kind === GeneralApiProblemKind.BadData) {
-            handleBadDataResponse(response.errors, setErrors);
-        } else {
-            buildGeneralApiBaseHandler(response);
-        }
     };
 
     const handleSave = async () => {
@@ -65,6 +67,7 @@ export const IncomeCreate: FC = function IncomeCreate(_props) {
             errors={errors}
             isView={false}
             isEdit={true}
+            isSaveDisabled={isFetching}
             handleChange={(key: string, value: string | number) => {
                 handleChange(key as keyof IIncome, value);
             }}

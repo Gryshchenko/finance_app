@@ -23,10 +23,25 @@ interface IProps {
     cancel?: () => void;
     onDelete?: () => void;
     handleSave?: () => void;
+    isSaveDisabled?: boolean;
+    isDeleteDisabled?: boolean;
 }
 
 export const CategoryFields: FC<IProps> = function CategoryFields(_props) {
-    const { isView, form, handleChange, handleSave, edit, cancel, onDelete, errors, isEdit, isCreate } = _props;
+    const {
+        isView,
+        form,
+        handleChange,
+        handleSave,
+        edit,
+        cancel,
+        onDelete,
+        errors,
+        isEdit,
+        isCreate,
+        isSaveDisabled,
+        isDeleteDisabled,
+    } = _props;
     const { themed } = useAppTheme();
     const { getCurrencySymbol } = useCurrency();
     return (
@@ -38,6 +53,8 @@ export const CategoryFields: FC<IProps> = function CategoryFields(_props) {
             onCancel={cancel}
             onSave={handleSave}
             onDelete={onDelete}
+            isSaveDisabled={isSaveDisabled}
+            isDeleteDisabled={isDeleteDisabled}
         >
             <View style={$fieldWrapper as undefined}>
                 <TextField

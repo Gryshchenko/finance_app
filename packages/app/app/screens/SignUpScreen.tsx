@@ -44,7 +44,7 @@ export const SignUpScreen: FC<SignUpScreenProps> = (_props) => {
         [config],
     );
 
-    const { form, handleChange, save, errors, setErrors } = useEditView<{
+    const { form, handleChange, save, errors, setErrors, withFetching, isFetching } = useEditView<{
         publicName: string;
         email: string;
         password: string;
@@ -98,55 +98,57 @@ export const SignUpScreen: FC<SignUpScreenProps> = (_props) => {
         const isValid = await save();
         if (!isValid) return;
 
-        const response = await doSignUp({
-            password: form.password as string,
-            email: form.email as string,
-            publicName: form.publicName as string,
-            locale: form.locale as string,
-            currencyCode: form.currency as string,
+        await withFetching(async () => {
+            const response = await doSignUp({
+                password: form.password as string,
+                email: form.email as string,
+                publicName: form.publicName as string,
+                locale: form.locale as string,
+                currencyCode: form.currency as string,
+            });
+            switch (response.kind) {
+                case GeneralApiProblemKind.Ok: {
+                    handleChange('publicName', '');
+                    handleChange('email', '');
+                    handleChange('password', '');
+                    // Biometric enrollment: triggers the native Face ID / fingerprint
+                    // dialog. On iOS this also requests the NSFaceIDUsageDescription
+                    // permission. We fire-and-forget - a failure is non-fatal.
+                    if (enableBiometric && isBiometricAvailable) {
+                        await enroll();
+                    }
+                    break;
+                }
+                case GeneralApiProblemKind.BadData: {
+                    const errors = response.errors ?? [];
+                    for (const error of errors) {
+                        const payload = error?.payload;
+                        const errorCode = error?.errorCode;
+                        if (errorCode === ErrorCode.SIGNUP_USER_ALREADY_EXISTS_ERROR) {
+                            setErrors((prev) => ({ ...prev, email: ValidationTypes.EMAIL_UNIQUE }));
+                        } else if (payload?.field === 'email') {
+                            setErrors((prev) => ({ ...prev, email: ValidationTypes.REQUIRED }));
+                        }
+                        if (payload?.field === 'password') {
+                            setErrors((prev) => ({ ...prev, password: ValidationTypes.REQUIRED }));
+                        }
+                        if (payload?.field === 'locale') {
+                            setErrors((prev) => ({ ...prev, locale: ValidationTypes.REQUIRED }));
+                        }
+                        if (payload?.field === 'publicName') {
+                            setErrors((prev) => ({ ...prev, publicName: ValidationTypes.REQUIRED }));
+                        }
+                        if (payload?.field === 'currencyCode') {
+                            setErrors((prev) => ({ ...prev, currency: ValidationTypes.REQUIRED }));
+                        }
+                    }
+                    break;
+                }
+                case GeneralApiProblemKind.Unknown: {
+                    break;
+                }
+            }
         });
-        switch (response.kind) {
-            case GeneralApiProblemKind.Ok: {
-                handleChange('publicName', '');
-                handleChange('email', '');
-                handleChange('password', '');
-                // Biometric enrollment: triggers the native Face ID / fingerprint
-                // dialog. On iOS this also requests the NSFaceIDUsageDescription
-                // permission. We fire-and-forget - a failure is non-fatal.
-                if (enableBiometric && isBiometricAvailable) {
-                    await enroll();
-                }
-                break;
-            }
-            case GeneralApiProblemKind.BadData: {
-                const errors = response.errors ?? [];
-                for (const error of errors) {
-                    const payload = error?.payload;
-                    const errorCode = error?.errorCode;
-                    if (errorCode === ErrorCode.SIGNUP_USER_ALREADY_EXISTS_ERROR) {
-                        setErrors((prev) => ({ ...prev, email: ValidationTypes.EMAIL_UNIQUE }));
-                    } else if (payload?.field === 'email') {
-                        setErrors((prev) => ({ ...prev, email: ValidationTypes.REQUIRED }));
-                    }
-                    if (payload?.field === 'password') {
-                        setErrors((prev) => ({ ...prev, password: ValidationTypes.REQUIRED }));
-                    }
-                    if (payload?.field === 'locale') {
-                        setErrors((prev) => ({ ...prev, locale: ValidationTypes.REQUIRED }));
-                    }
-                    if (payload?.field === 'publicName') {
-                        setErrors((prev) => ({ ...prev, publicName: ValidationTypes.REQUIRED }));
-                    }
-                    if (payload?.field === 'currencyCode') {
-                        setErrors((prev) => ({ ...prev, currency: ValidationTypes.REQUIRED }));
-                    }
-                }
-                break;
-            }
-            case GeneralApiProblemKind.Unknown: {
-                break;
-            }
-        }
     }
 
     const PasswordRightAccessory: ComponentType<TextFieldAccessoryProps> = useMemo(
@@ -267,6 +269,7 @@ export const SignUpScreen: FC<SignUpScreenProps> = (_props) => {
                     tx="common:continue"
                     style={themed($tapButton)}
                     preset="reversed"
+                    disabled={isFetching}
                     onPress={signUp}
                 />
                 <TextButton testID="back-button" tx="common:back" style={themed($tapButton)} onPress={goBack} />

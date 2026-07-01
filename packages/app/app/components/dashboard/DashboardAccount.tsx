@@ -37,6 +37,7 @@ export default memo(function DashboardAccount(props: IDashboardItem<IAccountList
                                 type: TransactionFieldType.Account,
                                 statsType: StatsType.Account,
                                 currencyCode: item.currencyCode,
+                                uuid: new Date().getMilliseconds(),
                             },
                         });
                     }}

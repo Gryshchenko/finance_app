@@ -27,49 +27,56 @@ export const IncomeEdit: FC<IIncomePros> = function IncomeEdit(_props) {
     const { data, back } = _props;
     const navigation = useNavigation();
     const invalidateQuery = useInvalidateQuery();
-    const { form, handleChange, save, errors, setErrors } = useEditView<Partial<IIncome>>(data!, incomeEditSchema);
+    const { form, handleChange, save, errors, setErrors, withFetching, isFetching } = useEditView<Partial<IIncome>>(
+        data!,
+        incomeEditSchema,
+    );
     const goBackSmart = useGoBackSmart(back);
 
     const handlePatch = async () => {
-        const incomeService = IncomeService.instance();
-        if (Utils.isEmpty(form.incomeName)) return;
-        if (Utils.isNull(form.incomeId)) return;
+        await withFetching(async () => {
+            const incomeService = IncomeService.instance();
+            if (Utils.isEmpty(form.incomeName)) return;
+            if (Utils.isNull(form.incomeId)) return;
 
-        const response = await incomeService.doPatchIncome(form.incomeId!, {
-            incomeName: form.incomeName!,
-            iconId: form.iconId,
-        });
-        if (response.kind === GeneralApiProblemKind.Ok) {
-            ToastService.info({
-                title: 'common:info',
-                message: 'common:updateAccountSuccess',
+            const response = await incomeService.doPatchIncome(form.incomeId!, {
+                incomeName: form.incomeName!,
+                iconId: form.iconId,
             });
-            await invalidateQuery(InvalidationGroups.income(form.incomeId));
-            goBackSmart();
-        } else if (response.kind === GeneralApiProblemKind.BadData) {
-            handleBadDataResponse(response.errors, setErrors);
-        } else {
-            buildGeneralApiBaseHandler(response);
-        }
+            if (response.kind === GeneralApiProblemKind.Ok) {
+                ToastService.info({
+                    title: 'common:info',
+                    message: 'common:updateAccountSuccess',
+                });
+                await invalidateQuery(InvalidationGroups.income(form.incomeId));
+                goBackSmart();
+            } else if (response.kind === GeneralApiProblemKind.BadData) {
+                handleBadDataResponse(response.errors, setErrors);
+            } else {
+                buildGeneralApiBaseHandler(response);
+            }
+        });
     };
     const handleDelete = async () => {
-        const incomeService = IncomeService.instance();
-        if (!form.incomeId) return;
+        await withFetching(async () => {
+            const incomeService = IncomeService.instance();
+            if (!form.incomeId) return;
 
-        const response = await incomeService.doDeleteIncome(form.incomeId);
-        if (response.kind === GeneralApiProblemKind.Ok) {
-            ToastService.info({
-                title: 'common:info',
-                message: 'common:deleteAccountSuccess',
-            });
-            await invalidateQuery(InvalidationGroups.income(form.incomeId));
-            navigation.getParent()?.navigate(OverviewPath.Dashboard);
-        } else {
-            ToastService.error({
-                title: 'common:error',
-                message: 'common:deleteAccountFailed',
-            });
-        }
+            const response = await incomeService.doDeleteIncome(form.incomeId);
+            if (response.kind === GeneralApiProblemKind.Ok) {
+                ToastService.info({
+                    title: 'common:info',
+                    message: 'common:deleteAccountSuccess',
+                });
+                await invalidateQuery(InvalidationGroups.income(form.incomeId));
+                navigation.getParent()?.navigate(OverviewPath.Dashboard);
+            } else {
+                ToastService.error({
+                    title: 'common:error',
+                    message: 'common:deleteAccountFailed',
+                });
+            }
+        });
     };
 
     const onDelete = () => {
@@ -92,6 +99,8 @@ export const IncomeEdit: FC<IIncomePros> = function IncomeEdit(_props) {
             isEdit={true}
             errors={errors}
             isView={false}
+            isSaveDisabled={isFetching}
+            isDeleteDisabled={isFetching}
             handleChange={(key: string, value: string | number) => {
                 handleChange(key as keyof IIncome, value);
             }}

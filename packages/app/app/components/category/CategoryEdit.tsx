@@ -27,50 +27,57 @@ export const CategoryEdit: FC<ICategoryPros> = function CategoryEdit(_props) {
     const { data, back } = _props;
     const navigation = useNavigation();
     const invalidateQuery = useInvalidateQuery();
-    const { form, handleChange, save, errors, setErrors } = useEditView<Partial<ICategory>>(data!, categoryEditSchema);
+    const { form, handleChange, save, errors, setErrors, withFetching, isFetching } = useEditView<Partial<ICategory>>(
+        data!,
+        categoryEditSchema,
+    );
     const goBackSmart = useGoBackSmart(back);
 
     const handlePatch = async () => {
-        const categoryService = CategoryService.instance();
-        if (Utils.isEmpty(form.categoryName)) return;
-        if (Utils.isNull(form.categoryId)) return;
+        await withFetching(async () => {
+            const categoryService = CategoryService.instance();
+            if (Utils.isEmpty(form.categoryName)) return;
+            if (Utils.isNull(form.categoryId)) return;
 
-        const response = await categoryService.doPatchCategory(form.categoryId!, {
-            categoryName: form.categoryName!,
-            iconId: form.iconId,
-            budget: form.budget ?? undefined,
-        });
-        if (response.kind === GeneralApiProblemKind.Ok) {
-            ToastService.info({
-                title: 'common:info',
-                message: 'categoryScreen:updateCategorySuccess',
+            const response = await categoryService.doPatchCategory(form.categoryId!, {
+                categoryName: form.categoryName!,
+                iconId: form.iconId,
+                budget: form.budget ?? undefined,
             });
-            await invalidateQuery(InvalidationGroups.category(form.categoryId));
-            goBackSmart();
-        } else if (response.kind === GeneralApiProblemKind.BadData) {
-            handleBadDataResponse(response.errors, setErrors);
-        } else {
-            buildGeneralApiBaseHandler(response);
-        }
+            if (response.kind === GeneralApiProblemKind.Ok) {
+                ToastService.info({
+                    title: 'common:info',
+                    message: 'categoryScreen:updateCategorySuccess',
+                });
+                await invalidateQuery(InvalidationGroups.category(form.categoryId));
+                goBackSmart();
+            } else if (response.kind === GeneralApiProblemKind.BadData) {
+                handleBadDataResponse(response.errors, setErrors);
+            } else {
+                buildGeneralApiBaseHandler(response);
+            }
+        });
     };
     const handleDelete = async () => {
-        const categoryService = CategoryService.instance();
-        if (!form.categoryId) return;
+        await withFetching(async () => {
+            const categoryService = CategoryService.instance();
+            if (!form.categoryId) return;
 
-        const response = await categoryService.doDeleteCategory(form.categoryId);
-        if (response.kind === GeneralApiProblemKind.Ok) {
-            ToastService.info({
-                title: 'common:info',
-                message: 'categoryScreen:deleteCategorySuccess',
-            });
-            await invalidateQuery(InvalidationGroups.category(form.categoryId));
-            navigation.getParent()?.navigate(OverviewPath.Dashboard);
-        } else {
-            ToastService.error({
-                title: 'common:error',
-                message: 'categoryScreen:deleteCategoryFailed',
-            });
-        }
+            const response = await categoryService.doDeleteCategory(form.categoryId);
+            if (response.kind === GeneralApiProblemKind.Ok) {
+                ToastService.info({
+                    title: 'common:info',
+                    message: 'categoryScreen:deleteCategorySuccess',
+                });
+                await invalidateQuery(InvalidationGroups.category(form.categoryId));
+                navigation.getParent()?.navigate(OverviewPath.Dashboard);
+            } else {
+                ToastService.error({
+                    title: 'common:error',
+                    message: 'categoryScreen:deleteCategoryFailed',
+                });
+            }
+        });
     };
 
     const onDelete = () => {
@@ -104,6 +111,8 @@ export const CategoryEdit: FC<ICategoryPros> = function CategoryEdit(_props) {
             isEdit={true}
             errors={errors}
             isView={false}
+            isSaveDisabled={isFetching}
+            isDeleteDisabled={isFetching}
             handleChange={(key: string, value: string | number) => {
                 handleChange(key as keyof ICategory, value);
             }}

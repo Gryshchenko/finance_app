@@ -25,7 +25,7 @@ export const ForgotPasswordChangeScreen: FC<Props> = (_props) => {
     const [isRepeatPasswordHidden, setIsRepeatPasswordHidden] = useState<boolean>(true);
     const { navigation } = _props;
 
-    const { form, handleChange, save, errors, setErrors } = useEditView<{
+    const { form, handleChange, save, errors, setErrors, withFetching, isFetching } = useEditView<{
         newPassword: string;
         repeatPassword: string;
     }>({ newPassword: '', repeatPassword: '' }, forgotPasswordChangeSchema);
@@ -42,21 +42,24 @@ export const ForgotPasswordChangeScreen: FC<Props> = (_props) => {
     async function request() {
         const isValid = await save();
         if (!isValid) return;
-        const forgetPasswordService = ForgotPasswordService.instance();
 
-        const response = await forgetPasswordService.change(form?.newPassword!);
+        await withFetching(async () => {
+            const forgetPasswordService = ForgotPasswordService.instance();
 
-        if (response.kind === GeneralApiProblemKind.Ok) {
-            handleChange('repeatPassword', '');
-            handleChange('newPassword', '');
-            navigation.navigate({ name: AppPath.Login, params: undefined });
-        } else if (response.kind === GeneralApiProblemKind.BadData) {
-            handleBadDataResponse(response.errors, setErrors, new Set(['newPassword']));
-        } else {
-            buildGeneralApiBaseHandler(response);
-            ToastService.error({ message: 'forgotPasswordScreen:sessionExpired' });
-            navigation.navigate({ name: AppPath.ForgotPasswordRequest, params: undefined });
-        }
+            const response = await forgetPasswordService.change(form?.newPassword!);
+
+            if (response.kind === GeneralApiProblemKind.Ok) {
+                handleChange('repeatPassword', '');
+                handleChange('newPassword', '');
+                navigation.navigate({ name: AppPath.Login, params: undefined });
+            } else if (response.kind === GeneralApiProblemKind.BadData) {
+                handleBadDataResponse(response.errors, setErrors, new Set(['newPassword']));
+            } else {
+                buildGeneralApiBaseHandler(response);
+                ToastService.error({ message: 'forgotPasswordScreen:sessionExpired' });
+                navigation.navigate({ name: AppPath.ForgotPasswordRequest, params: undefined });
+            }
+        });
     }
 
     const PasswordRightAccessory: ComponentType<TextFieldAccessoryProps> = useMemo(
@@ -129,6 +132,7 @@ export const ForgotPasswordChangeScreen: FC<Props> = (_props) => {
                     tx="common:continue"
                     style={themed($tapButton)}
                     preset="reversed"
+                    disabled={isFetching}
                     onPress={request}
                 />
                 <TextButton testID="back-button" tx="common:back" style={themed($tapButton)} onPress={goBack} />

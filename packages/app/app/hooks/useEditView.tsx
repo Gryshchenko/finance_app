@@ -8,6 +8,7 @@ type Errors<T> = Partial<Record<keyof T, TxKeyPath>>;
 export function useEditView<T extends object>(initialData: T, schema?: Yup.ObjectSchema<any>, uuid?: string) {
     const [form, setForm] = useState<Partial<T>>(initialData);
     const [errors, setErrors] = useState<Errors<T>>({});
+    const [isFetching, setIsFetching] = useState(false);
     const prevUuid = useRef<string>(uuid);
 
     const resetForm = useCallback(
@@ -55,6 +56,15 @@ export function useEditView<T extends object>(initialData: T, schema?: Yup.Objec
         return true;
     };
 
+    const withFetching = useCallback(async (cb: () => Promise<void> | void): Promise<void> => {
+        setIsFetching(true);
+        try {
+            await cb();
+        } finally {
+            setIsFetching(false);
+        }
+    }, []);
+
     return {
         form,
         handleChange,
@@ -63,5 +73,8 @@ export function useEditView<T extends object>(initialData: T, schema?: Yup.Objec
         validate,
         setErrors,
         resetForm,
+        isFetching,
+        setIsFetching,
+        withFetching,
     };
 }

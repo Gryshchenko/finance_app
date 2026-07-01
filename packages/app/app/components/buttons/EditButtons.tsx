@@ -13,15 +13,26 @@ interface EditButtonsProps {
     onDelete?: () => void;
     onCancel?: () => void;
     onSave?: () => void;
+    isSaveDisabled?: boolean;
+    isDeleteDisabled?: boolean;
 }
 
-export const EditButtons: React.FC<EditButtonsProps> = ({ isView, onEdit, onDelete, onCancel, onSave, isCreate }) => {
+export const EditButtons: React.FC<EditButtonsProps> = ({
+    isView,
+    onEdit,
+    onDelete,
+    onCancel,
+    onSave,
+    isCreate,
+    isSaveDisabled = false,
+    isDeleteDisabled = false,
+}) => {
     const { themed } = useAppTheme();
 
     if (isCreate) {
         return (
             <View style={$buttons}>
-                {onSave && <Button preset={'reversed'} tx={'common:create'} onPress={onSave} />}
+                {onSave && <Button disabled={isSaveDisabled} preset={'reversed'} tx={'common:create'} onPress={onSave} />}
                 {onCancel && <TextButton preset={'reversed'} tx={'common:cancel'} onPress={onCancel} />}
             </View>
         );
@@ -30,14 +41,26 @@ export const EditButtons: React.FC<EditButtonsProps> = ({ isView, onEdit, onDele
         <View style={$buttons}>
             {onEdit && <Button preset={'reversed'} tx={'common:edit'} onPress={onEdit} />}
             {onDelete && (
-                <TextButton textStyle={themed($deleteText)} preset={'reversed'} tx={'common:delete'} onPress={onDelete} />
+                <TextButton
+                    textStyle={themed($deleteText)}
+                    preset={'reversed'}
+                    tx={'common:delete'}
+                    disabled={isDeleteDisabled}
+                    onPress={onDelete}
+                />
             )}
         </View>
     ) : (
         <View style={$buttons}>
-            {onSave && <Button preset={'reversed'} tx="common:saveChanges" onPress={onSave} />}
+            {onSave && <Button disabled={isSaveDisabled} preset={'reversed'} tx="common:saveChanges" onPress={onSave} />}
             {onDelete && (
-                <TextButton textStyle={themed($deleteText)} preset={'reversed'} tx={'common:delete'} onPress={onDelete} />
+                <TextButton
+                    textStyle={themed($deleteText)}
+                    preset={'reversed'}
+                    tx={'common:delete'}
+                    disabled={isDeleteDisabled}
+                    onPress={onDelete}
+                />
             )}
             {onCancel && <TextButton preset={'reversed'} tx="common:cancel" onPress={onCancel} />}
         </View>

@@ -31,6 +31,8 @@ interface IProps {
     cancel?: () => void;
     onDelete?: () => void;
     handleSave?: () => void;
+    isSaveDisabled?: boolean;
+    isDeleteDisabled?: boolean;
 }
 
 const fetchRates = async (
@@ -58,7 +60,20 @@ const fetchRates = async (
 };
 
 export const TransactionFields: FC<IProps> = function TransactionFields(_props) {
-    const { isView, form, handleChange, handleSave, edit, cancel, onDelete, errors, isEdit, isCreate } = _props;
+    const {
+        isView,
+        form,
+        handleChange,
+        handleSave,
+        edit,
+        cancel,
+        onDelete,
+        errors,
+        isEdit,
+        isCreate,
+        isSaveDisabled,
+        isDeleteDisabled,
+    } = _props;
     const { getCurrencySymbol, getCurrency } = useCurrency();
     const { targetCurrencyCode, currencyCode } = form;
 
@@ -243,6 +258,8 @@ export const TransactionFields: FC<IProps> = function TransactionFields(_props) 
             onCancel={cancel}
             onSave={handleSave}
             onDelete={onDelete}
+            isSaveDisabled={isSaveDisabled}
+            isDeleteDisabled={isDeleteDisabled}
         >
             <View style={$fieldWrapper as undefined}>
                 {renderAmountInputs()}

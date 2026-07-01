@@ -27,24 +27,26 @@ export const SettingsChangePassword: FC = function SettingsChangePassword() {
     const navigation = useNavigation<NavigationProp<OverviewTabParamList>>();
     const [isPasswordHidden, setIsPasswordHidden] = useState<boolean>(true);
     const [isNewPasswordHidden, setIsNewPasswordHidden] = useState<boolean>(true);
-    const { form, handleChange, save, errors, setErrors } = useEditView<Partial<Form>>(
+    const { form, handleChange, save, errors, setErrors, withFetching, isFetching } = useEditView<Partial<Form>>(
         { password: '', newPassword: '' },
         settingsChangePasswordSchema,
     );
 
     const handlePatch = async () => {
-        const changePasswordService = ChangePasswordService.instance();
+        await withFetching(async () => {
+            const changePasswordService = ChangePasswordService.instance();
 
-        const response = await changePasswordService.request(form.newPassword!, form.password!);
-        if (response.kind === GeneralApiProblemKind.Ok) {
-            navigation.navigate(OverviewPath.Settings, {
-                screen: SettingsPath.ChangePasswordConfirm,
-            });
-        } else if (response.kind === GeneralApiProblemKind.BadData) {
-            handleBadDataResponse(response.errors, setErrors);
-        } else {
-            buildGeneralApiBaseHandler(response);
-        }
+            const response = await changePasswordService.request(form.newPassword!, form.password!);
+            if (response.kind === GeneralApiProblemKind.Ok) {
+                navigation.navigate(OverviewPath.Settings, {
+                    screen: SettingsPath.ChangePasswordConfirm,
+                });
+            } else if (response.kind === GeneralApiProblemKind.BadData) {
+                handleBadDataResponse(response.errors, setErrors);
+            } else {
+                buildGeneralApiBaseHandler(response);
+            }
+        });
     };
 
     const handleSave = async () => {
@@ -113,6 +115,7 @@ export const SettingsChangePassword: FC = function SettingsChangePassword() {
             <EditButtons
                 isCreate={false}
                 isView={false}
+                isSaveDisabled={isFetching}
                 onSave={handleSave}
                 onCancel={() => {
                     navigation.navigate(OverviewPath.Settings, { screen: SettingsPath.Settings });

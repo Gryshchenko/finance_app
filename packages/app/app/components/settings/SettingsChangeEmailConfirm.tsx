@@ -58,35 +58,38 @@ export const SettingsChangeEmailConfirmation: FC<Props> = function SettingsChang
         return clearTimer;
     }, []);
 
-    const { form, handleChange, save, errors, setErrors } = useEditView<Partial<{ confirmationCode: string }>>(
-        { confirmationCode: '' },
-        settingsChangeEmailConfirmationShema,
-    );
+    const { form, handleChange, save, errors, setErrors, withFetching, isFetching } = useEditView<
+        Partial<{ confirmationCode: string }>
+    >({ confirmationCode: '' }, settingsChangeEmailConfirmationShema);
 
     const confirm = async () => {
-        const changeEmailService = ChangeEmailService.instance();
-        const response = await changeEmailService.confirm(Number(form.confirmationCode), email);
-        if (response.kind === GeneralApiProblemKind.Ok) {
-            navigation.navigate(OverviewPath.Settings, { screen: SettingsPath.Settings });
-        } else if (response.kind === GeneralApiProblemKind.BadData) {
-            handleBadDataResponse(response.errors, setErrors);
-        } else {
-            buildGeneralApiBaseHandler(response);
-        }
+        await withFetching(async () => {
+            const changeEmailService = ChangeEmailService.instance();
+            const response = await changeEmailService.confirm(Number(form.confirmationCode), email);
+            if (response.kind === GeneralApiProblemKind.Ok) {
+                navigation.navigate(OverviewPath.Settings, { screen: SettingsPath.Settings });
+            } else if (response.kind === GeneralApiProblemKind.BadData) {
+                handleBadDataResponse(response.errors, setErrors);
+            } else {
+                buildGeneralApiBaseHandler(response);
+            }
+        });
     };
 
     const refresh = async () => {
-        clearTimer();
-        const changeEmailService = ChangeEmailService.instance();
-        const response = await changeEmailService.refreshCode(email);
-        if (response.kind === GeneralApiProblemKind.Ok) {
-            handleChange('confirmationCode', '');
-            startTimer();
-        } else if (response.kind === GeneralApiProblemKind.BadData) {
-            handleBadDataResponse(response.errors, setErrors);
-        } else {
-            buildGeneralApiBaseHandler(response);
-        }
+        await withFetching(async () => {
+            clearTimer();
+            const changeEmailService = ChangeEmailService.instance();
+            const response = await changeEmailService.refreshCode(email);
+            if (response.kind === GeneralApiProblemKind.Ok) {
+                handleChange('confirmationCode', '');
+                startTimer();
+            } else if (response.kind === GeneralApiProblemKind.BadData) {
+                handleBadDataResponse(response.errors, setErrors);
+            } else {
+                buildGeneralApiBaseHandler(response);
+            }
+        });
     };
 
     const handleSave = async () => {
@@ -120,7 +123,11 @@ export const SettingsChangeEmailConfirmation: FC<Props> = function SettingsChang
                 tx="settingsChangeEmailConfirmScreen:confirmButton"
                 style={themed($tapButton)}
                 preset={'reversed'}
-                disabled={!Utils.isEmpty(errors?.confirmationCode as string) || Utils.isEmpty(form?.confirmationCode as string)}
+                disabled={
+                    !Utils.isEmpty(errors?.confirmationCode as string) ||
+                    Utils.isEmpty(form?.confirmationCode as string) ||
+                    isFetching
+                }
                 onPress={handleSave}
             />
             <Button
@@ -142,7 +149,7 @@ export const SettingsChangeEmailConfirmation: FC<Props> = function SettingsChang
                 style={themed($tapButton)}
                 onPress={refresh}
                 preset={'reversed'}
-                disabled={resendTimer > 0}
+                disabled={resendTimer > 0 || isFetching}
             />
         </View>
     );

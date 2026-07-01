@@ -35,6 +35,7 @@ export default memo(function DashboardIncome(props: IDashboardItem<IIncomeStats>
                                 type: TransactionFieldType.Income,
                                 statsType: StatsType.Income,
                                 currencyCode: item.currencyCode,
+                                uuid: new Date().getMilliseconds(),
                             },
                         });
                     }}

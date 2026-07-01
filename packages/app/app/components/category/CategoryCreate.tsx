@@ -18,7 +18,7 @@ export const CategoryCreate: FC = function CategoryCreate(_props) {
     const invalidateQuery = useInvalidateQuery();
     const { currencies } = useCurrency();
     const categoryCreateSchema = useMemo(() => buildCategoryCreateSchema(Array.from(currencies.keys())), [currencies]);
-    const { form, handleChange, save, errors, setErrors } = useEditView<Partial<ICategory>>(
+    const { form, handleChange, save, errors, setErrors, withFetching, isFetching } = useEditView<Partial<ICategory>>(
         {
             categoryName: '',
             currencyCode: 'USD',
@@ -28,29 +28,31 @@ export const CategoryCreate: FC = function CategoryCreate(_props) {
     );
 
     const handleCreate = async () => {
-        const categoryService = CategoryService.instance();
-        if (Utils.isEmpty(form.categoryName) || Utils.isNull(form.currencyCode) || Utils.isNull(form.iconId)) {
-            ToastService.error({
-                message: 'errorCode:UNKNOWN_ERROR',
-                systemMessage: `Validation error on create category, categoryName: ${form.categoryName}, currencyCode: ${form.currencyCode}, iconId: ${form.iconId}`,
-            });
-            return;
-        }
+        await withFetching(async () => {
+            const categoryService = CategoryService.instance();
+            if (Utils.isEmpty(form.categoryName) || Utils.isNull(form.currencyCode) || Utils.isNull(form.iconId)) {
+                ToastService.error({
+                    message: 'errorCode:UNKNOWN_ERROR',
+                    systemMessage: `Validation error on create category, categoryName: ${form.categoryName}, currencyCode: ${form.currencyCode}, iconId: ${form.iconId}`,
+                });
+                return;
+            }
 
-        const response = await categoryService.doCreateCategory({
-            categoryName: form.categoryName!,
-            currencyCode: form.currencyCode!,
-            iconId: form.iconId ?? SpendIcon.ShoppingBag,
-            budget: form.budget ?? undefined,
+            const response = await categoryService.doCreateCategory({
+                categoryName: form.categoryName!,
+                currencyCode: form.currencyCode!,
+                iconId: form.iconId ?? SpendIcon.ShoppingBag,
+                budget: form.budget ?? undefined,
+            });
+            if (response.kind === GeneralApiProblemKind.Ok) {
+                await invalidateQuery(InvalidationGroups.category());
+                navigation.getParent()?.navigate(OverviewPath.Dashboard);
+            } else if (response.kind === GeneralApiProblemKind.BadData) {
+                handleBadDataResponse(response.errors, setErrors);
+            } else {
+                buildGeneralApiBaseHandler(response);
+            }
         });
-        if (response.kind === GeneralApiProblemKind.Ok) {
-            await invalidateQuery(InvalidationGroups.category());
-            navigation.getParent()?.navigate(OverviewPath.Dashboard);
-        } else if (response.kind === GeneralApiProblemKind.BadData) {
-            handleBadDataResponse(response.errors, setErrors);
-        } else {
-            buildGeneralApiBaseHandler(response);
-        }
     };
 
     const handleSave = async () => {
@@ -66,6 +68,7 @@ export const CategoryCreate: FC = function CategoryCreate(_props) {
             isEdit={true}
             errors={errors}
             isView={false}
+            isSaveDisabled={isFetching}
             handleChange={(key: string, value: string | number) => {
                 handleChange(key as keyof ICategory, value);
             }}

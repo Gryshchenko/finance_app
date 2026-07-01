@@ -318,4 +318,5 @@ const $titleWrapperCenter: ThemedStyle<ViewStyle> = ({ spacing }) => ({
 const $titleWrapperFlex: ViewStyle = {
     justifyContent: 'center',
     flexGrow: 1,
+    maxWidth: '75%',
 };

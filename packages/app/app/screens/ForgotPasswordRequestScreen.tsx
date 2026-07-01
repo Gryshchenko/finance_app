@@ -21,7 +21,7 @@ interface Props extends AppStackScreenProps<AppPath.ForgotPasswordRequest> {}
 export const ForgotPasswordRequestScreen: FC<Props> = (_props) => {
     const { navigation } = _props;
 
-    const { form, handleChange, save, errors, setErrors } = useEditView<{
+    const { form, handleChange, save, errors, setErrors, withFetching, isFetching } = useEditView<{
         email: string;
     }>({ email: '' }, forgotPasswordRequestSchema);
 
@@ -35,21 +35,23 @@ export const ForgotPasswordRequestScreen: FC<Props> = (_props) => {
         const isValid = await save();
         if (!isValid) return;
 
-        const service = ForgotPasswordService.instance();
-        const response = await service.request(form.email!);
+        await withFetching(async () => {
+            const service = ForgotPasswordService.instance();
+            const response = await service.request(form.email!);
 
-        if (response.kind === GeneralApiProblemKind.Ok) {
-            navigation.navigate({
-                name: AppPath.ForgotPasswordConfirm,
-                params: {
-                    email: form.email!,
-                },
-            });
-        } else if (response.kind === GeneralApiProblemKind.BadData) {
-            handleBadDataResponse(response.errors, setErrors, new Set(['email']));
-        } else {
-            buildGeneralApiBaseHandler(response);
-        }
+            if (response.kind === GeneralApiProblemKind.Ok) {
+                navigation.navigate({
+                    name: AppPath.ForgotPasswordConfirm,
+                    params: {
+                        email: form.email!,
+                    },
+                });
+            } else if (response.kind === GeneralApiProblemKind.BadData) {
+                handleBadDataResponse(response.errors, setErrors, new Set(['email']));
+            } else {
+                buildGeneralApiBaseHandler(response);
+            }
+        });
     }
 
     return (
@@ -76,6 +78,7 @@ export const ForgotPasswordRequestScreen: FC<Props> = (_props) => {
                     tx="common:continue"
                     style={themed($tapButton)}
                     preset="reversed"
+                    disabled={isFetching}
                     onPress={request}
                 />
                 <TextButton testID="back-button" tx="common:back" style={themed($tapButton)} onPress={goBack} />

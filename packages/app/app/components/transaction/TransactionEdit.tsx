@@ -29,7 +29,7 @@ export const TransactionEdit: FC<ITransactionPros> = function TransactionEdit(_p
     const invalidateQuery = useInvalidateQuery();
     const { currencies } = useCurrency();
 
-    const { form, handleChange, save, errors, setErrors } = useEditView<Partial<ITransactionClient>>(
+    const { form, handleChange, save, errors, setErrors, withFetching, isFetching } = useEditView<Partial<ITransactionClient>>(
         data!,
         buildTransactionEditSchema({
             targetCurrencyCode: data?.targetCurrencyCode,
@@ -57,54 +57,58 @@ export const TransactionEdit: FC<ITransactionPros> = function TransactionEdit(_p
     };
 
     const handlePatch = async () => {
-        const transactionService = TransactionService.instance();
-        const sameCurrency = !form.targetCurrencyCode || form.targetCurrencyCode === form.currencyCode;
-        const response = await transactionService.doPatchTransaction(form.transactionId!, {
-            accountId: form.accountId,
-            incomeId: form.incomeId,
-            categoryId: form.categoryId,
-            currencyCode: form.currencyCode,
-            targetCurrencyCode: sameCurrency ? form.currencyCode : form.targetCurrencyCode,
-            amount: Number(form.amount),
-            targetAmount: sameCurrency ? Number(form.amount) : Number(form.targetAmount),
-            createdAt: form.createdAt,
-            targetAccountId: form.targetAccountId,
-            description: form.description,
-        });
-        if (response.kind === GeneralApiProblemKind.Ok) {
-            ToastService.info({
-                title: 'common:info',
-                message: 'transactionScreen:updateSuccess',
+        await withFetching(async () => {
+            const transactionService = TransactionService.instance();
+            const sameCurrency = !form.targetCurrencyCode || form.targetCurrencyCode === form.currencyCode;
+            const response = await transactionService.doPatchTransaction(form.transactionId!, {
+                accountId: form.accountId,
+                incomeId: form.incomeId,
+                categoryId: form.categoryId,
+                currencyCode: form.currencyCode,
+                targetCurrencyCode: sameCurrency ? form.currencyCode : form.targetCurrencyCode,
+                amount: Number(form.amount),
+                targetAmount: sameCurrency ? Number(form.amount) : Number(form.targetAmount),
+                createdAt: form.createdAt,
+                targetAccountId: form.targetAccountId,
+                description: form.description,
             });
-            await invalidateQuery(InvalidationGroups.transaction(form.transactionId!));
-            await invalidateEntityStats();
-            goBackSmart();
-        } else if (response.kind === GeneralApiProblemKind.BadData) {
-            handleBadDataResponse(response.errors, setErrors);
-        } else {
-            buildGeneralApiBaseHandler(response);
-        }
+            if (response.kind === GeneralApiProblemKind.Ok) {
+                ToastService.info({
+                    title: 'common:info',
+                    message: 'transactionScreen:updateSuccess',
+                });
+                await invalidateQuery(InvalidationGroups.transaction(form.transactionId!));
+                await invalidateEntityStats();
+                goBackSmart();
+            } else if (response.kind === GeneralApiProblemKind.BadData) {
+                handleBadDataResponse(response.errors, setErrors);
+            } else {
+                buildGeneralApiBaseHandler(response);
+            }
+        });
     };
 
     const handleDelete = async () => {
-        const transactionService = TransactionService.instance();
-        if (!form.transactionId) return;
+        await withFetching(async () => {
+            const transactionService = TransactionService.instance();
+            if (!form.transactionId) return;
 
-        const response = await transactionService.doDeleteTransaction(form.transactionId);
-        if (response.kind === GeneralApiProblemKind.Ok) {
-            ToastService.info({
-                title: 'common:info',
-                message: 'transactionScreen:deleteSuccess',
-            });
-            await invalidateQuery(InvalidationGroups.transaction());
-            await invalidateEntityStats();
-            goBackSmart();
-        } else {
-            ToastService.error({
-                title: 'common:error',
-                message: 'transactionScreen:deleteFailed',
-            });
-        }
+            const response = await transactionService.doDeleteTransaction(form.transactionId);
+            if (response.kind === GeneralApiProblemKind.Ok) {
+                ToastService.info({
+                    title: 'common:info',
+                    message: 'transactionScreen:deleteSuccess',
+                });
+                await invalidateQuery(InvalidationGroups.transaction());
+                await invalidateEntityStats();
+                goBackSmart();
+            } else {
+                ToastService.error({
+                    title: 'common:error',
+                    message: 'transactionScreen:deleteFailed',
+                });
+            }
+        });
     };
 
     const onDelete = () => {
@@ -130,6 +134,8 @@ export const TransactionEdit: FC<ITransactionPros> = function TransactionEdit(_p
             isEdit={true}
             errors={errors}
             isView={false}
+            isSaveDisabled={isFetching}
+            isDeleteDisabled={isFetching}
             onDelete={onDelete}
             handleChange={(key: string, value: string | number) => {
                 handleChange(key as keyof ITransaction, value);

@@ -27,31 +27,36 @@ interface IAccountPros {
 export const AccountEdit: FC<IAccountPros> = function AccountEdit(_props) {
     const { data, back } = _props;
     const invalidateQuery = useInvalidateQuery();
-    const { form, handleChange, save, errors, setErrors } = useEditView<Partial<IAccountClient>>(data!, accountEditSchema);
+    const { form, handleChange, save, errors, setErrors, withFetching, isFetching } = useEditView<Partial<IAccountClient>>(
+        data!,
+        accountEditSchema,
+    );
     const navigation = useNavigation();
     const goBackSmart = useGoBackSmart(back);
 
     const handlePatch = async () => {
-        const accountService = AccountService.instance();
-        if (Utils.isEmpty(form.accountName)) return;
-        if (Utils.isNull(form.accountId)) return;
+        await withFetching(async () => {
+            const accountService = AccountService.instance();
+            if (Utils.isEmpty(form.accountName)) return;
+            if (Utils.isNull(form.accountId)) return;
 
-        const response = await accountService.doPatchAccount(form.accountId!, {
-            accountName: form.accountName!,
-            amount: Number(form.amount!),
-        });
-        if (response.kind === GeneralApiProblemKind.Ok) {
-            ToastService.info({
-                title: 'common:info',
-                message: 'common:updateAccountSuccess',
+            const response = await accountService.doPatchAccount(form.accountId!, {
+                accountName: form.accountName!,
+                amount: Number(form.amount!),
             });
-            await invalidateQuery(InvalidationGroups.account(form.accountId));
-            goBackSmart();
-        } else if (response.kind === GeneralApiProblemKind.BadData) {
-            handleBadDataResponse(response.errors, setErrors);
-        } else {
-            buildGeneralApiBaseHandler(response);
-        }
+            if (response.kind === GeneralApiProblemKind.Ok) {
+                ToastService.info({
+                    title: 'common:info',
+                    message: 'common:updateAccountSuccess',
+                });
+                await invalidateQuery(InvalidationGroups.account(form.accountId));
+                goBackSmart();
+            } else if (response.kind === GeneralApiProblemKind.BadData) {
+                handleBadDataResponse(response.errors, setErrors);
+            } else {
+                buildGeneralApiBaseHandler(response);
+            }
+        });
     };
 
     const handleSave = async () => {
@@ -60,23 +65,25 @@ export const AccountEdit: FC<IAccountPros> = function AccountEdit(_props) {
         await handlePatch();
     };
     const handleDelete = async () => {
-        const accountService = AccountService.instance();
-        if (!form.accountId) return;
+        await withFetching(async () => {
+            const accountService = AccountService.instance();
+            if (!form.accountId) return;
 
-        const response = await accountService.doDeleteAccount(form.accountId);
-        if (response.kind === GeneralApiProblemKind.Ok) {
-            ToastService.info({
-                title: 'common:info',
-                message: 'common:deleteAccountSuccess',
-            });
-            await invalidateQuery(InvalidationGroups.account(form.accountId));
-            navigation.getParent()?.navigate(OverviewPath.Dashboard);
-        } else {
-            ToastService.error({
-                title: 'common:error',
-                message: 'common:deleteAccountFailed',
-            });
-        }
+            const response = await accountService.doDeleteAccount(form.accountId);
+            if (response.kind === GeneralApiProblemKind.Ok) {
+                ToastService.info({
+                    title: 'common:info',
+                    message: 'common:deleteAccountSuccess',
+                });
+                await invalidateQuery(InvalidationGroups.account(form.accountId));
+                navigation.getParent()?.navigate(OverviewPath.Dashboard);
+            } else {
+                ToastService.error({
+                    title: 'common:error',
+                    message: 'common:deleteAccountFailed',
+                });
+            }
+        });
     };
 
     const onDelete = () => {
@@ -93,6 +100,8 @@ export const AccountEdit: FC<IAccountPros> = function AccountEdit(_props) {
             isEdit={true}
             errors={errors}
             isView={false}
+            isSaveDisabled={isFetching}
+            isDeleteDisabled={isFetching}
             handleChange={(key: string, value: string | number) => {
                 handleChange(key as keyof IAccount, value);
             }}

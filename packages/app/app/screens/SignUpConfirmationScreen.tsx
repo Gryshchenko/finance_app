@@ -22,10 +22,9 @@ import { AppPath } from '@/types/AppPath';
 interface SignUpConfirmationScreenProps extends AppStackScreenProps<AppPath.SignUpConfirmation> {}
 
 export const SignUpConfirmationScreen: FC<SignUpConfirmationScreenProps> = () => {
-    const { form, handleChange, save, errors, setErrors } = useEditView<{ confirmationCode: string | null }>(
-        { confirmationCode: null },
-        signUpConfirmationShema,
-    );
+    const { form, handleChange, save, errors, setErrors, withFetching, isFetching } = useEditView<{
+        confirmationCode: string | null;
+    }>({ confirmationCode: null }, signUpConfirmationShema);
     const [resendTimer, setResendTimer] = useState(120);
     const timerRef = useRef<ReturnType<typeof setInterval> | undefined>(undefined);
 
@@ -60,20 +59,22 @@ export const SignUpConfirmationScreen: FC<SignUpConfirmationScreenProps> = () =>
     }, []);
 
     const handleVerify = async (confirmationCode: string) => {
-        const response = await EmailConfirmationService.instance().confirm(confirmationCode);
-        switch (response.kind) {
-            case GeneralApiProblemKind.Ok: {
-                doSetUserConfirmed();
-                break;
+        await withFetching(async () => {
+            const response = await EmailConfirmationService.instance().confirm(confirmationCode);
+            switch (response.kind) {
+                case GeneralApiProblemKind.Ok: {
+                    doSetUserConfirmed();
+                    break;
+                }
+                case GeneralApiProblemKind.BadData: {
+                    handleBadDataResponse(response.errors, setErrors);
+                    break;
+                }
+                default: {
+                    buildGeneralApiBaseHandler(response);
+                }
             }
-            case GeneralApiProblemKind.BadData: {
-                handleBadDataResponse(response.errors, setErrors);
-                break;
-            }
-            default: {
-                buildGeneralApiBaseHandler(response);
-            }
-        }
+        });
     };
 
     const handleConfirm = async () => {
@@ -83,22 +84,25 @@ export const SignUpConfirmationScreen: FC<SignUpConfirmationScreenProps> = () =>
     };
 
     const resend = useCallback(async () => {
-        const response = await EmailConfirmationService.instance().refreshCode();
-        switch (response.kind) {
-            case GeneralApiProblemKind.Ok: {
-                startTimer();
-                handleChange('confirmationCode', '');
-                break;
+        await withFetching(async () => {
+            const response = await EmailConfirmationService.instance().refreshCode();
+            switch (response.kind) {
+                case GeneralApiProblemKind.Ok: {
+                    startTimer();
+                    handleChange('confirmationCode', '');
+                    break;
+                }
+                case GeneralApiProblemKind.BadData: {
+                    handleBadDataResponse(response.errors, setErrors);
+                    break;
+                }
+                default: {
+                    buildGeneralApiBaseHandler(response);
+                }
             }
-            case GeneralApiProblemKind.BadData: {
-                handleBadDataResponse(response.errors, setErrors);
-                break;
-            }
-            default: {
-                buildGeneralApiBaseHandler(response);
-            }
-        }
-    }, [handleChange, setErrors]);
+        });
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [handleChange, setErrors, withFetching]);
 
     return (
         <Screen preset="auto" contentContainerStyle={themed($screenContentContainer)} safeAreaEdges={['top', 'bottom']}>
@@ -133,7 +137,9 @@ export const SignUpConfirmationScreen: FC<SignUpConfirmationScreenProps> = () =>
                         style={themed($tapButton)}
                         preset={'reversed'}
                         disabled={
-                            !Utils.isEmpty(errors?.confirmationCode as string) || Utils.isEmpty(form?.confirmationCode as string)
+                            !Utils.isEmpty(errors?.confirmationCode as string) ||
+                            Utils.isEmpty(form?.confirmationCode as string) ||
+                            isFetching
                         }
                         onPress={handleConfirm}
                     />
@@ -142,7 +148,7 @@ export const SignUpConfirmationScreen: FC<SignUpConfirmationScreenProps> = () =>
                         style={themed($tapButton)}
                         onPress={resend}
                         preset={'reversed'}
-                        disabled={resendTimer > 0}
+                        disabled={resendTimer > 0 || isFetching}
                     />
                     <TextButton style={themed($tapButton)} tx="signUpConfirmation:goToLogin" onPress={doLogout} />
                 </View>

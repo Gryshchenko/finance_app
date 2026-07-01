@@ -45,6 +45,7 @@ export default memo(function DashboardCategory(props: IDashboardItem<ICategorySt
                                 type: TransactionFieldType.Category,
                                 statsType: StatsType.Expense,
                                 currencyCode: item.currencyCode,
+                                uuid: new Date().getMilliseconds(),
                             },
                         });
                     }}

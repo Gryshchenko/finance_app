@@ -54,35 +54,38 @@ export const SettingsChangePasswordConfirmation: FC = function SettingsChangePas
         return clearTimer;
     }, []);
 
-    const { form, handleChange, save, errors, setErrors } = useEditView<Partial<{ confirmationCode: string }>>(
-        { confirmationCode: '' },
-        settingsChangePasswordConfirmSchema,
-    );
+    const { form, handleChange, save, errors, setErrors, withFetching, isFetching } = useEditView<
+        Partial<{ confirmationCode: string }>
+    >({ confirmationCode: '' }, settingsChangePasswordConfirmSchema);
 
     const confirm = async () => {
-        const changePasswordService = ChangePasswordService.instance();
-        const response = await changePasswordService.confirm(Number(form.confirmationCode));
-        if (response.kind === GeneralApiProblemKind.Ok) {
-            ToastService.success({ title: 'common:success', message: 'settingsChangePasswordConfirmScreen:successMessage' });
-            navigation.navigate(OverviewPath.Settings, { screen: SettingsPath.Settings });
-        } else if (response.kind === GeneralApiProblemKind.BadData) {
-            handleBadDataResponse(response.errors, setErrors);
-        } else {
-            buildGeneralApiBaseHandler(response);
-        }
+        await withFetching(async () => {
+            const changePasswordService = ChangePasswordService.instance();
+            const response = await changePasswordService.confirm(Number(form.confirmationCode));
+            if (response.kind === GeneralApiProblemKind.Ok) {
+                ToastService.success({ title: 'common:success', message: 'settingsChangePasswordConfirmScreen:successMessage' });
+                navigation.navigate(OverviewPath.Settings, { screen: SettingsPath.Settings });
+            } else if (response.kind === GeneralApiProblemKind.BadData) {
+                handleBadDataResponse(response.errors, setErrors);
+            } else {
+                buildGeneralApiBaseHandler(response);
+            }
+        });
     };
 
     const refresh = async () => {
-        clearTimer();
-        const changePasswordService = ChangePasswordService.instance();
-        const response = await changePasswordService.refreshCode();
-        if (response.kind === GeneralApiProblemKind.Ok) {
-            startTimer();
-        } else if (response.kind === GeneralApiProblemKind.BadData) {
-            handleBadDataResponse(response.errors, setErrors);
-        } else {
-            buildGeneralApiBaseHandler(response);
-        }
+        await withFetching(async () => {
+            clearTimer();
+            const changePasswordService = ChangePasswordService.instance();
+            const response = await changePasswordService.refreshCode();
+            if (response.kind === GeneralApiProblemKind.Ok) {
+                startTimer();
+            } else if (response.kind === GeneralApiProblemKind.BadData) {
+                handleBadDataResponse(response.errors, setErrors);
+            } else {
+                buildGeneralApiBaseHandler(response);
+            }
+        });
     };
 
     const handleSave = async () => {
@@ -116,7 +119,11 @@ export const SettingsChangePasswordConfirmation: FC = function SettingsChangePas
                 tx="settingsChangePasswordConfirmScreen:confirmButton"
                 style={themed($tapButton)}
                 preset={'reversed'}
-                disabled={!Utils.isEmpty(errors?.confirmationCode as string) || Utils.isEmpty(form?.confirmationCode as string)}
+                disabled={
+                    !Utils.isEmpty(errors?.confirmationCode as string) ||
+                    Utils.isEmpty(form?.confirmationCode as string) ||
+                    isFetching
+                }
                 onPress={handleSave}
             />
             <Button
@@ -132,7 +139,7 @@ export const SettingsChangePasswordConfirmation: FC = function SettingsChangePas
                 style={themed($tapButton)}
                 onPress={refresh}
                 preset={'reversed'}
-                disabled={resendTimer > 0}
+                disabled={resendTimer > 0 || isFetching}
             />
         </View>
     );

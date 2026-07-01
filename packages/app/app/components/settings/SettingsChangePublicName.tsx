@@ -28,30 +28,31 @@ export const SettingsChangePublicName: FC<Props> = function SettingsChangePublic
     const { themed } = useAppTheme();
     const navigation = useNavigation<NavigationProp<OverviewTabParamList>>();
     const invalidateQuery = useInvalidateQuery();
-    const { form, handleChange, save, errors, setErrors } = useEditView<Partial<{ publicName: string }>>(
-        { publicName },
-        settingsChangePublicNameShema,
-    );
+    const { form, handleChange, save, errors, setErrors, withFetching, isFetching } = useEditView<
+        Partial<{ publicName: string }>
+    >({ publicName }, settingsChangePublicNameShema);
 
     const handlePatch = async () => {
-        const profileService = ProfileService.instance();
-        if (Utils.isEmpty(form.publicName)) return;
+        await withFetching(async () => {
+            const profileService = ProfileService.instance();
+            if (Utils.isEmpty(form.publicName)) return;
 
-        const response = await profileService.doPatchProfile({
-            publicName: form.publicName!,
-        });
-        if (response.kind === GeneralApiProblemKind.Ok) {
-            ToastService.info({
-                title: 'common:info',
-                message: 'common:updateAccountSuccess',
+            const response = await profileService.doPatchProfile({
+                publicName: form.publicName!,
             });
-            await invalidateQuery(InvalidationGroups.profile());
-            navigation.goBack();
-        } else if (response.kind === GeneralApiProblemKind.BadData) {
-            handleBadDataResponse(response.errors, setErrors);
-        } else {
-            buildGeneralApiBaseHandler(response);
-        }
+            if (response.kind === GeneralApiProblemKind.Ok) {
+                ToastService.info({
+                    title: 'common:info',
+                    message: 'common:updateAccountSuccess',
+                });
+                await invalidateQuery(InvalidationGroups.profile());
+                navigation.goBack();
+            } else if (response.kind === GeneralApiProblemKind.BadData) {
+                handleBadDataResponse(response.errors, setErrors);
+            } else {
+                buildGeneralApiBaseHandler(response);
+            }
+        });
     };
 
     const handleSave = async () => {
@@ -81,6 +82,7 @@ export const SettingsChangePublicName: FC<Props> = function SettingsChangePublic
             <EditButtons
                 isCreate={false}
                 isView={false}
+                isSaveDisabled={isFetching}
                 onSave={handleSave}
                 onCancel={() => {
                     navigation.navigate(OverviewPath.Settings, { screen: SettingsPath.Settings });

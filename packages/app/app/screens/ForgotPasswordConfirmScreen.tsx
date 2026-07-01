@@ -29,10 +29,9 @@ export const ForgotPasswordConfirmScreen: FC<Props> = (_props) => {
     const [resendTimer, setResendTimer] = useState(120);
     const timerRef = useRef<ReturnType<typeof setInterval> | undefined>(undefined);
 
-    const { form, handleChange, save, errors, setErrors } = useEditView<{ confirmationCode: string }>(
-        { confirmationCode: '' },
-        signUpConfirmationShema,
-    );
+    const { form, handleChange, save, errors, setErrors, withFetching, isFetching } = useEditView<{
+        confirmationCode: string;
+    }>({ confirmationCode: '' }, signUpConfirmationShema);
 
     const clearTimer = () => {
         if (timerRef.current !== undefined) {
@@ -62,15 +61,17 @@ export const ForgotPasswordConfirmScreen: FC<Props> = (_props) => {
     }, []);
 
     const confirm = async () => {
-        const service = ForgotPasswordService.instance();
-        const response = await service.confirm(email, form.confirmationCode!);
-        if (response.kind === GeneralApiProblemKind.Ok) {
-            navigation.navigate({ name: AppPath.ForgotPasswordChange, params: undefined });
-        } else if (response.kind === GeneralApiProblemKind.BadData) {
-            handleBadDataResponse(response.errors, setErrors);
-        } else {
-            buildGeneralApiBaseHandler(response);
-        }
+        await withFetching(async () => {
+            const service = ForgotPasswordService.instance();
+            const response = await service.confirm(email, form.confirmationCode!);
+            if (response.kind === GeneralApiProblemKind.Ok) {
+                navigation.navigate({ name: AppPath.ForgotPasswordChange, params: undefined });
+            } else if (response.kind === GeneralApiProblemKind.BadData) {
+                handleBadDataResponse(response.errors, setErrors);
+            } else {
+                buildGeneralApiBaseHandler(response);
+            }
+        });
     };
 
     const handleConfirm = async () => {
@@ -80,17 +81,19 @@ export const ForgotPasswordConfirmScreen: FC<Props> = (_props) => {
     };
 
     const resend = async () => {
-        clearTimer();
-        const service = ForgotPasswordService.instance();
-        const response = await service.refreshCode(email);
-        if (response.kind === GeneralApiProblemKind.Ok) {
-            handleChange('confirmationCode', '');
-            startTimer();
-        } else if (response.kind === GeneralApiProblemKind.BadData) {
-            handleBadDataResponse(response.errors, setErrors);
-        } else {
-            buildGeneralApiBaseHandler(response);
-        }
+        await withFetching(async () => {
+            clearTimer();
+            const service = ForgotPasswordService.instance();
+            const response = await service.refreshCode(email);
+            if (response.kind === GeneralApiProblemKind.Ok) {
+                handleChange('confirmationCode', '');
+                startTimer();
+            } else if (response.kind === GeneralApiProblemKind.BadData) {
+                handleBadDataResponse(response.errors, setErrors);
+            } else {
+                buildGeneralApiBaseHandler(response);
+            }
+        });
     };
 
     return (
@@ -118,14 +121,16 @@ export const ForgotPasswordConfirmScreen: FC<Props> = (_props) => {
                     tx="forgotPasswordConfirmScreen:confirmButton"
                     style={themed($tapButton)}
                     preset="reversed"
-                    disabled={!Utils.isEmpty(errors?.confirmationCode as string) || Utils.isEmpty(form.confirmationCode)}
+                    disabled={
+                        !Utils.isEmpty(errors?.confirmationCode as string) || Utils.isEmpty(form.confirmationCode) || isFetching
+                    }
                     onPress={handleConfirm}
                 />
                 <TextButton
                     tx="forgotPasswordConfirmScreen:resendButton"
                     style={themed($tapButton)}
                     preset="reversed"
-                    disabled={resendTimer > 0}
+                    disabled={resendTimer > 0 || isFetching}
                     onPress={resend}
                 />
                 <TextButton

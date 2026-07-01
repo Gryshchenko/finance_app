@@ -27,10 +27,10 @@ export const LoginScreen: FC<LoginScreenProps> = (_props) => {
     const navigation = useNavigation<NativeStackNavigationProp<AppStackParamList>>();
     const [isAuthPasswordHidden, setIsAuthPasswordHidden] = useState<boolean>(true);
     const { doLogin } = useAuth();
-    const { form, handleChange, save, errors, setErrors } = useEditView<{ email: string; password: string }>(
-        { email: 'andy1@test.com', password: 'Qwerty!23456#' },
-        loginSchema,
-    );
+    const { form, handleChange, save, errors, setErrors, withFetching, isFetching } = useEditView<{
+        email: string;
+        password: string;
+    }>({ email: 'andy1@test.com', password: 'Qwerty!23456#' }, loginSchema);
 
     const {
         themed,
@@ -45,17 +45,19 @@ export const LoginScreen: FC<LoginScreenProps> = (_props) => {
         const isValid = await save();
         if (!isValid) return;
 
-        const response = await doLogin({
-            password: form.password as string,
-            email: form.email as string,
-        });
+        await withFetching(async () => {
+            const response = await doLogin({
+                password: form.password as string,
+                email: form.email as string,
+            });
 
-        if (response.kind === GeneralApiProblemKind.Ok) {
-            handleChange('email', '');
-            handleChange('password', '');
-        } else if (response.kind === GeneralApiProblemKind.BadData) {
-            handleBadDataResponse(response.errors, setErrors, new Set(['email', 'password']));
-        }
+            if (response.kind === GeneralApiProblemKind.Ok) {
+                handleChange('email', '');
+                handleChange('password', '');
+            } else if (response.kind === GeneralApiProblemKind.BadData) {
+                handleBadDataResponse(response.errors, setErrors, new Set(['email', 'password']));
+            }
+        });
     }
 
     const PasswordRightAccessory: ComponentType<TextFieldAccessoryProps> = useMemo(
@@ -119,6 +121,7 @@ export const LoginScreen: FC<LoginScreenProps> = (_props) => {
                 tx="loginScreen:login"
                 style={[themed($tapButton), themed($loginButton)]}
                 preset="reversed"
+                disabled={isFetching}
                 onPress={login}
             />
 
