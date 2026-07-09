@@ -1,8 +1,9 @@
 import { ComponentType, FC, useEffect, useMemo, useRef, useState } from 'react';
 // eslint-disable-next-line no-restricted-imports
-import { Switch, TextInput, TextStyle, View, ViewStyle } from 'react-native';
+import { NativeScrollEvent, NativeSyntheticEvent, Switch, TextInput, TextStyle, View, ViewStyle } from 'react-native';
 import { MaterialIcons } from '@expo/vector-icons';
 import { KeyboardAwareScrollView } from 'react-native-keyboard-controller';
+import { useSharedValue } from 'react-native-reanimated';
 import { ErrorCode, Utils } from 'tenpercent/shared';
 
 import { Button } from '@/components/buttons/Button';
@@ -12,6 +13,7 @@ import { HeaderTitle } from '@/components/HeaderTitle';
 import { PressableIcon } from '@/components/Icon';
 import { fetchConfig, LanguageDropdown } from '@/components/LanguagesDropdown';
 import { Screen } from '@/components/Screen';
+import { ScrollBlurHeader } from '@/components/ScrollBlurHeader';
 import { Text } from '@/components/Text';
 import { TextField, type TextFieldAccessoryProps } from '@/components/TextField';
 import { useAuth } from '@/context/AuthContext';
@@ -22,6 +24,8 @@ import type { AppStackScreenProps } from '@/navigators/AppNavigator';
 import { buildSignUpSchema } from '@/schems/validationSchemas';
 import { GeneralApiProblemKind } from '@/services/api/apiProblem';
 import { useAppTheme } from '@/theme/context';
+import { spacing } from '@/theme/spacing';
+import { $styles } from '@/theme/styles';
 import type { ThemedStyle } from '@/theme/types';
 import { AppPath } from '@/types/AppPath';
 import detectLanguage from '@/utils/detectLanguage';
@@ -89,6 +93,13 @@ export const SignUpScreen: FC<SignUpScreenProps> = (_props) => {
         themed,
         theme: { colors },
     } = useAppTheme();
+
+    // Drives the pinned title block's opaque->blur cross-fade as the form scrolls under it.
+    const scrollY = useSharedValue(0);
+    const onScroll = (event: NativeSyntheticEvent<NativeScrollEvent>) => {
+        scrollY.value = event.nativeEvent.contentOffset.y;
+    };
+    const [headerHeight, setHeaderHeight] = useState(0);
 
     function goBack() {
         navigation.navigate({ name: AppPath.Login, params: undefined });
@@ -169,11 +180,13 @@ export const SignUpScreen: FC<SignUpScreenProps> = (_props) => {
 
     return (
         <Screen preset="fixed" contentContainerStyle={themed($screenContentContainer)} safeAreaEdges={['top']}>
-            <HeaderTitle subLogoText={'signUpScreen:signup'} />
-            <Text tx={'signUpScreen:title'} preset="default" style={themed($title)} />
-            <Text tx={'signUpScreen:subTitle'} preset="default" style={themed($subTitle)} />
-
-            <KeyboardAwareScrollView bottomOffset={62}>
+            <KeyboardAwareScrollView
+                bottomOffset={62}
+                style={$styles.flex1}
+                onScroll={onScroll}
+                scrollEventThrottle={16}
+                contentContainerStyle={{ paddingTop: headerHeight }}
+            >
                 <TextField
                     value={String(form.publicName)}
                     onChangeText={(v) => handleChange('publicName', v)}
@@ -274,12 +287,31 @@ export const SignUpScreen: FC<SignUpScreenProps> = (_props) => {
                 />
                 <TextButton testID="back-button" tx="common:back" style={themed($tapButton)} onPress={goBack} />
             </KeyboardAwareScrollView>
+
+            <ScrollBlurHeader
+                scrollY={scrollY}
+                onHeightChange={setHeaderHeight}
+                topInset={spacing.lg}
+                contentTopPadding={spacing.xxl}
+                childrenStyles={{ paddingHorizontal: spacing.lg * 2 }}
+            >
+                <HeaderTitle subLogoText={'signUpScreen:signup'} />
+                <Text tx={'signUpScreen:title'} preset="default" style={themed($title)} />
+                <Text tx={'signUpScreen:subTitle'} preset="default" style={themed($subTitle)} />
+            </ScrollBlurHeader>
         </Screen>
     );
 };
 
 const $screenContentContainer: ThemedStyle<ViewStyle> = ({ spacing }) => ({
-    paddingVertical: spacing.xxl,
+    // Fill the screen so the flex:1 scroll view (which now scrolls under the pinned
+    // header) has a bounded height - without this it collapses to zero and the form
+    // disappears.
+    flex: 1,
+    // Top breathing room is provided by the pinned ScrollBlurHeader overlay instead, so
+    // only the small inset it cancels (spacing.lg) stays here to avoid doubling the gap.
+    paddingTop: spacing.lg,
+    paddingBottom: spacing.xxl,
     paddingHorizontal: spacing.lg,
 });
 

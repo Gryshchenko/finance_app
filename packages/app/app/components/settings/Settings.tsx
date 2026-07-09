@@ -1,5 +1,5 @@
 import { FC } from 'react';
-import { ScrollView, View, ViewStyle } from 'react-native';
+import { NativeScrollEvent, NativeSyntheticEvent, ScrollView, View, ViewStyle } from 'react-native';
 import { NavigationProp, useNavigation } from '@react-navigation/native';
 
 import { SettingsLogoutButton } from '@/components/settings/SettingsLogoutButton';
@@ -9,6 +9,7 @@ import { SettingsSection } from '@/components/settings/SettingsSection';
 import { useSettingsProfile } from '@/hooks/useSettingsProfile';
 import { OverviewTabParamList } from '@/navigators/OverviewNavigator';
 import { SettingsPath } from '@/navigators/SettingsStackNavigator';
+import { $styles } from '@/theme/styles';
 import { OverviewPath } from '@/types/OverviewPath';
 import { openLinkInBrowser } from '@/utils/openLinkInBrowser';
 
@@ -18,7 +19,14 @@ const APP_VERSION = 'v1.0.0';
 const PRIVACY_POLICY_URL = '';
 const TERMS_OF_SERVICE_URL = '';
 
-export const Settings: FC = function Settings() {
+interface SettingsProps {
+    onScroll?: (event: NativeSyntheticEvent<NativeScrollEvent>) => void;
+    // Top/bottom padding so the list clears the absolute blur header / footer.
+    contentPaddingTop?: number;
+    contentPaddingBottom?: number;
+}
+
+export const Settings: FC<SettingsProps> = function Settings({ onScroll, contentPaddingTop, contentPaddingBottom }) {
     const {
         profile,
         currencyList,
@@ -34,7 +42,12 @@ export const Settings: FC = function Settings() {
 
     const navigation = useNavigation<NavigationProp<OverviewTabParamList>>();
     return (
-        <ScrollView>
+        <ScrollView
+            style={$styles.flex1}
+            onScroll={onScroll}
+            scrollEventThrottle={16}
+            contentContainerStyle={{ paddingTop: contentPaddingTop, paddingBottom: contentPaddingBottom }}
+        >
             <View style={$sections}>
                 <SettingsSection titleTx="settingsScreen:account">
                     <SettingsRow

@@ -12,12 +12,21 @@ import DashboardIncomesItem from '@/components/dashboard/DashboardIncomesItem';
 import { InvalidationGroups } from '@/services/QueryCacheService';
 import ToastService from '@/services/ToastService';
 import { spacing } from '@/theme/spacing';
+import { $styles } from '@/theme/styles';
 
 // How long the pull-to-refresh spinner stays visible. Decoupled from the network
 // request so the content always retracts, even if the refetch stalls.
 const REFRESH_ANIMATION_MS = 800;
 
-export default function DashboardItems() {
+interface Props {
+    // Top padding for the scroll content so the first item clears the absolute
+    // blur header rather than starting behind it.
+    contentPaddingTop?: number;
+    // Bottom padding so the last item can clear the absolute blur footer.
+    contentPaddingBottom?: number;
+}
+
+export default function DashboardItems({ contentPaddingTop = 0, contentPaddingBottom = 0 }: Props) {
     const { scrollHandler, scrollRef, onOverlayLayout, dragSessionId, draggingItemType } = useDragOverlay();
     const queryClient = useQueryClient();
 
@@ -74,16 +83,23 @@ export default function DashboardItems() {
             <DashboardDraggableItem />
             <Animated.ScrollView
                 ref={scrollRef}
+                style={$styles.flex1}
                 onScroll={scrollHandler}
                 scrollEventThrottle={16}
                 onLayout={(e) => {
                     onOverlayLayout(e.nativeEvent.layout);
                 }}
-                contentContainerStyle={{ gap: spacing.md, marginTop: spacing.lg }}
+                contentContainerStyle={{
+                    gap: spacing.md,
+                    paddingTop: contentPaddingTop,
+                    paddingBottom: contentPaddingBottom,
+                }}
                 refreshControl={
                     <RefreshControl
                         refreshing={refreshing}
                         onRefresh={onRefresh}
+                        // Keep the pull-to-refresh spinner below the blur header.
+                        progressViewOffset={contentPaddingTop}
                         // Disable pull-to-refresh while a drag is in progress so its
                         // vertical pan can't hijack a drag started at the top of the list.
                         enabled={draggingItemType === undefined}

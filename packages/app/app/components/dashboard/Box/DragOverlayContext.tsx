@@ -15,6 +15,7 @@ import {
 import { Dimensions, type ViewStyle } from 'react-native';
 import Animated, {
     ScrollHandlerProcessed,
+    SharedValue,
     useAnimatedScrollHandler,
     useAnimatedStyle,
     useSharedValue,
@@ -73,6 +74,8 @@ type ContextType = {
     draggingItemType?: ItemType;
     draggedElement: JSX.Element | undefined;
     scrollHandler: ScrollHandlerProcessed<Record<string, unknown>>;
+    /** Live vertical scroll offset of the dashboard list, for scroll-driven UI (e.g. blur header). */
+    scrollY: SharedValue<number>;
     draggedElementStyle: ViewStyle;
     onOverlayLayout: (data: IDragOverlayLayout) => void;
     resetDragState: () => void;
@@ -300,6 +303,7 @@ export const DragOverlayProvider: FC<PropsWithChildren> = ({ children }) => {
         draggedElement,
         updateDragPosition,
         scrollHandler,
+        scrollY,
         initiateItemDrag,
         draggedElementStyle,
         draggingItemType,

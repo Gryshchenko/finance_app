@@ -133,9 +133,8 @@ const $grid: ThemedStyle<ViewStyle> = ({ colors }) => ({
     flexWrap: 'wrap',
 });
 
-const $tile: ThemedStyle<ViewStyle> = ({ colors }) => ({
+const $tile: ThemedStyle<ViewStyle> = () => ({
     width: '50%',
-    backgroundColor: colors.background,
     paddingHorizontal: 12,
     paddingVertical: 8,
     gap: 2,

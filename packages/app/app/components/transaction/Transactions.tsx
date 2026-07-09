@@ -1,9 +1,12 @@
-import { FC } from 'react';
-import { TextStyle, View, ViewStyle } from 'react-native';
+import { FC, useState } from 'react';
+import { NativeScrollEvent, NativeSyntheticEvent, TextStyle, View, ViewStyle } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
+import { useSharedValue } from 'react-native-reanimated';
 import { IEntityStats, IPagination, ITransactionListItem, StatsPeriod, StatsType, Time } from 'tenpercent/shared';
 
+import { BLUR_FOOTER_HEIGHT, BlurFooter } from '@/components/BlurFooter';
 import { EmptyState } from '@/components/EmptyState';
+import { ScrollBlurHeader } from '@/components/ScrollBlurHeader';
 import { Text } from '@/components/Text';
 import TransactionSectionList, { fetchTransactionType } from '@/components/transaction/TransactionSectionList';
 import { TransactionListSkeleton, TransactionStatsSkeleton } from '@/components/transaction/TransactionsSkeleton';
@@ -70,6 +73,15 @@ export const Transactions: FC<ITransactionsPros> = function Transactions(_props)
         },
     );
 
+    // Drives the pinned stats header's opaque->blur cross-fade. Written from a plain
+    // onScroll callback - Reanimated picks up the value on the UI thread for the fade.
+    const scrollY = useSharedValue(0);
+    const onScroll = (event: NativeSyntheticEvent<NativeScrollEvent>) => {
+        scrollY.value = event.nativeEvent.contentOffset.y;
+    };
+    // Measured height of the pinned stats header, used to pad the list clear of it.
+    const [headerHeight, setHeaderHeight] = useState(0);
+
     if (isLoading) {
         return (
             <View style={themed([$container])}>
@@ -97,24 +109,31 @@ export const Transactions: FC<ITransactionsPros> = function Transactions(_props)
 
     return (
         <View style={themed([$container])}>
-            <View style={$statsBarWrapper}>
-                {statsPending ? (
-                    <TransactionStatsSkeleton />
-                ) : (
-                    <TransactionStats statsType={statsType} stats={stats} currencyCode={currencyCode} />
-                )}
-            </View>
-
-            <View style={themed([$header])}>
-                <Text style={themed([$headerLabel])} text={translate('transactionScreen:recentActivity' as const)} />
-            </View>
-
             <TransactionSectionList
                 onPress={onPress}
                 transactions={transactions.data}
                 initialCursor={transactions.cursor}
                 fetch={fetch}
+                onScroll={onScroll}
+                contentPaddingTop={headerHeight}
+                contentPaddingBottom={BLUR_FOOTER_HEIGHT}
             />
+
+            <ScrollBlurHeader scrollY={scrollY} onHeightChange={setHeaderHeight}>
+                <View style={$statsBarWrapper}>
+                    {statsPending ? (
+                        <TransactionStatsSkeleton />
+                    ) : (
+                        <TransactionStats statsType={statsType} stats={stats} currencyCode={currencyCode} />
+                    )}
+                </View>
+
+                <View style={themed([$header])}>
+                    <Text style={themed([$headerLabel])} text={translate('transactionScreen:recentActivity' as const)} />
+                </View>
+            </ScrollBlurHeader>
+
+            <BlurFooter />
         </View>
     );
 };

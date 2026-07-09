@@ -1,5 +1,5 @@
 import { forwardRef, useState } from 'react';
-import { Pressable, SectionList, TextStyle, View, ViewStyle } from 'react-native';
+import { NativeScrollEvent, NativeSyntheticEvent, Pressable, SectionList, TextStyle, View, ViewStyle } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
 import { IPagination, ITransactionListItem, TransactionType, Utils, DateFormat, Time } from 'tenpercent/shared';
 
@@ -29,6 +29,12 @@ interface Props {
     initialCursor?: string | null;
     fetch?: fetchTransactionType;
     onPress?: (id: number, name: string) => void;
+    onScroll?: (event: NativeSyntheticEvent<NativeScrollEvent>) => void;
+    // Top padding so the first row clears the absolute blur header instead of
+    // starting behind it.
+    contentPaddingTop?: number;
+    // Bottom padding so the last row can clear an absolute blur footer.
+    contentPaddingBottom?: number;
 }
 
 const getTypeKey = (typeId: TransactionType): string => {
@@ -115,7 +121,7 @@ const groupByDate = (transactions: ITransactionListItem[]): SectionType<ITransac
 };
 
 const TransactionSectionList = forwardRef<SectionList<ITransactionListItem>, Props>(
-    ({ transactions, initialCursor, fetch, onPress: onPressHandler }, ref) => {
+    ({ transactions, initialCursor, fetch, onPress: onPressHandler, onScroll, contentPaddingTop, contentPaddingBottom }, ref) => {
         const navigation = useNavigation();
         const { themed } = useAppTheme();
         const { getCurrencySymbol } = useCurrency();
@@ -254,6 +260,9 @@ const TransactionSectionList = forwardRef<SectionList<ITransactionListItem>, Pro
             <SectionListWithKeyboardAwareScrollView
                 ref={ref}
                 onEndReached={() => loadMore()}
+                onScroll={onScroll}
+                scrollEventThrottle={16}
+                contentContainerStyle={{ paddingTop: contentPaddingTop, paddingBottom: contentPaddingBottom }}
                 sections={sections}
                 keyExtractor={(item) => {
                     return String(item.transactionId);
