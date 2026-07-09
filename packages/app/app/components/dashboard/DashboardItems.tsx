@@ -1,8 +1,8 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { RefreshControl } from 'react-native';
+import { useQueryClient } from '@tanstack/react-query';
 import Animated from 'react-native-reanimated';
 import { DropProvider } from 'react-native-reanimated-dnd';
-import { useQueryClient } from '@tanstack/react-query';
 
 import { useDragOverlay } from '@/components/dashboard/Box/DragOverlayContext';
 import DashboardAccountsItem from '@/components/dashboard/DashboardAccountsItem';
