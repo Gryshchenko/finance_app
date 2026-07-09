@@ -14,6 +14,7 @@ interface IConfig {
     dbPass: string;
     dbPort: string;
     dbHost: string;
+    dbSsl: boolean;
     // dbCACert: string;
     jwtSecret: string;
     jwtLongSecret: string;
@@ -49,6 +50,7 @@ export function getConfig(): IConfig {
         dbPass: (process.env.TEST_DB_PASS ?? process.env.DB_PASS) as string,
         dbPort: (process.env.TEST_DB_PORT ?? process.env.DB_PORT) as string,
         dbHost: (process.env.TEST_DB_HOST ?? process.env.DB_HOST) as string,
+        dbSsl: (process.env.TEST_DB_SSL ?? process.env.DB_SSL) === 'true',
         // dbCACert: caCert,
         jwtLongExpiresIn: (process.env.TEST_JWT_LONG_EXPIRES_IN ?? process.env.JWT_LONG_EXPIRES_IN) as string,
         jwtLongSecret: (process.env.TEST_JWT_LONG_SECRET ?? process.env.JWT_LONG_SECRET) as string,

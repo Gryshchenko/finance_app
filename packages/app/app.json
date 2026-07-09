@@ -1,11 +1,11 @@
 {
-    "name": "tenpercent",
+    "name": "TenPercent",
     "slug": "tenpercent",
     "scheme": "tenpercent",
     "version": "1.0.0",
     "orientation": "portrait",
     "userInterfaceStyle": "automatic",
-    "icon": "./assets/images/app-icon-all.png",
+    "icon": "./assets/images/TenPercent-1024.png",
     "updates": {
         "fallbackToCacheTimeout": 0
     },
@@ -13,17 +13,17 @@
     "jsEngine": "hermes",
     "assetBundlePatterns": ["**/*"],
     "android": {
-        "icon": "./assets/images/app-icon-android-legacy.png",
+        "icon": "./assets/images/TenPercent-1024.png",
         "package": "com.tenpercent",
         "adaptiveIcon": {
-            "foregroundImage": "./assets/images/app-icon-android-adaptive-foreground.png",
+            "foregroundImage": "./assets/images/TenPercent-foreground-432.png",
             "backgroundImage": "./assets/images/app-icon-android-adaptive-background.png"
         },
         "allowBackup": false,
         "edgeToEdgeEnabled": true
     },
     "ios": {
-        "icon": "./assets/images/app-icon-ios.png",
+        "icon": "./assets/images/TenPercent-1024.png",
         "supportsTablet": true,
         "bundleIdentifier": "com.tenpercent",
         "privacyManifests": {
@@ -39,7 +39,7 @@
         }
     },
     "web": {
-        "favicon": "./assets/images/app-icon-web-favicon.png",
+        "favicon": "./assets/images/TenPercent-192.png",
         "bundler": "metro"
     },
     "plugins": [
@@ -61,7 +61,7 @@
         [
             "expo-splash-screen",
             {
-                "image": "./assets/images/app-icon-android-adaptive-foreground.png",
+                "image": "./assets/images/TenPercent-foreground-432.png",
                 "imageWidth": 300,
                 "resizeMode": "contain",
                 "backgroundColor": "#191015"

@@ -8,6 +8,7 @@ interface IDatabaseConnectionConstructor {
     database: string | undefined;
     user: string | undefined;
     password: string | undefined;
+    ssl: boolean | undefined;
     // cert: string | undefined;
 }
 
@@ -20,7 +21,7 @@ export default class DatabaseConnection implements IDatabaseConnection {
         return DatabaseConnection._inspect || (DatabaseConnection._inspect = new DatabaseConnection(config));
     }
 
-    public constructor({ host, port, database, user, password }: IDatabaseConnectionConstructor) {
+    public constructor({ host, port, database, user, password, ssl }: IDatabaseConnectionConstructor) {
         this._db = knex({
             client: 'pg',
             connection: {
@@ -29,8 +30,9 @@ export default class DatabaseConnection implements IDatabaseConnection {
                 database,
                 user,
                 password,
-                // ssl: false,
-                ssl: process.env.ENV === 'production' ? { rejectUnauthorized: false } : false,
+                // Certificate is always verified when TLS is on; to trust a custom/self-signed
+                // CA in dev, point NODE_EXTRA_CA_CERTS at its root cert instead of disabling checks.
+                ssl: ssl ? { rejectUnauthorized: true } : false,
                 pool: {
                     min: 1,
                     max: 100,

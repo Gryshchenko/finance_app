@@ -19,7 +19,7 @@ router.get('/', sanitizeRequestBody([]), validateQuery({}), ProfileController.ge
 
 router.patch(
     '/',
-    sanitizeRequestBody(['locale', 'currencyCode', 'publicName']),
+    sanitizeRequestBody(['locale', 'currencyCode', 'publicName', 'avatar']),
     validateQuery({}),
     routesInputValidation(patchProfileValidationRules),
     ProfileController.patch,

@@ -22,7 +22,6 @@ import registerRouter from './routes/register';
 import userRouter from './routes/user';
 import passportSetup from './services/auth/passport-setup';
 
-process.env.NODE_TLS_REJECT_UNAUTHORIZED = '0';
 const app = express();
 const port = getConfig().appPort ?? 3000;
 

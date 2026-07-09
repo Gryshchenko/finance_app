@@ -77,8 +77,10 @@ export function useSettingsProfile(): UseSettingsProfileResult {
                 publicName: profile.publicName,
             });
             if (response.kind === GeneralApiProblemKind.Ok) {
-                ToastService.success({ message: 'settingsScreen:updateCurrencySuccess' });
+                await invalidateQuery(InvalidationGroups.balance());
                 await invalidateQuery(InvalidationGroups.profile());
+                await invalidateQuery(InvalidationGroups.stats());
+                ToastService.success({ message: 'settingsScreen:updateCurrencySuccess' });
             } else {
                 ToastService.error({ message: 'settingsScreen:updateCurrencyFailed' });
             }

@@ -89,7 +89,6 @@ export default memo(function DashboardAccount(props: IDashboardItem<IAccountList
                                 }
                                 break;
                             case ItemType.Income: {
-                                console.log(item, inWorkDropItem);
                                 navigation.getParent()?.navigate(OverviewPath.Transactions, {
                                     screen: TransactionPath.TransactionCreate,
                                     params: {

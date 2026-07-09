@@ -2,6 +2,7 @@
 
 // --- Interfaces ---
 export * from './interfaces/IAccount';
+export * from './interfaces/IAvatarConfig';
 export * from './interfaces/IAccountListItem';
 export * from './interfaces/ICategory';
 export * from './interfaces/ICategoryStats';
@@ -32,6 +33,7 @@ export * from './interfaces/IRate';
 
 // --- Types ---
 export * from './types/AccountStatusType';
+export * from './types/AvatarVariant';
 export * from './types/CurrencyType';
 export * from './types/ErrorCode';
 export * from './types/HttpCode';

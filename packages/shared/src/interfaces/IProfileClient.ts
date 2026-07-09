@@ -1,3 +1,4 @@
+import { IAvatarConfig } from 'interfaces/IAvatarConfig';
 import { LanguageType } from 'types/LanguageType';
 
 export interface IProfileClient {
@@ -6,4 +7,5 @@ export interface IProfileClient {
     currencyCode: string | undefined;
     locale: LanguageType | undefined;
     email: string | undefined;
+    avatar: IAvatarConfig | undefined;
 }

@@ -74,10 +74,15 @@ export function Box(props: IBoxProps) {
         setDraggedElementId,
         setInitialDragPosition,
         setDraggingItemType,
+        draggingItemType,
     } = useDragOverlay();
 
     const [isDragOver, setIsDragOver] = useState(false);
-    const isDragging = id === draggedElementId;
+    // Match on BOTH id and type: entity ids are only unique within a section
+    // (accountId/incomeId/categoryId each start at 1), so income #1 and account #1
+    // share id="1". Comparing id alone made every same-id box in other sections
+    // think it was the one being dragged, which disabled their Droppable.
+    const isDragging = id === draggedElementId && type === draggingItemType;
 
     // Clear the dragged ID when the Box unmounts (e.g. when DropProvider re-keys
     // after resetDragState on a successful drop). The overlay's return-to-origin

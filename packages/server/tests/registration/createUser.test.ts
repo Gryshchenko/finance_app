@@ -495,7 +495,6 @@ describe('POST /register/signup', () => {
                     profileId: profile.profileId,
                     currencyCode: profile.currencyCode,
                     locale: profile.locale,
-                    userId: expect.any(Number),
                 },
                 errors: [],
             });

@@ -102,6 +102,21 @@ export const InvalidationGroups = {
         return id != null ? [...base, QueryKeys.transaction(id)] : base;
     },
 
+    /**
+     * Everything visible on the dashboard: the three tile lists
+     * (incomes / accounts / categories) plus the fixed BalanceSummary
+     * (stats + balance). Used by pull-to-refresh.
+     */
+    dashboard: (): readonly (readonly unknown[])[] => [
+        QueryKeys.incomesStats(),
+        QueryKeys.accounts(),
+        QueryKeys.categoriesStats(),
+        QueryKeys.stats(),
+        QueryKeys.balance(),
+    ],
+
+    stats: (): readonly (readonly unknown[])[] => [QueryKeys.stats()],
+    balance: (): readonly (readonly unknown[])[] => [QueryKeys.balance()],
     profile: (): readonly (readonly unknown[])[] => [QueryKeys.profile()],
     entityStats: (entityId: number, statsType: StatsType): readonly (readonly unknown[])[] => [
         QueryKeys.entityStats(entityId, statsType),

@@ -160,7 +160,6 @@ describe('POST /register/signup/emailConfirm', () => {
             publicName,
             locale: LanguageType.US,
             currencyCode: expect.any(String),
-            userId: expect.any(Number),
         });
         const userAfter = await agent.get(`/user/${userId}/`).set('authorization', authorization);
         expect(userAfter.status).toBe(HttpCode.OK);

@@ -73,6 +73,19 @@ export const Settings: FC = function Settings() {
                                 },
                             });
                         }}
+                    />
+                    <SettingsRow
+                        labelTx="settingsScreen:avatar"
+                        icon="edit"
+                        onPress={() => {
+                            navigation.navigate(OverviewPath.Settings, {
+                                screen: SettingsPath.ChangeAvatar,
+                                params: {
+                                    avatar: profile?.avatar,
+                                    seed: profile?.publicName || profile?.email || 'Clara Barton',
+                                },
+                            });
+                        }}
                         isLast
                     />
                 </SettingsSection>

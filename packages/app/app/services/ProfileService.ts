@@ -47,6 +47,7 @@ export class ProfileService extends ApiAbstract {
                 ...(body.locale !== undefined && { locale: body.locale }),
                 ...(body.currencyCode !== undefined && { currencyCode: body.currencyCode }),
                 ...(body.publicName !== undefined && { publicName: body.publicName }),
+                ...(body.avatar !== undefined && { avatar: body.avatar }),
             });
             if (response.kind === GeneralApiProblemKind.Ok) {
                 this._logger.info('Patching profile successfully');

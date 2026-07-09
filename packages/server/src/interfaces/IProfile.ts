@@ -1,4 +1,8 @@
-import { LanguageType } from 'tenpercent/shared';
+import { IAvatarConfig, LanguageType } from 'tenpercent/shared';
+
+export interface IProfileAdditionalInfo {
+    avatar?: IAvatarConfig;
+}
 
 export interface IProfile {
     profileId: number;
@@ -6,4 +10,5 @@ export interface IProfile {
     publicName: string;
     currencyCode: string;
     locale: LanguageType;
+    additionalInfo?: IProfileAdditionalInfo;
 }

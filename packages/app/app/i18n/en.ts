@@ -314,6 +314,8 @@ const en = {
     dashboardScreen: {
         dashboard: 'Dashboard',
         add: 'Add',
+        refreshSuccess: 'Dashboard updated',
+        refreshError: 'Could not refresh. Pull down to try again.',
     },
     settingsScreen: {
         name: 'Settings',
@@ -321,6 +323,7 @@ const en = {
         emailAddress: 'Email Address',
         password: 'Password',
         publicName: 'Public Name',
+        avatar: 'Avatar',
         preferences: 'Preferences',
         defaultCurrency: 'Default Currency',
         notifications: 'Notifications',
@@ -344,6 +347,14 @@ const en = {
         input: 'Public Name',
         updateSuccess: 'Public name updated successfully.',
         updateFailed: 'Could not update public name. Please try again.',
+    },
+    settingsChangeAvatarScreen: {
+        name: 'Edit Avatar',
+        description: 'Pick a style and color palette. Your avatar is generated from your public name.',
+        style: 'Style',
+        palette: 'Palette',
+        updateSuccess: 'Avatar updated successfully.',
+        updateFailed: 'Could not update avatar. Please try again.',
     },
     settingsChangeEmailScreen: {
         name: 'Change Email',

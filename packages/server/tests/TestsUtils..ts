@@ -198,7 +198,6 @@ export const createUser = async ({
         publicName,
         locale: expect.any(String),
         currencyCode: expect.any(String),
-        userId: expect.any(Number),
     });
     expect(userAfter.body.data).toStrictEqual({
         userId,

@@ -1,3 +1,6 @@
+import { body } from 'express-validator';
+import { AVATAR_VARIANTS } from 'tenpercent/shared';
+
 import { createCurrencyCodeExistsRule } from 'src/utils/validation/currencyCodeExistsRule';
 import { createSignupValidationRules } from 'src/utils/validation/routesInputValidation';
 import { validatePathConfirmationCodeProperty } from 'src/utils/validation/validatePathConfirmationCodeProperty';
@@ -18,6 +21,20 @@ const patchProfileValidationRules = [
         min: 3,
         max: 128,
     }),
+    body('avatar').optional().isObject().withMessage('Field avatar must be an object'),
+    body('avatar.variant')
+        .if(body('avatar').exists())
+        .isIn(AVATAR_VARIANTS)
+        .withMessage('Field avatar.variant must be one of the supported values'),
+    body('avatar.colors')
+        .if(body('avatar').exists())
+        .isArray({ min: 1, max: 10 })
+        .withMessage('Field avatar.colors must be a non-empty array'),
+    body('avatar.colors.*')
+        .if(body('avatar').exists())
+        .isString()
+        .matches(/^#([0-9a-fA-F]{3}|[0-9a-fA-F]{6})$/)
+        .withMessage('Field avatar.colors must contain hex color strings'),
     createCurrencyCodeExistsRule(true),
 ];
 

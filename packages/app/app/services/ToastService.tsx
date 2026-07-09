@@ -105,6 +105,7 @@ class ToastService {
                 showProgressBar={true}
                 showCloseIcon={true}
                 animationStyle="fade"
+                useModal={false}
             />
         );
     }

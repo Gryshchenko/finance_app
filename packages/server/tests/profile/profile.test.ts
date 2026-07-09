@@ -49,7 +49,6 @@ describe('Profile', () => {
                 locale,
                 currencyCode: expect.any(String),
                 email: expect.any(String),
-                userId: expect.any(Number),
             });
         });
 
@@ -168,6 +167,42 @@ describe('Profile', () => {
             } = await agent.get(`/user/${userId}/profile`).set('authorization', authorization).expect(HttpCode.OK);
 
             expect(data.publicName).toBe('UpdatedName');
+        });
+
+        it('should persist and return the avatar config when updating avatar', async () => {
+            const agent = request.agent(server);
+            const databaseConnection = DatabaseConnection.instance(config);
+
+            const { userId, authorization } = await createUser({ agent, databaseConnection });
+            userIds.push(userId);
+
+            const avatar = { variant: 'beam', colors: ['#92A1C6', '#146A7C', '#F0AB3D'] };
+
+            await agent
+                .patch(`/user/${userId}/profile`)
+                .set('authorization', authorization)
+                .send({ avatar })
+                .expect(HttpCode.NO_CONTENT);
+
+            const {
+                body: { data },
+            } = await agent.get(`/user/${userId}/profile`).set('authorization', authorization).expect(HttpCode.OK);
+
+            expect(data.avatar).toStrictEqual(avatar);
+        });
+
+        it('should return 400 for avatar with an unsupported variant', async () => {
+            const agent = request.agent(server);
+            const databaseConnection = DatabaseConnection.instance(config);
+
+            const { userId, authorization } = await createUser({ agent, databaseConnection });
+            userIds.push(userId);
+
+            await agent
+                .patch(`/user/${userId}/profile`)
+                .set('authorization', authorization)
+                .send({ avatar: { variant: 'notavariant', colors: ['#92A1C6'] } })
+                .expect(HttpCode.BAD_REQUEST);
         });
 
         it('should return 204 when updating currencyCode', async () => {

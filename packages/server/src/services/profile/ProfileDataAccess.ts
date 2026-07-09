@@ -78,11 +78,17 @@ export default class ProfileDataService extends LoggerBase implements IProfileDa
         try {
             this._logger.info(`Request to patch profile for userId: ${userId}`);
 
-            const allowedKeys = ['locale', 'currencyCode', 'publicName'] as string[];
+            const allowedKeys = ['locale', 'currencyCode', 'publicName', 'avatar'] as string[];
+            const columnKeys = ['locale', 'currencyCode', 'publicName'] as string[];
 
             validateAllowedProperties(properties, allowedKeys);
 
-            const properestForUpdate = getOnlyNotEmptyProperties(properties, allowedKeys);
+            const properestForUpdate = getOnlyNotEmptyProperties(properties, columnKeys);
+
+            // The avatar config lives inside the profiles.additionalInfo JSONB column.
+            if (properties.avatar !== undefined) {
+                properestForUpdate.additionalInfo = JSON.stringify({ avatar: properties.avatar });
+            }
 
             properestForUpdate.updatedAt = Time.getISODateNowUTC();
             const query = trx || this._db.engine();

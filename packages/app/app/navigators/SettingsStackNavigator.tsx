@@ -1,5 +1,7 @@
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
+import { IAvatarConfig } from 'tenpercent/shared';
 
+import { SettingsChangeAvatarScreen } from '@/screens/SettingsScreens/SettingsChangeAvatarScreen';
 import { SettingsChangeEmailConfirmScreen } from '@/screens/SettingsScreens/SettingsChangeEmailConfirmScreen';
 import { SettingsChangeEmailScreen } from '@/screens/SettingsScreens/SettingsChangeEmailScreen';
 import { SettingsChangePasswordConfirmScreen } from '@/screens/SettingsScreens/SettingsChangePasswordConfirmScreen';
@@ -12,6 +14,7 @@ const SettingsStack = createNativeStackNavigator<SettingsStackParamList>();
 export enum SettingsPath {
     Settings = 'settingsHome',
     ChangePublicName = 'changePublicName',
+    ChangeAvatar = 'changeAvatar',
     ChangePassword = 'changePassword',
     ChangePasswordConfirm = 'changePasswordConfirm',
     ChangeEmail = 'changeEmail',
@@ -21,6 +24,7 @@ export enum SettingsPath {
 export type SettingsStackParamList = {
     settingsHome: undefined;
     changePublicName: { publicName: string | undefined };
+    changeAvatar: { avatar: IAvatarConfig | undefined; seed: string };
     changePassword: undefined;
     changePasswordConfirm: undefined;
     changeEmail: {
@@ -38,6 +42,7 @@ function SettingsStackNavigator() {
         <SettingsStack.Navigator screenOptions={{ headerShown: false }}>
             <SettingsStack.Screen name={SettingsPath.Settings} component={SettingsScreen} />
             <SettingsStack.Screen name={SettingsPath.ChangePublicName} component={SettingsChangePublicNameScreen} />
+            <SettingsStack.Screen name={SettingsPath.ChangeAvatar} component={SettingsChangeAvatarScreen} />
             <SettingsStack.Screen name={SettingsPath.ChangeEmail} component={SettingsChangeEmailScreen} />
             <SettingsStack.Screen name={SettingsPath.ChangeEmailConfirm} component={SettingsChangeEmailConfirmScreen} />
             <SettingsStack.Screen name={SettingsPath.ChangePassword} component={SettingsChangePasswordScreen} />

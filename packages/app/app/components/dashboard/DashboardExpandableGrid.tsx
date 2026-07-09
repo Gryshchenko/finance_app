@@ -207,7 +207,7 @@ export default function DashboardExpandableGrid({ rowHeight, rows, children, id,
     return (
         <View ref={viewRef} style={themed($wrapper)} onLayout={measureZones}>
             <GestureDetector gesture={gesture}>
-                <Animated.View style={[themed($container), animatedStyle, hoverFillStyle]}>
+                <Animated.View style={[themed($container), animatedStyle, showHandle && hoverFillStyle]}>
                     <View style={themed($content)}>{children}</View>
                     {showHandle && <View style={themed($handle)} onLayout={measureZones} />}
                 </Animated.View>

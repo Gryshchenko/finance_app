@@ -1,10 +1,14 @@
-import { View, Pressable, ViewStyle, TextStyle, Image, ImageStyle } from 'react-native';
+import { View, Pressable, ViewStyle, TextStyle } from 'react-native';
 import { MaterialIcons } from '@expo/vector-icons';
 import { useNavigation } from '@react-navigation/native';
+import { IProfileClient } from 'tenpercent/shared';
 
-import { Skeleton } from '@/components/Skeleton';
+import { ProfileAvatar } from '@/components/Avatar';
 import { Text } from '@/components/Text';
+import { useAppQuery } from '@/hooks/useAppQuery';
+import { fetchProfile } from '@/hooks/useSettingsProfile';
 import { TxKeyPath } from '@/i18n/index';
+import { QueryKeys, QueryStaleTimes } from '@/services/QueryCacheService';
 import { useAppTheme } from '@/theme/context';
 import { ThemedStyle } from '@/theme/types';
 import { OverviewPath } from '@/types/OverviewPath';
@@ -18,28 +22,17 @@ export const HeaderV2: React.FC<Props> = ({ tx }) => {
     const { colors } = theme;
     const navigation = useNavigation();
 
-    if (false) {
-        return (
-            <View style={themed($container)}>
-                <View style={themed($left)}>
-                    <Skeleton width={40} height={40} radius={20} />
-                    <Skeleton width={120} height={14} radius={7} />
-                </View>
-                <Skeleton width={40} height={40} radius={8} />
-            </View>
-        );
-    }
+    const { data: profile } = useAppQuery<IProfileClient | undefined>(QueryKeys.profile(), fetchProfile, {
+        staleTime: QueryStaleTimes.detail,
+    });
+
+    const avatarSeed = profile?.publicName || profile?.email || 'Clara Barton';
 
     return (
         <View style={themed($container)}>
             <View style={themed($left)}>
                 <View style={themed($avatarWrapper)}>
-                    <Image
-                        source={{
-                            uri: 'https://lh3.googleusercontent.com/aida-public/AB6AXuDRWsgBQT9hcumH74QYBR2_LOyyBUhJCP7hRFwrzIyUv3lUdWJOzEbAN053eruqn_QiwllZervUVP0R4HyXaD0-Xw0hS8eU535L1TZ0N4dQwR_QBTsNMfzw9vNiF3QJicnSYADmPL-gsOdrsksJmOWwaH6K3rZ4EufkI0CPzhZ2PUdlJzH0rbLaucSzsMsvyb4SU-Flz76Qw6EwxlCPR56w9vmy8B5Lz1FABf0RG-2zB8dNgYkDJ4Ahr-YC6n0W7ZGQNmLPdlYCyUs',
-                        }}
-                        style={themed($avatar)}
-                    />
+                    <ProfileAvatar avatar={profile?.avatar} name={avatarSeed} size={40} />
                     <View style={themed($onlineDot)} />
                 </View>
 
@@ -60,12 +53,6 @@ export const HeaderV2: React.FC<Props> = ({ tx }) => {
 
 export const $avatarWrapper: ThemedStyle<ViewStyle> = () => ({
     position: 'relative',
-});
-
-export const $avatar: ThemedStyle<ImageStyle> = () => ({
-    width: 40,
-    height: 40,
-    borderRadius: 20,
 });
 
 export const $onlineDot: ThemedStyle<ViewStyle> = ({ colors }) => ({
