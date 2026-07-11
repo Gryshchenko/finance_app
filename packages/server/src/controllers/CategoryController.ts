@@ -13,6 +13,7 @@ import { BaseError } from 'src/utils/errors/BaseError';
 import { CustomError } from 'src/utils/errors/CustomError';
 import { ValidationError } from 'src/utils/errors/ValidationError';
 import { generateErrorResponse } from 'src/utils/generateErrorResponse';
+import { AccountType } from 'types/AccountType';
 
 export class CategoryController {
     private static readonly logger = Logger.Of('CategoryController');
@@ -78,12 +79,17 @@ export class CategoryController {
             const trx = uow.getTransaction();
             if (Utils.isNull(trx)) {
                 throw new CustomError({
-                    message: 'Transaction not initiated. User could not be created',
+                    message: 'Transaction not initiated',
                     errorCode: ErrorCode.INCOME_ERROR,
                     statusCode: HttpCode.INTERNAL_SERVER_ERROR,
                 });
             }
-            await transactionService.deleteTransactionsForAccount(userId, categoryId, trx as unknown as IDBTransaction);
+            await transactionService.deleteTransactionsForEntity(
+                userId,
+                AccountType.Expense,
+                categoryId,
+                trx as unknown as IDBTransaction,
+            );
             await categoryService.delete(userId, categoryId, trx as unknown as IDBTransaction);
             await uow.commit();
             res.status(HttpCode.NO_CONTENT).json(responseBuilder.setStatus(ResponseStatusType.OK).setData({}).build());

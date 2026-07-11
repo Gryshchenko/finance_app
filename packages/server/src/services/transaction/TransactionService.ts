@@ -24,6 +24,7 @@ import {
 import { UnitOfWork } from 'src/repositories/UnitOfWork';
 import { CustomError } from 'src/utils/errors/CustomError';
 import { ValidationError } from 'src/utils/errors/ValidationError';
+import { AccountType } from 'types/AccountType';
 import { TransactionType } from 'types/TransactionType';
 
 export interface ITransactionService {
@@ -34,7 +35,12 @@ export interface ITransactionService {
     getTransaction(userId: number, transactionId: number): Promise<ITransaction | undefined>;
     deleteTransaction(userId: number, transactionId: number): Promise<boolean>;
     patchTransaction(userId: number, transaction: IPatchTransaction): Promise<number | null>;
-    deleteTransactionsForAccount(userId: number, accountId: number, trx?: IDBTransaction): Promise<boolean>;
+    deleteTransactionsForEntity(
+        userId: number,
+        accountType: AccountType,
+        entityId: number,
+        trx?: IDBTransaction,
+    ): Promise<boolean>;
 }
 
 export default class TransactionService extends LoggerBase implements ITransactionService {
@@ -374,7 +380,25 @@ export default class TransactionService extends LoggerBase implements ITransacti
             });
         }
     }
-    public async deleteTransactionsForAccount(userId: number, accountId: number, trx?: IDBTransaction): Promise<boolean> {
-        return await this._transactionDataAccess.deleteTransactionsForAccount(userId, accountId, trx);
+    public async deleteTransactionsForEntity(
+        userId: number,
+        accountType: AccountType,
+        entityId: number,
+        trx?: IDBTransaction,
+    ): Promise<boolean> {
+        switch (accountType) {
+            case AccountType.Account:
+                return await this._transactionDataAccess.deleteTransactionsForEntity(userId, 'accountId', entityId, trx);
+            case AccountType.Expense:
+                return await this._transactionDataAccess.deleteTransactionsForEntity(userId, 'categoryId', entityId, trx);
+            case AccountType.Income:
+                return await this._transactionDataAccess.deleteTransactionsForEntity(userId, 'incomeId', entityId, trx);
+            default: {
+                throw new ValidationError({
+                    message: `Invalid account type: ${accountType}`,
+                    errorCode: ErrorCode.TRANSACTION_ERROR,
+                });
+            }
+        }
     }
 }

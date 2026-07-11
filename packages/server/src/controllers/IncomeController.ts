@@ -13,6 +13,7 @@ import { BaseError } from 'src/utils/errors/BaseError';
 import { CustomError } from 'src/utils/errors/CustomError';
 import { ValidationError } from 'src/utils/errors/ValidationError';
 import { generateErrorResponse } from 'src/utils/generateErrorResponse';
+import { AccountType } from 'types/AccountType';
 
 export class IncomeController {
     private static readonly logger = Logger.Of('IncomeController');
@@ -82,7 +83,12 @@ export class IncomeController {
                     statusCode: HttpCode.INTERNAL_SERVER_ERROR,
                 });
             }
-            await transactionService.deleteTransactionsForAccount(userId, incomeId, trx as unknown as IDBTransaction);
+            await transactionService.deleteTransactionsForEntity(
+                userId,
+                AccountType.Income,
+                incomeId,
+                trx as unknown as IDBTransaction,
+            );
             await incomeService.delete(userId, incomeId, trx as unknown as IDBTransaction);
             await uow.commit();
             res.status(HttpCode.NO_CONTENT).json(responseBuilder.setStatus(ResponseStatusType.OK).setData({}).build());

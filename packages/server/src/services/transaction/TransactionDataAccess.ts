@@ -82,7 +82,7 @@ export interface ITransactionDataAccess {
     getTransaction(userId: number, transactionId: number, trx?: IDBTransaction): Promise<ITransaction | undefined>;
     patchTransaction(userId: number, properties: Partial<ITransaction>, trx?: IDBTransaction): Promise<number>;
     deleteTransaction(userId: number, transactionId: number, trx?: IDBTransaction): Promise<boolean>;
-    deleteTransactionsForAccount(userId: number, accountId: number, trx?: IDBTransaction): Promise<boolean>;
+    deleteTransactionsForEntity(userId: number, entityName: string, entityId: number, trx?: IDBTransaction): Promise<boolean>;
 }
 
 export default class TransactionDataAccess extends LoggerBase implements ITransactionDataAccess {
@@ -459,29 +459,34 @@ export default class TransactionDataAccess extends LoggerBase implements ITransa
             });
         }
     }
-    public async deleteTransactionsForAccount(userId: number, accountId: number, trx?: IDBTransaction): Promise<boolean> {
+    public async deleteTransactionsForEntity(
+        userId: number,
+        entityName: string,
+        entityId: number,
+        trx?: IDBTransaction,
+    ): Promise<boolean> {
         try {
-            this._logger.info(`Delete transactions for accountId ${accountId} for userId: ${userId}`);
+            this._logger.info(`Delete transactions for entityId ${entityId} for userId: ${userId}`);
 
             const query = trx || this._db.engine();
             const deletedCount = await query('transactions')
                 .update({ isDeleted: true })
-                .where({ userId, accountId, isDeleted: false });
+                .where({ userId, [entityName]: entityId, isDeleted: false });
             if (deletedCount === 0) {
-                this._logger.info(`Transactions for accountId ${accountId} for userId: ${userId} not found`);
+                this._logger.info(`Transactions for entityId ${entityId} for userId: ${userId} not found`);
                 return false;
             } else {
                 this._logger.info(
-                    `Transaction transactions count: ${deletedCount} for accountId ${accountId} for userId: ${userId} delete successful`,
+                    `Transaction transactions count: ${deletedCount} for entityId ${entityId} for userId: ${userId} delete successful`,
                 );
                 return true;
             }
         } catch (e) {
             this._logger.error(
-                `Failed transactions deleting for accountId ${accountId} for userId: ${userId}. Error: ${(e as { message: string }).message}`,
+                `Failed transactions deleting for entityId ${entityId} for userId: ${userId}. Error: ${(e as { message: string }).message}`,
             );
             throw new DBError({
-                message: `Delete transactions for accountId failed due to a database error: ${(e as { message: string }).message}`,
+                message: `Delete transactions for entityId failed due to a database error: ${(e as { message: string }).message}`,
                 statusCode: isBaseError(e) ? (e as unknown as BaseError)?.getStatusCode() : undefined,
                 errorCode: ErrorCode.TRANSACTION_ERROR,
             });
