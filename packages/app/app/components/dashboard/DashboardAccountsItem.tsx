@@ -1,5 +1,5 @@
 import { ComponentType } from 'react';
-import { IAccount, IAccountListItem } from 'tenpercent/shared';
+import { IAccount, IAccountListItem } from '@tenpercent/shared';
 
 import { boxDataItemAdapter } from '@/components/dashboard/Box/boxDataItemAdapter';
 import { ItemType } from '@/components/dashboard/Box/ItemBox';

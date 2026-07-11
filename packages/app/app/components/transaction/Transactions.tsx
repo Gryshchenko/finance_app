@@ -1,8 +1,8 @@
 import { FC, useState } from 'react';
 import { NativeScrollEvent, NativeSyntheticEvent, TextStyle, View, ViewStyle } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
+import { IEntityStats, IPagination, ITransactionListItem, StatsPeriod, StatsType, Time } from '@tenpercent/shared';
 import { useSharedValue } from 'react-native-reanimated';
-import { IEntityStats, IPagination, ITransactionListItem, StatsPeriod, StatsType, Time } from 'tenpercent/shared';
 
 import { BLUR_FOOTER_HEIGHT, BlurFooter } from '@/components/BlurFooter';
 import { EmptyState } from '@/components/EmptyState';

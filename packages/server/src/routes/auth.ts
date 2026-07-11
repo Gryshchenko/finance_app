@@ -1,5 +1,5 @@
+import { UserStatus } from '@tenpercent/shared';
 import express from 'express';
-import { UserStatus } from 'tenpercent/shared';
 
 import tokenVerify, { tokenLongVerify, tokenResetVerify } from 'middleware/tokenVerify';
 import userIdVerify from 'middleware/userIdVerify';

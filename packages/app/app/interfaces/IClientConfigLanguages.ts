@@ -1,4 +1,4 @@
-import { LanguageType } from 'tenpercent/shared';
+import { LanguageType } from '@tenpercent/shared';
 
 export interface IClientConfigLanguage {
     locale: LanguageType;

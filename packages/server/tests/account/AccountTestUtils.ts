@@ -1,5 +1,5 @@
 import { Agent } from 'supertest';
-import { HttpCode, IAccount } from 'tenpercent/shared';
+import { HttpCode, IAccount } from '@tenpercent/shared';
 
 async function patchAccount(
     agent: Agent,

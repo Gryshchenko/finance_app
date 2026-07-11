@@ -1,8 +1,8 @@
+import { ResponseStatusType, ErrorCode } from '@tenpercent/shared';
 import express, { NextFunction, Request, Response } from 'express';
 import helmet from 'helmet';
 import passport from 'passport';
 import path from 'path';
-import { ResponseStatusType, ErrorCode } from 'tenpercent/shared';
 
 import Logger from 'helper/logger/Logger';
 import { checkCors } from 'middleware/checkCors';

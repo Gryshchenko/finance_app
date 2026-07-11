@@ -1,4 +1,4 @@
-import { IPagination, ITransaction, ITransactionListItem, TransactionFieldType } from 'tenpercent/shared';
+import { IPagination, ITransaction, ITransactionListItem, TransactionFieldType } from '@tenpercent/shared';
 
 import { ApiAbstract } from '@/services/api/apiAbstract';
 import { GeneralApiProblem, GeneralApiProblemKind } from '@/services/api/apiProblem';

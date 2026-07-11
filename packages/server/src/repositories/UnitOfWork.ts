@@ -1,4 +1,4 @@
-import { Utils } from 'tenpercent/shared';
+import { Utils } from '@tenpercent/shared';
 
 import { IDatabaseConnection, IDBTransaction } from 'interfaces/IDatabaseConnection';
 import { LoggerBase } from 'src/helper/logger/LoggerBase';

@@ -1,6 +1,5 @@
 import 'express-session';
-import { UserStatus } from 'tenpercent/shared'
-
+import { UserStatus } from '@tenpercent/shared';
 
 declare global {
     namespace Express {

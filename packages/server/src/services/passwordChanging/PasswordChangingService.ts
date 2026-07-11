@@ -1,4 +1,4 @@
-import { ErrorCode, HttpCode, Time, Utils } from 'tenpercent/shared';
+import { ErrorCode, HttpCode, Time, Utils } from '@tenpercent/shared';
 
 import { IDatabaseConnection, IDBTransaction } from 'interfaces/IDatabaseConnection';
 import { ConfirmationHelper } from 'services/confirmation/ConfirmationHelper';

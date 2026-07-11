@@ -1,7 +1,7 @@
 import { closeTestApp, createUser, generateSecureRandom } from '../TestsUtils.';
 import DatabaseConnection from '../../src/repositories/DatabaseConnection';
 import config from '../../src/config/dbConfig';
-import { HttpCode, StatsPeriod, Time, Utils } from 'tenpercent/shared';
+import { HttpCode, StatsPeriod, Time, Utils } from '@tenpercent/shared';
 import {
     createExpenseTransaction,
     createIncomeTransaction,

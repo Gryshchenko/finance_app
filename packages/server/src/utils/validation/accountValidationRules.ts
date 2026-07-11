@@ -1,4 +1,4 @@
-import { ErrorCode, VALID_COLOR_IDS, VALID_ICON_IDS } from 'tenpercent/shared';
+import { ErrorCode, VALID_COLOR_IDS, VALID_ICON_IDS } from '@tenpercent/shared';
 
 import { createCurrencyCodeExistsRule } from 'src/utils/validation/currencyCodeExistsRule';
 import { createSignupValidationRules } from 'src/utils/validation/routesInputValidation';

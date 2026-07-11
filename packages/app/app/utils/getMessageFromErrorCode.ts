@@ -1,4 +1,4 @@
-import { getErrorCodeKey } from 'tenpercent/shared';
+import { getErrorCodeKey } from '@tenpercent/shared';
 
 import { TxKeyPath } from '@/i18n/index';
 import { hasTranslate } from '@/i18n/translate';

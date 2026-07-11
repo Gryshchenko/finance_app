@@ -1,4 +1,4 @@
-import { Utils } from 'tenpercent/shared';
+import { Utils } from '@tenpercent/shared';
 
 enum LogLevel {
     DISABLED,

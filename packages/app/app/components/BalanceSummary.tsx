@@ -1,5 +1,5 @@
 import { TextStyle, View, ViewStyle } from 'react-native';
-import { IBalance, ISummary, StatsPeriod, Time } from 'tenpercent/shared';
+import { IBalance, ISummary, StatsPeriod, Time } from '@tenpercent/shared';
 
 import { Skeleton } from '@/components/Skeleton';
 import { Text } from '@/components/Text';

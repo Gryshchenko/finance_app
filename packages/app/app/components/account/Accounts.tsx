@@ -1,7 +1,7 @@
 import { FC } from 'react';
 import { StyleProp, View, ViewStyle } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
-import { IAccountListItem, Utils } from 'tenpercent/shared';
+import { IAccountListItem, Utils } from '@tenpercent/shared';
 
 import { EmptyState } from '@/components/EmptyState';
 import { ListItem } from '@/components/ListItem';

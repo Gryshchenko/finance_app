@@ -1,9 +1,9 @@
 import jwt from 'jsonwebtoken';
 import { getConfig } from '../src/config/config';
 import { tokenLongVerify } from '../src/middleware/tokenVerify';
-import { HttpCode } from 'tenpercent/shared';
-import { ErrorCode } from 'tenpercent/shared';
-import { ResponseStatusType } from 'tenpercent/shared';
+import { HttpCode } from '@tenpercent/shared';
+import { ErrorCode } from '@tenpercent/shared';
+import { ResponseStatusType } from '@tenpercent/shared';
 import TokenBlacklistBuilder from '../src/services/auth/TokenBlacklistBuilder';
 import UserServiceBuilder from '../src/services/user/UserServiceBuilder';
 

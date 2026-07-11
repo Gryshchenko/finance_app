@@ -1,5 +1,5 @@
+import { Utils } from '@tenpercent/shared';
 import { body, ValidationChain } from 'express-validator';
-import { Utils } from 'tenpercent/shared';
 
 import CurrencyServiceBuilder from 'services/currency/CurrencyServiceBuilder';
 

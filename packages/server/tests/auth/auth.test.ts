@@ -7,14 +7,14 @@ import {
     generateRandomPassword,
     generateSecureRandom,
 } from '../TestsUtils.';
-import { ResponseStatusType } from 'tenpercent/shared';
-import { HttpCode } from 'tenpercent/shared';
+import { ResponseStatusType } from '@tenpercent/shared';
+import { HttpCode } from '@tenpercent/shared';
 import DatabaseConnection from '../../src/repositories/DatabaseConnection';
 import { IDatabaseConnection } from '../../src/interfaces/IDatabaseConnection';
 import config from '../../src/config/dbConfig';
-import { LanguageType } from 'tenpercent/shared';
-import { UserStatus } from 'tenpercent/shared';
-import { ErrorCode } from 'tenpercent/shared';
+import { LanguageType } from '@tenpercent/shared';
+import { UserStatus } from '@tenpercent/shared';
+import { ErrorCode } from '@tenpercent/shared';
 
 // eslint-disable-next-line @typescript-eslint/no-require-imports
 const jwt = require('jsonwebtoken');

@@ -1,5 +1,5 @@
 import { ViewStyle } from 'react-native';
-import { IAccountListItem } from 'tenpercent/shared';
+import { IAccountListItem } from '@tenpercent/shared';
 
 import { fetchAccounts } from '@/components/dashboard/DashboardAccountsItem';
 import { Dropdown } from '@/components/Dropdown';

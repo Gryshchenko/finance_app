@@ -1,6 +1,6 @@
+import { HttpCode, ResponseStatusType, extractToken, ErrorCode } from '@tenpercent/shared';
 import { NextFunction, Request, Response } from 'express';
 import jwt, { Algorithm } from 'jsonwebtoken';
-import { HttpCode, ResponseStatusType, extractToken, ErrorCode } from 'tenpercent/shared';
 
 import Logger from 'helper/logger/Logger';
 import ResponseBuilder from 'helper/responseBuilder/ResponseBuilder';

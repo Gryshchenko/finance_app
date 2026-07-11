@@ -2,9 +2,9 @@ import { createUser, deleteUserAfterTest, generateSecureRandom, getOverview } fr
 import DatabaseConnection from '../../src/repositories/DatabaseConnection';
 import config from '../../src/config/dbConfig';
 import { KeyValueStoreBuilder } from '../../src/repositories/keyValueStore/KeyValueStoreBuilder';
-import { ErrorCode, TransactionType } from 'tenpercent/shared';
-import { ResponseStatusType } from 'tenpercent/shared';
-import { HttpCode } from 'tenpercent/shared';
+import { ErrorCode, TransactionType } from '@tenpercent/shared';
+import { ResponseStatusType } from '@tenpercent/shared';
+import { HttpCode } from '@tenpercent/shared';
 import { getAccount } from '../account/AccountTestUtils';
 import { createIncomeTransaction, getTransaction, patchTransaction, tryPatchTransaction } from './TransactionsTestUtils';
 

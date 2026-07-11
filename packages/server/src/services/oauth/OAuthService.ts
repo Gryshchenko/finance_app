@@ -1,4 +1,4 @@
-import { ErrorCode, HttpCode, LanguageType, RoleType } from 'tenpercent/shared';
+import { ErrorCode, HttpCode, LanguageType, RoleType } from '@tenpercent/shared';
 
 import { IUser } from 'interfaces/IUser';
 import AuthService from 'services/auth/AuthService';

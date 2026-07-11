@@ -1,6 +1,6 @@
 import { FC, useMemo } from 'react';
 import { useNavigation } from '@react-navigation/native';
-import { ICategory, SpendIcon, Utils } from 'tenpercent/shared';
+import { ICategory, SpendIcon, Utils } from '@tenpercent/shared';
 
 import { CategoryFields } from '@/components/category/CategoryFields';
 import { useCurrency } from '@/context/CurrencyContext';

@@ -4,8 +4,8 @@ import { NotFoundError } from '../src/utils/errors/NotFoundError';
 import { ValidationError } from '../src/utils/errors/ValidationError';
 import { BaseError } from '../src/utils/errors/BaseError';
 import { isBaseError } from '../src/utils/errors/isBaseError';
-import { HttpCode } from 'tenpercent/shared';
-import { ErrorCode } from 'tenpercent/shared';
+import { HttpCode } from '@tenpercent/shared';
+import { ErrorCode } from '@tenpercent/shared';
 
 describe('Error Classes', () => {
     const errorData = {

@@ -1,5 +1,5 @@
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
-import { StatsType, TransactionFieldType } from 'tenpercent/shared';
+import { StatsType, TransactionFieldType } from '@tenpercent/shared';
 
 import { TransactionCreateScreen } from '@/screens/TransactionsScreen/TransactionCreateScreen';
 import { TransactionEditScreen } from '@/screens/TransactionsScreen/TransactionEditScreen';

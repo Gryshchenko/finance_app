@@ -9,7 +9,7 @@ import {
     StatsPeriod,
     StatsType,
     Time,
-} from 'tenpercent/shared';
+} from '@tenpercent/shared';
 
 import { LoggerBase } from 'helper/logger/LoggerBase';
 import { ICategoryService } from 'services/category/CategoryService';

@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { Pressable, TextStyle, View, ViewStyle } from 'react-native';
 import DateTimePicker, { DateTimePickerEvent } from '@react-native-community/datetimepicker';
-import { DateFormat, Time, DateTime } from 'tenpercent/shared';
+import { DateFormat, Time, DateTime } from '@tenpercent/shared';
 
 import { FieldModal } from '@/components/FieldModal';
 import { Text, TextProps } from '@/components/Text';

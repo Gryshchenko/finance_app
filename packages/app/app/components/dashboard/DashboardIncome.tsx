@@ -1,6 +1,6 @@
 import { memo } from 'react';
 import { useNavigation } from '@react-navigation/native';
-import { CategoryIconType, IIncomeStats, StatsType, TransactionFieldType } from 'tenpercent/shared';
+import { CategoryIconType, IIncomeStats, StatsType, TransactionFieldType } from '@tenpercent/shared';
 
 import { AddBox } from '@/components/dashboard/Box/AddBox';
 import { useDragOverlay } from '@/components/dashboard/Box/DragOverlayContext';

@@ -1,5 +1,5 @@
+import { ErrorCode, StatsPeriod, HttpCode, ResponseStatusType, StatsType } from '@tenpercent/shared';
 import { Request, Response } from 'express';
-import { ErrorCode, StatsPeriod, HttpCode, ResponseStatusType, StatsType } from 'tenpercent/shared';
 
 import Logger from 'helper/logger/Logger';
 import ResponseBuilder from 'helper/responseBuilder/ResponseBuilder';

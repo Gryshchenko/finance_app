@@ -1,4 +1,4 @@
-import { ICategory, Time, ErrorCode } from 'tenpercent/shared';
+import { ICategory, Time, ErrorCode } from '@tenpercent/shared';
 
 import { ICreateCategory } from 'interfaces/ICreateCategory';
 import { IDatabaseConnection, IDBTransaction } from 'interfaces/IDatabaseConnection';

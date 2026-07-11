@@ -1,4 +1,4 @@
-import { IOverview, ICategory, IIncome, ErrorCode, Utils, HttpCode, IAccountListItem } from 'tenpercent/shared';
+import { IOverview, ICategory, IIncome, ErrorCode, Utils, HttpCode, IAccountListItem } from '@tenpercent/shared';
 
 import { IAccountService } from 'services/account/AccountService';
 import { ICategoryService } from 'services/category/CategoryService';

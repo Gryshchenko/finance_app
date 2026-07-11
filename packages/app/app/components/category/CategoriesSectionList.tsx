@@ -1,7 +1,7 @@
 import { forwardRef } from 'react';
 import { SectionList, StyleProp, View, ViewStyle, TextStyle } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
-import { ICategory, Utils } from 'tenpercent/shared';
+import { ICategory, Utils } from '@tenpercent/shared';
 
 import { EmptyState } from '@/components/EmptyState';
 import SectionListWithKeyboardAwareScrollView from '@/components/SectionListWithKeyboardAwareScrollView';

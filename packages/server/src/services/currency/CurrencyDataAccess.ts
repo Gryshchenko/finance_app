@@ -1,4 +1,4 @@
-import { ErrorCode, ICurrency } from 'tenpercent/shared';
+import { ErrorCode, ICurrency } from '@tenpercent/shared';
 
 import { IDatabaseConnection } from 'interfaces/IDatabaseConnection';
 import { LoggerBase } from 'src/helper/logger/LoggerBase';

@@ -1,8 +1,8 @@
 import ExchangeRateService from 'services/exchangeRateService/ExchangeRateService';
 import RateProviderBuilder from 'services/exchangeRateService/providers/RateProviderBuilder';
 import { IExchangeRateDataAccess } from 'services/exchangeRateService/ExchangeRateDataAccess';
-import { ICurrency, Time } from 'tenpercent/shared';
-import { IRate } from 'tenpercent/shared/dist/interfaces/IRate';
+import { ICurrency, Time } from '@tenpercent/shared';
+import { IRate } from '@tenpercent/shared';
 
 const currencies: ICurrency[] = [
     {

@@ -1,6 +1,6 @@
 import { FC, useMemo } from 'react';
 import { useNavigation } from '@react-navigation/native';
-import { AccountIcon, IAccount, Utils } from 'tenpercent/shared';
+import { AccountIcon, IAccount, Utils } from '@tenpercent/shared';
 
 import { AccountFields } from '@/components/account/AccountFields';
 import { useCurrency } from '@/context/CurrencyContext';

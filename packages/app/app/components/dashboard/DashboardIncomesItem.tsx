@@ -1,5 +1,5 @@
 import { ComponentType } from 'react';
-import { IIncomeStats, IStatsResponse, StatsPeriod, Time } from 'tenpercent/shared';
+import { IIncomeStats, IStatsResponse, StatsPeriod, Time } from '@tenpercent/shared';
 
 import { boxDataItemAdapter } from '@/components/dashboard/Box/boxDataItemAdapter';
 import { DashboardBlockSkeleton } from '@/components/dashboard/DashboardBlockSkeleton';

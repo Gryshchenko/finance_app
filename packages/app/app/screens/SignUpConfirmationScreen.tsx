@@ -1,7 +1,7 @@
 import { FC, useCallback, useEffect, useRef, useState } from 'react';
 import { TextStyle, View, ViewStyle } from 'react-native';
+import { Time, Utils } from '@tenpercent/shared';
 import { KeyboardAwareScrollView } from 'react-native-keyboard-controller';
-import { Time, Utils } from 'tenpercent/shared';
 
 import { Button } from '@/components/buttons/Button';
 import { TextButton } from '@/components/buttons/TextButton';

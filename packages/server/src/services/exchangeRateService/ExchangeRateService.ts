@@ -1,4 +1,4 @@
-import { ICurrency, IRate, Time, TimeDuration } from 'tenpercent/shared';
+import { ICurrency, IRate, Time, TimeDuration } from '@tenpercent/shared';
 
 import { LoggerBase } from 'helper/logger/LoggerBase';
 import { IRateProvider } from 'interfaces/IRateProvider';

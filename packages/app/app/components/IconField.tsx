@@ -9,7 +9,7 @@ import {
     TechIcon,
     TransportIcon,
     VIPIcon,
-} from 'tenpercent/shared';
+} from '@tenpercent/shared';
 
 import { CategoryIcon } from '@/components/CategoryIcon';
 import { FieldModal } from '@/components/FieldModal';

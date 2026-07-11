@@ -1,4 +1,4 @@
-import { IUserClient, ErrorCode } from 'tenpercent/shared';
+import { IUserClient, ErrorCode } from '@tenpercent/shared';
 
 import { ApiAbstract } from '@/services/api/apiAbstract';
 import { GeneralApiProblem, GeneralApiProblemKind } from '@/services/api/apiProblem';

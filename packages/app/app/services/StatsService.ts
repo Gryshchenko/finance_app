@@ -1,4 +1,4 @@
-import { IEntityStats, ISummary, StatsPeriod, StatsType } from 'tenpercent/shared';
+import { IEntityStats, ISummary, StatsPeriod, StatsType } from '@tenpercent/shared';
 
 import { ApiAbstract } from '@/services/api/apiAbstract';
 import { GeneralApiProblem, GeneralApiProblemKind } from '@/services/api/apiProblem';

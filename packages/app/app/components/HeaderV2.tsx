@@ -2,8 +2,8 @@ import { LayoutChangeEvent, Pressable, StyleSheet, TextStyle, View, ViewStyle } 
 import { BlurView } from 'expo-blur';
 import { MaterialIcons } from '@expo/vector-icons';
 import { useNavigation } from '@react-navigation/native';
+import { IProfileClient } from '@tenpercent/shared';
 import Animated, { Extrapolation, interpolate, useAnimatedStyle } from 'react-native-reanimated';
-import { IProfileClient } from 'tenpercent/shared';
 
 import { ProfileAvatar } from '@/components/Avatar';
 import { useDragOverlay } from '@/components/dashboard/Box/DragOverlayContext';

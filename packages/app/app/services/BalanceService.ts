@@ -1,4 +1,4 @@
-import { IBalance } from 'tenpercent/shared';
+import { IBalance } from '@tenpercent/shared';
 
 import { ApiAbstract } from '@/services/api/apiAbstract';
 import { GeneralApiProblem, GeneralApiProblemKind } from '@/services/api/apiProblem';

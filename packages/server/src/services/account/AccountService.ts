@@ -1,4 +1,4 @@
-import { IAccount, Utils, IAccountListItem, ErrorCode } from 'tenpercent/shared';
+import { IAccount, Utils, IAccountListItem, ErrorCode } from '@tenpercent/shared';
 
 import { LoggerBase } from 'helper/logger/LoggerBase';
 import { ICreateAccount } from 'interfaces/ICreateAccount';

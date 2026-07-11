@@ -1,5 +1,5 @@
 import { Agent } from 'supertest';
-import { HttpCode } from 'tenpercent/shared';
+import { HttpCode } from '@tenpercent/shared';
 
 async function createIncome(
     agent: Agent,

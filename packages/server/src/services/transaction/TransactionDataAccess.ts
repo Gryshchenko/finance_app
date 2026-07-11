@@ -7,7 +7,7 @@ import {
     ITransactionListItem,
     ErrorCode,
     TransactionType,
-} from 'tenpercent/shared';
+} from '@tenpercent/shared';
 
 import { ICreateTransaction } from 'interfaces/ICreateTransaction';
 import { IDatabaseConnection, IDBTransaction } from 'interfaces/IDatabaseConnection';

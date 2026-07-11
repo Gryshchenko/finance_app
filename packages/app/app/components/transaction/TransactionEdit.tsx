@@ -1,6 +1,6 @@
 import { FC } from 'react';
 import { StyleProp, ViewStyle } from 'react-native';
-import { ITransaction, StatsType } from 'tenpercent/shared';
+import { ITransaction, StatsType } from '@tenpercent/shared';
 
 import { EmptyState } from '@/components/EmptyState';
 import { TransactionFields } from '@/components/transaction/TransactionFields';

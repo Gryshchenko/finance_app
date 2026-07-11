@@ -1,6 +1,6 @@
 import { Request, Response, NextFunction } from 'express';
 import tokenVerify from '../src/middleware/tokenVerify';
-import { HttpCode, ErrorCode, ResponseStatusType } from 'tenpercent/shared';
+import { HttpCode, ErrorCode, ResponseStatusType } from '@tenpercent/shared';
 import TokenBlacklistBuilder from '../src/services/auth/TokenBlacklistBuilder';
 
 import jwt from 'jsonwebtoken';

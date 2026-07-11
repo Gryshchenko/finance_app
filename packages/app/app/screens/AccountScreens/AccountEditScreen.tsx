@@ -1,5 +1,5 @@
 import { NativeStackScreenProps } from '@react-navigation/native-stack';
-import { IAccount, Utils } from 'tenpercent/shared';
+import { IAccount, Utils } from '@tenpercent/shared';
 
 import { AccountEdit } from '@/components/account/AccountEdit';
 import { useAppQuery } from '@/hooks/useAppQuery';

@@ -1,4 +1,4 @@
-import { TransactionType } from 'tenpercent/shared';
+import { TransactionType } from '@tenpercent/shared';
 import * as Yup from 'yup';
 
 const translationsKeys = {

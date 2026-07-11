@@ -1,4 +1,4 @@
-import { IProfilePatchRequest } from 'tenpercent/shared';
+import { IProfilePatchRequest } from '@tenpercent/shared';
 
 import { ICreateProfile } from 'interfaces/ICreateProfile';
 import { IDBTransaction } from 'interfaces/IDatabaseConnection';

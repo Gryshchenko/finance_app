@@ -1,4 +1,4 @@
-import { IError, HttpCode, ErrorCode } from 'tenpercent/shared';
+import { IError, HttpCode, ErrorCode } from '@tenpercent/shared';
 
 export class BaseError extends Error {
     private readonly statusCode: HttpCode;

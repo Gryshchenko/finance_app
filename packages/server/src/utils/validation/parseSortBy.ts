@@ -1,4 +1,4 @@
-import { ErrorCode, Utils } from 'tenpercent/shared';
+import { ErrorCode, Utils } from '@tenpercent/shared';
 
 import { ValidationError } from 'src/utils/errors/ValidationError';
 

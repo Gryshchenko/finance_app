@@ -1,5 +1,5 @@
 import { useMemo, useState } from 'react';
-import { ICurrency, IProfileClient } from 'tenpercent/shared';
+import { ICurrency, IProfileClient } from '@tenpercent/shared';
 
 import { LanguageOption } from '@/components/settings/settingsLocales';
 import { useCurrency } from '@/context/CurrencyContext';

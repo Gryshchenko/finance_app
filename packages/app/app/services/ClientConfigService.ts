@@ -1,4 +1,4 @@
-import { ErrorCode } from 'tenpercent/shared';
+import { ErrorCode } from '@tenpercent/shared';
 
 import { IClientConfig } from '@/interfaces/IClientConfig';
 import { ApiAbstract } from '@/services/api/apiAbstract';

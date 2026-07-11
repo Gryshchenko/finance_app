@@ -1,6 +1,6 @@
 import { memo } from 'react';
 import { useNavigation } from '@react-navigation/native';
-import { CategoryIconType, IAccountListItem, StatsType, TransactionFieldType, TransactionType, Utils } from 'tenpercent/shared';
+import { CategoryIconType, IAccountListItem, StatsType, TransactionFieldType, TransactionType, Utils } from '@tenpercent/shared';
 
 import { AccountBox } from '@/components/dashboard/Box/AccountBox';
 import { AddBox } from '@/components/dashboard/Box/AddBox';

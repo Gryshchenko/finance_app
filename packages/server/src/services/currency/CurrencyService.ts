@@ -1,4 +1,4 @@
-import { ICurrency } from 'tenpercent/shared';
+import { ICurrency } from '@tenpercent/shared';
 
 import { LoggerBase } from 'helper/logger/LoggerBase';
 import { ICurrencyDataAccess } from 'services/currency/CurrencyDataAccess';

@@ -1,7 +1,7 @@
 import { sanitizeRequestBody } from '../src/utils/validation/sanitizeRequestBody';
-import { ErrorCode } from 'tenpercent/shared';
-import { HttpCode } from 'tenpercent/shared';
-import { ResponseStatusType } from 'tenpercent/shared';
+import { ErrorCode } from '@tenpercent/shared';
+import { HttpCode } from '@tenpercent/shared';
+import { ResponseStatusType } from '@tenpercent/shared';
 
 describe('sanitizeRequestBody function', () => {
     const allowedFields = ['name', 'email'];

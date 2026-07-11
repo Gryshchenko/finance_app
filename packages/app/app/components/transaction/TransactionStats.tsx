@@ -1,4 +1,4 @@
-import { IEntityStats, StatsType } from 'tenpercent/shared';
+import { IEntityStats, StatsType } from '@tenpercent/shared';
 
 import { TransactionStatsBar } from '@/components/transaction/TransactionStatsBar';
 import { useCurrency } from '@/context/CurrencyContext';

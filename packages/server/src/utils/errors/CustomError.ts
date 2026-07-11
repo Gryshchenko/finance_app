@@ -1,4 +1,4 @@
-import { IError } from 'tenpercent/shared';
+import { IError } from '@tenpercent/shared';
 
 import { BaseError } from './BaseError';
 

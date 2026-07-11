@@ -1,6 +1,6 @@
+import { HttpCode, ResponseStatusType, ErrorCode } from '@tenpercent/shared';
 import { NextFunction, Request, Response } from 'express';
 import { body, ValidationChain, validationResult } from 'express-validator';
-import { HttpCode, ResponseStatusType, ErrorCode } from 'tenpercent/shared';
 
 import Logger from 'helper/logger/Logger';
 import ResponseBuilder from 'src/helper/responseBuilder/ResponseBuilder';

@@ -1,5 +1,5 @@
+import { ErrorCode, Utils, Time } from '@tenpercent/shared';
 import { body } from 'express-validator';
-import { ErrorCode, Utils, Time } from 'tenpercent/shared';
 
 import { createSignupValidationRules } from 'src/utils/validation/routesInputValidation';
 import { TransactionType } from 'types/TransactionType';

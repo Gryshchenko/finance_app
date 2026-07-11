@@ -1,5 +1,5 @@
 import { ViewStyle } from 'react-native';
-import { IIncome } from 'tenpercent/shared';
+import { IIncome } from '@tenpercent/shared';
 
 import { Dropdown } from '@/components/Dropdown';
 import { FieldPresets } from '@/components/FieldPresets';

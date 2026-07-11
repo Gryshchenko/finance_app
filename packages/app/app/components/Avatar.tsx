@@ -1,6 +1,6 @@
 import { useId } from 'react';
+import { AvatarVariant, DEFAULT_AVATAR_COLORS, DEFAULT_AVATAR_VARIANT, IAvatarConfig } from '@tenpercent/shared';
 import Svg, { Circle, Defs, G, Line, LinearGradient, Mask, Path, Rect, Stop } from 'react-native-svg';
-import { AvatarVariant, DEFAULT_AVATAR_COLORS, DEFAULT_AVATAR_VARIANT, IAvatarConfig } from 'tenpercent/shared';
 
 /**
  * React Native port of the `boring-avatars` library (https://boringavatars.com/).

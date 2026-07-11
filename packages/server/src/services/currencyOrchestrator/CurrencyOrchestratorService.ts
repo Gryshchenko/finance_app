@@ -1,4 +1,4 @@
-import { DateFormat, ErrorCode, IRate, Time, Utils } from 'tenpercent/shared';
+import { DateFormat, ErrorCode, IRate, Time, Utils } from '@tenpercent/shared';
 
 import { LoggerBase } from 'helper/logger/LoggerBase';
 import { ICurrencyService } from 'services/currency/CurrencyService';

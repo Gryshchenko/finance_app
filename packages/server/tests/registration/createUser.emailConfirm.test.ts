@@ -9,8 +9,8 @@ import {
 } from '../TestsUtils.';
 import DatabaseConnection from '../../src/repositories/DatabaseConnection';
 import config from '../../src/config/dbConfig';
-import { ErrorCode, LanguageType, UserStatus } from 'tenpercent/shared';
-import { HttpCode } from 'tenpercent/shared';
+import { ErrorCode, LanguageType, UserStatus } from '@tenpercent/shared';
+import { HttpCode } from '@tenpercent/shared';
 import TimeManagerUTC from '../../src/utils/TimeManagerUTC';
 
 // eslint-disable-next-line @typescript-eslint/no-require-imports

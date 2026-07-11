@@ -1,7 +1,7 @@
 import { forwardRef, useState } from 'react';
 import { NativeScrollEvent, NativeSyntheticEvent, Pressable, SectionList, TextStyle, View, ViewStyle } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
-import { IPagination, ITransactionListItem, TransactionType, Utils, DateFormat, Time } from 'tenpercent/shared';
+import { IPagination, ITransactionListItem, TransactionType, Utils, DateFormat, Time } from '@tenpercent/shared';
 
 import { EmptyState } from '@/components/EmptyState';
 import { Icon } from '@/components/Icon';

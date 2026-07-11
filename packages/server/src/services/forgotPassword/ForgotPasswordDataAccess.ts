@@ -1,4 +1,4 @@
-import { Time, ErrorCode } from 'tenpercent/shared';
+import { Time, ErrorCode } from '@tenpercent/shared';
 
 import { IDatabaseConnection } from 'interfaces/IDatabaseConnection';
 import { IForgotPassword } from 'interfaces/IForgotPassword';

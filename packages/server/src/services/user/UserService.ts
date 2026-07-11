@@ -1,4 +1,4 @@
-import { UserStatus } from 'tenpercent/shared';
+import { UserStatus } from '@tenpercent/shared';
 
 import { ICreateUser } from 'interfaces/ICreateUser';
 import { IDBTransaction } from 'interfaces/IDatabaseConnection';

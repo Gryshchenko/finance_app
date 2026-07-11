@@ -1,4 +1,4 @@
-import { ICurrency } from 'tenpercent/shared';
+import { ICurrency } from '@tenpercent/shared';
 
 import { LanguageOption } from '@/components/settings/settingsLocales';
 import { SettingsPickerRow } from '@/components/settings/SettingsPickerRow';

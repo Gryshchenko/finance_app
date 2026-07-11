@@ -1,5 +1,5 @@
-import { ITransaction, TransactionType } from 'tenpercent/shared';
-import { HttpCode } from 'tenpercent/shared';
+import { ITransaction, TransactionType } from '@tenpercent/shared';
+import { HttpCode } from '@tenpercent/shared';
 import { Agent } from 'supertest';
 import type { Response } from 'supertest';
 

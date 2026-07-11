@@ -1,4 +1,4 @@
-import { IProfileClient, IProfilePatchRequest } from 'tenpercent/shared';
+import { IProfileClient, IProfilePatchRequest } from '@tenpercent/shared';
 
 import { ApiAbstract } from '@/services/api/apiAbstract';
 import { GeneralApiProblem, GeneralApiProblemKind } from '@/services/api/apiProblem';

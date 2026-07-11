@@ -1,4 +1,4 @@
-import { ColorId, DEFAULT_ACCOUNT_COLOR_IDS, DEFAULT_INCOME_COLOR_IDS } from 'tenpercent/shared';
+import { ColorId, DEFAULT_ACCOUNT_COLOR_IDS, DEFAULT_INCOME_COLOR_IDS } from '@tenpercent/shared';
 
 export const COLOR_MAP: Record<ColorId, string> = {
     [ColorId.Black]: 'rgba(26, 26, 26, 1)', // #1A1A1A

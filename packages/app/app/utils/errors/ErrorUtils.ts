@@ -1,4 +1,4 @@
-import { Utils, ErrorCode } from 'tenpercent/shared';
+import { Utils, ErrorCode } from '@tenpercent/shared';
 
 import { BaseError } from '@/utils/errors/BaseError';
 import { ValidationError } from '@/utils/errors/ValidationError';

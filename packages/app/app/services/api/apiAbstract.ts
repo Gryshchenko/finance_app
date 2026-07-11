@@ -1,7 +1,7 @@
+import { IResponse, ErrorCode, ResponseStatusType } from '@tenpercent/shared';
 import { ApiResponse, ApisauceInstance, create } from 'apisauce';
 import createAuthRefreshInterceptor from 'axios-auth-refresh';
 import axiosRetry from 'axios-retry';
-import { IResponse, ErrorCode, ResponseStatusType } from 'tenpercent/shared';
 
 import Config from '@/config';
 import { IClientConfig } from '@/interfaces/IClientConfig';

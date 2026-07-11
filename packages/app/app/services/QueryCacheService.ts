@@ -1,4 +1,4 @@
-import { StatsType } from 'tenpercent/shared';
+import { StatsType } from '@tenpercent/shared';
 
 export const QueryKeys = {
     accounts: () => ['accounts'] as const,

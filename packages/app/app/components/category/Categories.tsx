@@ -1,7 +1,7 @@
 import { FC } from 'react';
 import { StyleSheet } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
-import { ICategory } from 'tenpercent/shared';
+import { ICategory } from '@tenpercent/shared';
 
 import CategorySectionList from '@/components/category/CategoriesSectionList';
 import { EmptyState } from '@/components/EmptyState';

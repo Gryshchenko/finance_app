@@ -1,5 +1,5 @@
 import { ViewStyle } from 'react-native';
-import { ICategory } from 'tenpercent/shared';
+import { ICategory } from '@tenpercent/shared';
 
 import { Dropdown } from '@/components/Dropdown';
 import { FieldPresets } from '@/components/FieldPresets';

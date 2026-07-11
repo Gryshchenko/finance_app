@@ -1,7 +1,7 @@
 import { FC } from 'react';
 import { View, ViewStyle, TextStyle } from 'react-native';
 import { NavigationProp, useNavigation } from '@react-navigation/native';
-import { Utils } from 'tenpercent/shared';
+import { Utils } from '@tenpercent/shared';
 
 import { EditButtons } from '@/components/buttons/EditButtons';
 import { Text } from '@/components/Text';

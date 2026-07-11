@@ -1,6 +1,6 @@
 import { FC } from 'react';
 import { useNavigation } from '@react-navigation/native';
-import { ITransaction, Time } from 'tenpercent/shared';
+import { ITransaction, Time } from '@tenpercent/shared';
 
 import { TransactionFields } from '@/components/transaction/TransactionFields';
 import { useCurrency } from '@/context/CurrencyContext';

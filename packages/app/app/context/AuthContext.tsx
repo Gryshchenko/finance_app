@@ -1,5 +1,5 @@
 import { createContext, FC, PropsWithChildren, useCallback, useContext, useState } from 'react';
-import { IUserClient, ResponseStatusType, UserStatus } from 'tenpercent/shared';
+import { IUserClient, ResponseStatusType, UserStatus } from '@tenpercent/shared';
 
 import { buildGeneralApiBaseHandler, GeneralApiProblem, GeneralApiProblemKind } from '@/services/api/apiProblem';
 import { AuthService } from '@/services/AuthService';

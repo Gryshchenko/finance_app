@@ -1,4 +1,4 @@
-import { UserStatus } from 'tenpercent/shared';
+import { UserStatus } from '@tenpercent/shared';
 
 export interface ICreateUser {
     userId: number;

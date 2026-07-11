@@ -1,6 +1,6 @@
 import { useNavigation, ParamListBase } from '@react-navigation/native';
 import { NativeStackScreenProps } from '@react-navigation/native-stack';
-import { TransactionType } from 'tenpercent/shared';
+import { TransactionType } from '@tenpercent/shared';
 
 import { TransactionCreate } from '@/components/transaction/TransactionCreate';
 import { translate } from '@/i18n/translate';

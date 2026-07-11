@@ -1,4 +1,4 @@
-import { IProfileClient } from 'tenpercent/shared';
+import { IProfileClient } from '@tenpercent/shared';
 
 import { IProfileWithEmail } from 'interfaces/IProfileWithEmail';
 

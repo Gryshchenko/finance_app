@@ -2,7 +2,7 @@ import { createUser, deleteUserAfterTest, generateSecureRandom, getOverview } fr
 import DatabaseConnection from '../../src/repositories/DatabaseConnection';
 import config from '../../src/config/dbConfig';
 import { KeyValueStoreBuilder } from '../../src/repositories/keyValueStore/KeyValueStoreBuilder';
-import { HttpCode, Time } from 'tenpercent/shared';
+import { HttpCode, Time } from '@tenpercent/shared';
 import { createAllTransactions, fetchTransactions, fetchTransactionsAll, fetchTransactionsBad } from './TransactionsTestUtils';
 
 // eslint-disable-next-line @typescript-eslint/no-require-imports

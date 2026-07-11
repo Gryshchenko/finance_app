@@ -1,6 +1,6 @@
 import { RefObject } from 'react';
 import { TextStyle, View, ViewStyle } from 'react-native';
-import { AccountIcon, CategoryIconType } from 'tenpercent/shared';
+import { AccountIcon, CategoryIconType } from '@tenpercent/shared';
 
 import { CategoryIcon } from '@/components/CategoryIcon';
 import { DASH_BOARD_BOX_SIZE } from '@/components/dashboard/Box/Box';

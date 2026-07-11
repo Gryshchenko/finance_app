@@ -1,5 +1,5 @@
 import { StyleProp, TextStyle } from 'react-native';
-import { ICurrency } from 'tenpercent/shared';
+import { ICurrency } from '@tenpercent/shared';
 
 import { Dropdown } from '@/components/Dropdown';
 import { TextFieldPresets } from '@/components/TextField';

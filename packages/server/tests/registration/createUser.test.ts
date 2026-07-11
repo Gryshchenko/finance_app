@@ -11,11 +11,11 @@ import {
 import DatabaseConnection from '../../src/repositories/DatabaseConnection';
 import config from '../../src/config/dbConfig';
 import { user_initial } from 'src/config/user_initial';
-import { LanguageType } from 'tenpercent/shared';
-import { UserStatus } from 'tenpercent/shared';
-import { ResponseStatusType } from 'tenpercent/shared';
-import { ErrorCode } from 'tenpercent/shared';
-import { HttpCode } from 'tenpercent/shared';
+import { LanguageType } from '@tenpercent/shared';
+import { UserStatus } from '@tenpercent/shared';
+import { ResponseStatusType } from '@tenpercent/shared';
+import { ErrorCode } from '@tenpercent/shared';
+import { HttpCode } from '@tenpercent/shared';
 
 // eslint-disable-next-line @typescript-eslint/no-require-imports
 const argon2 = require('argon2');

@@ -8,7 +8,7 @@ import {
     DEFAULT_AVATAR_COLORS,
     DEFAULT_AVATAR_VARIANT,
     IAvatarConfig,
-} from 'tenpercent/shared';
+} from '@tenpercent/shared';
 
 import { Avatar } from '@/components/Avatar';
 import { EditButtons } from '@/components/buttons/EditButtons';

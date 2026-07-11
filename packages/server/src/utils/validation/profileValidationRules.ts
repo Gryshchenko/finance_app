@@ -1,5 +1,5 @@
+import { AVATAR_VARIANTS } from '@tenpercent/shared';
 import { body } from 'express-validator';
-import { AVATAR_VARIANTS } from 'tenpercent/shared';
 
 import { createCurrencyCodeExistsRule } from 'src/utils/validation/currencyCodeExistsRule';
 import { createSignupValidationRules } from 'src/utils/validation/routesInputValidation';

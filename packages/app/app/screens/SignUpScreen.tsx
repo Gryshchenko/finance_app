@@ -2,9 +2,9 @@ import { ComponentType, FC, useEffect, useMemo, useRef, useState } from 'react';
 // eslint-disable-next-line no-restricted-imports
 import { NativeScrollEvent, NativeSyntheticEvent, Switch, TextInput, TextStyle, View, ViewStyle } from 'react-native';
 import { MaterialIcons } from '@expo/vector-icons';
+import { ErrorCode, Utils } from '@tenpercent/shared';
 import { KeyboardAwareScrollView } from 'react-native-keyboard-controller';
 import { useSharedValue } from 'react-native-reanimated';
-import { ErrorCode, Utils } from 'tenpercent/shared';
 
 import { Button } from '@/components/buttons/Button';
 import { TextButton } from '@/components/buttons/TextButton';

@@ -1,4 +1,4 @@
-import { IBalance, Utils, HttpCode, ErrorCode } from 'tenpercent/shared';
+import { IBalance, Utils, HttpCode, ErrorCode } from '@tenpercent/shared';
 
 import { LoggerBase } from 'helper/logger/LoggerBase';
 import { IAccountService } from 'services/account/AccountService';

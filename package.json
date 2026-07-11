@@ -1,5 +1,6 @@
 {
-    "name": "tenpercen",
+    "version": "1.0.0",
+    "name": "tenpercent",
     "private": true,
     "workspaces": [
         "packages/*"
@@ -52,6 +53,5 @@
             "react-native"
         ],
         "publicHoistPattern": []
-    },
-    "version": "1.0.0"
+    }
 }

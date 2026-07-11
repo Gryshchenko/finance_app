@@ -1,7 +1,7 @@
 import { FC } from 'react';
 import { StyleProp, ViewStyle } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
-import { IIncome, Utils } from 'tenpercent/shared';
+import { IIncome, Utils } from '@tenpercent/shared';
 
 import { EmptyState } from '@/components/EmptyState';
 import { IncomeFields } from '@/components/income/IncomeFields';

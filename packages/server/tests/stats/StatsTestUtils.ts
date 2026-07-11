@@ -1,5 +1,5 @@
-import { ICategoryStats, IEntityStats, IStatsResponse, ISummary, StatsPeriod, StatsType } from 'tenpercent/shared';
-import { HttpCode } from 'tenpercent/shared';
+import { ICategoryStats, IEntityStats, IStatsResponse, ISummary, StatsPeriod, StatsType } from '@tenpercent/shared';
+import { HttpCode } from '@tenpercent/shared';
 import { Agent } from 'supertest';
 
 async function getSummary(

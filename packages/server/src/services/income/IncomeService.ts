@@ -1,4 +1,4 @@
-import { IIncome, Utils } from 'tenpercent/shared';
+import { IIncome, Utils } from '@tenpercent/shared';
 
 import { LoggerBase } from 'helper/logger/LoggerBase';
 import { ICreateIncome } from 'interfaces/ICreateIncome';

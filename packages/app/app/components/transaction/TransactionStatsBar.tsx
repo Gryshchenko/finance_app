@@ -1,6 +1,6 @@
 import { FC, useCallback, useMemo } from 'react';
 import { MaterialIcons } from '@expo/vector-icons';
-import { Utils } from 'tenpercent/shared';
+import { Utils } from '@tenpercent/shared';
 
 import { StatsBar, StatTileConfig } from '@/components/StatsBar';
 import { translate } from '@/i18n/translate';

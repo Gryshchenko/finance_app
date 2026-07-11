@@ -1,5 +1,5 @@
 import { FC } from 'react';
-import { CategoryIconType } from 'tenpercent/shared';
+import { CategoryIconType } from '@tenpercent/shared';
 
 import { Icon } from '@/components/Icon';
 

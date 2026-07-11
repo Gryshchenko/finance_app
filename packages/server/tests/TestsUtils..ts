@@ -1,11 +1,11 @@
 import { IDatabaseConnection } from '../src/interfaces/IDatabaseConnection';
-import { HttpCode } from 'tenpercent/shared';
+import { HttpCode } from '@tenpercent/shared';
 import DatabaseConnection from '../src/repositories/DatabaseConnection';
 import { KeyValueStoreBuilder } from '../src/repositories/keyValueStore/KeyValueStoreBuilder';
 import config from '../src/config/dbConfig';
 import { Agent } from 'supertest';
-import { LanguageType } from 'tenpercent/shared';
-import { UserStatus } from 'tenpercent/shared';
+import { LanguageType } from '@tenpercent/shared';
+import { UserStatus } from '@tenpercent/shared';
 // eslint-disable-next-line @typescript-eslint/no-require-imports
 const crypto = require('crypto');
 

@@ -1,6 +1,6 @@
 import { FC } from 'react';
 import { StyleProp, TextStyle, View, ViewStyle } from 'react-native';
-import { ICategory, ICurrency } from 'tenpercent/shared';
+import { ICategory, ICurrency } from '@tenpercent/shared';
 
 import { CurrencyField } from '@/components/CurrencyField';
 import { GeneralDetailView } from '@/components/GeneralDetailView';

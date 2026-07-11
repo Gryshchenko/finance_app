@@ -7,7 +7,7 @@ import {
     ITransactionListItem,
     ITransactionListItemsRequest,
     Utils,
-} from 'tenpercent/shared';
+} from '@tenpercent/shared';
 
 import { LoggerBase } from 'helper/logger/LoggerBase';
 import { ICreateTransaction } from 'interfaces/ICreateTransaction';

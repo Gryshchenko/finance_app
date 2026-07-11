@@ -1,4 +1,4 @@
-import { IProfilePatchRequest, Time, ErrorCode } from 'tenpercent/shared';
+import { IProfilePatchRequest, Time, ErrorCode } from '@tenpercent/shared';
 
 import { ICreateProfile } from 'interfaces/ICreateProfile';
 import { IDatabaseConnection, IDBTransaction } from 'interfaces/IDatabaseConnection';

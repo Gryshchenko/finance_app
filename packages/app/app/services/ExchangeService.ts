@@ -1,4 +1,4 @@
-import { IRate } from 'tenpercent/shared/dist/interfaces/IRate';
+import { IRate } from '@tenpercent/shared';
 
 import { ApiAbstract } from '@/services/api/apiAbstract';
 import { GeneralApiProblem, GeneralApiProblemKind } from '@/services/api/apiProblem';

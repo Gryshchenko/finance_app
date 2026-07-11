@@ -1,6 +1,6 @@
+import { IUserClient } from '@tenpercent/shared';
 import argon2 from 'argon2';
 import cryptoModule from 'crypto';
-import { IUserClient } from 'tenpercent/shared';
 
 import Logger from 'helper/logger/Logger';
 import { IUser } from 'interfaces/IUser';

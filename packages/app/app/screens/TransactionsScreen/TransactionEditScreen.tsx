@@ -1,6 +1,6 @@
 import { ParamListBase } from '@react-navigation/native';
 import { NativeStackScreenProps } from '@react-navigation/native-stack';
-import { ITransaction } from 'tenpercent/shared';
+import { ITransaction } from '@tenpercent/shared';
 
 import { TransactionEdit } from '@/components/transaction/TransactionEdit';
 import { useAppQuery } from '@/hooks/useAppQuery';

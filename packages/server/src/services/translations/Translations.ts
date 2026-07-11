@@ -1,4 +1,4 @@
-import { Utils } from 'tenpercent/shared';
+import { Utils } from '@tenpercent/shared';
 
 import Logger from 'helper/logger/Logger';
 import Parameter from 'src/services/translations/Parameter';

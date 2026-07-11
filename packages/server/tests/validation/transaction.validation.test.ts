@@ -11,7 +11,7 @@
 import { closeTestApp, createUser, deleteUserAfterTest, generateSecureRandom, getOverview } from '../TestsUtils.';
 import DatabaseConnection from '../../src/repositories/DatabaseConnection';
 import config from '../../src/config/dbConfig';
-import { HttpCode, TransactionType } from 'tenpercent/shared';
+import { HttpCode, TransactionType } from '@tenpercent/shared';
 
 // eslint-disable-next-line @typescript-eslint/no-require-imports
 const request = require('supertest');

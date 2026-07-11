@@ -1,4 +1,4 @@
-import { ResponseStatusType, ErrorCode, IResponse } from 'tenpercent/shared';
+import { ResponseStatusType, ErrorCode, IResponse } from '@tenpercent/shared';
 
 import ResponseBuilder from './ResponseBuilder';
 

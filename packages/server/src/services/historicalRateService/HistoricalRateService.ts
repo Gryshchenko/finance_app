@@ -1,4 +1,4 @@
-import { DateFormat, ErrorCode, IRate, Time } from 'tenpercent/shared';
+import { DateFormat, ErrorCode, IRate, Time } from '@tenpercent/shared';
 
 import { LoggerBase } from 'helper/logger/LoggerBase';
 import { IHistoricalRateDataAccess } from 'services/historicalRateService/HistoricalRateDataAccess';

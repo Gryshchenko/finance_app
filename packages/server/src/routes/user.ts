@@ -1,5 +1,5 @@
+import { UserStatus } from '@tenpercent/shared';
 import express from 'express';
-import { UserStatus } from 'tenpercent/shared';
 
 import { UserController } from 'controllers/UserController';
 import userIdVerify from 'middleware/userIdVerify';

@@ -1,5 +1,5 @@
+import { UserStatus } from '@tenpercent/shared';
 import express from 'express';
-import { UserStatus } from 'tenpercent/shared';
 
 import { ExchangeRateController } from 'controllers/ExchangeRateController';
 import tokenVerify from 'middleware/tokenVerify';

@@ -1,4 +1,4 @@
-import { IError, ErrorCode, HttpCode } from 'tenpercent/shared';
+import { IError, ErrorCode, HttpCode } from '@tenpercent/shared';
 
 import { BaseError } from './BaseError';
 

@@ -1,4 +1,4 @@
-import { ICategory, ICategoryStats, IGetStatsProperties, IStatsResponse } from 'tenpercent/shared';
+import { ICategory, ICategoryStats, IGetStatsProperties, IStatsResponse } from '@tenpercent/shared';
 
 import { ApiAbstract } from '@/services/api/apiAbstract';
 import { GeneralApiProblem, GeneralApiProblemKind } from '@/services/api/apiProblem';

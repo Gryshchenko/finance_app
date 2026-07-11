@@ -1,5 +1,5 @@
+import { ErrorCode, HttpCode } from '@tenpercent/shared';
 import { OAuth2Client } from 'google-auth-library';
-import { ErrorCode, HttpCode } from 'tenpercent/shared';
 
 import { getConfig } from 'src/config/config';
 import { LoggerBase } from 'src/helper/logger/LoggerBase';

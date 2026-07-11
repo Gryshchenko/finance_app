@@ -1,6 +1,6 @@
+import { HttpCode, ErrorCode } from '@tenpercent/shared';
 import crypto from 'crypto';
 import jwt from 'jsonwebtoken';
-import { HttpCode, ErrorCode } from 'tenpercent/shared';
 
 import { IKeyValueStore } from 'src/repositories/keyValueStore/KeyValueStore';
 import { CustomError } from 'src/utils/errors/CustomError';

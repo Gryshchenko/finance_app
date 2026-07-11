@@ -1,6 +1,6 @@
 import { useMemo } from 'react';
 import { ViewStyle } from 'react-native';
-import { CategoryIconType } from 'tenpercent/shared';
+import { CategoryIconType } from '@tenpercent/shared';
 
 import ItemBox, { ItemBoxProps, ItemType } from '@/components/dashboard/Box/ItemBox';
 import { ColorService } from '@/services/ColorService';

@@ -1,4 +1,4 @@
-import { ErrorCode, Time } from 'tenpercent/shared';
+import { ErrorCode, Time } from '@tenpercent/shared';
 
 import { LoggerBase } from 'helper/logger/LoggerBase';
 import { IDatabaseConnection, IDBTransaction } from 'interfaces/IDatabaseConnection';

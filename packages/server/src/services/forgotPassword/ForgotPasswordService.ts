@@ -1,4 +1,4 @@
-import { ErrorCode, HttpCode, RoleType } from 'tenpercent/shared';
+import { ErrorCode, HttpCode, RoleType } from '@tenpercent/shared';
 
 import AuthService from 'services/auth/AuthService';
 import { ConfirmationHelper } from 'services/confirmation/ConfirmationHelper';

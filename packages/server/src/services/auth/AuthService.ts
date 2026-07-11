@@ -1,6 +1,6 @@
+import { ErrorCode, HttpCode, RoleType, Time, Utils } from '@tenpercent/shared';
 import crypto from 'crypto';
 import jwt, { Algorithm, DecodeOptions, JwtPayload } from 'jsonwebtoken';
-import { ErrorCode, HttpCode, RoleType, Time, Utils } from 'tenpercent/shared';
 
 import { IUser } from 'interfaces/IUser';
 import { JwtPayloadCustom, TokenPurpose } from 'services/auth/passport-setup';

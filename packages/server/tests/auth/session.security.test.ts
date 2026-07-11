@@ -17,7 +17,7 @@
 import { closeTestApp, createUser, deleteUserAfterTest, generateSecureRandom } from '../TestsUtils.';
 import DatabaseConnection from '../../src/repositories/DatabaseConnection';
 import config from '../../src/config/dbConfig';
-import { HttpCode, UserStatus } from 'tenpercent/shared';
+import { HttpCode, UserStatus } from '@tenpercent/shared';
 import { getConfig } from '../../src/config/config';
 
 // eslint-disable-next-line @typescript-eslint/no-require-imports

@@ -1,6 +1,6 @@
 import { FC, useMemo } from 'react';
 import { useNavigation } from '@react-navigation/native';
-import { IIncome, IncomeIcon, Utils } from 'tenpercent/shared';
+import { IIncome, IncomeIcon, Utils } from '@tenpercent/shared';
 
 import { IncomeFields } from '@/components/income/IncomeFields';
 import { useCurrency } from '@/context/CurrencyContext';

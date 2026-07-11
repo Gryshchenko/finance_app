@@ -1,4 +1,4 @@
-import { LanguageType } from 'tenpercent/shared';
+import { LanguageType } from '@tenpercent/shared';
 
 import { TranslationLoader } from 'src/services/translations/TranslationLoader';
 

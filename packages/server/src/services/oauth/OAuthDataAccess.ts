@@ -1,4 +1,4 @@
-import { ErrorCode } from 'tenpercent/shared';
+import { ErrorCode } from '@tenpercent/shared';
 
 import { IDatabaseConnection, IDBTransaction } from 'interfaces/IDatabaseConnection';
 import { IOAuthProviderRecord } from 'interfaces/IOAuthProvider';

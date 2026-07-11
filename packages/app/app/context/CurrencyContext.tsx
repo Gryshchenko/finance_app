@@ -1,5 +1,5 @@
 import { createContext, FC, PropsWithChildren, useContext, useEffect, useState } from 'react';
-import { ICurrency, IProfileClient, Utils } from 'tenpercent/shared';
+import { ICurrency, IProfileClient, Utils } from '@tenpercent/shared';
 
 import { useAppQuery } from '@/hooks/useAppQuery';
 import { fetchProfile } from '@/hooks/useSettingsProfile';

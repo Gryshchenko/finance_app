@@ -1,4 +1,4 @@
-import { ErrorCode } from 'tenpercent/shared';
+import { ErrorCode } from '@tenpercent/shared';
 
 import { IError } from '@/interfaces/IError';
 

@@ -94,7 +94,7 @@
         "react-native-web": "^0.21.2",
         "react-native-worklets": "^0.5.1",
         "react-test-renderer": "19.1.0",
-        "tenpercent/shared": "workspace:*",
+        "@tenpercent/shared": "workspace:*",
         "toastify-react-native": "^7.2.3",
         "typescript": "^5.9.2",
         "yup": "^1.7.1"

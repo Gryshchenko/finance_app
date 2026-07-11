@@ -1,4 +1,4 @@
-import { Utils } from 'tenpercent/shared';
+import { Utils } from '@tenpercent/shared';
 
 export default class Parameter {
     private readonly _key: string;

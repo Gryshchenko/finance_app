@@ -1,4 +1,4 @@
-import { DateFormat, Time } from 'tenpercent/shared';
+import { DateFormat, Time } from '@tenpercent/shared';
 
 import { LoggerBase } from 'helper/logger/LoggerBase';
 import {

@@ -1,4 +1,4 @@
-import { ErrorCode, Time, HttpCode, UserStatus } from 'tenpercent/shared';
+import { ErrorCode, Time, HttpCode, UserStatus } from '@tenpercent/shared';
 
 import { ICreateUserServer } from 'interfaces/ICreateUserServer';
 import { IDatabaseConnection, IDBTransaction } from 'interfaces/IDatabaseConnection';

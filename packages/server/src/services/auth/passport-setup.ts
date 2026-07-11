@@ -1,7 +1,7 @@
+import { ErrorCode } from '@tenpercent/shared';
 import { Algorithm, JwtPayload } from 'jsonwebtoken';
 import { PassportStatic } from 'passport';
 import { Strategy as JwtStrategy, StrategyOptionsWithRequest, VerifiedCallback, ExtractJwt } from 'passport-jwt';
-import { ErrorCode } from 'tenpercent/shared';
 
 import { getConfig } from 'src/config/config';
 import UserServiceBuilder from 'src/services/user/UserServiceBuilder';

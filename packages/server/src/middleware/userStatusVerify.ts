@@ -1,5 +1,5 @@
+import { HttpCode, ErrorCode, ResponseStatusType, UserStatus, Utils } from '@tenpercent/shared';
 import { Request, Response, NextFunction } from 'express';
-import { HttpCode, ErrorCode, ResponseStatusType, UserStatus, Utils } from 'tenpercent/shared';
 
 import Logger from 'helper/logger/Logger';
 import ResponseBuilder from 'helper/responseBuilder/ResponseBuilder';

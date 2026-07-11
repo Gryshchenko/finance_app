@@ -1,4 +1,4 @@
-import { ErrorCode, HttpCode } from 'tenpercent/shared';
+import { ErrorCode, HttpCode } from '@tenpercent/shared';
 
 import { IDatabaseConnection, IDBTransaction } from 'interfaces/IDatabaseConnection';
 import { IEmailChanging } from 'interfaces/IEmailChanging';

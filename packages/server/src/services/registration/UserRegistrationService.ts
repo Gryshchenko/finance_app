@@ -1,4 +1,3 @@
-import cryptoModule from 'crypto';
 import {
     AccountIcon,
     ErrorCode,
@@ -10,7 +9,8 @@ import {
     SpendIcon,
     UserStatus,
     Utils,
-} from 'tenpercent/shared';
+} from '@tenpercent/shared';
+import cryptoModule from 'crypto';
 
 import { IDatabaseConnection, IDBTransaction } from 'interfaces/IDatabaseConnection';
 import { IProfile } from 'interfaces/IProfile';

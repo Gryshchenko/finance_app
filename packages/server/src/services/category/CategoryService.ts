@@ -1,4 +1,4 @@
-import { ICategory, Utils } from 'tenpercent/shared';
+import { ICategory, Utils } from '@tenpercent/shared';
 
 import { LoggerBase } from 'helper/logger/LoggerBase';
 import { ICreateCategory } from 'interfaces/ICreateCategory';

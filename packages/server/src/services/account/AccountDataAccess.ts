@@ -6,7 +6,7 @@ import {
     IAccountListItem,
     ErrorCode,
     DEFAULT_ACCOUNT_COLOR_IDS,
-} from 'tenpercent/shared';
+} from '@tenpercent/shared';
 
 import { ICreateAccount } from 'interfaces/ICreateAccount';
 import { IDatabaseConnection, IDBTransaction } from 'interfaces/IDatabaseConnection';

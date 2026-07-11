@@ -1,4 +1,4 @@
-import { Utils } from 'tenpercent/shared';
+import { Utils } from '@tenpercent/shared';
 import uap from 'ua-parser-js';
 
 import Logger from 'helper/logger/Logger';

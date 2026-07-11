@@ -1,7 +1,6 @@
 import { FC, FunctionComponent } from 'react';
 import { StyleProp, View, ViewStyle } from 'react-native';
-import { TransactionType, Utils } from 'tenpercent/shared';
-import { IRate } from 'tenpercent/shared/dist/interfaces/IRate';
+import { TransactionType, Utils, IRate } from '@tenpercent/shared';
 
 import { AccountDropdown } from '@/components/account/AccountDropdown';
 import { CategoryDropdown } from '@/components/category/CateogryDropdown';

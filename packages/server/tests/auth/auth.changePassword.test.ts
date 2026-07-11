@@ -1,7 +1,7 @@
 import { closeTestApp, createUser, deleteUserAfterTest, generateRandomEmail } from '../TestsUtils.';
 import DatabaseConnection from '../../src/repositories/DatabaseConnection';
 import config from '../../src/config/dbConfig';
-import { HttpCode } from 'tenpercent/shared';
+import { HttpCode } from '@tenpercent/shared';
 import { getConfig } from '../../src/config/config';
 
 // eslint-disable-next-line @typescript-eslint/no-require-imports

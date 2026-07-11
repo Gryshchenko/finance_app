@@ -1,4 +1,4 @@
-import { IIncome, AccountStatusType, Time, ErrorCode, DEFAULT_INCOME_COLOR_IDS } from 'tenpercent/shared';
+import { IIncome, AccountStatusType, Time, ErrorCode, DEFAULT_INCOME_COLOR_IDS } from '@tenpercent/shared';
 
 import { ICreateIncome } from 'interfaces/ICreateIncome';
 import { IDatabaseConnection, IDBTransaction } from 'interfaces/IDatabaseConnection';
