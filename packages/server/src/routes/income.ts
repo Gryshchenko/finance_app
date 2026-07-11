@@ -4,6 +4,7 @@ import { IncomeController } from 'controllers/IncomeController';
 import {
     incomeConvertValidationMessageToErrorCode,
     createIncomeValidationRules,
+    deleteIncomeValidationRules,
     patchIncomeValidationRules,
 } from 'src/utils/validation/incomeValidationRules';
 import routesInputValidation from 'src/utils/validation/routesInputValidation';
@@ -33,6 +34,8 @@ incomeRouter.get(
 incomeRouter.delete(
     '/:incomeId',
     validateQuery({}),
+    sanitizeRequestBody(['keepData']),
+    routesInputValidation(deleteIncomeValidationRules, incomeConvertValidationMessageToErrorCode),
     routesInputValidation([validatePathQueryProperty('incomeId')]),
     IncomeController.delete,
 );

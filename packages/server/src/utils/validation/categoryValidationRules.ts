@@ -5,6 +5,9 @@ import { createSignupValidationRules } from 'src/utils/validation/routesInputVal
 
 const categoryConvertValidationMessageToErrorCode = (path: string): ErrorCode => {
     switch (path) {
+        case 'keepData': {
+            return ErrorCode.CATEGORY_ERROR;
+        }
         case 'budget': {
             return ErrorCode.CATEGORY_ERROR;
         }
@@ -77,4 +80,15 @@ const patchCategoryValidationRules = [
     }),
 ];
 
-export { patchCategoryValidationRules, categoryConvertValidationMessageToErrorCode, createCategoryValidationRules };
+const deleteCategoryValidationRules = [
+    ...createSignupValidationRules('keepData', 'boolean', {
+        optional: true,
+    }),
+];
+
+export {
+    patchCategoryValidationRules,
+    categoryConvertValidationMessageToErrorCode,
+    createCategoryValidationRules,
+    deleteCategoryValidationRules,
+};

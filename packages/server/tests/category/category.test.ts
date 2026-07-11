@@ -288,4 +288,120 @@ describe('Category', () => {
         }
         await agent.delete(`/user/${userId}/category/99999999}`).set('authorization', authorization).expect(HttpCode.BAD_REQUEST);
     });
+    it(`DELETE - delete category - keepData: false removes transactions`, async () => {
+        const agent = request.agent(server);
+        const databaseConnection = DatabaseConnection.instance(config);
+        const { userId, authorization } = await createUser({
+            agent,
+            databaseConnection,
+        });
+        userIds.push(userId);
+        const {
+            body: {
+                data: { accounts },
+            },
+        } = await agent.get(`/user/${userId}/overview/`).set('authorization', authorization).send({}).expect(HttpCode.OK);
+        const {
+            body: {
+                data: { categoryId },
+            },
+        } = await agent
+            .post(`/user/${userId}/category/`)
+            .set('authorization', authorization)
+            .send({
+                currencyCode: 'USD',
+                categoryName: 'Test keepData false',
+                iconId: 'wallet',
+            })
+            .expect(HttpCode.OK);
+        const ids = [];
+        for (let i = 0; i < 3; i += 1) {
+            const {
+                body: {
+                    data: { transactionId },
+                },
+            } = await agent
+                .post(`/user/${userId}/transaction/`)
+                .set('authorization', authorization)
+                .send({
+                    currencyCode: 'USD',
+                    targetCurrencyCode: 'USD',
+                    amount: 1000,
+                    targetAmount: 1000,
+                    description: 'Test',
+                    transactionTypeId: TransactionType.Expense,
+                    accountId: accounts[0].accountId,
+                    categoryId,
+                })
+                .expect(HttpCode.CREATED);
+            ids.push(transactionId);
+        }
+        await agent
+            .delete(`/user/${userId}/category/${categoryId}`)
+            .set('authorization', authorization)
+            .send({ keepData: false })
+            .expect(HttpCode.NO_CONTENT);
+        await agent.get(`/user/${userId}/category/${categoryId}`).set('authorization', authorization).expect(HttpCode.NOT_FOUND);
+        for (const id of ids) {
+            await agent.get(`/user/${userId}/transaction/${id}`).set('authorization', authorization).expect(HttpCode.NOT_FOUND);
+        }
+    });
+    it(`DELETE - delete category - keepData: true preserves transactions`, async () => {
+        const agent = request.agent(server);
+        const databaseConnection = DatabaseConnection.instance(config);
+        const { userId, authorization } = await createUser({
+            agent,
+            databaseConnection,
+        });
+        userIds.push(userId);
+        const {
+            body: {
+                data: { accounts },
+            },
+        } = await agent.get(`/user/${userId}/overview/`).set('authorization', authorization).send({}).expect(HttpCode.OK);
+        const {
+            body: {
+                data: { categoryId },
+            },
+        } = await agent
+            .post(`/user/${userId}/category/`)
+            .set('authorization', authorization)
+            .send({
+                currencyCode: 'USD',
+                categoryName: 'Test keepData true',
+                iconId: 'wallet',
+            })
+            .expect(HttpCode.OK);
+        const ids = [];
+        for (let i = 0; i < 3; i += 1) {
+            const {
+                body: {
+                    data: { transactionId },
+                },
+            } = await agent
+                .post(`/user/${userId}/transaction/`)
+                .set('authorization', authorization)
+                .send({
+                    currencyCode: 'USD',
+                    targetCurrencyCode: 'USD',
+                    amount: 1000,
+                    targetAmount: 1000,
+                    description: 'Test',
+                    transactionTypeId: TransactionType.Expense,
+                    accountId: accounts[0].accountId,
+                    categoryId,
+                })
+                .expect(HttpCode.CREATED);
+            ids.push(transactionId);
+        }
+        await agent
+            .delete(`/user/${userId}/category/${categoryId}`)
+            .set('authorization', authorization)
+            .send({ keepData: true })
+            .expect(HttpCode.NO_CONTENT);
+        await agent.get(`/user/${userId}/category/${categoryId}`).set('authorization', authorization).expect(HttpCode.NOT_FOUND);
+        for (const id of ids) {
+            await agent.get(`/user/${userId}/transaction/${id}`).set('authorization', authorization).expect(HttpCode.OK);
+        }
+    });
 });

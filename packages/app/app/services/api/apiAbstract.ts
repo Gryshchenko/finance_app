@@ -200,6 +200,7 @@ export abstract class ApiAbstract {
 
     protected async authDelete<T>(
         url: string,
+        body: Record<string, unknown> = {},
         options: {
             token: string;
         } = {
@@ -209,7 +210,7 @@ export abstract class ApiAbstract {
         const { token } = options;
         if (!this.isAuthTokenExist(token)) return this.getAuthError('Token not exist');
         return await this.buildResponse(
-            async () => await this.apisauce.delete(url, {}, { headers: { Authorization: `Bearer ${token}` } }),
+            async () => await this.apisauce.delete(url, body, { headers: { Authorization: `Bearer ${token}` } }),
         );
     }
 }

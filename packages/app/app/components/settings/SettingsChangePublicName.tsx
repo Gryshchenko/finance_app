@@ -43,7 +43,7 @@ export const SettingsChangePublicName: FC<Props> = function SettingsChangePublic
             if (response.kind === GeneralApiProblemKind.Ok) {
                 ToastService.info({
                     title: 'common:info',
-                    message: 'common:updateAccountSuccess',
+                    message: 'settingsChangePublicNameScreen:updateSuccess',
                 });
                 await invalidateQuery(InvalidationGroups.profile());
                 navigation.goBack();

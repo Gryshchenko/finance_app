@@ -58,15 +58,17 @@ export class AccountOrchestrationService extends LoggerBase {
             return await this._accountService.patchAccount(userId, accountId, properties, trx);
         });
     }
-    public async delete(userId: number, accountId: number): Promise<boolean> {
+    public async delete(userId: number, accountId: number, keepData: boolean): Promise<boolean> {
         return this.withTransaction(async (trx: IDBTransaction) => {
             try {
-                await this._transactionService.deleteTransactionsForEntity(
-                    userId,
-                    AccountType.Account,
-                    accountId,
-                    trx as unknown as IDBTransaction,
-                );
+                if (!keepData) {
+                    await this._transactionService.deleteTransactionsForEntity(
+                        userId,
+                        AccountType.Account,
+                        accountId,
+                        trx as unknown as IDBTransaction,
+                    );
+                }
                 return await this._accountService.deleteAccount(userId, accountId, trx as unknown as IDBTransaction);
             } catch (e: unknown) {
                 this._logger.error(`Delete account failed due reason: ${(e as { message: string }).message}`);

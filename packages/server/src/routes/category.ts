@@ -4,6 +4,7 @@ import { CategoryController } from 'controllers/CategoryController';
 import {
     categoryConvertValidationMessageToErrorCode,
     createCategoryValidationRules,
+    deleteCategoryValidationRules,
     patchCategoryValidationRules,
 } from 'src/utils/validation/categoryValidationRules';
 import routesInputValidation from 'src/utils/validation/routesInputValidation';
@@ -40,6 +41,8 @@ categoryRouter.get(
 categoryRouter.delete(
     '/:categoryId',
     validateQuery({}),
+    sanitizeRequestBody(['keepData']),
+    routesInputValidation(deleteCategoryValidationRules, categoryConvertValidationMessageToErrorCode),
     routesInputValidation([validatePathQueryProperty('categoryId')]),
     CategoryController.delete,
 );

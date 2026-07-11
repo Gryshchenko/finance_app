@@ -3,17 +3,12 @@ import { Request, Response } from 'express';
 
 import Logger from 'helper/logger/Logger';
 import ResponseBuilder from 'helper/responseBuilder/ResponseBuilder';
-import { IDatabaseConnection, IDBTransaction } from 'interfaces/IDatabaseConnection';
+import { IncomeOrchestrationServiceBuilder } from 'services/income/IncomeOrchestrationServiceBuilder';
 import IncomeServiceBuilder from 'services/income/IncomeServiceBuilder';
 import { StatsOrchestratorServiceBuilder } from 'services/StatsOrchestrator/StatsOrchestratorServiceBuilder';
-import TransactionServiceBuilder from 'services/transaction/TransactionServiceBuilder';
-import DatabaseConnectionBuilder from 'src/repositories/DatabaseConnectionBuilder';
-import { UnitOfWork } from 'src/repositories/UnitOfWork';
 import { BaseError } from 'src/utils/errors/BaseError';
-import { CustomError } from 'src/utils/errors/CustomError';
 import { ValidationError } from 'src/utils/errors/ValidationError';
 import { generateErrorResponse } from 'src/utils/generateErrorResponse';
-import { AccountType } from 'types/AccountType';
 
 export class IncomeController {
     private static readonly logger = Logger.Of('IncomeController');
@@ -67,33 +62,13 @@ export class IncomeController {
     }
     public static async delete(req: Request, res: Response) {
         const responseBuilder = new ResponseBuilder();
-        const db: IDatabaseConnection = DatabaseConnectionBuilder.build();
-        const uow = new UnitOfWork(db);
         try {
             const userId = Number(req.user?.userId);
+            const keepData = Boolean(req.body?.keepData);
             const incomeId = Number(req.params?.incomeId);
-            const incomeService = IncomeServiceBuilder.build(db);
-            const transactionService = TransactionServiceBuilder.build(db);
-            await uow.start();
-            const trx = uow.getTransaction();
-            if (Utils.isNull(trx)) {
-                throw new CustomError({
-                    message: 'Transaction not initiated. User could not be created',
-                    errorCode: ErrorCode.INCOME_ERROR,
-                    statusCode: HttpCode.INTERNAL_SERVER_ERROR,
-                });
-            }
-            await transactionService.deleteTransactionsForEntity(
-                userId,
-                AccountType.Income,
-                incomeId,
-                trx as unknown as IDBTransaction,
-            );
-            await incomeService.delete(userId, incomeId, trx as unknown as IDBTransaction);
-            await uow.commit();
+            await IncomeOrchestrationServiceBuilder.build().delete(userId, incomeId, keepData);
             res.status(HttpCode.NO_CONTENT).json(responseBuilder.setStatus(ResponseStatusType.OK).setData({}).build());
         } catch (e: unknown) {
-            await uow.rollback();
             IncomeController.logger.error(`Delete income failed due reason: ${(e as { message: string }).message}`);
             generateErrorResponse(res, responseBuilder, e as BaseError, ErrorCode.INCOME_ERROR);
         }

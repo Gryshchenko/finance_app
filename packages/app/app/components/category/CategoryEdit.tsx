@@ -58,12 +58,12 @@ export const CategoryEdit: FC<ICategoryPros> = function CategoryEdit(_props) {
             }
         });
     };
-    const handleDelete = async () => {
+    const handleDelete = async (keepData: boolean) => {
         await withFetching(async () => {
             const categoryService = CategoryService.instance();
             if (!form.categoryId) return;
 
-            const response = await categoryService.doDeleteCategory(form.categoryId);
+            const response = await categoryService.doDeleteCategory(form.categoryId, { keepData });
             if (response.kind === GeneralApiProblemKind.Ok) {
                 ToastService.info({
                     title: 'common:info',
@@ -81,11 +81,11 @@ export const CategoryEdit: FC<ICategoryPros> = function CategoryEdit(_props) {
     };
 
     const onDelete = () => {
-        AlertService.confirm(
-            translate('categoryScreen:deleteCategoryTitle'),
-            translate('categoryScreen:deleteCategoryMessage'),
-            handleDelete,
-        );
+        AlertService.prompt(translate('categoryScreen:deleteCategoryTitle'), translate('categoryScreen:deleteCategoryMessage'), [
+            { text: translate('common:keepData'), onPress: () => handleDelete(true) },
+            { text: translate('common:deleteAll'), onPress: () => handleDelete(false) },
+            { text: translate('common:cancel'), style: 'cancel' },
+        ]);
     };
 
     const handleSave = async () => {

@@ -5,6 +5,9 @@ import { createSignupValidationRules } from 'src/utils/validation/routesInputVal
 
 const incomeConvertValidationMessageToErrorCode = (path: string): ErrorCode => {
     switch (path) {
+        case 'keepData': {
+            return ErrorCode.INCOME_ERROR;
+        }
         case 'iconId':
             return ErrorCode.INCOME_ERROR;
         case 'status': {
@@ -66,4 +69,15 @@ const patchIncomeValidationRules = [
     }),
 ];
 
-export { patchIncomeValidationRules, incomeConvertValidationMessageToErrorCode, createIncomeValidationRules };
+const deleteIncomeValidationRules = [
+    ...createSignupValidationRules('keepData', 'boolean', {
+        optional: true,
+    }),
+];
+
+export {
+    patchIncomeValidationRules,
+    incomeConvertValidationMessageToErrorCode,
+    createIncomeValidationRules,
+    deleteIncomeValidationRules,
+};

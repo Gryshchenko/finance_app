@@ -134,7 +134,10 @@ export class CategoryService extends ApiAbstract {
         });
     }
 
-    public async doDeleteCategory(categoryId: number): Promise<
+    public async doDeleteCategory(
+        categoryId: number,
+        { keepData }: { keepData: boolean },
+    ): Promise<
         | {
               kind: GeneralApiProblemKind.Ok;
               data: ICategory | undefined;
@@ -144,7 +147,7 @@ export class CategoryService extends ApiAbstract {
         return this.withErrorHandler(async () => {
             this._logger.info(`Start deleting category ${categoryId}`);
             const userId = this._authService.userId;
-            const response = await this.authDelete(`/user/${userId}/category/${categoryId}`);
+            const response = await this.authDelete(`/user/${userId}/category/${categoryId}`, { keepData });
             if (response.kind === GeneralApiProblemKind.Ok) {
                 this._logger.info(`Delete category successfully id: ${categoryId}`);
             } else {

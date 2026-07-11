@@ -4,6 +4,7 @@ import { AccountController } from 'controllers/AccountController';
 import {
     accountConvertValidationMessageToErrorCode,
     createAccountValidationRules,
+    deleteAccountValidationRules,
     patchAccountValidationRules,
 } from 'src/utils/validation/accountValidationRules';
 import routesInputValidation from 'src/utils/validation/routesInputValidation';
@@ -32,6 +33,8 @@ accountRouter.get(
 accountRouter.delete(
     '/:accountId',
     validateQuery({}),
+    sanitizeRequestBody(['keepData']),
+    routesInputValidation(deleteAccountValidationRules, accountConvertValidationMessageToErrorCode),
     routesInputValidation([validatePathQueryProperty('accountId')]),
     AccountController.delete,
 );

@@ -53,7 +53,10 @@ export class AccountService extends ApiAbstract {
         });
     }
 
-    public async doDeleteAccount(accountId: number): Promise<
+    public async doDeleteAccount(
+        accountId: number,
+        { keepData }: { keepData: boolean },
+    ): Promise<
         | {
               kind: GeneralApiProblemKind.Ok;
               data: IAccount | undefined;
@@ -63,7 +66,7 @@ export class AccountService extends ApiAbstract {
         return this.withErrorHandler(async () => {
             this._logger.info(`Start deleting account ${accountId}`);
             const userId = this._authService.userId;
-            const response = await this.authDelete(`/user/${userId}/account/${accountId}`);
+            const response = await this.authDelete(`/user/${userId}/account/${accountId}`, { keepData });
             if (response.kind === GeneralApiProblemKind.Ok) {
                 this._logger.info(`Delete account successfully id: ${accountId}`);
             } else {

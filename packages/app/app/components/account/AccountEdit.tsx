@@ -47,7 +47,7 @@ export const AccountEdit: FC<IAccountPros> = function AccountEdit(_props) {
             if (response.kind === GeneralApiProblemKind.Ok) {
                 ToastService.info({
                     title: 'common:info',
-                    message: 'common:updateAccountSuccess',
+                    message: 'accountScreen:updateAccountSuccess',
                 });
                 await invalidateQuery(InvalidationGroups.account(form.accountId));
                 goBackSmart();
@@ -64,30 +64,34 @@ export const AccountEdit: FC<IAccountPros> = function AccountEdit(_props) {
         if (!isValid) return;
         await handlePatch();
     };
-    const handleDelete = async () => {
+    const handleDelete = async (keepData: boolean) => {
         await withFetching(async () => {
             const accountService = AccountService.instance();
             if (!form.accountId) return;
 
-            const response = await accountService.doDeleteAccount(form.accountId);
+            const response = await accountService.doDeleteAccount(form.accountId, { keepData });
             if (response.kind === GeneralApiProblemKind.Ok) {
                 ToastService.info({
                     title: 'common:info',
-                    message: 'common:deleteAccountSuccess',
+                    message: 'accountScreen:deleteAccountSuccess',
                 });
                 await invalidateQuery(InvalidationGroups.account(form.accountId));
                 navigation.getParent()?.navigate(OverviewPath.Dashboard);
             } else {
                 ToastService.error({
                     title: 'common:error',
-                    message: 'common:deleteAccountFailed',
+                    message: 'accountScreen:deleteAccountFailed',
                 });
             }
         });
     };
 
     const onDelete = () => {
-        AlertService.confirm(translate('common:deleteAccountTitle'), translate('common:deleteAccountMessage'), handleDelete);
+        AlertService.prompt(translate('accountScreen:deleteAccountTitle'), translate('accountScreen:deleteAccountMessage'), [
+            { text: translate('common:keepData'), onPress: () => handleDelete(true) },
+            { text: translate('common:deleteAll'), onPress: () => handleDelete(false) },
+            { text: translate('common:cancel'), style: 'cancel' },
+        ]);
     };
     if (!data) {
         return <EmptyState style={$containerStyleOverride} buttonOnPress={() => goBackSmart()} />;

@@ -52,8 +52,9 @@ export class AccountController {
         const responseBuilder = new ResponseBuilder();
         try {
             const userId = Number(req.user?.userId);
+            const keepData = Boolean(req.body?.keepData);
             const accountId = Number(req.params?.accountId);
-            await AccountOrchestrationServiceBuilder.build().delete(userId, accountId);
+            await AccountOrchestrationServiceBuilder.build().delete(userId, accountId, keepData);
             res.status(HttpCode.NO_CONTENT).json(responseBuilder.setStatus(ResponseStatusType.OK).setData({}).build());
         } catch (e: unknown) {
             AccountController.logger.error(`Delete account failed due reason: ${(e as { message: string }).message}`);

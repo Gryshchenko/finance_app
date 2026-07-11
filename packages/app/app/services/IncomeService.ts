@@ -14,7 +14,10 @@ export class IncomeService extends ApiAbstract {
         return IncomeService._instance || (IncomeService._instance = new IncomeService());
     }
 
-    public async doDeleteIncome(incomeId: number): Promise<
+    public async doDeleteIncome(
+        incomeId: number,
+        { keepData }: { keepData: boolean },
+    ): Promise<
         | {
               kind: GeneralApiProblemKind.Ok;
               data: IIncome | undefined;
@@ -24,7 +27,7 @@ export class IncomeService extends ApiAbstract {
         return this.withErrorHandler(async () => {
             this._logger.info(`Start deleting income ${incomeId}`);
             const userId = this._authService.userId;
-            const response = await this.authDelete(`/user/${userId}/income/${incomeId}`);
+            const response = await this.authDelete(`/user/${userId}/income/${incomeId}`, { keepData });
             if (response.kind === GeneralApiProblemKind.Ok) {
                 this._logger.info(`Delete income successfully id: ${incomeId}`);
             } else {

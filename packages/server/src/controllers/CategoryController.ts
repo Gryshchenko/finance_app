@@ -3,17 +3,12 @@ import { Request, Response } from 'express';
 
 import Logger from 'helper/logger/Logger';
 import ResponseBuilder from 'helper/responseBuilder/ResponseBuilder';
-import { IDatabaseConnection, IDBTransaction } from 'interfaces/IDatabaseConnection';
+import { CategoryOrchestrationServiceBuilder } from 'services/category/CategoryOrchestrationServiceBuilder';
 import CategoryServiceBuilder from 'services/category/CategoryServiceBuilder';
 import { StatsOrchestratorServiceBuilder } from 'services/StatsOrchestrator/StatsOrchestratorServiceBuilder';
-import TransactionServiceBuilder from 'services/transaction/TransactionServiceBuilder';
-import DatabaseConnectionBuilder from 'src/repositories/DatabaseConnectionBuilder';
-import { UnitOfWork } from 'src/repositories/UnitOfWork';
 import { BaseError } from 'src/utils/errors/BaseError';
-import { CustomError } from 'src/utils/errors/CustomError';
 import { ValidationError } from 'src/utils/errors/ValidationError';
 import { generateErrorResponse } from 'src/utils/generateErrorResponse';
-import { AccountType } from 'types/AccountType';
 
 export class CategoryController {
     private static readonly logger = Logger.Of('CategoryController');
@@ -68,35 +63,15 @@ export class CategoryController {
     }
     public static async delete(req: Request, res: Response) {
         const responseBuilder = new ResponseBuilder();
-        const db: IDatabaseConnection = DatabaseConnectionBuilder.build();
-        const uow = new UnitOfWork(db);
         try {
             const userId = Number(req.user?.userId);
+            const keepData = Boolean(req.body?.keepData);
             const categoryId = Number(req.params?.categoryId);
-            const categoryService = CategoryServiceBuilder.build(db);
-            const transactionService = TransactionServiceBuilder.build(db);
-            await uow.start();
-            const trx = uow.getTransaction();
-            if (Utils.isNull(trx)) {
-                throw new CustomError({
-                    message: 'Transaction not initiated',
-                    errorCode: ErrorCode.INCOME_ERROR,
-                    statusCode: HttpCode.INTERNAL_SERVER_ERROR,
-                });
-            }
-            await transactionService.deleteTransactionsForEntity(
-                userId,
-                AccountType.Expense,
-                categoryId,
-                trx as unknown as IDBTransaction,
-            );
-            await categoryService.delete(userId, categoryId, trx as unknown as IDBTransaction);
-            await uow.commit();
+            await CategoryOrchestrationServiceBuilder.build().delete(userId, categoryId, keepData);
             res.status(HttpCode.NO_CONTENT).json(responseBuilder.setStatus(ResponseStatusType.OK).setData({}).build());
         } catch (e: unknown) {
-            await uow.rollback();
             CategoryController.logger.error(`Delete category failed due reason: ${(e as { message: string }).message}`);
-            generateErrorResponse(res, responseBuilder, e as BaseError, ErrorCode.INCOME_ERROR);
+            generateErrorResponse(res, responseBuilder, e as BaseError, ErrorCode.CATEGORY_ERROR);
         }
     }
     public static async patch(req: Request, res: Response) {

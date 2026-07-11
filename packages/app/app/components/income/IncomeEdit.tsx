@@ -46,7 +46,7 @@ export const IncomeEdit: FC<IIncomePros> = function IncomeEdit(_props) {
             if (response.kind === GeneralApiProblemKind.Ok) {
                 ToastService.info({
                     title: 'common:info',
-                    message: 'common:updateAccountSuccess',
+                    message: 'incomeScreen:updateIncomeSuccess',
                 });
                 await invalidateQuery(InvalidationGroups.income(form.incomeId));
                 goBackSmart();
@@ -57,30 +57,34 @@ export const IncomeEdit: FC<IIncomePros> = function IncomeEdit(_props) {
             }
         });
     };
-    const handleDelete = async () => {
+    const handleDelete = async (keepData: boolean) => {
         await withFetching(async () => {
             const incomeService = IncomeService.instance();
             if (!form.incomeId) return;
 
-            const response = await incomeService.doDeleteIncome(form.incomeId);
+            const response = await incomeService.doDeleteIncome(form.incomeId, { keepData });
             if (response.kind === GeneralApiProblemKind.Ok) {
                 ToastService.info({
                     title: 'common:info',
-                    message: 'common:deleteAccountSuccess',
+                    message: 'incomeScreen:deleteIncomeSuccess',
                 });
                 await invalidateQuery(InvalidationGroups.income(form.incomeId));
                 navigation.getParent()?.navigate(OverviewPath.Dashboard);
             } else {
                 ToastService.error({
                     title: 'common:error',
-                    message: 'common:deleteAccountFailed',
+                    message: 'incomeScreen:deleteIncomeFailed',
                 });
             }
         });
     };
 
     const onDelete = () => {
-        AlertService.confirm(translate('common:deleteAccountTitle'), translate('common:deleteAccountMessage'), handleDelete);
+        AlertService.prompt(translate('incomeScreen:deleteIncomeTitle'), translate('incomeScreen:deleteIncomeMessage'), [
+            { text: translate('common:keepData'), onPress: () => handleDelete(true) },
+            { text: translate('common:deleteAll'), onPress: () => handleDelete(false) },
+            { text: translate('common:cancel'), style: 'cancel' },
+        ]);
     };
 
     const handleSave = async () => {

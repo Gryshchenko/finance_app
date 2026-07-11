@@ -5,6 +5,9 @@ import { createSignupValidationRules } from 'src/utils/validation/routesInputVal
 
 const accountConvertValidationMessageToErrorCode = (path: string): ErrorCode => {
     switch (path) {
+        case 'keepData': {
+            return ErrorCode.ACCOUNT_ERROR;
+        }
         case 'status': {
             return ErrorCode.ACCOUNT_ERROR;
         }
@@ -76,4 +79,15 @@ const patchAccountValidationRules = [
     }),
 ];
 
-export { patchAccountValidationRules, accountConvertValidationMessageToErrorCode, createAccountValidationRules };
+const deleteAccountValidationRules = [
+    ...createSignupValidationRules('keepData', 'boolean', {
+        optional: true,
+    }),
+];
+
+export {
+    patchAccountValidationRules,
+    accountConvertValidationMessageToErrorCode,
+    createAccountValidationRules,
+    deleteAccountValidationRules,
+};
