@@ -3,6 +3,7 @@ import { ErrorCode, HttpCode, RoleType } from 'tenpercent/shared';
 import AuthService from 'services/auth/AuthService';
 import { ConfirmationHelper } from 'services/confirmation/ConfirmationHelper';
 import { IForgotPasswordDataAccess } from 'services/forgotPassword/ForgotPasswordDataAccess';
+import { IMailNotificationService } from 'services/notification/MailNotificationService';
 import { IUserService } from 'services/user/UserService';
 import UserServiceUtils from 'services/user/UserServiceUtils';
 import { getConfig } from 'src/config/config';
@@ -21,11 +22,17 @@ export interface IForgotPasswordService {
 export default class ForgotPasswordService extends LoggerBase implements IForgotPasswordService {
     private readonly _dataAccess: IForgotPasswordDataAccess;
     private readonly _userService: IUserService;
+    private readonly _mailNotification: IMailNotificationService;
 
-    public constructor(dataAccess: IForgotPasswordDataAccess, userService: IUserService) {
+    public constructor(
+        dataAccess: IForgotPasswordDataAccess,
+        userService: IUserService,
+        mailNotification: IMailNotificationService,
+    ) {
         super();
         this._dataAccess = dataAccess;
         this._userService = userService;
+        this._mailNotification = mailNotification;
     }
 
     public async request(email: string): Promise<void> {
@@ -42,7 +49,11 @@ export default class ForgotPasswordService extends LoggerBase implements IForgot
 
             await this._dataAccess.create(userId, email, confirmationCode, expiresAt);
 
-            // TODO: send confirmationCode to email via mail service
+            await this._mailNotification.sendForgotPasswordCode(
+                email,
+                confirmationCode,
+                ConfirmationHelper.toMinutes(FORGET_CODE_EXPIRES_IN),
+            );
             this._logger.info(`Forgot password request stored for userId: ${userId}`);
         } catch (e) {
             this._logger.error(`Forgot password request failed: ${(e as { message: string }).message}`);
@@ -64,7 +75,11 @@ export default class ForgotPasswordService extends LoggerBase implements IForgot
 
             await this._dataAccess.refresh(email, confirmationCode, expiresAt);
 
-            // TODO: send new confirmationCode to email via mail service
+            await this._mailNotification.sendForgotPasswordCode(
+                email,
+                confirmationCode,
+                ConfirmationHelper.toMinutes(FORGET_CODE_EXPIRES_IN),
+            );
             this._logger.info(`Forgot password code refreshed for userId: ${record.userId}`);
         } catch (e) {
             this._logger.error(`Forgot password refresh failed: ${(e as { message: string }).message}`);

@@ -1,6 +1,7 @@
 import DatabaseConnectionBuilder from 'src/repositories/DatabaseConnectionBuilder';
 import EmailConfirmationDataAccess from 'src/services/emailConfirmation/EmailConfirmationDataAccess';
 import EmailConfirmationService from 'src/services/emailConfirmation/EmailConfirmationService';
+import MailNotificationServiceBuilder from 'src/services/notification/MailNotificationServiceBuilder';
 import UserServiceBuilder from 'src/services/user/UserServiceBuilder';
 
 export default class EmailConfirmationServiceBuilder {
@@ -8,6 +9,7 @@ export default class EmailConfirmationServiceBuilder {
         return new EmailConfirmationService(
             new EmailConfirmationDataAccess(DatabaseConnectionBuilder.build()),
             UserServiceBuilder.build(),
+            MailNotificationServiceBuilder.build(),
         );
     }
 }

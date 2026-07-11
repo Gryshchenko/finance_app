@@ -1,9 +1,22 @@
-import { IMailService } from 'interfaces/IMailService';
+import { IMailService } from 'services/mail/MailService';
 import { getConfig } from 'src/config/config';
 import { LoggerBase } from 'src/helper/logger/LoggerBase';
 
-import { INotificationService, NotificationPayload } from './INotificationService';
 import { NotificationType } from './NotificationType';
+
+export interface IEmailNotificationPayload {
+    type: NotificationType.EMAIL;
+    to: { email: string; name: string };
+    subject: string;
+    text: string;
+    html?: string;
+}
+
+export type NotificationPayload = IEmailNotificationPayload;
+
+export interface INotificationService {
+    send(payload: NotificationPayload): Promise<void>;
+}
 
 export default class NotificationService extends LoggerBase implements INotificationService {
     private readonly _mailService: IMailService;
@@ -23,9 +36,8 @@ export default class NotificationService extends LoggerBase implements INotifica
                     },
                     recipients: [{ mail: payload.to.email, name: payload.to.name }],
                     subject: payload.subject,
-                    template: payload.template,
                     text: payload.text,
-                    tags: payload.tags,
+                    html: payload.html,
                 });
                 this._logger.info(`Email notification sent to: ${payload.to.email}`);
                 break;

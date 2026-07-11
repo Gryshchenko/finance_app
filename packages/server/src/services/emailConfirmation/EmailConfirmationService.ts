@@ -3,6 +3,7 @@ import { ErrorCode, HttpCode, UserStatus, Time } from 'tenpercent/shared';
 import { IDBTransaction } from 'interfaces/IDatabaseConnection';
 import { ConfirmationHelper } from 'services/confirmation/ConfirmationHelper';
 import { IEmailConfirmationDataAccess } from 'services/emailConfirmation/EmailConfirmationDataAccess';
+import { IMailNotificationService } from 'services/notification/MailNotificationService';
 import { IUserService } from 'services/user/UserService';
 import { LoggerBase } from 'src/helper/logger/LoggerBase';
 import { ValidationError } from 'src/utils/errors/ValidationError';
@@ -18,11 +19,17 @@ export interface IEmailConfirmationService {
 export default class EmailConfirmationService extends LoggerBase implements IEmailConfirmationService {
     protected _dataAccess: IEmailConfirmationDataAccess;
     protected userService: IUserService;
+    protected mailNotification: IMailNotificationService;
 
-    public constructor(emailConfirmationDataAccess: IEmailConfirmationDataAccess, userService: IUserService) {
+    public constructor(
+        emailConfirmationDataAccess: IEmailConfirmationDataAccess,
+        userService: IUserService,
+        mailNotification: IMailNotificationService,
+    ) {
         super();
         this._dataAccess = emailConfirmationDataAccess;
         this.userService = userService;
+        this.mailNotification = mailNotification;
     }
 
     public async request(userId: number, email: string, trx?: IDBTransaction): Promise<boolean> {
@@ -33,13 +40,16 @@ export default class EmailConfirmationService extends LoggerBase implements IEma
             const confirmationCode = ConfirmationHelper.generateCode();
             if (!record) {
                 await this._dataAccess.create(userId, email, confirmationCode, expiresAt, trx);
-                this._logger.info(`Email change request created for userId ${userId}`);
-                return true;
             } else {
                 await this._dataAccess.refresh(userId, email, confirmationCode, expiresAt);
-                this._logger.info(`Email change request created for userId ${userId}`);
-                return true;
             }
+            await this.mailNotification.sendRegistrationConfirmation(
+                email,
+                confirmationCode,
+                ConfirmationHelper.toMinutes(CHANGE_CODE_EXPIRES_IN),
+            );
+            this._logger.info(`Email confirmation code sent for userId ${userId}`);
+            return true;
         } catch (e) {
             this._logger.error(`Email change request failed for userId ${userId}: ${(e as { message: string }).message}`);
             throw e;
@@ -58,6 +68,11 @@ export default class EmailConfirmationService extends LoggerBase implements IEma
             } else {
                 await this._dataAccess.refresh(userId, email, confirmationCode, expiresAt);
             }
+            await this.mailNotification.sendRegistrationCodeResend(
+                email,
+                confirmationCode,
+                ConfirmationHelper.toMinutes(CHANGE_CODE_EXPIRES_IN),
+            );
             this._logger.info(`Refresh confirmation code email change send for userId ${userId}`);
             return true;
         } catch (e) {

@@ -3,6 +3,7 @@ import { ErrorCode, HttpCode, Time, UserStatus } from 'tenpercent/shared';
 import { IDBTransaction } from 'interfaces/IDatabaseConnection';
 import { ConfirmationHelper } from 'services/confirmation/ConfirmationHelper';
 import { IEmailChangingDataAccess } from 'services/emailChanging/EmailChangingDataAccess';
+import { IMailNotificationService } from 'services/notification/MailNotificationService';
 import { IUserService } from 'services/user/UserService';
 import { LoggerBase } from 'src/helper/logger/LoggerBase';
 import { ValidationError } from 'src/utils/errors/ValidationError';
@@ -22,11 +23,17 @@ export interface IEmailChangingService {
 export default class EmailChangingService extends LoggerBase implements IEmailChangingService {
     private readonly _dataAccess: IEmailChangingDataAccess;
     private readonly _userService: IUserService;
+    private readonly _mailNotification: IMailNotificationService;
 
-    public constructor(dataAccess: IEmailChangingDataAccess, userService: IUserService) {
+    public constructor(
+        dataAccess: IEmailChangingDataAccess,
+        userService: IUserService,
+        mailNotification: IMailNotificationService,
+    ) {
         super();
         this._dataAccess = dataAccess;
         this._userService = userService;
+        this._mailNotification = mailNotification;
     }
 
     public async request(userId: number, email: string): Promise<{ confirmationCode: number; expiresAt: Date; id: number }> {
@@ -47,15 +54,21 @@ export default class EmailChangingService extends LoggerBase implements IEmailCh
             }
             const expiresAt = ConfirmationHelper.createExpiresAt(CHANGE_CODE_EXPIRES_IN);
             const confirmationCode = ConfirmationHelper.generateCode();
+            let id: number;
             if (!record) {
                 const response = await this._dataAccess.create(userId, email, confirmationCode, expiresAt);
-                this._logger.info(`Email change request created for userId ${userId}`);
-                return { confirmationCode, expiresAt, id: response.id };
+                id = response.id;
             } else {
                 await this._dataAccess.refresh(userId, email, confirmationCode, expiresAt);
-                this._logger.info(`Email change request created for userId ${userId}`);
-                return { confirmationCode, expiresAt, id: record.id };
+                id = record.id;
             }
+            await this._mailNotification.sendEmailChangeConfirmation(
+                email,
+                confirmationCode,
+                ConfirmationHelper.toMinutes(CHANGE_CODE_EXPIRES_IN),
+            );
+            this._logger.info(`Email change request created for userId ${userId}`);
+            return { confirmationCode, expiresAt, id };
         } catch (e) {
             this._logger.error(`Email change request failed for userId ${userId}: ${(e as { message: string }).message}`);
             throw e;
@@ -127,6 +140,11 @@ export default class EmailChangingService extends LoggerBase implements IEmailCh
             const expiresAt = ConfirmationHelper.createExpiresAt(CHANGE_CODE_EXPIRES_IN);
             const confirmationCode = ConfirmationHelper.generateCode();
             await this._dataAccess.refresh(userId, email, confirmationCode, expiresAt);
+            await this._mailNotification.sendEmailChangeCodeResend(
+                email,
+                confirmationCode,
+                ConfirmationHelper.toMinutes(CHANGE_CODE_EXPIRES_IN),
+            );
             this._logger.info(`Refresh confirmation code email change send for userId ${userId}`);
             return true;
         } catch (e) {

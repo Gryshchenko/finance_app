@@ -3,5 +3,38 @@
     "HELLO_GUEST": "Dear Guest",
     "CONFIRM_MAIL_TEXT": "Thank you for registering. To complete the confirmation process of your email address, please enter the following 8-digit confirmation code on the confirmation page:",
     "CONFIRM_MAIL_TEXT2": "If you did not request this email, please ignore it or contact our support service if you have any questions.",
-    "SINCERELY": "Sincerely"
+    "SINCERELY": "Sincerely",
+
+    "EMAIL_GREETING": "Hello,",
+    "EMAIL_CODE_HINT": "Enter this code to continue. For your security, it expires in {minutes} minutes.",
+    "EMAIL_IGNORE_NOTICE": "If you didn't request this, you can safely ignore this email.",
+    "EMAIL_SIGNATURE": "Sincerely, the {appName} team",
+    "EMAIL_RIGHTS": "© {year} {appName}. All rights reserved.",
+    "EMAIL_CODE_LABEL": "Your confirmation code",
+
+    "REG_CONFIRM_SUBJECT": "Confirm your email address",
+    "REG_CONFIRM_TITLE": "Confirm your email",
+    "REG_CONFIRM_TEXT": "Welcome to {appName}! Thanks for signing up. Use the code below to confirm your email address and activate your account.",
+
+    "REG_CODE_SUBJECT": "Your registration code",
+    "REG_CODE_TITLE": "Your registration code",
+    "REG_CODE_TEXT": "Here is the confirmation code to complete your registration with {appName}.",
+
+    "RESEND_CODE_SUBJECT": "Your new confirmation code",
+    "RESEND_CODE_TITLE": "Your new code",
+    "RESEND_REGISTRATION_TEXT": "As requested, here is a new code to confirm your registration.",
+    "RESEND_EMAIL_CHANGE_TEXT": "As requested, here is a new code to confirm your new email address.",
+    "RESEND_PASSWORD_CHANGE_TEXT": "As requested, here is a new code to confirm your password change.",
+
+    "EMAIL_CHANGE_SUBJECT": "Confirm your new email address",
+    "EMAIL_CHANGE_TITLE": "Confirm your new email",
+    "EMAIL_CHANGE_TEXT": "We received a request to change the email address on your {appName} account. Use the code below to confirm your new email address.",
+
+    "PASSWORD_CHANGE_SUBJECT": "Confirm your password change",
+    "PASSWORD_CHANGE_TITLE": "Confirm your password change",
+    "PASSWORD_CHANGE_TEXT": "We received a request to change the password on your {appName} account. Use the code below to confirm the change.",
+
+    "FORGOT_PASSWORD_SUBJECT": "Reset your password",
+    "FORGOT_PASSWORD_TITLE": "Reset your password",
+    "FORGOT_PASSWORD_TEXT": "We received a request to reset the password for your {appName} account. Use the code below to continue. If you didn't request this, you can ignore this email."
 }

@@ -2,6 +2,7 @@ import { ErrorCode, HttpCode, Time, Utils } from 'tenpercent/shared';
 
 import { IDatabaseConnection, IDBTransaction } from 'interfaces/IDatabaseConnection';
 import { ConfirmationHelper } from 'services/confirmation/ConfirmationHelper';
+import { IMailNotificationService } from 'services/notification/MailNotificationService';
 import { IPasswordChangingDataAccess } from 'services/passwordChanging/PasswordChangingDataAccess';
 import { IUserService } from 'services/user/UserService';
 import { LoggerBase } from 'src/helper/logger/LoggerBase';
@@ -22,12 +23,19 @@ export default class PasswordChangingService extends LoggerBase implements IPass
     private readonly _dataAccess: IPasswordChangingDataAccess;
     private readonly _userService: IUserService;
     private readonly _db: IDatabaseConnection;
+    private readonly _mailNotification: IMailNotificationService;
 
-    public constructor(dataAccess: IPasswordChangingDataAccess, userService: IUserService, db: IDatabaseConnection) {
+    public constructor(
+        dataAccess: IPasswordChangingDataAccess,
+        userService: IUserService,
+        db: IDatabaseConnection,
+        mailNotification: IMailNotificationService,
+    ) {
         super();
         this._dataAccess = dataAccess;
         this._userService = userService;
         this._db = db;
+        this._mailNotification = mailNotification;
     }
 
     public async request(
@@ -80,6 +88,11 @@ export default class PasswordChangingService extends LoggerBase implements IPass
             await this._dataAccess.create(userId, passwordHash, salt, confirmationCode, expiresAt, trx);
 
             await uow.commit();
+            await this._mailNotification.sendPasswordChangeConfirmation(
+                user.email,
+                confirmationCode,
+                ConfirmationHelper.toMinutes(CHANGE_CODE_EXPIRES_IN),
+            );
             this._logger.info(`Password change request created for userId ${userId}`);
             return { confirmationCode, expiresAt };
         } catch (e) {
@@ -147,6 +160,12 @@ export default class PasswordChangingService extends LoggerBase implements IPass
             const expiresAt = ConfirmationHelper.createExpiresAt(CHANGE_CODE_EXPIRES_IN);
             const confirmationCode = ConfirmationHelper.generateCode();
             await this._dataAccess.refresh(userId, confirmationId, confirmationCode, expiresAt);
+            const user = await this._userService.get(userId);
+            await this._mailNotification.sendPasswordChangeCodeResend(
+                user.email,
+                confirmationCode,
+                ConfirmationHelper.toMinutes(CHANGE_CODE_EXPIRES_IN),
+            );
             this._logger.info(`Refresh confirmation code send for userId ${userId}`);
             return true;
         } catch (e) {

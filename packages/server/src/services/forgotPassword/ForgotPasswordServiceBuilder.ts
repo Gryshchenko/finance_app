@@ -1,6 +1,7 @@
 import ForgotPasswordDataAccess from 'services/forgotPassword/ForgotPasswordDataAccess';
 import ForgotPasswordService from 'services/forgotPassword/ForgotPasswordService';
 import DatabaseConnectionBuilder from 'src/repositories/DatabaseConnectionBuilder';
+import MailNotificationServiceBuilder from 'src/services/notification/MailNotificationServiceBuilder';
 import UserServiceBuilder from 'src/services/user/UserServiceBuilder';
 
 export default class ForgotPasswordServiceBuilder {
@@ -8,6 +9,7 @@ export default class ForgotPasswordServiceBuilder {
         return new ForgotPasswordService(
             new ForgotPasswordDataAccess(DatabaseConnectionBuilder.build()),
             UserServiceBuilder.build(),
+            MailNotificationServiceBuilder.build(),
         );
     }
 }

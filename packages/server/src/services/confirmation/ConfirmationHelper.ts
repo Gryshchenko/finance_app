@@ -17,6 +17,11 @@ export class ConfirmationHelper {
         return timeManager.getCurrentTime();
     }
 
+    // Converts an [hours, minutes, seconds] expiry tuple into whole minutes (for user-facing copy).
+    static toMinutes([hours, minutes, seconds]: [number, number, number]): number {
+        return hours * 60 + minutes + Math.round(seconds / 60);
+    }
+
     static validateCode(stored: number, provided: number): void {
         if (isNaN(provided) || stored !== provided) {
             throw new ValidationError({
