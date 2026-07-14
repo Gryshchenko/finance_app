@@ -103,6 +103,37 @@ export const Settings: FC<SettingsProps> = function Settings({ onScroll, content
                     />
                 </SettingsSection>
 
+                <SettingsSection titleTx="settingsScreen:sharing">
+                    <SettingsRow
+                        labelTx="settingsScreen:connectedUsers"
+                        icon="chevron-right"
+                        onPress={() => {
+                            navigation.navigate(OverviewPath.Settings, {
+                                screen: SettingsPath.ConnectedUsers,
+                            });
+                        }}
+                    />
+                    <SettingsRow
+                        labelTx="settingsScreen:groups"
+                        icon="chevron-right"
+                        onPress={() => {
+                            navigation.navigate(OverviewPath.Settings, {
+                                screen: SettingsPath.Groups,
+                            });
+                        }}
+                    />
+                    <SettingsRow
+                        labelTx="settingsScreen:pendingConnections"
+                        icon="chevron-right"
+                        onPress={() => {
+                            navigation.navigate(OverviewPath.Settings, {
+                                screen: SettingsPath.PendingRequests,
+                            });
+                        }}
+                        isLast
+                    />
+                </SettingsSection>
+
                 <SettingsPreferencesSection
                     currencyList={currencyList}
                     currencyValue={currencyValue}

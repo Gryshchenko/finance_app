@@ -4,6 +4,7 @@ import { ITransaction } from '@tenpercent/shared';
 
 import { TransactionEdit } from '@/components/transaction/TransactionEdit';
 import { useAppQuery } from '@/hooks/useAppQuery';
+import { useGoBackSmart } from '@/hooks/useGoBackSmart';
 import { translate } from '@/i18n/translate';
 import { ITransactionClient } from '@/interfaces/ITransactionClient';
 import { GenericListScreen } from '@/screens/GenericListScreen';
@@ -37,6 +38,7 @@ export async function fetchTransaction(id: number | string): Promise<ITransactio
 
 export const TransactionEditScreen = function TransactionsScreen(_props: Props) {
     const params = _props?.route?.params as { id: number; name: string; payload: string; back?: BackTarget } | undefined;
+    const goBackSmart = useGoBackSmart(params?.back);
     const {
         isError,
         data: fetchData,
@@ -66,11 +68,15 @@ export const TransactionEditScreen = function TransactionsScreen(_props: Props) 
     return (
         <GenericListScreen
             name={params?.name ?? translate('common:edit')}
+            subtitle={params?.name ? translate('transactionScreen:caption') : undefined}
             isError={isError}
             isPending={isPending}
             props={{
                 data,
                 back: params?.back,
+            }}
+            onBack={() => {
+                goBackSmart();
             }}
             RenderComponent={TransactionEdit}
         />

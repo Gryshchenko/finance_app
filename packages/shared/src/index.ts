@@ -30,6 +30,7 @@ export * from './interfaces/ITimeseries';
 export * from './interfaces/IBalance';
 export * from './interfaces/IEntityStats';
 export * from './interfaces/IRate';
+export * from './interfaces/ISharing';
 
 // --- Types ---
 export * from './types/AccountStatusType';

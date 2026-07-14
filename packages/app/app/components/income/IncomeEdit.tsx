@@ -8,6 +8,7 @@ import { IncomeFields } from '@/components/income/IncomeFields';
 import { useInvalidateQuery } from '@/hooks/useAppQuery';
 import { useEditView } from '@/hooks/useEditView';
 import { useGoBackSmart } from '@/hooks/useGoBackSmart';
+import { useHeaderRightAction } from '@/hooks/useHeaderRightAction';
 import { translate } from '@/i18n/translate';
 import { incomeEditSchema } from '@/schems/validationSchemas';
 import AlertService from '@/services/AlertService';
@@ -92,6 +93,9 @@ export const IncomeEdit: FC<IIncomePros> = function IncomeEdit(_props) {
         if (!isValid) return;
         await handlePatch();
     };
+
+    useHeaderRightAction(data ? onDelete : undefined, { disabled: isFetching });
+
     if (!data) {
         return <EmptyState style={$containerStyleOverride} buttonOnPress={() => goBackSmart()} />;
     }
@@ -108,10 +112,6 @@ export const IncomeEdit: FC<IIncomePros> = function IncomeEdit(_props) {
             handleChange={(key: string, value: string | number) => {
                 handleChange(key as keyof IIncome, value);
             }}
-            cancel={() => {
-                goBackSmart();
-            }}
-            onDelete={onDelete}
             handleSave={handleSave}
         />
     );

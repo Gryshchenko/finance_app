@@ -1,4 +1,4 @@
-import { ReactElement } from 'react';
+import { ReactElement, useMemo, useState } from 'react';
 import { TextStyle } from 'react-native';
 
 import { BackButton } from '@/components/BackButton';
@@ -6,10 +6,12 @@ import { ErrorState } from '@/components/ErrorState';
 import { Header } from '@/components/Header';
 import { PendingState } from '@/components/PengingState';
 import { Screen } from '@/components/Screen';
+import { HeaderActionsContext } from '@/context/HeaderActionsContext';
 import { $styles } from '@/theme/styles';
 
 interface GenericListScreenProps<T, B> {
     name: string;
+    subtitle?: string;
     isPending?: boolean;
     isError?: boolean;
     onBack?: () => void;
@@ -26,6 +28,7 @@ interface GenericListScreenProps<T, B> {
 
 export function GenericListScreen<T, B>({
     name,
+    subtitle,
     props,
     isPending,
     isError,
@@ -33,20 +36,28 @@ export function GenericListScreen<T, B>({
     RightActionComponent,
     RenderComponent,
 }: GenericListScreenProps<T, B>) {
+    // Lets the rendered content register a header right action (e.g. a delete
+    // button) even though the header lives here, above the content.
+    const [contentRightAction, setContentRightAction] = useState<ReactElement | null>(null);
+    const headerActions = useMemo(() => ({ setRightAction: setContentRightAction }), []);
+
     return (
         <Screen preset="fixed" contentContainerStyle={[$styles.screen, $topAlignScreen]} safeAreaEdges={['top']}>
             <Header
                 title={name}
+                subtitle={subtitle}
                 titleMode="flex"
                 titleStyle={$rightAlignTitle}
                 safeAreaEdges={[]}
                 LeftActionComponent={onBack ? <BackButton onPress={onBack} /> : undefined}
-                RightActionComponent={RightActionComponent ? RightActionComponent : undefined}
+                RightActionComponent={RightActionComponent ?? contentRightAction ?? undefined}
             />
 
-            {isError && <ErrorState buttonOnPress={onBack} />}
-            {isPending && <PendingState />}
-            {!isError && !isPending && <RenderComponent {...props} />}
+            <HeaderActionsContext.Provider value={headerActions}>
+                {isError && <ErrorState buttonOnPress={onBack} />}
+                {isPending && <PendingState />}
+                {!isError && !isPending && <RenderComponent {...props} />}
+            </HeaderActionsContext.Provider>
         </Screen>
     );
 }

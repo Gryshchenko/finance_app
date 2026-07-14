@@ -3,6 +3,7 @@ import { IIncome, Utils } from '@tenpercent/shared';
 
 import { IncomeEdit } from '@/components/income/IncomeEdit';
 import { useAppQuery } from '@/hooks/useAppQuery';
+import { useGoBackSmart } from '@/hooks/useGoBackSmart';
 import { translate } from '@/i18n/translate';
 import { IncomePath, IncomesStackParamList } from '@/navigators/IncomesStackNavigator';
 import { GenericListScreen } from '@/screens/GenericListScreen';
@@ -31,7 +32,7 @@ export async function fetchIncome(id: number): Promise<IIncome | undefined> {
             }
         }
     } catch (e) {
-        Logger.Of('FetchIncomes').error(`Fetch incomeId ${id}  failed due reason: ${(e as { message: string }).message}`);
+        Logger.Of('FetchIncome').error(`Fetch incomeId ${id}  failed due reason: ${(e as { message: string }).message}`);
         return undefined;
     }
 }
@@ -45,6 +46,8 @@ export const IncomeEditScreen = function IncomeEditScreen(_props: Props) {
         payload: string;
         back?: BackTarget;
     };
+
+    const goBackSmart = useGoBackSmart(params?.back);
     const { isError, data, isPending } = useAppQuery<IIncome | undefined>(
         QueryKeys.income(params?.id),
         () => fetchIncome(params?.id),
@@ -53,9 +56,12 @@ export const IncomeEditScreen = function IncomeEditScreen(_props: Props) {
     return (
         <GenericListScreen
             name={data?.incomeName ?? translate('incomeScreen:editTitle')}
+            subtitle={data?.incomeName ? translate('incomeScreen:caption') : undefined}
             isError={isError}
             isPending={isPending}
-            onBack={undefined}
+            onBack={() => {
+                goBackSmart();
+            }}
             props={{
                 data,
                 back: params?.back,

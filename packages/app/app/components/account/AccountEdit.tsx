@@ -8,6 +8,7 @@ import { EmptyState } from '@/components/EmptyState';
 import { useInvalidateQuery } from '@/hooks/useAppQuery';
 import { useEditView } from '@/hooks/useEditView';
 import { useGoBackSmart } from '@/hooks/useGoBackSmart';
+import { useHeaderRightAction } from '@/hooks/useHeaderRightAction';
 import { translate } from '@/i18n/translate';
 import { IAccountClient } from '@/interfaces/IAccountClient';
 import { accountEditSchema } from '@/schems/validationSchemas';
@@ -93,6 +94,9 @@ export const AccountEdit: FC<IAccountPros> = function AccountEdit(_props) {
             { text: translate('common:cancel'), style: 'cancel' },
         ]);
     };
+
+    useHeaderRightAction(data ? onDelete : undefined, { disabled: isFetching });
+
     if (!data) {
         return <EmptyState style={$containerStyleOverride} buttonOnPress={() => goBackSmart()} />;
     }
@@ -109,10 +113,6 @@ export const AccountEdit: FC<IAccountPros> = function AccountEdit(_props) {
             handleChange={(key: string, value: string | number) => {
                 handleChange(key as keyof IAccount, value);
             }}
-            cancel={() => {
-                goBackSmart();
-            }}
-            onDelete={onDelete}
             handleSave={handleSave}
         />
     );

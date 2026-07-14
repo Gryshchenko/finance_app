@@ -4,6 +4,8 @@ import { useDerivedValue, useSharedValue } from 'react-native-reanimated';
 
 import { EditButtons } from '@/components/buttons/EditButtons';
 import { ScrollEdgeBlur } from '@/components/ScrollEdgeBlur';
+import { useKeyBoardHide } from '@/hooks/useKeyBoardHide';
+import { TxKeyPath } from '@/i18n';
 import { spacing } from '@/theme/spacing';
 import { $styles } from '@/theme/styles';
 
@@ -21,6 +23,14 @@ interface GeneralDetailViewProps {
     onDelete?: () => void;
     isSaveDisabled?: boolean;
     isDeleteDisabled?: boolean;
+    /** Overrides the default "Create" label of the primary button in create mode. */
+    createTx?: TxKeyPath;
+    /**
+     * Optional element pinned to the bottom, between the scrollable content and
+     * the edit buttons. Used to mount a custom input (e.g. the numeric keypad)
+     * in place of the native keyboard.
+     */
+    bottomAccessory?: ReactNode;
 }
 
 export const GeneralDetailView: FC<GeneralDetailViewProps> = ({
@@ -33,12 +43,16 @@ export const GeneralDetailView: FC<GeneralDetailViewProps> = ({
     isCreate,
     isSaveDisabled,
     isDeleteDisabled,
+    createTx,
+    bottomAccessory,
 }) => {
     // Track the scroll metrics so the edges only frost while there is content to reveal:
     // the top edge fades in once scrolled down, the bottom edge fades out at the very end.
     const scrollY = useSharedValue(0);
     const layoutHeight = useSharedValue(0);
     const contentHeight = useSharedValue(0);
+
+    const keyboardVisible = useKeyBoardHide();
 
     const topProgress = useDerivedValue(() => Math.min(Math.max(scrollY.value / EDGE_FADE, 0), 1));
     const bottomProgress = useDerivedValue(() => {
@@ -67,18 +81,22 @@ export const GeneralDetailView: FC<GeneralDetailViewProps> = ({
                 <ScrollEdgeBlur edge="top" progress={topProgress} />
                 <ScrollEdgeBlur edge="bottom" progress={bottomProgress} />
             </View>
-            <View style={{ marginTop: spacing.xl }}>
-                <EditButtons
-                    isSaveDisabled={isSaveDisabled}
-                    isDeleteDisabled={isDeleteDisabled}
-                    isView={isView}
-                    onEdit={onEdit}
-                    onCancel={onCancel}
-                    onSave={onSave}
-                    onDelete={onDelete}
-                    isCreate={isCreate}
-                />
-            </View>
+            {!keyboardVisible && bottomAccessory}
+            {!keyboardVisible && (
+                <View style={{ marginTop: spacing.xl }}>
+                    <EditButtons
+                        isSaveDisabled={isSaveDisabled}
+                        isDeleteDisabled={isDeleteDisabled}
+                        isView={isView}
+                        onEdit={onEdit}
+                        onCancel={onCancel}
+                        onSave={onSave}
+                        onDelete={onDelete}
+                        isCreate={isCreate}
+                        createTx={createTx}
+                    />
+                </View>
+            )}
         </>
     );
 };

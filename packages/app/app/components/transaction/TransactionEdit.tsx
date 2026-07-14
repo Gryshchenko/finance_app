@@ -8,6 +8,7 @@ import { useCurrency } from '@/context/CurrencyContext';
 import { useInvalidateQuery } from '@/hooks/useAppQuery';
 import { useEditView } from '@/hooks/useEditView';
 import { useGoBackSmart } from '@/hooks/useGoBackSmart';
+import { useHeaderRightAction } from '@/hooks/useHeaderRightAction';
 import { translate } from '@/i18n/translate';
 import { ITransactionClient } from '@/interfaces/ITransactionClient';
 import { buildTransactionEditSchema } from '@/schems/validationSchemas';
@@ -25,10 +26,10 @@ interface ITransactionPros {
 
 export const TransactionEdit: FC<ITransactionPros> = function TransactionEdit(_props) {
     const { data, back } = _props;
-    const goBackSmart = useGoBackSmart(back);
     const invalidateQuery = useInvalidateQuery();
     const { currencies } = useCurrency();
 
+    const goBackSmart = useGoBackSmart(back);
     const { form, handleChange, save, errors, setErrors, withFetching, isFetching } = useEditView<Partial<ITransactionClient>>(
         data!,
         buildTransactionEditSchema({
@@ -123,6 +124,9 @@ export const TransactionEdit: FC<ITransactionPros> = function TransactionEdit(_p
         if (!isValid) return;
         await handlePatch();
     };
+
+    useHeaderRightAction(data ? onDelete : undefined, { disabled: isFetching });
+
     if (!data) {
         return <EmptyState style={$containerStyleOverride} buttonOnPress={() => goBackSmart()} />;
     }
@@ -136,11 +140,9 @@ export const TransactionEdit: FC<ITransactionPros> = function TransactionEdit(_p
             isView={false}
             isSaveDisabled={isFetching}
             isDeleteDisabled={isFetching}
-            onDelete={onDelete}
             handleChange={(key: string, value: string | number) => {
                 handleChange(key as keyof ITransaction, value);
             }}
-            cancel={() => goBackSmart()}
             handleSave={handleSave}
         />
     );

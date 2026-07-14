@@ -8,6 +8,13 @@ import { SettingsChangePasswordConfirmScreen } from '@/screens/SettingsScreens/S
 import { SettingsChangePasswordScreen } from '@/screens/SettingsScreens/SettingsChangePasswordScreen';
 import { SettingsChangePublicNameScreen } from '@/screens/SettingsScreens/SettingsChangePublicNameScreen';
 import { SettingsScreen } from '@/screens/SettingsScreens/SettingsScreen';
+import { ConnectedUsersScreen } from '@/screens/SharingScreens/ConnectedUsersScreen';
+import { CreateGroupScreen } from '@/screens/SharingScreens/CreateGroupScreen';
+import { EditGroupScreen } from '@/screens/SharingScreens/EditGroupScreen';
+import { GroupsScreen } from '@/screens/SharingScreens/GroupsScreen';
+import { InviteUserScreen } from '@/screens/SharingScreens/InviteUserScreen';
+import { MemberSettingsScreen } from '@/screens/SharingScreens/MemberSettingsScreen';
+import { PendingRequestsScreen } from '@/screens/SharingScreens/PendingRequestsScreen';
 
 const SettingsStack = createNativeStackNavigator<SettingsStackParamList>();
 
@@ -19,6 +26,13 @@ export enum SettingsPath {
     ChangePasswordConfirm = 'changePasswordConfirm',
     ChangeEmail = 'changeEmail',
     ChangeEmailConfirm = 'changeEmailConfirm',
+    ConnectedUsers = 'connectedUsers',
+    InviteUser = 'inviteUser',
+    MemberSettings = 'memberSettings',
+    PendingRequests = 'pendingRequests',
+    Groups = 'groups',
+    CreateGroup = 'createGroup',
+    EditGroup = 'editGroup',
 }
 
 export type SettingsStackParamList = {
@@ -35,6 +49,13 @@ export type SettingsStackParamList = {
         email: string;
         originEmail: string;
     };
+    connectedUsers: undefined;
+    inviteUser: undefined;
+    memberSettings: { connectionId: number };
+    pendingRequests: undefined;
+    groups: undefined;
+    createGroup: undefined;
+    editGroup: { userGroupId: number };
 };
 
 function SettingsStackNavigator() {
@@ -47,6 +68,13 @@ function SettingsStackNavigator() {
             <SettingsStack.Screen name={SettingsPath.ChangeEmailConfirm} component={SettingsChangeEmailConfirmScreen} />
             <SettingsStack.Screen name={SettingsPath.ChangePassword} component={SettingsChangePasswordScreen} />
             <SettingsStack.Screen name={SettingsPath.ChangePasswordConfirm} component={SettingsChangePasswordConfirmScreen} />
+            <SettingsStack.Screen name={SettingsPath.ConnectedUsers} component={ConnectedUsersScreen} />
+            <SettingsStack.Screen name={SettingsPath.InviteUser} component={InviteUserScreen} />
+            <SettingsStack.Screen name={SettingsPath.MemberSettings} component={MemberSettingsScreen} />
+            <SettingsStack.Screen name={SettingsPath.PendingRequests} component={PendingRequestsScreen} />
+            <SettingsStack.Screen name={SettingsPath.Groups} component={GroupsScreen} />
+            <SettingsStack.Screen name={SettingsPath.CreateGroup} component={CreateGroupScreen} />
+            <SettingsStack.Screen name={SettingsPath.EditGroup} component={EditGroupScreen} />
         </SettingsStack.Navigator>
     );
 }

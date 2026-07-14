@@ -2,6 +2,7 @@ import { TextStyle, View, ViewStyle } from 'react-native';
 
 import { Button } from '@/components/buttons/Button';
 import { TextButton } from '@/components/buttons/TextButton';
+import { TxKeyPath } from '@/i18n';
 import { useAppTheme } from '@/theme/context';
 import { spacing } from '@/theme/spacing';
 import { ThemedStyle } from '@/theme/types';
@@ -15,6 +16,8 @@ interface EditButtonsProps {
     onSave?: () => void;
     isSaveDisabled?: boolean;
     isDeleteDisabled?: boolean;
+    /** Overrides the default "Create" label of the primary button in create mode. */
+    createTx?: TxKeyPath;
 }
 
 export const EditButtons: React.FC<EditButtonsProps> = ({
@@ -26,13 +29,16 @@ export const EditButtons: React.FC<EditButtonsProps> = ({
     isCreate,
     isSaveDisabled = false,
     isDeleteDisabled = false,
+    createTx,
 }) => {
     const { themed } = useAppTheme();
 
     if (isCreate) {
         return (
             <View style={$buttons}>
-                {onSave && <Button disabled={isSaveDisabled} preset={'reversed'} tx={'common:create'} onPress={onSave} />}
+                {onSave && (
+                    <Button disabled={isSaveDisabled} preset={'reversed'} tx={createTx ?? 'common:create'} onPress={onSave} />
+                )}
                 {onCancel && <TextButton preset={'reversed'} tx={'common:cancel'} onPress={onCancel} />}
             </View>
         );
@@ -53,16 +59,6 @@ export const EditButtons: React.FC<EditButtonsProps> = ({
     ) : (
         <View style={$buttons}>
             {onSave && <Button disabled={isSaveDisabled} preset={'reversed'} tx="common:saveChanges" onPress={onSave} />}
-            {onDelete && (
-                <TextButton
-                    textStyle={themed($deleteText)}
-                    preset={'reversed'}
-                    tx={'common:delete'}
-                    disabled={isDeleteDisabled}
-                    onPress={onDelete}
-                />
-            )}
-            {onCancel && <TextButton preset={'reversed'} tx="common:cancel" onPress={onCancel} />}
         </View>
     );
 };

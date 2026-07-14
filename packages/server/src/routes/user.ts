@@ -6,7 +6,9 @@ import userIdVerify from 'middleware/userIdVerify';
 import userStatusVerify from 'middleware/userStatusVerify';
 import balance from 'routes/balance';
 import { categoriesRouter, categoryRouter } from 'routes/category';
+import { groupRouter, groupsRouter } from 'routes/group';
 import { incomeRouter, incomesRouter } from 'routes/income';
+import { sharingRouter } from 'routes/sharing';
 import { statsRouter } from 'routes/stats';
 import { accountsRouter, accountRouter } from 'src/routes/account';
 import overview from 'src/routes/overview';
@@ -68,6 +70,12 @@ userRouter.use(
 );
 
 userRouter.use('/:userId/category', userIdVerify, routesInputValidation([validatePathQueryProperty('userId')]), categoryRouter);
+
+userRouter.use('/:userId/sharing', userIdVerify, routesInputValidation([validatePathQueryProperty('userId')]), sharingRouter);
+
+userRouter.use('/:userId/group', userIdVerify, routesInputValidation([validatePathQueryProperty('userId')]), groupRouter);
+
+userRouter.use('/:userId/groups', userIdVerify, routesInputValidation([validatePathQueryProperty('userId')]), groupsRouter);
 
 userRouter.use('/:userId/stats', userIdVerify, routesInputValidation([validatePathQueryProperty('userId')]), statsRouter);
 

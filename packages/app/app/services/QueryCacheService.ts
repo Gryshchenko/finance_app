@@ -23,6 +23,11 @@ export const QueryKeys = {
 
     profile: () => ['profile'] as const,
 
+    sharingConnections: () => ['sharingConnections'] as const,
+    sharingPendingRequests: () => ['sharingPendingRequests'] as const,
+    sharingGroups: () => ['sharingGroups'] as const,
+    sharingGroup: (id: number) => ['sharingGroup', id] as const,
+
     clientConfig: () => ['clientConfig'] as const,
 } as const;
 
@@ -114,6 +119,17 @@ export const InvalidationGroups = {
         QueryKeys.stats(),
         QueryKeys.balance(),
     ],
+
+    sharingConnections: (): readonly (readonly unknown[])[] => [
+        QueryKeys.sharingConnections(),
+        QueryKeys.sharingPendingRequests(),
+        QueryKeys.sharingGroups(),
+    ],
+
+    sharingGroups: (id?: number): readonly (readonly unknown[])[] => {
+        const base: readonly (readonly unknown[])[] = [QueryKeys.sharingGroups(), QueryKeys.sharingConnections()];
+        return id != null ? [...base, QueryKeys.sharingGroup(id)] : base;
+    },
 
     stats: (): readonly (readonly unknown[])[] => [QueryKeys.stats()],
     balance: (): readonly (readonly unknown[])[] => [QueryKeys.balance()],

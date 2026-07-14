@@ -68,7 +68,7 @@ const $baseInputWrapper: ThemedStyle<ViewStyle> = ({ colors, border }) => ({
 // ---------------------------------------------------------------------------
 
 const $underlineBigContainer: ThemedStyle<ViewStyle> = () => ({
-    height: 220,
+    height: 170,
 });
 
 const $underlineBigInputWrapper: ThemedStyle<ViewStyle> = ({ colors }) => ({
@@ -85,8 +85,8 @@ const $underlineBigInput: ThemedStyle<TextStyle> = ({ colors, typography }) => (
     flex: 1,
     alignSelf: 'stretch',
     fontFamily: typography.primary.semiBold,
-    height: 170,
-    fontSize: 64,
+    height: 120,
+    fontSize: 52,
     paddingHorizontal: 4,
     paddingVertical: 10,
     color: colors.text,

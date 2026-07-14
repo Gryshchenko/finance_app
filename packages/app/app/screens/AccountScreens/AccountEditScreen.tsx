@@ -3,6 +3,7 @@ import { IAccount, Utils } from '@tenpercent/shared';
 
 import { AccountEdit } from '@/components/account/AccountEdit';
 import { useAppQuery } from '@/hooks/useAppQuery';
+import { useGoBackSmart } from '@/hooks/useGoBackSmart';
 import { translate } from '@/i18n/translate';
 import { AccountsPath, AccountsStackParamList } from '@/navigators/AccountsStackNavigator';
 import { GenericListScreen } from '@/screens/GenericListScreen';
@@ -44,6 +45,8 @@ export const AccountEditScreen = function AccountEditScreen(_props: Props) {
         payload: string;
         back?: BackTarget;
     };
+
+    const goBackSmart = useGoBackSmart(params?.back);
     const { isError, data, isPending } = useAppQuery<IAccount | undefined>(
         QueryKeys.account(params?.id),
         () => fetchAccount(params?.id),
@@ -52,9 +55,12 @@ export const AccountEditScreen = function AccountEditScreen(_props: Props) {
     return (
         <GenericListScreen
             name={data?.accountName ?? translate('accountScreen:editTitle')}
+            subtitle={data?.accountName ? translate('accountScreen:caption') : undefined}
             isError={isError}
             isPending={isPending}
-            onBack={undefined}
+            onBack={() => {
+                goBackSmart();
+            }}
             props={{
                 data,
                 back: params?.back,

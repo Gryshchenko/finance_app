@@ -8,6 +8,7 @@ import { EmptyState } from '@/components/EmptyState';
 import { useInvalidateQuery } from '@/hooks/useAppQuery';
 import { useEditView } from '@/hooks/useEditView';
 import { useGoBackSmart } from '@/hooks/useGoBackSmart';
+import { useHeaderRightAction } from '@/hooks/useHeaderRightAction';
 import { translate } from '@/i18n/translate';
 import { categoryEditSchema } from '@/schems/validationSchemas';
 import AlertService from '@/services/AlertService';
@@ -93,6 +94,9 @@ export const CategoryEdit: FC<ICategoryPros> = function CategoryEdit(_props) {
         if (!isValid) return;
         await handlePatch();
     };
+
+    useHeaderRightAction(data ? onDelete : undefined, { disabled: isFetching });
+
     if (!data) {
         return (
             <EmptyState
@@ -116,10 +120,6 @@ export const CategoryEdit: FC<ICategoryPros> = function CategoryEdit(_props) {
             handleChange={(key: string, value: string | number) => {
                 handleChange(key as keyof ICategory, value);
             }}
-            cancel={() => {
-                goBackSmart();
-            }}
-            onDelete={onDelete}
             handleSave={handleSave}
         />
     );

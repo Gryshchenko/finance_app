@@ -347,7 +347,7 @@ export default class UserRegistrationService extends LoggerBase {
                 SpendIcon.Store2, // Savings and Investments
             ];
             await Promise.all([
-                await this.groupService.createGroup(userId, translatedDefaultData.group, trx),
+                await this.groupService.createGroup(userId, { groupName: translatedDefaultData.group }, trx),
                 await this.incomeService.creates(
                     userId,
                     translatedDefaultData.income.map((incomeName, index) => ({

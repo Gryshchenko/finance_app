@@ -3,6 +3,7 @@ import { ICategory, Utils } from '@tenpercent/shared';
 
 import { CategoryEdit } from '@/components/category/CategoryEdit';
 import { useAppQuery } from '@/hooks/useAppQuery';
+import { useGoBackSmart } from '@/hooks/useGoBackSmart';
 import { translate } from '@/i18n/translate';
 import { CategoriesPath, CategoriesStackParamList } from '@/navigators/CategoriesStackNavigator';
 import { GenericListScreen } from '@/screens/GenericListScreen';
@@ -31,7 +32,7 @@ export async function fetchCategory(id: number): Promise<ICategory | undefined> 
             }
         }
     } catch (e) {
-        Logger.Of('FetchCategorys').error(`Fetch categoryId ${id}  failed due reason: ${(e as { message: string }).message}`);
+        Logger.Of('FetchCategory').error(`Fetch categoryId ${id}  failed due reason: ${(e as { message: string }).message}`);
         return undefined;
     }
 }
@@ -44,6 +45,8 @@ export const CategoryEditScreen = function CategoryEditScreen(_props: Props) {
         payload: string;
         back?: BackTarget;
     };
+
+    const goBackSmart = useGoBackSmart(params?.back);
     const { isError, data, isPending } = useAppQuery<ICategory | undefined>(
         QueryKeys.category(params?.id),
         () => fetchCategory(params?.id),
@@ -53,11 +56,15 @@ export const CategoryEditScreen = function CategoryEditScreen(_props: Props) {
     return (
         <GenericListScreen
             name={data?.categoryName ?? translate('categoryScreen:editTitle')}
+            subtitle={data?.categoryName ? translate('categoryScreen:caption') : undefined}
             isError={isError}
             isPending={isPending}
             props={{
                 data,
                 back: params?.back,
+            }}
+            onBack={() => {
+                goBackSmart();
             }}
             RenderComponent={CategoryEdit}
         />

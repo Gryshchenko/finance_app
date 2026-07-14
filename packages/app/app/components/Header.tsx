@@ -52,6 +52,15 @@ export interface HeaderProps {
      */
     titleTxOptions?: TextProps['txOptions'];
     /**
+     * Small caption rendered under the title (e.g. the entity type) to clarify
+     * what the title refers to. Use `subtitleTx` for an i18n key.
+     */
+    subtitle?: TextProps['text'];
+    /**
+     * Subtitle text which is looked up via i18n.
+     */
+    subtitleTx?: TextProps['tx'];
+    /**
      * Icon that should appear on the left.
      * Can be used with `onLeftPress`.
      */
@@ -167,6 +176,8 @@ export function Header(props: HeaderProps) {
         titleMode = 'center',
         titleTx,
         titleTxOptions,
+        subtitle,
+        subtitleTx,
         titleContainerStyle: $titleContainerStyleOverride,
         style: $styleOverride,
         titleStyle: $titleStyleOverride,
@@ -176,6 +187,7 @@ export function Header(props: HeaderProps) {
     const $containerInsets = useSafeAreaInsetsStyle(safeAreaEdges);
 
     const titleContent = titleTx ? translate(titleTx, titleTxOptions) : title;
+    const subtitleContent = subtitleTx ? translate(subtitleTx) : subtitle;
 
     return (
         <View style={[$container, $containerInsets, { backgroundColor }, $containerStyleOverride]}>
@@ -201,6 +213,7 @@ export function Header(props: HeaderProps) {
                         ]}
                     >
                         <Text weight="medium" size="md" text={titleContent} style={[themed($title), $titleStyleOverride]} />
+                        {!!subtitleContent && <Text size="xs" text={subtitleContent} style={themed($subtitle)} />}
                     </View>
                 )}
 
@@ -273,6 +286,12 @@ const $container: ViewStyle = {
 const $title: ThemedStyle<TextStyle> = ({ typography }) => ({
     textAlign: 'center',
     fontFamily: typography.fonts.funnelSans.bold,
+});
+
+const $subtitle: ThemedStyle<TextStyle> = ({ colors }) => ({
+    textAlign: 'center',
+    color: colors.textDim,
+    marginTop: 2,
 });
 
 const $actionTextContainer: ThemedStyle<ViewStyle> = ({ spacing }) => ({

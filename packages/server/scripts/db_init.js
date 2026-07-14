@@ -74,9 +74,26 @@ const createUserGroupsTableQuery = `
         "userId" INT NOT NULL,
         "groupRole" INT,
         "groupName" varchar(128) NOT NULL,
+        "description" varchar(256),
         UNIQUE ("userId", "userGroupId"),
         FOREIGN KEY ("userId") REFERENCES users("userId"),
         "createdAt" TIMESTAMP NOT NULL DEFAULTNOW(),
+        "updatedAt" TIMESTAMP
+    );
+`;
+
+const createUserConnectionsTableQuery = `
+    CREATE TABLE userConnections (
+        "connectionId" SERIAL PRIMARY KEY,
+        "ownerUserId" INT NOT NULL,
+        "memberUserId" INT NOT NULL,
+        "userGroupId" INT,
+        "status" INT NOT NULL,
+        FOREIGN KEY ("ownerUserId") REFERENCES users("userId") ON DELETE CASCADE,
+        FOREIGN KEY ("memberUserId") REFERENCES users("userId") ON DELETE CASCADE,
+        FOREIGN KEY ("userGroupId") REFERENCES userGroups("userGroupId"),
+        UNIQUE ("ownerUserId", "memberUserId"),
+        "createdAt" TIMESTAMP NOT NULL DEFAULT NOW(),
         "updatedAt" TIMESTAMP
     );
 `;
@@ -236,6 +253,7 @@ const run = async () => {
     await initTable(createUserRolesTableQuery);
     await initTable(createUserGroupsTableQuery);
     await initTable(createGroupInvitationsTableQuery);
+    await initTable(createUserConnectionsTableQuery);
     await initTable(createCurrencyTableQuery);
     await initTable(insertDefaultCurrencies);
     await initTable(createProfileTableQuery);
