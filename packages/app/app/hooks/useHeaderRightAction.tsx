@@ -1,10 +1,9 @@
 import { useEffect, useRef } from 'react';
-import { ViewStyle } from 'react-native';
 
 import { IconTypes, PressableIcon } from '@/components/Icon';
 import { useHeaderActions } from '@/context/HeaderActionsContext';
 import { useAppTheme } from '@/theme/context';
-import { spacing } from '@/theme/spacing';
+import { $styles, headerIconSize } from '@/theme/styles';
 
 interface HeaderRightActionOptions {
     icon?: IconTypes;
@@ -31,21 +30,14 @@ export function useHeaderRightAction(handler: (() => void) | undefined, options?
         }
         setRightAction(
             <PressableIcon
-                size={22}
+                size={headerIconSize}
                 icon={icon}
                 color={color}
                 disabled={disabled}
                 onPress={() => handlerRef.current?.()}
-                containerStyle={$container}
+                containerStyle={$styles.headerAction}
             />,
         );
         return () => setRightAction(null);
     }, [hasHandler, icon, color, disabled, setRightAction]);
 }
-
-const $container: ViewStyle = {
-    height: '100%',
-    alignItems: 'center',
-    justifyContent: 'center',
-    paddingHorizontal: spacing.md,
-};

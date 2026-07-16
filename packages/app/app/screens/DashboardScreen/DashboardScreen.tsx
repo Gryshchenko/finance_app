@@ -1,5 +1,6 @@
 import { useState } from 'react';
-import { TextStyle } from 'react-native';
+import { Pressable, TextStyle } from 'react-native';
+import { NavigationProp, useNavigation } from '@react-navigation/native';
 import { NativeStackScreenProps } from '@react-navigation/native-stack';
 
 import { BalanceSummary } from '@/components/BalanceSummary';
@@ -17,12 +18,15 @@ type Props = NativeStackScreenProps<DashboardStackParamList, DashboardPath.Overv
 // measured header height keeps the scroll content padded exactly clear of the overlay.
 function DashboardContent() {
     const [headerHeight, setHeaderHeight] = useState(0);
+    const navigation = useNavigation<NavigationProp<DashboardStackParamList>>();
 
     return (
         <>
             <DashboardItems contentPaddingTop={headerHeight} contentPaddingBottom={BLUR_FOOTER_HEIGHT} />
             <HeaderV2 tx={'dashboardScreen:dashboard'} onHeightChange={setHeaderHeight}>
-                <BalanceSummary />
+                <Pressable onPress={() => navigation.navigate(DashboardPath.Insights)}>
+                    <BalanceSummary onPress={() => navigation.navigate(DashboardPath.Insights)} />
+                </Pressable>
             </HeaderV2>
             <BlurFooter />
         </>

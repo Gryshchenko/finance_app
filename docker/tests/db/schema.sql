@@ -628,6 +628,7 @@ CREATE TABLE public.usergroups (
     "userId" integer NOT NULL,
     "groupRole" integer,
     "groupName" character varying(128) NOT NULL,
+    "description" character varying(256),
     "createdAt" timestamp without time zone DEFAULT CURRENT_TIMESTAMP NOT NULL,
     "updatedAt" timestamp without time zone
 );

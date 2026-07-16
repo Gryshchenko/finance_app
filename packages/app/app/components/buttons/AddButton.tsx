@@ -1,20 +1,19 @@
 import { FC } from 'react';
-import { ViewStyle, Pressable } from 'react-native';
+import { Pressable } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
 
 import { Icon } from '@/components/Icon';
 import { useAppTheme } from '@/theme/context';
-import { $styles } from '@/theme/styles';
-import type { ThemedStyle } from '@/theme/types';
+import { $styles, headerIconSize } from '@/theme/styles';
 
-interface BackButtonProps {
+interface AddButtonProps {
     size?: number;
     onPress?: () => void;
 }
 
-export const AddButton: FC<BackButtonProps> = ({ size = 20, onPress }) => {
+export const AddButton: FC<AddButtonProps> = ({ size = headerIconSize, onPress }) => {
     const navigation = useNavigation();
-    const { themed, theme } = useAppTheme();
+    const { theme } = useAppTheme();
 
     const handlePress = () => {
         if (onPress) onPress();
@@ -22,15 +21,8 @@ export const AddButton: FC<BackButtonProps> = ({ size = 20, onPress }) => {
     };
 
     return (
-        <Pressable onPress={handlePress} style={themed([$styles.row, $customLeftAction])} hitSlop={10}>
+        <Pressable onPress={handlePress} style={$styles.headerAction}>
             <Icon icon="add" color={theme.colors.text} size={size} />
         </Pressable>
     );
 };
-
-const $customLeftAction: ThemedStyle<ViewStyle> = () => ({
-    height: '100%',
-    display: 'flex',
-    justifyContent: 'center',
-    alignItems: 'center',
-});

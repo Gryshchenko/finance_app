@@ -10,8 +10,8 @@ import {
     getTransaction,
     patchTransaction,
 } from './TransactionsTestUtils';
-import { getSummary } from '../stats/StatsTestUtils';
-import { createAccount } from '../account/AccountTestUtils';
+import { getCategoriesWithStats, getIncomesWithStats, getSummary } from '../stats/StatsTestUtils';
+import { createAccount, getAccount } from '../account/AccountTestUtils';
 import { createCategory } from '../category/CategoryTestUtils';
 import { createIncome } from '../income/IncomeTestUtils';
 import { getBalance } from '../balance/BalanceTestUtils';
@@ -323,6 +323,133 @@ describe('Multi-currency user with same-currency transactions', () => {
         // and the summary must count it as 100 USD (not 100 EUR converted)
         const summaryAfter = await getSummary(agent, userId, authorization, RANGE);
         expect(Utils.roundNumber(summaryAfter.income_total)).toEqual(100);
+    });
+
+    // Full create -> patch -> delete lifecycle per currency. After every step the four views must agree:
+    // the account amount (native currency), the total balance (base currency), the summary (base currency)
+    // and the per-entity income/category stats (native currency, no conversion).
+    describe('CRUD lifecycle per account currency', () => {
+        const RATES: Record<string, number> = { USD: 1, EUR: EUR_USD, GBP: GBP_USD };
+        // the shared dist typings don't expose the entity id fields on the stats items
+        type StatItem = { incomeId?: number; categoryId?: number; amount: number };
+
+        it('INCOME create/patch/delete: account amount, balance, summary and income stats stay consistent', async () => {
+            const { agent, userId, authorization, accountIds, incomeIds } = await setupUser();
+
+            for (const currency of ['USD', 'EUR', 'GBP'] as const) {
+                const rate = RATES[currency];
+                const accountId = accountIds[currency];
+                const incomeId = incomeIds[currency];
+
+                const incomeStatAmount = async () => {
+                    const stats = await getIncomesWithStats(agent, userId, authorization, RANGE);
+                    return (stats.items as StatItem[]).find((item) => item.incomeId === incomeId)?.amount ?? 0;
+                };
+
+                const balanceBefore = await getBalance(agent, userId, authorization);
+
+                // create: +100 in the account (native), +100*rate in balance/summary
+                const txnId = await createIncomeTransaction(
+                    agent,
+                    userId,
+                    authorization,
+                    accountId,
+                    incomeId,
+                    currency,
+                    100,
+                    TX_DATE,
+                );
+
+                let account = await getAccount(agent, userId, authorization, accountId);
+                expect(Utils.roundNumber(Number(account.amount))).toEqual(100);
+                let balance = await getBalance(agent, userId, authorization);
+                expect(Utils.roundNumber(balance - balanceBefore)).toEqual(Utils.roundNumber(100 * rate));
+                let summary = await getSummary(agent, userId, authorization, RANGE);
+                expect(Utils.roundNumber(summary.income_total)).toEqual(Utils.roundNumber(100 * rate));
+                expect(Utils.roundNumber(await incomeStatAmount())).toEqual(100);
+
+                // patch: 100 -> 250 in the transaction currency
+                await patchTransaction(agent, userId, authorization, txnId, { amount: 250, targetAmount: 250 });
+
+                account = await getAccount(agent, userId, authorization, accountId);
+                expect(Utils.roundNumber(Number(account.amount))).toEqual(250);
+                balance = await getBalance(agent, userId, authorization);
+                expect(Utils.roundNumber(balance - balanceBefore)).toEqual(Utils.roundNumber(250 * rate));
+                summary = await getSummary(agent, userId, authorization, RANGE);
+                expect(Utils.roundNumber(summary.income_total)).toEqual(Utils.roundNumber(250 * rate));
+                expect(Utils.roundNumber(await incomeStatAmount())).toEqual(250);
+
+                // delete: everything reverts to the pre-create state
+                await deleteTransaction(agent, userId, authorization, { transactionId: txnId });
+
+                account = await getAccount(agent, userId, authorization, accountId);
+                expect(Utils.roundNumber(Number(account.amount))).toEqual(0);
+                balance = await getBalance(agent, userId, authorization);
+                expect(Utils.roundNumber(balance)).toEqual(Utils.roundNumber(balanceBefore));
+                summary = await getSummary(agent, userId, authorization, RANGE);
+                expect(Utils.roundNumber(summary.income_total)).toEqual(0);
+                expect(Utils.roundNumber(await incomeStatAmount())).toEqual(0);
+            }
+        });
+
+        it('EXPENSE create/patch/delete: account amount, balance, summary and category stats stay consistent', async () => {
+            const { agent, userId, authorization, accountIds, categoryIds } = await setupUser();
+
+            for (const currency of ['USD', 'EUR', 'GBP'] as const) {
+                const rate = RATES[currency];
+                const accountId = accountIds[currency];
+                const categoryId = categoryIds[currency];
+
+                const categoryStatAmount = async () => {
+                    const stats = await getCategoriesWithStats(agent, userId, authorization, RANGE);
+                    return (stats.items as StatItem[]).find((item) => item.categoryId === categoryId)?.amount ?? 0;
+                };
+
+                const balanceBefore = await getBalance(agent, userId, authorization);
+
+                // create: -80 in the account (native), -80*rate in balance, +80*rate expense in summary
+                const txnId = await createExpenseTransaction(
+                    agent,
+                    userId,
+                    authorization,
+                    accountId,
+                    categoryId,
+                    currency,
+                    80,
+                    TX_DATE,
+                );
+
+                let account = await getAccount(agent, userId, authorization, accountId);
+                expect(Utils.roundNumber(Number(account.amount))).toEqual(-80);
+                let balance = await getBalance(agent, userId, authorization);
+                expect(Utils.roundNumber(balanceBefore - balance)).toEqual(Utils.roundNumber(80 * rate));
+                let summary = await getSummary(agent, userId, authorization, RANGE);
+                expect(Utils.roundNumber(summary.expense_total)).toEqual(Utils.roundNumber(80 * rate));
+                expect(Utils.roundNumber(await categoryStatAmount())).toEqual(80);
+
+                // patch: 80 -> 40 in the transaction currency
+                await patchTransaction(agent, userId, authorization, txnId, { amount: 40, targetAmount: 40 });
+
+                account = await getAccount(agent, userId, authorization, accountId);
+                expect(Utils.roundNumber(Number(account.amount))).toEqual(-40);
+                balance = await getBalance(agent, userId, authorization);
+                expect(Utils.roundNumber(balanceBefore - balance)).toEqual(Utils.roundNumber(40 * rate));
+                summary = await getSummary(agent, userId, authorization, RANGE);
+                expect(Utils.roundNumber(summary.expense_total)).toEqual(Utils.roundNumber(40 * rate));
+                expect(Utils.roundNumber(await categoryStatAmount())).toEqual(40);
+
+                // delete: everything reverts to the pre-create state
+                await deleteTransaction(agent, userId, authorization, { transactionId: txnId });
+
+                account = await getAccount(agent, userId, authorization, accountId);
+                expect(Utils.roundNumber(Number(account.amount))).toEqual(0);
+                balance = await getBalance(agent, userId, authorization);
+                expect(Utils.roundNumber(balance)).toEqual(Utils.roundNumber(balanceBefore));
+                summary = await getSummary(agent, userId, authorization, RANGE);
+                expect(Utils.roundNumber(summary.expense_total)).toEqual(0);
+                expect(Utils.roundNumber(await categoryStatAmount())).toEqual(0);
+            }
+        });
     });
 
     it('TRANSFER (same currency): total balance unchanged, transfer_total recorded (converted)', async () => {

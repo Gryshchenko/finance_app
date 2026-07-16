@@ -13,6 +13,8 @@ export const QueryKeys = {
     balance: () => ['balance'] as const,
     incomesStats: () => ['incomesStats'] as const,
     categoriesStats: () => ['categoriesStats'] as const,
+    monthSummary: (monthStart: string) => ['monthSummary', monthStart] as const,
+    monthCategoriesStats: (monthStart: string) => ['monthCategoriesStats', monthStart] as const,
 
     rates: (currencyCode?: string, targetCurrencyCode?: string) => ['rates', currencyCode, targetCurrencyCode] as const,
 

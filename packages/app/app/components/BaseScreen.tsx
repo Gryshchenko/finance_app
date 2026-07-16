@@ -1,12 +1,11 @@
 import { FC } from 'react';
-import { TextStyle, View, ViewStyle } from 'react-native';
+import { TextStyle, View } from 'react-native';
 
 import { Header } from '@/components/Header';
 import { Icon } from '@/components/Icon';
 import { TxKeyPath } from '@/i18n';
 import { useAppTheme } from '@/theme/context';
-import { $styles } from '@/theme/styles';
-import type { ThemedStyle } from '@/theme/types';
+import { $styles, headerIconSize } from '@/theme/styles';
 
 interface BaseScreenProps {
     titleTx?: TxKeyPath | undefined;
@@ -14,7 +13,7 @@ interface BaseScreenProps {
 }
 
 export const BaseScreen: FC<BaseScreenProps> = ({ titleTx, children }) => {
-    const { themed, theme } = useAppTheme();
+    const { theme } = useAppTheme();
     return (
         <View>
             <Header
@@ -22,8 +21,8 @@ export const BaseScreen: FC<BaseScreenProps> = ({ titleTx, children }) => {
                 titleMode="flex"
                 titleStyle={$rightAlignTitle}
                 RightActionComponent={
-                    <View style={themed([$styles.row, $customLeftAction])}>
-                        <Icon icon="more" color={theme.colors.text} size={20} />
+                    <View style={$styles.headerAction}>
+                        <Icon icon="more" color={theme.colors.text} size={headerIconSize} />
                     </View>
                 }
                 safeAreaEdges={[]}
@@ -35,9 +34,3 @@ export const BaseScreen: FC<BaseScreenProps> = ({ titleTx, children }) => {
 const $rightAlignTitle: TextStyle = {
     textAlign: 'center',
 };
-const $customLeftAction: ThemedStyle<ViewStyle> = () => ({
-    height: '100%',
-    display: 'flex',
-    justifyContent: 'center',
-    alignItems: 'center',
-});

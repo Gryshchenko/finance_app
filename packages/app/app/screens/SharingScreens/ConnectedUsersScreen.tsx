@@ -2,7 +2,7 @@ import { NavigationProp, useNavigation } from '@react-navigation/native';
 import { NativeStackScreenProps } from '@react-navigation/native-stack';
 import { IConnectedMember } from '@tenpercent/shared';
 
-import { PressableIcon } from '@/components/Icon';
+import { AddButton } from '@/components/buttons/AddButton';
 import { ConnectedUsersList } from '@/components/sharing/ConnectedUsersList';
 import { useAppQuery } from '@/hooks/useAppQuery';
 import { translate } from '@/i18n/translate';
@@ -34,7 +34,7 @@ export const ConnectedUsersScreen = function ConnectedUsersScreen(_props: Props)
             isError={isError}
             isPending={isPending}
             onBack={goToSettings}
-            RightActionComponent={<PressableIcon size={22} icon="add" onPress={goToInvite} />}
+            RightActionComponent={<AddButton onPress={goToInvite} />}
             props={{
                 data,
                 onPressUser: goToMember,

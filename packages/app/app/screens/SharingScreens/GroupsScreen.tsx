@@ -2,7 +2,7 @@ import { NavigationProp, useNavigation } from '@react-navigation/native';
 import { NativeStackScreenProps } from '@react-navigation/native-stack';
 import { IShareGroup } from '@tenpercent/shared';
 
-import { PressableIcon } from '@/components/Icon';
+import { AddButton } from '@/components/buttons/AddButton';
 import { GroupsList } from '@/components/sharing/GroupsList';
 import { useAppQuery } from '@/hooks/useAppQuery';
 import { translate } from '@/i18n/translate';
@@ -32,7 +32,7 @@ export const GroupsScreen = function GroupsScreen(_props: Props) {
             isError={isError}
             isPending={isPending}
             onBack={goToSettings}
-            RightActionComponent={<PressableIcon size={22} icon="add" onPress={goToCreate} />}
+            RightActionComponent={<AddButton onPress={goToCreate} />}
             props={{
                 data,
                 onPressGroup: goToEdit,

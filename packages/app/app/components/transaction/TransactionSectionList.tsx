@@ -175,8 +175,8 @@ const TransactionSectionList = forwardRef<SectionList<ITransactionListItem>, Pro
                         fromAmount: `-${fromAmount}`,
                         fromAmountStyle: $transferAmountFrom,
                         toLabel: transaction.categoryName ?? '-',
-                        toAmount: `+${toAmt}`,
-                        toAmountStyle: $transferAmountTo,
+                        toAmount: `${toAmt}`,
+                        toAmountStyle: $transferAmountToExpance,
                     };
                 case TransactionType.Income:
                     return {
@@ -387,5 +387,10 @@ const $transferAmountFrom: ThemedStyle<TextStyle> = ({ colors }) => ({
 const $transferAmountTo: ThemedStyle<TextStyle> = () => ({
     fontSize: 13,
     color: '#27ae60',
+    marginTop: 2,
+});
+
+const $transferAmountToExpance: ThemedStyle<TextStyle> = () => ({
+    fontSize: 13,
     marginTop: 2,
 });

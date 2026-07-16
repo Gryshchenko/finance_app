@@ -1,4 +1,4 @@
-import { ICategoryStats, IEntityStats, IStatsResponse, ISummary, StatsPeriod, StatsType } from '@tenpercent/shared';
+import { ICategoryStats, IEntityStats, IIncomeStats, IStatsResponse, ISummary, StatsPeriod, StatsType } from '@tenpercent/shared';
 import { HttpCode } from '@tenpercent/shared';
 import { Agent } from 'supertest';
 
@@ -55,7 +55,7 @@ async function getIncomesWithStats(
         to: string;
         period: StatsPeriod;
     },
-): Promise<IStatsResponse<ICategoryStats>> {
+): Promise<IStatsResponse<IIncomeStats>> {
     const { from, to, period } = payload;
     const {
         body: { data },

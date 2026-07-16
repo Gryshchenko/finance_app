@@ -19,6 +19,8 @@ export enum DateFormat {
     TIME_ONLY = 'HH:mm',
     /** 27 Sep 17:14 */
     SHORT_WITH_TIME = 'dd LLL HH:mm',
+    /** September 2025 */
+    MONTH_YEAR = 'LLLL yyyy',
 }
 
 class Time {

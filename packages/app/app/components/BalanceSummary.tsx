@@ -1,6 +1,7 @@
 import { TextStyle, View, ViewStyle } from 'react-native';
 import { IBalance, ISummary, StatsPeriod, Time } from '@tenpercent/shared';
 
+import { PressableIcon } from '@/components/Icon';
 import { Skeleton } from '@/components/Skeleton';
 import { Text } from '@/components/Text';
 import { useCurrency } from '@/context/CurrencyContext';
@@ -54,14 +55,19 @@ export async function fetchBalance(): Promise<IBalance | null> {
     }
 }
 
-export const BalanceSummary: React.FC = () => {
+interface BalanceSummaryProps {
+    /** Invoked from the caret affordance - opens the balance insights screen. */
+    onPress?: () => void;
+}
+
+export const BalanceSummary: React.FC<BalanceSummaryProps> = ({ onPress }) => {
     const { data: statsData, isPending: statsPending } = useAppQuery<ISummary | null>(QueryKeys.stats(), fetchStats, {
         staleTime: QueryStaleTimes.dashboard,
     });
     const { data: balanceData, isPending: balancePending } = useAppQuery<IBalance | null>(QueryKeys.balance(), fetchBalance, {
         staleTime: QueryStaleTimes.dashboard,
     });
-    const { themed } = useAppTheme();
+    const { themed, theme } = useAppTheme();
     const { defaultCurrency } = useCurrency();
 
     if (statsPending || balancePending) {
@@ -115,6 +121,14 @@ export const BalanceSummary: React.FC = () => {
                     <Text style={themed($expenses)}>{CurrencyUtils.formatWithDelimiter(expenses, defaultCurrency, 2, true)}</Text>
                 </View>
             </View>
+            <PressableIcon
+                containerStyle={themed($balanceEnsign)}
+                size={15}
+                icon={'caretRight'}
+                color={theme.colors.text}
+                disabled={false}
+                onPress={() => onPress?.()}
+            />
         </View>
     );
 };
@@ -189,4 +203,12 @@ export const $expenses: ThemedStyle<TextStyle> = ({ colors, typography }) => ({
     fontSize: 18,
     color: colors.palette.neutral900,
     fontFamily: typography.fonts.funnelSans.medium,
+});
+
+export const $balanceEnsign: ThemedStyle<ViewStyle> = () => ({
+    width: 20,
+    height: '100%',
+    display: 'flex',
+    justifyContent: 'center',
+    alignItems: 'center',
 });

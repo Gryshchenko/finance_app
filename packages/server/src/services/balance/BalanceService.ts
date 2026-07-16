@@ -3,7 +3,7 @@ import { IBalance, Utils, HttpCode, ErrorCode } from '@tenpercent/shared';
 import { LoggerBase } from 'helper/logger/LoggerBase';
 import { IAccountService } from 'services/account/AccountService';
 import { ICurrencyService } from 'services/currency/CurrencyService';
-import { IExchangeRateService } from 'services/exchangeRateService/ExchangeRateService';
+import { ICurrencyOrchestratorService } from 'services/currencyOrchestrator/CurrencyOrchestratorService';
 import { IProfileService } from 'services/profile/ProfileService';
 import { CustomError } from 'src/utils/errors/CustomError';
 
@@ -13,19 +13,19 @@ export interface IBalanceService {
 
 export default class BalanceService extends LoggerBase implements IBalanceService {
     private readonly _profileService: IProfileService;
-    private readonly _exchangeRateService: IExchangeRateService;
+    private readonly _currencyOrchestratorService: ICurrencyOrchestratorService;
     private readonly _currencyService: ICurrencyService;
     private readonly _accountService: IAccountService;
 
     public constructor(
         profileService: IProfileService,
-        exchangeRateService: IExchangeRateService,
+        currencyOrchestratorService: ICurrencyOrchestratorService,
         currencyService: ICurrencyService,
         accountService: IAccountService,
     ) {
         super();
         this._profileService = profileService;
-        this._exchangeRateService = exchangeRateService;
+        this._currencyOrchestratorService = currencyOrchestratorService;
         this._currencyService = currencyService;
         this._accountService = accountService;
     }
@@ -50,7 +50,7 @@ export default class BalanceService extends LoggerBase implements IBalanceServic
                     if (!currencySymbolForAccount?.currencyCode) {
                         throw this.error(`Currency symbol not found for account currencyCode: ${account.currencyCode}`);
                     }
-                    const rate = await this._exchangeRateService.get(
+                    const rate = await this._currencyOrchestratorService.get(
                         currencySymbolForAccount.currencyCode,
                         currencySymbolForCurrentUser.currencyCode,
                     );

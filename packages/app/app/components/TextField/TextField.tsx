@@ -297,11 +297,10 @@ export const TextField = forwardRef(function TextField(props: TextFieldProps, re
 // TextField-specific styles (accessory positioning)
 // ---------------------------------------------------------------------------
 
-const $rightAccessoryStyle: ThemedStyle<ViewStyle> = ({ colors }) => ({
+const $rightAccessoryStyle: ThemedStyle<ViewStyle> = () => ({
     height: 37,
     justifyContent: 'center',
     alignItems: 'center',
-    backgroundColor: colors.background,
     margin: 'auto',
     marginHorizontal: 10,
 });

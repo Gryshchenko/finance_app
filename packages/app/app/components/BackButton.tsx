@@ -1,20 +1,19 @@
 import { FC } from 'react';
-import { ViewStyle, Pressable } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
 
-import { Icon } from '@/components/Icon';
+import { PressableIcon } from '@/components/Icon';
 import { useAppTheme } from '@/theme/context';
-import { $styles } from '@/theme/styles';
-import type { ThemedStyle } from '@/theme/types';
+import { $styles, headerIconSize } from '@/theme/styles';
 
 interface BackButtonProps {
     size?: number;
     onPress?: () => void;
 }
 
-export const BackButton: FC<BackButtonProps> = ({ size = 20, onPress }) => {
+export const BackButton: FC<BackButtonProps> = ({ size = headerIconSize, onPress }) => {
     const navigation = useNavigation();
-    const { themed, theme } = useAppTheme();
+    const { theme } = useAppTheme();
+    const { colors } = theme;
 
     const handlePress = () => {
         if (onPress) onPress();
@@ -22,22 +21,13 @@ export const BackButton: FC<BackButtonProps> = ({ size = 20, onPress }) => {
     };
 
     return (
-        <Pressable onPress={handlePress} style={themed([$styles.row, $customLeftAction])} hitSlop={10}>
-            <Icon icon="back" color={theme.colors.text} size={size} />
-            {/*<Text style={themed([themed([$backAction])])}> {translate('common:back')}</Text>*/}
-        </Pressable>
+        <PressableIcon
+            size={size}
+            containerStyle={$styles.headerAction}
+            icon={'back'}
+            color={colors.text}
+            disabled={false}
+            onPress={handlePress}
+        />
     );
 };
-
-const $customLeftAction: ThemedStyle<ViewStyle> = () => ({
-    height: '100%',
-    display: 'flex',
-    justifyContent: 'center',
-    alignItems: 'center',
-});
-// const $backAction: ThemedStyle<ViewStyle> = () => ({
-//     position: 'absolute',
-//     left: 29,
-//     alignItems: 'center',
-//     display: 'flex',
-// });

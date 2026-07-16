@@ -4,7 +4,7 @@ import { StyleProp, TextStyle, TouchableOpacity, TouchableOpacityProps, View, Vi
 import { isRTL } from '@/i18n';
 import { translate } from '@/i18n/translate';
 import { useAppTheme } from '@/theme/context';
-import { $styles } from '@/theme/styles';
+import { $styles, headerIconSize } from '@/theme/styles';
 import type { ThemedStyle } from '@/theme/types';
 import { ExtendedEdge, useSafeAreaInsetsStyle } from '@/utils/useSafeAreaInsetsStyle';
 
@@ -260,7 +260,7 @@ function HeaderAction(props: HeaderActionProps) {
     if (icon) {
         return (
             <PressableIcon
-                size={24}
+                size={headerIconSize}
                 icon={icon}
                 color={iconColor}
                 onPress={onPress}
