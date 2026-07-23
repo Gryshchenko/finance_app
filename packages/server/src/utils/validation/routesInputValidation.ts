@@ -88,7 +88,6 @@ export function createSignupValidationRules(field: string, type: string, options
             .isLength({ min: options.min })
             .withMessage(`Field ${field} must be at least ${options.min} characters long`);
     }
-
     return [validatorChain];
 }
 

@@ -6,10 +6,12 @@ import userIdVerify from 'middleware/userIdVerify';
 import userStatusVerify from 'middleware/userStatusVerify';
 import balance from 'routes/balance';
 import { categoriesRouter, categoryRouter } from 'routes/category';
+import goalSelectionRouter from 'routes/goalSelectionRouter';
 import { groupRouter, groupsRouter } from 'routes/group';
 import { incomeRouter, incomesRouter } from 'routes/income';
 import { sharingRouter } from 'routes/sharing';
 import { statsRouter } from 'routes/stats';
+import tutorialsRouter from 'routes/tutorialsRouter';
 import { accountsRouter, accountRouter } from 'src/routes/account';
 import overview from 'src/routes/overview';
 import profile from 'src/routes/profile';
@@ -80,5 +82,9 @@ userRouter.use('/:userId/groups', userIdVerify, routesInputValidation([validateP
 userRouter.use('/:userId/stats', userIdVerify, routesInputValidation([validatePathQueryProperty('userId')]), statsRouter);
 
 userRouter.use('/:userId/balance', userIdVerify, routesInputValidation([validatePathQueryProperty('userId')]), balance);
+
+userRouter.use('/:userId/tutorials', userIdVerify, routesInputValidation([validatePathQueryProperty('userId')]), tutorialsRouter);
+
+userRouter.use('/:userId/goals', userIdVerify, routesInputValidation([validatePathQueryProperty('userId')]), goalSelectionRouter);
 
 export default userRouter;

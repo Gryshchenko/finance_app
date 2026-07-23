@@ -5,18 +5,22 @@
  * and a "main" flow which the user will use once logged in.
  */
 import { ComponentProps } from 'react';
+import { ActivityIndicator, View, ViewStyle } from 'react-native';
 import { NavigationContainer, NavigatorScreenParams, ParamListBase } from '@react-navigation/native';
 import { createNativeStackNavigator, NativeStackScreenProps } from '@react-navigation/native-stack';
 
 import Config from '@/config';
 import { useAuth } from '@/context/AuthContext';
+import { useTutorials } from '@/hooks/useTutorials';
 import { OverviewNavigator, OverviewTabParamList } from '@/navigators/OverviewNavigator';
 import { ErrorBoundary } from '@/screens/ErrorScreen/ErrorBoundary';
 import { ForgotPasswordChangeScreen } from '@/screens/ForgotPasswordChangeScreen';
 import { ForgotPasswordConfirmScreen } from '@/screens/ForgotPasswordConfirmScreen';
 import { ForgotPasswordRequestScreen } from '@/screens/ForgotPasswordRequestScreen';
 import { LoginScreen } from '@/screens/LoginScreen';
+import { OnboardingTutorialScreen } from '@/screens/OnboardingTutorialScreen/OnboardingTutorialScreen';
 import { SignUpConfirmationScreen } from '@/screens/SignUpConfirmationScreen';
+import { SignUpGoalsScreen } from '@/screens/SignUpGoalsScreen';
 import { SignUpScreen } from '@/screens/SignUpScreen';
 import ToastService from '@/services/ToastService';
 import { useAppTheme } from '@/theme/context';
@@ -38,6 +42,8 @@ export interface AppStackParamList extends ParamListBase {
     [AppPath.Login]: undefined;
     [AppPath.SignUp]: undefined;
     [AppPath.SignUpConfirmation]: undefined;
+    [AppPath.SignUpGoals]: undefined;
+    [AppPath.OnboardingTutorial]: undefined;
     [AppPath.ForgotPasswordRequest]: undefined;
     [AppPath.ForgotPasswordConfirm]: { email: string };
     [AppPath.ForgotPasswordChange]: undefined;
@@ -86,29 +92,66 @@ const SignUpConfirmationScreenTab = (props: AppStackScreenProps<AppPath.SignUpCo
         <SignUpConfirmationScreen {...props} />
     </ResetOnBlur>
 );
+const SignUpScreenTab = (props: AppStackScreenProps<AppPath.SignUp>) => (
+    <ResetOnBlur>
+        <SignUpScreen {...props} />
+    </ResetOnBlur>
+);
+const SignUpGoalsScreenTab = (props: AppStackScreenProps<AppPath.SignUpGoals>) => (
+    <ResetOnBlur>
+        <SignUpGoalsScreen onDone={() => props.navigation.navigate(AppPath.OnboardingTutorial)} />
+    </ResetOnBlur>
+);
+// Once the tutorial finishes, markSeen flips the cached tutorials flag and the
+// stack below swaps to Overview on its own — no navigation call needed here.
+const OnboardingTutorialScreenTab = () => (
+    <ResetOnBlur>
+        <OnboardingTutorialScreen reportView onDone={() => undefined} />
+    </ResetOnBlur>
+);
 const OverviewNavigatorTab = () => (
     <ResetOnBlur>
         <OverviewNavigator />
     </ResetOnBlur>
 );
+const OnboardingGate = () => {
+    const {
+        theme: { colors },
+    } = useAppTheme();
+    return (
+        <View style={[$gate, { backgroundColor: colors.background }]}>
+            <ActivityIndicator color={colors.tint} />
+        </View>
+    );
+};
+const $gate: ViewStyle = { flex: 1, alignItems: 'center', justifyContent: 'center' };
 
 const AppStack = () => {
     const { isAuthenticated, isUserConfirmed } = useAuth();
+    const {
+        tutorials,
+        isPending: isTutorialsPending,
+        isError: isTutorialsError,
+    } = useTutorials({ enabled: isAuthenticated && isUserConfirmed });
 
     const {
         theme: { colors },
     } = useAppTheme();
 
+    const needsOnboarding = !isTutorialsPending && !isTutorialsError && !tutorials?.isOnBoardingTutorialView;
+
     const getInitialRoute = () => {
         if (!isAuthenticated) return AppPath.Login;
-        return isUserConfirmed ? AppPath.Overview : AppPath.SignUpConfirmation;
+        if (!isUserConfirmed) return AppPath.SignUpConfirmation;
+        if (needsOnboarding) return AppPath.SignUpGoals;
+        return AppPath.Overview;
     };
 
     const getScreens = (): ScreenConfig[] => {
         if (!isAuthenticated) {
             return [
                 { name: AppPath.Login, component: LoginScreenTab },
-                { name: AppPath.SignUp, component: SignUpScreen },
+                { name: AppPath.SignUp, component: SignUpScreenTab },
                 { name: AppPath.ForgotPasswordChange, component: ForgotPasswordChangeScreenTab },
                 { name: AppPath.ForgotPasswordRequest, component: ForgotPasswordRequestScreenTab },
                 { name: AppPath.ForgotPasswordConfirm, component: ForgotPasswordConfirmScreenTab },
@@ -117,6 +160,17 @@ const AppStack = () => {
 
         if (!isUserConfirmed) {
             return [{ name: AppPath.SignUpConfirmation, component: SignUpConfirmationScreenTab }];
+        }
+
+        if (isTutorialsPending) {
+            return [{ name: AppPath.Overview, component: OnboardingGate }];
+        }
+
+        if (needsOnboarding) {
+            return [
+                { name: AppPath.SignUpGoals, component: SignUpGoalsScreenTab },
+                { name: AppPath.OnboardingTutorial, component: OnboardingTutorialScreenTab },
+            ];
         }
 
         return [{ name: AppPath.Overview, component: OverviewNavigatorTab }];

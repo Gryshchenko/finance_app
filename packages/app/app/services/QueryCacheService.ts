@@ -31,6 +31,8 @@ export const QueryKeys = {
     sharingGroup: (id: number) => ['sharingGroup', id] as const,
 
     clientConfig: () => ['clientConfig'] as const,
+    tutorials: () => ['tutorials'] as const,
+    selectedGoals: () => ['selectedGoals'] as const,
 } as const;
 
 export const QueryStaleTimes = {

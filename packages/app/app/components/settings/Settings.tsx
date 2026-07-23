@@ -148,6 +148,24 @@ export const Settings: FC<SettingsProps> = function Settings({ onScroll, content
 
                 <SettingsSection titleTx="settingsScreen:about">
                     <SettingsRow
+                        labelTx="settingsScreen:goals"
+                        icon="chevron-right"
+                        onPress={() => {
+                            navigation.navigate(OverviewPath.Settings, {
+                                screen: SettingsPath.Goals,
+                            });
+                        }}
+                    />
+                    <SettingsRow
+                        labelTx="settingsScreen:tutorial"
+                        icon="chevron-right"
+                        onPress={() => {
+                            navigation.navigate(OverviewPath.Settings, {
+                                screen: SettingsPath.Tutorial,
+                            });
+                        }}
+                    />
+                    <SettingsRow
                         labelTx="settingsScreen:privacyPolicy"
                         icon="open-in-new"
                         onPress={() => PRIVACY_POLICY_URL && openLinkInBrowser(PRIVACY_POLICY_URL)}

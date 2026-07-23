@@ -24,6 +24,27 @@ SET default_tablespace = '';
 
 SET default_table_access_method = heap;
 
+
+CREATE TABLE public.goals (
+    "userId" integer NOT NULL,
+    "selectedGoals" text[] NOT NULL,
+    "createdAt" timestamp without time zone DEFAULT CURRENT_TIMESTAMP NOT NULL
+);
+
+CREATE TABLE public.tutorials (
+    "userId" integer NOT NULL,
+    "isOnBoardingTutorialView" boolean,
+    "isAccountTutorialView" boolean,
+    "isDashboardTutorialView" boolean,
+    "isBalanceInsightsTutorialView" boolean,
+    "isIncomeTutorialView" boolean,
+    "isSharingTutorialView" boolean,
+    "isCategoryTutorialView" boolean,
+    "onBoardingViewedSlidesCount" integer,
+    "createdAt" timestamp without time zone DEFAULT CURRENT_TIMESTAMP NOT NULL,
+    CONSTRAINT tutorials_user_id_unique UNIQUE ("userId")
+);
+
 --
 -- TOC entry 232 (class 1259 OID 33102)
 -- Name: accounts; Type: TABLE; Schema: public; Owner: -
@@ -1444,7 +1465,11 @@ ALTER TABLE ONLY public.daily_transfer_stats
 ALTER TABLE ONLY public.daily_transfer_stats
     ADD CONSTRAINT "daily_transfer_stats_userId_fkey" FOREIGN KEY ("userId") REFERENCES public.users("userId");
 
+ALTER TABLE ONLY public.goals
+    ADD CONSTRAINT "public.goals_userId_fkey" FOREIGN KEY ("userId") REFERENCES public.users("userId");
 
+ALTER TABLE ONLY public.tutorials
+    ADD CONSTRAINT "public.tutorials_userId_fkey" FOREIGN KEY ("userId") REFERENCES public.users("userId");
 --
 -- TOC entry 3449 (class 2606 OID 827403)
 -- Name: email_changing email_changing_userId_fkey; Type: FK CONSTRAINT; Schema: public; Owner: -

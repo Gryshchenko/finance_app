@@ -31,6 +31,10 @@ export * from './interfaces/IBalance';
 export * from './interfaces/IEntityStats';
 export * from './interfaces/IRate';
 export * from './interfaces/ISharing';
+export * from './interfaces/ITutorialRequest';
+export * from './interfaces/ITutorialResponse';
+export * from './interfaces/IGoalSelectionRequest';
+export * from './interfaces/IGoalSelectionResponse';
 
 // --- Types ---
 export * from './types/AccountStatusType';

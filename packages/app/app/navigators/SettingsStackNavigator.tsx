@@ -1,6 +1,8 @@
+import { useNavigation } from '@react-navigation/native';
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
 import { IAvatarConfig } from '@tenpercent/shared';
 
+import { OnboardingTutorialScreen } from '@/screens/OnboardingTutorialScreen/OnboardingTutorialScreen';
 import { SettingsChangeAvatarScreen } from '@/screens/SettingsScreens/SettingsChangeAvatarScreen';
 import { SettingsChangeEmailConfirmScreen } from '@/screens/SettingsScreens/SettingsChangeEmailConfirmScreen';
 import { SettingsChangeEmailScreen } from '@/screens/SettingsScreens/SettingsChangeEmailScreen';
@@ -15,6 +17,7 @@ import { GroupsScreen } from '@/screens/SharingScreens/GroupsScreen';
 import { InviteUserScreen } from '@/screens/SharingScreens/InviteUserScreen';
 import { MemberSettingsScreen } from '@/screens/SharingScreens/MemberSettingsScreen';
 import { PendingRequestsScreen } from '@/screens/SharingScreens/PendingRequestsScreen';
+import { SignUpGoalsScreen } from '@/screens/SignUpGoalsScreen';
 
 const SettingsStack = createNativeStackNavigator<SettingsStackParamList>();
 
@@ -33,6 +36,8 @@ export enum SettingsPath {
     Groups = 'groups',
     CreateGroup = 'createGroup',
     EditGroup = 'editGroup',
+    Tutorial = 'tutorial',
+    Goals = 'goalsSurvey',
 }
 
 export type SettingsStackParamList = {
@@ -56,7 +61,21 @@ export type SettingsStackParamList = {
     groups: undefined;
     createGroup: undefined;
     editGroup: { userGroupId: number };
+    tutorial: undefined;
+    goalsSurvey: undefined;
 };
+
+// Replay of the onboarding tour from Settings — nothing is reported to the server here.
+function SettingsTutorialScreen() {
+    const navigation = useNavigation();
+    return <OnboardingTutorialScreen onDone={() => navigation.goBack()} />;
+}
+
+// Lets the user revise the goals they picked during sign-up.
+function SettingsGoalsScreen() {
+    const navigation = useNavigation();
+    return <SignUpGoalsScreen onDone={() => navigation.goBack()} onBack={() => navigation.goBack()} />;
+}
 
 function SettingsStackNavigator() {
     return (
@@ -75,6 +94,8 @@ function SettingsStackNavigator() {
             <SettingsStack.Screen name={SettingsPath.Groups} component={GroupsScreen} />
             <SettingsStack.Screen name={SettingsPath.CreateGroup} component={CreateGroupScreen} />
             <SettingsStack.Screen name={SettingsPath.EditGroup} component={EditGroupScreen} />
+            <SettingsStack.Screen name={SettingsPath.Tutorial} component={SettingsTutorialScreen} />
+            <SettingsStack.Screen name={SettingsPath.Goals} component={SettingsGoalsScreen} />
         </SettingsStack.Navigator>
     );
 }
