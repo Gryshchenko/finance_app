@@ -1,22 +1,29 @@
+import { IGroupSharedItem } from 'interfaces/IGroupSharedItem';
+
 export interface IShareGroup {
     userGroupId: number;
     groupName: string;
     description?: string | null;
     memberCount?: number;
+    groupSharedItems: IGroupSharedItem[];
 }
 
 export interface IConnectedMember {
     connectionId: number;
-    userId: number;
     publicName: string;
-    email: string;
-    userGroupId: number | null;
+    userGroupId: number;
+    isOwner: boolean;
+    email?: string;
 }
 
 export interface IPendingConnectionRequest {
     connectionId: number;
-    userId: number;
     publicName: string;
+    email: string;
+    createdAt: string;
+}
+export interface ISentConnectionRequest {
+    connectionId: number;
     email: string;
     createdAt: string;
 }

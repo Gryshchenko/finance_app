@@ -4,6 +4,7 @@ import config from '../../src/config/dbConfig';
 import { KeyValueStoreBuilder } from '../../src/repositories/keyValueStore/KeyValueStoreBuilder';
 import { HttpCode, Time } from '@tenpercent/shared';
 import { createAllTransactions, fetchTransactions, fetchTransactionsAll, fetchTransactionsBad } from './TransactionsTestUtils';
+import { createAccount } from '../account/AccountTestUtils';
 
 // eslint-disable-next-line @typescript-eslint/no-require-imports
 const request = require('supertest');
@@ -64,7 +65,7 @@ describe('PATCH /transaction/patch - amount', () => {
 
         const accountId = accounts[0].accountId;
         const currencyCode = accounts[0].currencyCode;
-        const targetAccountId = accounts[1].accountId;
+        const targetAccountId = await createAccount(agent, userId, authorization, currencyCode, 1000, 'Transfer target');
 
         const response = await agent
             .post(`/user/${userId}/transaction/`)
@@ -144,7 +145,7 @@ describe('PATCH /transaction/patch - amount', () => {
         const currencyCode = accounts[0].currencyCode;
         const categoryId = categories[0].categoryId;
         const incomeId = incomes[0].incomeId;
-        const targetAccountId = accounts[1].accountId;
+        const targetAccountId = await createAccount(agent, userId, authorization, currencyCode, 1000, 'Transfer target');
 
         const transactionIds = await createAllTransactions(
             agent,

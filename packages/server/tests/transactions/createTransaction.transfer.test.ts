@@ -73,8 +73,8 @@ describe('POST /transaction/create - transfare', () => {
             // const incomeId = incomes[0].incomeId;
             const accountId = accounts[0].accountId;
             const currencyCode = accounts[0].currencyCode;
-            const targetAccountId = accounts[1].accountId;
-            const targetCurrencyCode = accounts[1].currencyCode;
+            const targetAccountId = await createAccount(agent, userId, authorization, currencyCode, 1000, 'Transfer target');
+            const targetCurrencyCode = currencyCode;
 
             const {
                 body: { data: accountBefor },
@@ -138,8 +138,8 @@ describe('POST /transaction/create - transfare', () => {
 
         const { accounts } = await getOverview(agent, userId, authorization);
         const accountId = accounts[0].accountId;
-        const targetAccountId = accounts[1].accountId;
         const currencyCode = accounts[0].currencyCode;
+        const targetAccountId = await createAccount(agent, userId, authorization, currencyCode, 1000, 'Transfer target');
         const accountIdPatch = await createAccount(agent, userId, authorization, currencyCode, 1000, 'Patch source');
 
         const accountBefore = await getAccount(agent, userId, authorization, accountId);
@@ -170,8 +170,8 @@ describe('POST /transaction/create - transfare', () => {
 
         const { accounts } = await getOverview(agent, userId, authorization);
         const accountId = accounts[0].accountId;
-        const targetAccountId = accounts[1].accountId;
         const currencyCode = accounts[0].currencyCode;
+        const targetAccountId = await createAccount(agent, userId, authorization, currencyCode, 1000, 'Transfer target');
         const targetAccountIdPatch = await createAccount(agent, userId, authorization, currencyCode, 1000, 'Patch target');
 
         const accountBefore = await getAccount(agent, userId, authorization, accountId);
@@ -202,8 +202,8 @@ describe('POST /transaction/create - transfare', () => {
 
         const { accounts } = await getOverview(agent, userId, authorization);
         const accountId = accounts[0].accountId;
-        const targetAccountId = accounts[1].accountId;
         const currencyCode = accounts[0].currencyCode;
+        const targetAccountId = await createAccount(agent, userId, authorization, currencyCode, 1000, 'Transfer target');
 
         const accountBefore = await getAccount(agent, userId, authorization, accountId);
         const targetBefore = await getAccount(agent, userId, authorization, targetAccountId);
@@ -227,8 +227,8 @@ describe('POST /transaction/create - transfare', () => {
 
         const { accounts } = await getOverview(agent, userId, authorization);
         const accountId = accounts[0].accountId;
-        const targetAccountId = accounts[1].accountId;
         const currencyCode = accounts[0].currencyCode;
+        const targetAccountId = await createAccount(agent, userId, authorization, currencyCode, 1000, 'Transfer target');
         const accountIdPatch = await createAccount(agent, userId, authorization, currencyCode, 1000, 'Patch source 2');
 
         const accountBefore = await getAccount(agent, userId, authorization, accountId);
@@ -256,8 +256,8 @@ describe('POST /transaction/create - transfare', () => {
 
         const { accounts } = await getOverview(agent, userId, authorization);
         const accountId = accounts[0].accountId;
-        const targetAccountId = accounts[1].accountId;
         const currencyCode = accounts[0].currencyCode;
+        const targetAccountId = await createAccount(agent, userId, authorization, currencyCode, 1000, 'Transfer target');
 
         const id = await createTransferTransaction(agent, userId, authorization, accountId, targetAccountId, currencyCode, 100);
         const accountAfterCreate = await getAccount(agent, userId, authorization, accountId);
@@ -296,13 +296,14 @@ describe('POST /transaction/create - transfare', () => {
         userIds.push(userId1, userId2);
 
         const { accounts: accounts1 } = await getOverview(agent, userId1, auth1);
+        const targetAccountId1 = await createAccount(agent, userId1, auth1, accounts1[0].currencyCode, 1000, 'Transfer target');
 
         const id = await createTransferTransaction(
             agent,
             userId1,
             auth1,
             accounts1[0].accountId,
-            accounts1[1].accountId,
+            targetAccountId1,
             accounts1[0].currencyCode,
             100,
         );
@@ -318,13 +319,21 @@ describe('POST /transaction/create - transfare', () => {
         userIds.push(userId);
 
         const { accounts } = await getOverview(agent, userId, authorization);
+        const targetAccountId = await createAccount(
+            agent,
+            userId,
+            authorization,
+            accounts[0].currencyCode,
+            1000,
+            'Transfer target',
+        );
 
         const id = await createTransferTransaction(
             agent,
             userId,
             authorization,
             accounts[0].accountId,
-            accounts[1].accountId,
+            targetAccountId,
             accounts[0].currencyCode,
             100,
         );

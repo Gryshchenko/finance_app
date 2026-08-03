@@ -24,11 +24,12 @@ if (__DEV__ && Platform.OS !== 'web') {
 
 import { useFonts } from 'expo-font';
 import * as Linking from 'expo-linking';
-import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
+import { QueryClientProvider } from '@tanstack/react-query';
 import { GestureHandlerRootView } from 'react-native-gesture-handler';
 import { KeyboardProvider } from 'react-native-keyboard-controller';
 import { initialWindowMetrics, SafeAreaProvider } from 'react-native-safe-area-context';
 
+import { queryClient } from '@/services/queryClient';
 import { SecureBiometricStorage } from '@/services/SecureBiometricStorage';
 
 import { AuthProvider } from './context/AuthContext';
@@ -53,8 +54,6 @@ const config = {
         Overview: 'overview',
     },
 };
-
-const queryClient = new QueryClient();
 
 /**
  * This is the root component of our app.

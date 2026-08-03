@@ -37,7 +37,7 @@ const MemberRow: FC<{ member: IConnectedMember; isLast: boolean; onPress: () => 
     } = useAppTheme();
     return (
         <Pressable onPress={onPress} style={[themed($row), !isLast && themed($rowBorder)]}>
-            <Avatar name={member.publicName || member.email} size={44} />
+            <Avatar name={(member.publicName || member.email) ?? 'unknown'} size={44} />
             <View style={$rowText}>
                 <Text text={member.publicName || member.email} style={themed($name)} numberOfLines={1} />
                 <Text text={member.email} style={themed($email)} numberOfLines={1} />

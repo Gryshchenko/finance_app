@@ -14,6 +14,7 @@ import {
     patchTransaction,
 } from '../transactions/TransactionsTestUtils';
 import { getCategoriesWithStats, getEntityStats, getIncomesWithStats, getSummary } from './StatsTestUtils';
+import { createAccount } from '../account/AccountTestUtils';
 
 // eslint-disable-next-line @typescript-eslint/no-require-imports
 const request = require('supertest');
@@ -73,12 +74,14 @@ async function setupUser(): Promise<ITestCtx> {
         .send({ budget: 100 })
         .expect(HttpCode.NO_CONTENT);
 
+    const targetAccountId = await createAccount(agent, userId, authorization, accounts[0].currencyCode, 0, 'Transfer target');
+
     return {
         agent,
         userId,
         authorization,
         accountId: accounts[0].accountId,
-        targetAccountId: accounts[1].accountId,
+        targetAccountId,
         currencyCode: accounts[0].currencyCode,
         incomeIds: incomes.map((i: IIncome) => i.incomeId),
         categoryIds: categories.map((c: ICategory) => c.categoryId),

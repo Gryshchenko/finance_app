@@ -1,4 +1,11 @@
-import { IConnectedMember, IPendingConnectionRequest, IShareGroup, Utils } from '@tenpercent/shared';
+import {
+    IConnectedMember,
+    IGroupSharedItem,
+    IPendingConnectionRequest,
+    ISentConnectionRequest,
+    IShareGroup,
+    Utils,
+} from '@tenpercent/shared';
 
 import { GeneralApiProblemKind } from '@/services/api/apiProblem';
 import { ShareGroupService } from '@/services/ShareGroupService';
@@ -19,6 +26,41 @@ export async function fetchConnections(): Promise<IConnectedMember[] | undefined
         }
     } catch (e) {
         Logger.Of('FetchConnections').error(`Fetch connections failed due reason: ${(e as { message: string }).message}`);
+        return undefined;
+    }
+}
+
+export async function fetchConnection(connectionId: number): Promise<IConnectedMember | undefined> {
+    try {
+        const response = await SharingService.instance().doGetConnection(connectionId);
+        switch (response.kind) {
+            case GeneralApiProblemKind.Ok: {
+                return response.data as IConnectedMember;
+            }
+            default: {
+                return undefined;
+            }
+        }
+    } catch (e) {
+        Logger.Of('FetchConnection').error(
+            `Fetch connection ${connectionId} failed due reason: ${(e as { message: string }).message}`,
+        );
+        return undefined;
+    }
+}
+export async function fetchSentRequests(): Promise<ISentConnectionRequest[] | undefined> {
+    try {
+        const response = await SharingService.instance().doGetSentRequests();
+        switch (response.kind) {
+            case GeneralApiProblemKind.Ok: {
+                return response.data as ISentConnectionRequest[];
+            }
+            default: {
+                return undefined;
+            }
+        }
+    } catch (e) {
+        Logger.Of('FetchSentRequests').error(`Fetch sent requests failed due reason: ${(e as { message: string }).message}`);
         return undefined;
     }
 }
@@ -77,6 +119,23 @@ export async function fetchSharingGroup(userGroupId: number): Promise<IShareGrou
         Logger.Of('FetchSharingGroup').error(
             `Fetch group ${userGroupId} failed due reason: ${(e as { message: string }).message}`,
         );
+        return undefined;
+    }
+}
+
+export async function fetchShareableItems(): Promise<IGroupSharedItem[] | undefined> {
+    try {
+        const response = await ShareGroupService.instance().doGetShareableItems();
+        switch (response.kind) {
+            case GeneralApiProblemKind.Ok: {
+                return response.data as IGroupSharedItem[];
+            }
+            default: {
+                return undefined;
+            }
+        }
+    } catch (e) {
+        Logger.Of('FetchShareableItems').error(`Fetch shareable items failed due reason: ${(e as { message: string }).message}`);
         return undefined;
     }
 }

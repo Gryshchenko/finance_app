@@ -4,6 +4,7 @@ import { IUserClient, ResponseStatusType, UserStatus } from '@tenpercent/shared'
 import { buildGeneralApiBaseHandler, GeneralApiProblem, GeneralApiProblemKind } from '@/services/api/apiProblem';
 import { AuthService } from '@/services/AuthService';
 import { LoginService } from '@/services/LoginService';
+import { queryClient } from '@/services/queryClient';
 import { SignupService } from '@/services/SignUpService';
 import { Logger } from '@/utils/logger/Logger';
 
@@ -165,6 +166,7 @@ export const AuthProvider: FC<PropsWithChildren<AuthProviderProps>> = ({ childre
             switch (response.kind) {
                 case GeneralApiProblemKind.Ok: {
                     await AuthService.instance().unauthorized();
+                    queryClient.clear();
                     setIsAuthenticated(false);
                     setIsUserConfirmed(false);
                     return true;
@@ -172,6 +174,7 @@ export const AuthProvider: FC<PropsWithChildren<AuthProviderProps>> = ({ childre
                 default: {
                     _logger.error('Do logout failed due reason: ', response.kind);
                     await AuthService.instance().unauthorized();
+                    queryClient.clear();
                     setIsAuthenticated(false);
                     setIsUserConfirmed(false);
                     buildGeneralApiBaseHandler(response);

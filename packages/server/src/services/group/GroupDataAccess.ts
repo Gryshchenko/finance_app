@@ -7,10 +7,15 @@ import { DBError } from 'src/utils/errors/DBError';
 import { ConnectionStatus } from 'types/ConnectionStatus';
 
 export interface IGroupDataAccess {
-    createGroup(userId: number, group: ICreateGroup, trx?: IDBTransaction): Promise<IGroup>;
+    createGroup(userId: number, group: Omit<ICreateGroup, 'groupSharedItems'>, trx?: IDBTransaction): Promise<IGroup>;
     getGroups(userId: number): Promise<IGroupListItem[]>;
     getGroup(userId: number, userGroupId: number, trx?: IDBTransaction): Promise<IGroup | undefined>;
-    patchGroup(userId: number, userGroupId: number, properties: Partial<ICreateGroup>, trx?: IDBTransaction): Promise<number>;
+    patchGroup(
+        userId: number,
+        userGroupId: number,
+        properties: Partial<Omit<ICreateGroup, 'groupSharedItems'>>,
+        trx?: IDBTransaction,
+    ): Promise<number>;
     deleteGroup(userId: number, userGroupId: number, trx?: IDBTransaction): Promise<boolean>;
 }
 

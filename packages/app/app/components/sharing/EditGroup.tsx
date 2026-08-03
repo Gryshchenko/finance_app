@@ -1,6 +1,6 @@
 import { FC } from 'react';
 import { NavigationProp, useNavigation } from '@react-navigation/native';
-import { IConnectedMember, IShareGroup } from '@tenpercent/shared';
+import { IConnectedMember, IGroupSharedItem, IShareGroup } from '@tenpercent/shared';
 
 import { EmptyState } from '@/components/EmptyState';
 import { GroupFields, GroupForm } from '@/components/sharing/GroupFields';
@@ -18,6 +18,14 @@ import { ShareGroupService } from '@/services/ShareGroupService';
 import ToastService from '@/services/ToastService';
 import { OverviewPath } from '@/types/OverviewPath';
 
+const arrayToObject = (items: IGroupSharedItem[]) => {
+    const result: Record<string, IGroupSharedItem> = {};
+    items.forEach((item) => {
+        result[item.id] = item;
+    });
+    return result;
+};
+
 export const EditGroup: FC<{ data?: IShareGroup }> = function EditGroup({ data }) {
     const navigation = useNavigation<NavigationProp<OverviewTabParamList>>();
     const invalidateQuery = useInvalidateQuery();
@@ -25,6 +33,9 @@ export const EditGroup: FC<{ data?: IShareGroup }> = function EditGroup({ data }
         {
             groupName: data?.groupName ?? '',
             description: data?.description ?? '',
+            accounts: arrayToObject(data?.groupSharedItems?.filter((item) => item.type === 'account') ?? []),
+            incomes: arrayToObject(data?.groupSharedItems?.filter((item) => item.type === 'income') ?? []),
+            categories: arrayToObject(data?.groupSharedItems?.filter((item) => item.type === 'category') ?? []),
         },
         undefined,
         String(data?.userGroupId),
@@ -45,10 +56,16 @@ export const EditGroup: FC<{ data?: IShareGroup }> = function EditGroup({ data }
             setErrors({ groupName: 'validation:required' });
             return;
         }
+        const groupSharedItems = [
+            ...Object.values(form.incomes ?? {}),
+            ...Object.values(form.accounts ?? {}),
+            ...Object.values(form.categories ?? {}),
+        ];
         await withFetching(async () => {
             const response = await ShareGroupService.instance().doPatchGroup(data.userGroupId, {
                 groupName,
                 description: form.description?.trim() || undefined,
+                groupSharedItems,
             });
             if (response.kind === GeneralApiProblemKind.Ok) {
                 ToastService.info({
@@ -103,7 +120,7 @@ export const EditGroup: FC<{ data?: IShareGroup }> = function EditGroup({ data }
             members={members}
             onPressMember={goToMember}
             isSaveDisabled={isFetching}
-            handleChange={(key, value) => handleChange(key, value)}
+            handleChange={handleChange}
             handleSave={handleSave}
         />
     );

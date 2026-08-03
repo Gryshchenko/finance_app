@@ -8,7 +8,7 @@ import { translate } from '@/i18n/translate';
 import { OverviewTabParamList } from '@/navigators/OverviewNavigator';
 import { SettingsPath, SettingsStackParamList } from '@/navigators/SettingsStackNavigator';
 import { GenericListScreen } from '@/screens/GenericListScreen';
-import { fetchConnections } from '@/screens/SharingScreens/sharingQueries';
+import { fetchConnection } from '@/screens/SharingScreens/sharingQueries';
 import { QueryKeys, QueryStaleTimes } from '@/services/QueryCacheService';
 import { OverviewPath } from '@/types/OverviewPath';
 
@@ -17,13 +17,12 @@ type Props = NativeStackScreenProps<SettingsStackParamList, SettingsPath.MemberS
 export const MemberSettingsScreen = function MemberSettingsScreen(_props: Props) {
     const navigation = useNavigation<NavigationProp<OverviewTabParamList>>();
     const connectionId = _props?.route?.params?.connectionId;
-    const { isError, data, isPending } = useAppQuery<IConnectedMember[] | undefined>(
-        QueryKeys.sharingConnections(),
-        fetchConnections,
+    const { isError, data, isPending } = useAppQuery<IConnectedMember | undefined>(
+        QueryKeys.sharingConnection(Number(connectionId)),
+        () => fetchConnection(Number(connectionId)),
         { staleTime: QueryStaleTimes.detail },
     );
-    const member = data?.find((item) => item.connectionId === Number(connectionId));
-
+    const member = data;
     return (
         <GenericListScreen
             name={translate('sharing:memberTitle')}

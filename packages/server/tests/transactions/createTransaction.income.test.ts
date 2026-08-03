@@ -5,7 +5,7 @@ import { KeyValueStoreBuilder } from '../../src/repositories/keyValueStore/KeyVa
 import { ErrorCode, TransactionType } from '@tenpercent/shared';
 import { ResponseStatusType } from '@tenpercent/shared';
 import { HttpCode } from '@tenpercent/shared';
-import { getAccount } from '../account/AccountTestUtils';
+import { createAccount, getAccount } from '../account/AccountTestUtils';
 import { createIncomeTransaction, getTransaction, patchTransaction, tryPatchTransaction } from './TransactionsTestUtils';
 
 // eslint-disable-next-line @typescript-eslint/no-require-imports
@@ -128,8 +128,8 @@ describe('POST /transaction/create - income', () => {
         const { accounts, incomes } = await getOverview(agent, userId, authorization);
         const incomeId = incomes[0].incomeId;
         const accountId = accounts[0].accountId;
-        const accountIdPatch = accounts[1].accountId;
         const currencyCode = accounts[0].currencyCode;
+        const accountIdPatch = await createAccount(agent, userId, authorization, currencyCode, 0, 'Patch target');
 
         const accountBefore = await getAccount(agent, userId, authorization, accountId);
 
@@ -219,8 +219,8 @@ describe('POST /transaction/create - income', () => {
         const { accounts, incomes } = await getOverview(agent, userId, authorization);
         const incomeId = incomes[0].incomeId;
         const accountId = accounts[0].accountId;
-        const accountIdPatch = accounts[1].accountId;
         const currencyCode = accounts[0].currencyCode;
+        const accountIdPatch = await createAccount(agent, userId, authorization, currencyCode, 0, 'Patch target');
 
         const accountBefore = await getAccount(agent, userId, authorization, accountId);
         const accountPatchBefore = await getAccount(agent, userId, authorization, accountIdPatch);

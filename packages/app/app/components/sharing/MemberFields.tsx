@@ -11,13 +11,13 @@ import { spacing } from '@/theme/spacing';
 import { ThemedStyle } from '@/theme/types';
 
 export interface MemberForm {
-    userGroupId?: number | null;
+    userGroupId: number;
 }
 
 interface IProps {
     user: IConnectedMember;
     form: MemberForm;
-    handleChange?: (userGroupId: number) => void;
+    handleChange?: (field: keyof MemberForm, value: any) => void;
     handleSave?: () => void;
     isSaveDisabled?: boolean;
 }
@@ -30,22 +30,24 @@ export const MemberFields: FC<IProps> = function MemberFields(_props) {
         <GeneralDetailView isCreate={false} isEdit isView={false} onSave={handleSave} isSaveDisabled={isSaveDisabled}>
             <View style={$wrapper}>
                 <View style={themed($header)}>
-                    <Avatar name={user.publicName || user.email} size={64} />
+                    <Avatar name={(user.publicName || user.email) ?? 'unknown'} size={64} />
                     <View style={$headerText}>
                         <Text text={user.publicName || user.email} style={themed($name)} />
                         <Text text={user.email} style={themed($email)} />
                     </View>
                 </View>
 
-                <View style={$section}>
-                    <Text tx={'sharing:access'} style={themed($sectionTitle)} />
-                    <GroupSelectDropdown
-                        preset={'default'}
-                        labelTx={'sharing:groupLabel'}
-                        value={form.userGroupId}
-                        onChange={(group: IShareGroup) => handleChange?.(group.userGroupId)}
-                    />
-                </View>
+                {user.isOwner && (
+                    <View style={$section}>
+                        <Text tx={'sharing:access'} style={themed($sectionTitle)} />
+                        <GroupSelectDropdown
+                            preset={'default'}
+                            labelTx={'sharing:groupLabel'}
+                            value={form.userGroupId}
+                            onChange={(group: IShareGroup) => handleChange?.('userGroupId', group.userGroupId)}
+                        />
+                    </View>
+                )}
             </View>
         </GeneralDetailView>
     );

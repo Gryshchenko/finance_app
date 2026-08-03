@@ -6,4 +6,6 @@ export interface IConnection {
     memberUserId: number;
     userGroupId: number | null;
     status: ConnectionStatus;
+    ownerPublicName?: string;
+    memberPublicName?: string;
 }

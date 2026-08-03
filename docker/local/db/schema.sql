@@ -732,23 +732,6 @@ CREATE SEQUENCE public."transactions_transactionId_seq"
 
 ALTER SEQUENCE public."transactions_transactionId_seq" OWNED BY public.transactions."transactionId";
 
-
---
--- TOC entry 220 (class 1259 OID 33011)
--- Name: usergroups; Type: TABLE; Schema: public; Owner: -
---
-
-CREATE TABLE public.usergroups (
-    "userGroupId" integer NOT NULL,
-    "userId" integer NOT NULL,
-    "groupRole" integer,
-    "groupName" character varying(128) NOT NULL,
-    "description" character varying(256),
-    "createdAt" timestamp without time zone DEFAULT CURRENT_TIMESTAMP NOT NULL,
-    "updatedAt" timestamp without time zone
-);
-
-
 --
 -- TOC entry 219 (class 1259 OID 33010)
 -- Name: usergroups_userGroupId_seq; Type: SEQUENCE; Schema: public; Owner: -
@@ -761,15 +744,6 @@ CREATE SEQUENCE public."usergroups_userGroupId_seq"
     NO MINVALUE
     NO MAXVALUE
     CACHE 1;
-
-
---
--- TOC entry 3616 (class 0 OID 0)
--- Dependencies: 219
--- Name: usergroups_userGroupId_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: -
---
-
-ALTER SEQUENCE public."usergroups_userGroupId_seq" OWNED BY public.usergroups."userGroupId";
 
 
 --
@@ -965,13 +939,6 @@ ALTER TABLE ONLY public."transactionTypes" ALTER COLUMN "transactionTypeId" SET 
 
 ALTER TABLE ONLY public.transactions ALTER COLUMN "transactionId" SET DEFAULT nextval('public."transactions_transactionId_seq"'::regclass);
 
-
---
--- TOC entry 3292 (class 2604 OID 33014)
--- Name: usergroups userGroupId; Type: DEFAULT; Schema: public; Owner: -
---
-
-ALTER TABLE ONLY public.usergroups ALTER COLUMN "userGroupId" SET DEFAULT nextval('public."usergroups_userGroupId_seq"'::regclass);
 
 
 --
@@ -1278,24 +1245,6 @@ ALTER TABLE ONLY public.balance
 
 
 --
--- TOC entry 3351 (class 2606 OID 33016)
--- Name: usergroups usergroups_pkey; Type: CONSTRAINT; Schema: public; Owner: -
---
-
-ALTER TABLE ONLY public.usergroups
-    ADD CONSTRAINT usergroups_pkey PRIMARY KEY ("userGroupId");
-
-
---
--- TOC entry 3353 (class 2606 OID 33018)
--- Name: usergroups usergroups_userId_userGroupId_key; Type: CONSTRAINT; Schema: public; Owner: -
---
-
-ALTER TABLE ONLY public.usergroups
-    ADD CONSTRAINT "usergroups_userId_userGroupId_key" UNIQUE ("userId", "userGroupId");
-
-
---
 -- TOC entry 3381 (class 2606 OID 81926)
 -- Name: userroles userroles_pkey; Type: CONSTRAINT; Schema: public; Owner: -
 --
@@ -1515,14 +1464,6 @@ ALTER TABLE ONLY public.balance
     ADD CONSTRAINT fk_user_id FOREIGN KEY ("userId") REFERENCES public.users("userId") ON DELETE CASCADE;
 
 
---
--- TOC entry 3419 (class 2606 OID 33033)
--- Name: groupinvitations groupinvitations_userGroupId_fkey; Type: FK CONSTRAINT; Schema: public; Owner: -
---
-
-ALTER TABLE ONLY public.groupinvitations
-    ADD CONSTRAINT "groupinvitations_userGroupId_fkey" FOREIGN KEY ("userGroupId") REFERENCES public.usergroups("userGroupId");
-
 
 --
 -- TOC entry 3422 (class 2606 OID 33096)
@@ -1624,13 +1565,6 @@ ALTER TABLE ONLY public.transactions
 
 
 --
--- TOC entry 3418 (class 2606 OID 33019)
--- Name: usergroups usergroups_userId_fkey; Type: FK CONSTRAINT; Schema: public; Owner: -
---
-
-ALTER TABLE ONLY public.usergroups
-    ADD CONSTRAINT "usergroups_userId_fkey" FOREIGN KEY ("userId") REFERENCES public.users("userId");
-
 
 --
 -- TOC entry 3435 (class 2606 OID 90112)

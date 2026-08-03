@@ -17,7 +17,7 @@ const groupsRouter = express.Router({ mergeParams: true });
 groupRouter.post(
     '/',
     validateQuery({}),
-    sanitizeRequestBody(['groupName', 'description']),
+    sanitizeRequestBody(['groupName', 'description', 'groupSharedItems']),
     routesInputValidation(createGroupValidationRules, groupConvertValidationMessageToErrorCode),
     GroupController.post,
 );
@@ -32,7 +32,7 @@ groupRouter.get(
 groupRouter.patch(
     '/:userGroupId',
     validateQuery({}),
-    sanitizeRequestBody(['groupName', 'description']),
+    sanitizeRequestBody(['groupName', 'description', 'groupSharedItems']),
     routesInputValidation(patchGroupValidationRules, groupConvertValidationMessageToErrorCode),
     routesInputValidation([validatePathQueryProperty('userGroupId')]),
     GroupController.patch,
@@ -45,6 +45,8 @@ groupRouter.delete(
     routesInputValidation([validatePathQueryProperty('userGroupId')]),
     GroupController.delete,
 );
+
+groupsRouter.get('/shareable-items', validateQuery({}), GroupController.getShareableItems);
 
 groupsRouter.get('/', validateQuery({}), GroupController.gets);
 

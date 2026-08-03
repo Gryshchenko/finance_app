@@ -17,6 +17,7 @@ import { GroupsScreen } from '@/screens/SharingScreens/GroupsScreen';
 import { InviteUserScreen } from '@/screens/SharingScreens/InviteUserScreen';
 import { MemberSettingsScreen } from '@/screens/SharingScreens/MemberSettingsScreen';
 import { PendingRequestsScreen } from '@/screens/SharingScreens/PendingRequestsScreen';
+import { SentRequestsScreen } from '@/screens/SharingScreens/SentRequestsScreen';
 import { SignUpGoalsScreen } from '@/screens/SignUpGoalsScreen';
 
 const SettingsStack = createNativeStackNavigator<SettingsStackParamList>();
@@ -33,6 +34,7 @@ export enum SettingsPath {
     InviteUser = 'inviteUser',
     MemberSettings = 'memberSettings',
     PendingRequests = 'pendingRequests',
+    SentRequests = 'sentRequests',
     Groups = 'groups',
     CreateGroup = 'createGroup',
     EditGroup = 'editGroup',
@@ -58,6 +60,7 @@ export type SettingsStackParamList = {
     inviteUser: undefined;
     memberSettings: { connectionId: number };
     pendingRequests: undefined;
+    sentRequests: undefined;
     groups: undefined;
     createGroup: undefined;
     editGroup: { userGroupId: number };
@@ -91,6 +94,7 @@ function SettingsStackNavigator() {
             <SettingsStack.Screen name={SettingsPath.InviteUser} component={InviteUserScreen} />
             <SettingsStack.Screen name={SettingsPath.MemberSettings} component={MemberSettingsScreen} />
             <SettingsStack.Screen name={SettingsPath.PendingRequests} component={PendingRequestsScreen} />
+            <SettingsStack.Screen name={SettingsPath.SentRequests} component={SentRequestsScreen} />
             <SettingsStack.Screen name={SettingsPath.Groups} component={GroupsScreen} />
             <SettingsStack.Screen name={SettingsPath.CreateGroup} component={CreateGroupScreen} />
             <SettingsStack.Screen name={SettingsPath.EditGroup} component={EditGroupScreen} />

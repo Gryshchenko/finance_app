@@ -1,5 +1,6 @@
 import { FC } from 'react';
 import { NavigationProp, useNavigation } from '@react-navigation/native';
+import { IGroupSharedItem } from '@tenpercent/shared';
 
 import { GroupFields, GroupForm } from '@/components/sharing/GroupFields';
 import { useInvalidateQuery } from '@/hooks/useAppQuery';
@@ -12,15 +13,24 @@ import { ShareGroupService } from '@/services/ShareGroupService';
 import ToastService from '@/services/ToastService';
 import { OverviewPath } from '@/types/OverviewPath';
 
-const EMPTY_GROUP: GroupForm = {
-    groupName: '',
-    description: '',
+const arrayToObject = (items: IGroupSharedItem[]) => {
+    const result: Record<string, IGroupSharedItem> = {};
+    items.forEach((item) => {
+        result[item.id] = item;
+    });
+    return result;
 };
 
-export const CreateGroup: FC<{ data?: unknown }> = function CreateGroup() {
+export const CreateGroup: FC<{ data?: IGroupSharedItem[] }> = function CreateGroup({ data }) {
     const navigation = useNavigation<NavigationProp<OverviewTabParamList>>();
     const invalidateQuery = useInvalidateQuery();
-    const { form, handleChange, errors, setErrors, isFetching, withFetching } = useEditView<GroupForm>(EMPTY_GROUP);
+    const { form, handleChange, errors, setErrors, isFetching, withFetching } = useEditView<GroupForm>({
+        groupName: '',
+        description: '',
+        incomes: arrayToObject(data?.filter((item) => item.type === 'income') ?? []),
+        accounts: arrayToObject(data?.filter((item) => item.type === 'account') ?? []),
+        categories: arrayToObject(data?.filter((item) => item.type === 'category') ?? []),
+    });
 
     const goBack = () => navigation.navigate(OverviewPath.Settings, { screen: SettingsPath.Groups });
 
@@ -30,10 +40,16 @@ export const CreateGroup: FC<{ data?: unknown }> = function CreateGroup() {
             setErrors({ groupName: 'validation:required' });
             return;
         }
+        const groupSharedItems = [
+            ...Object.values(form.incomes ?? {}),
+            ...Object.values(form.accounts ?? {}),
+            ...Object.values(form.categories ?? {}),
+        ];
         await withFetching(async () => {
             const response = await ShareGroupService.instance().doCreateGroup({
                 groupName,
                 description: form.description?.trim() || undefined,
+                groupSharedItems,
             });
             if (response.kind === GeneralApiProblemKind.Ok) {
                 ToastService.info({

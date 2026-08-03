@@ -233,10 +233,11 @@ describe('POST /balance', () => {
         };
 
         const getExchangeRateFailed = async (base: string, target: string, auth: string) => {
-            return await agent
-                .get(`/exchange-rates/?currency=${base}&targetCurrency=${target}`)
-                .set('authorization', auth)
-                .expect(HttpCode.NOT_FOUND);
+            const res = await agent.get(`/exchange-rates/?currency=${base}&targetCurrency=${target}`).set('authorization', auth);
+            // Malformed codes (e.g. 'BB', numeric '111') fail currency-format validation → 400 Bad Request,
+            // while well-formed but unknown codes (e.g. 'CCC') have no rate → 404 Not Found.
+            expect([HttpCode.BAD_REQUEST, HttpCode.NOT_FOUND]).toContain(res.status);
+            return res;
         };
 
         const getBalance = async (userId: number, auth: string) => {

@@ -1,19 +1,29 @@
 import { FC } from 'react';
 import { TextStyle, View, ViewStyle } from 'react-native';
-import { IConnectedMember } from '@tenpercent/shared';
+import { IConnectedMember, IGroupSharedItem } from '@tenpercent/shared';
 
 import { GeneralDetailView } from '@/components/GeneralDetailView';
 import { MembersCard } from '@/components/sharing/MembersCard';
 import { Text } from '@/components/Text';
 import { TextField } from '@/components/TextField';
+import { Checkbox } from '@/components/Toggle/Checkbox';
 import { TxKeyPath } from '@/i18n';
 import { useAppTheme } from '@/theme/context';
 import { spacing } from '@/theme/spacing';
 import { ThemedStyle } from '@/theme/types';
 
+const SECTIONS: { type: 'accounts' | 'incomes' | 'categories'; titleTx: TxKeyPath }[] = [
+    { type: 'incomes', titleTx: 'sharing:sharedIncomes' },
+    { type: 'accounts', titleTx: 'sharing:sharedAccounts' },
+    { type: 'categories', titleTx: 'sharing:sharedCategories' },
+];
+
 export interface GroupForm {
     groupName?: string;
     description?: string;
+    incomes?: Record<string, IGroupSharedItem>;
+    accounts?: Record<string, IGroupSharedItem>;
+    categories?: Record<string, IGroupSharedItem>;
 }
 
 interface IProps {
@@ -22,7 +32,7 @@ interface IProps {
     isCreate: boolean;
     members?: IConnectedMember[];
     onPressMember?: (connectionId: number) => void;
-    handleChange?: (key: keyof GroupForm, value: string) => void;
+    handleChange?: (key: keyof GroupForm, value: any) => void;
     handleSave?: () => void;
     onCancel?: () => void;
     isSaveDisabled?: boolean;
@@ -31,6 +41,12 @@ interface IProps {
 export const GroupFields: FC<IProps> = function GroupFields(_props) {
     const { form, errors, isCreate, members, onPressMember, handleChange, handleSave, onCancel, isSaveDisabled } = _props;
     const { themed } = useAppTheme();
+
+    const toggleItem = (type: 'incomes' | 'accounts' | 'categories', id: number) => {
+        if (form[type] && form[type][id]) {
+            handleChange?.(type, { ...form[type], [id]: { ...form[type][id], isShared: !form[type][id].isShared } });
+        }
+    };
 
     return (
         <GeneralDetailView
@@ -68,6 +84,31 @@ export const GroupFields: FC<IProps> = function GroupFields(_props) {
                     onChangeText={(v) => handleChange?.('description', v)}
                 />
 
+                <View style={$section}>
+                    <Text tx={'sharing:sharedItemsTitle'} style={themed($sectionTitle)} />
+                    {SECTIONS.map(({ type, titleTx }) => {
+                        if (form[type] === undefined) return null;
+                        return (
+                            <View key={type} style={$subSection}>
+                                <Text tx={titleTx} style={themed($subSectionTitle)} />
+                                {Object.keys(form[type]).map((key: string) => {
+                                    if (form[type] && form[type][key]) {
+                                        return (
+                                            <Checkbox
+                                                key={form[type][key].id}
+                                                label={form[type][key].name}
+                                                value={form[type][key].isShared}
+                                                onValueChange={() => toggleItem(type, form[type]![key].id)}
+                                                containerStyle={themed($checkboxRow)}
+                                            />
+                                        );
+                                    }
+                                    return null;
+                                })}
+                            </View>
+                        );
+                    })}
+                </View>
                 {!isCreate && (
                     <View style={$members}>
                         <Text tx={'sharing:groupMembers'} style={themed($sectionTitle)} />
@@ -121,3 +162,20 @@ const $membersEmpty: ThemedStyle<TextStyle> = ({ colors, typography }) => ({
     color: colors.textDim,
     fontFamily: typography.primary.normal,
 });
+const $subSection: ViewStyle = {
+    marginTop: spacing.md,
+};
+
+const $subSectionTitle: ThemedStyle<TextStyle> = ({ colors, typography }) => ({
+    fontSize: 14,
+    color: colors.text,
+    fontFamily: typography.primary.medium,
+    marginBottom: spacing.xs,
+});
+
+const $checkboxRow: ThemedStyle<ViewStyle> = ({ spacing: sp }) => ({
+    paddingVertical: sp.sm,
+});
+const $section: ViewStyle = {
+    marginTop: spacing.xl,
+};

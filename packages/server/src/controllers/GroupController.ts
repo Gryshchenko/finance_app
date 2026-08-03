@@ -4,7 +4,7 @@ import { Request, Response } from 'express';
 import Logger from 'helper/logger/Logger';
 import ResponseBuilder from 'helper/responseBuilder/ResponseBuilder';
 import GroupServiceBuilder from 'services/group/GroupServiceBuilder';
-import { SharingOrchestrationServiceBuilder } from 'services/sharingOrchestrator/SharingOrchestrationServiceBuilder';
+import { GroupOrchestrationServiceBuilder } from 'services/groupOrchestrator/GroupOrchestrationServiceBuilder';
 import { BaseError } from 'src/utils/errors/BaseError';
 import { generateErrorResponse } from 'src/utils/generateErrorResponse';
 
@@ -22,11 +22,22 @@ export class GroupController {
         }
     }
 
+    public static async getShareableItems(req: Request, res: Response) {
+        const responseBuilder = new ResponseBuilder();
+        try {
+            const items = await GroupOrchestrationServiceBuilder.build().getShareableItems(req.user?.userId as number);
+            res.status(HttpCode.OK).json(responseBuilder.setStatus(ResponseStatusType.OK).setData(items).build());
+        } catch (e: unknown) {
+            GroupController.logger.error(`Get shareable items failed due reason: ${(e as { message: string }).message}`);
+            generateErrorResponse(res, responseBuilder, e as BaseError, ErrorCode.GROUP_ERROR);
+        }
+    }
+
     public static async get(req: Request, res: Response) {
         const responseBuilder = new ResponseBuilder();
         try {
             const userGroupId = Number(req.params?.userGroupId);
-            const group = await GroupServiceBuilder.build().getGroup(req.user?.userId as number, userGroupId);
+            const group = await GroupOrchestrationServiceBuilder.build().getGroup(req.user?.userId as number, userGroupId);
             res.status(HttpCode.OK).json(responseBuilder.setStatus(ResponseStatusType.OK).setData(group).build());
         } catch (e: unknown) {
             GroupController.logger.error(`Get group failed due reason: ${(e as { message: string }).message}`);
@@ -37,10 +48,11 @@ export class GroupController {
     public static async post(req: Request, res: Response) {
         const responseBuilder = new ResponseBuilder();
         try {
-            const { groupName, description } = req.body;
-            const group = await GroupServiceBuilder.build().createGroup(req.user?.userId as number, {
+            const { groupName, description, groupSharedItems } = req.body;
+            const group = await GroupOrchestrationServiceBuilder.build().createGroup(req.user?.userId as number, {
                 groupName,
                 description,
+                groupSharedItems,
             });
             res.status(HttpCode.OK).json(responseBuilder.setStatus(ResponseStatusType.OK).setData(group).build());
         } catch (e: unknown) {
@@ -53,10 +65,11 @@ export class GroupController {
         const responseBuilder = new ResponseBuilder();
         try {
             const userGroupId = Number(req.params?.userGroupId);
-            const { groupName, description } = req.body;
-            await GroupServiceBuilder.build().patchGroup(req.user?.userId as number, userGroupId, {
+            const { groupName, description, groupSharedItems } = req.body;
+            await GroupOrchestrationServiceBuilder.build().patchGroup(req.user?.userId as number, userGroupId, {
                 groupName,
                 description,
+                groupSharedItems,
             });
             res.status(HttpCode.NO_CONTENT).json(responseBuilder.setStatus(ResponseStatusType.OK).setData({}).build());
         } catch (e: unknown) {
@@ -69,7 +82,7 @@ export class GroupController {
         const responseBuilder = new ResponseBuilder();
         try {
             const userGroupId = Number(req.params?.userGroupId);
-            await SharingOrchestrationServiceBuilder.build().deleteGroup(req.user?.userId as number, userGroupId);
+            await GroupOrchestrationServiceBuilder.build().deleteGroup(req.user?.userId as number, userGroupId);
             res.status(HttpCode.NO_CONTENT).json(responseBuilder.setStatus(ResponseStatusType.OK).setData({}).build());
         } catch (e: unknown) {
             GroupController.logger.error(`Delete group failed due reason: ${(e as { message: string }).message}`);

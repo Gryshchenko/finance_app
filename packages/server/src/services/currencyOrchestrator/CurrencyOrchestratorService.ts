@@ -4,7 +4,9 @@ import { LoggerBase } from 'helper/logger/LoggerBase';
 import { ICurrencyService } from 'services/currency/CurrencyService';
 import { IExchangeRateService } from 'services/exchangeRateService/ExchangeRateService';
 import { IHistoricalRateService } from 'services/historicalRateService/HistoricalRateService';
+import { BaseError } from 'src/utils/errors/BaseError';
 import { CustomError } from 'src/utils/errors/CustomError';
+import { NotFoundError } from 'src/utils/errors/NotFoundError';
 import { ValidationError } from 'src/utils/errors/ValidationError';
 
 export interface ICurrencyOrchestratorService {
@@ -63,8 +65,15 @@ class CurrencyOrchestratorService extends LoggerBase implements ICurrencyOrchest
                 await this._historicalRateService.post(baseCurrency, targetCurrency, rateFresh.rate, date);
                 return rateFresh;
             }
-            throw new Error(`Can't get rate for baseCurrency: ${baseCurrency}, targetCurrency: ${targetCurrency}, date: ${date}`);
+            throw new NotFoundError({
+                message: `Can't get rate for baseCurrency: ${baseCurrency}, targetCurrency: ${targetCurrency}, date: ${date}`,
+                errorCode: ErrorCode.CURRENCY_ERROR,
+            });
         } catch (e: unknown) {
+            // Preserve typed errors (e.g. NotFoundError → 404); only unexpected errors fall back to 500.
+            if (e instanceof BaseError) {
+                throw e;
+            }
             throw new CustomError({
                 errorCode: ErrorCode.CURRENCY_ERROR,
                 message: (e as { message: string }).message,

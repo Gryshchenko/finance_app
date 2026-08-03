@@ -35,6 +35,7 @@ export * from './interfaces/ITutorialRequest';
 export * from './interfaces/ITutorialResponse';
 export * from './interfaces/IGoalSelectionRequest';
 export * from './interfaces/IGoalSelectionResponse';
+export * from './interfaces/IGroupSharedItem';
 
 // --- Types ---
 export * from './types/AccountStatusType';

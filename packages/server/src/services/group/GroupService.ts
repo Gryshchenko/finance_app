@@ -33,7 +33,8 @@ export default class GroupService extends LoggerBase implements IGroupService {
         if (Utils.isEmpty(group.groupName)) {
             throw new ValidationError({ message: 'groupName cant be empty', errorCode: ErrorCode.GROUP_ERROR });
         }
-        return await this._groupDataAccess.createGroup(userId, group, trx);
+        const created = await this._groupDataAccess.createGroup(userId, group, trx);
+        return { ...created, groupSharedItems: [] };
     }
 
     public async getGroups(userId: number): Promise<IGroupListItem[]> {
@@ -57,7 +58,7 @@ export default class GroupService extends LoggerBase implements IGroupService {
                 errorCode: ErrorCode.GROUP_ERROR,
             });
         }
-        return group as IGroup;
+        return { ...(group as IGroup), groupSharedItems: [] };
     }
 
     public async patchGroup(

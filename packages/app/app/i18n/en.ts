@@ -1,5 +1,6 @@
 const en = {
     errorCode: {
+        GROUP_DELETE_WITH_MEMBERS_ERROR: 'Group cannot be deleted because it has connected members.',
         RESET_PASSWORD_ERROR: 'We couldn’t reset your password.',
         FORBIDDEN_ERROR: 'Access is forbidden.',
         REJECTED_ERROR: 'The request was rejected.',
@@ -374,6 +375,7 @@ const en = {
         connectedUsers: 'Connected Users',
         groups: 'Groups',
         pendingConnections: 'Pending Requests',
+        sentConnections: 'Sent Requests',
     },
     sharing: {
         // Connected users list
@@ -386,6 +388,11 @@ const en = {
         groupsEmpty: 'No groups yet. Create one to start filtering access.',
         member: 'member',
         members: 'members',
+        // Sent connection requests (invites you sent, awaiting a response)
+        sentTitle: 'Sent Requests',
+        sentCaption: 'Invitations you sent that are awaiting a response.',
+        sentEmpty: 'No sent requests yet. Invitations you send will appear here.',
+        requestCancelled: 'Request cancelled.',
         // Pending connection requests
         pendingTitle: 'Pending Requests',
         pendingCaption: 'People who asked to connect to your shared account.',
@@ -412,6 +419,11 @@ const en = {
         removeMember: 'Remove member',
         memberUpdateSuccess: 'Member has been successfully updated.',
         memberRemoveSuccess: 'Member has been successfully removed.',
+        // Shared items (accounts / incomes / categories the member can access)
+        sharedItemsTitle: 'Access Items',
+        sharedIncomes: 'Incomes',
+        sharedAccounts: 'Accounts',
+        sharedCategories: 'Categories',
         // Create / edit group
         createGroupTitle: 'Create Group',
         editGroupTitle: 'Group Settings',

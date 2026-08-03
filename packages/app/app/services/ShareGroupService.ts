@@ -1,4 +1,4 @@
-import { IShareGroup } from '@tenpercent/shared';
+import { IGroupSharedItem, IShareGroup } from '@tenpercent/shared';
 
 import { ApiAbstract } from '@/services/api/apiAbstract';
 import { GeneralApiProblem, GeneralApiProblemKind } from '@/services/api/apiProblem';
@@ -33,6 +33,26 @@ export class ShareGroupService extends ApiAbstract {
         });
     }
 
+    public async doGetShareableItems(): Promise<
+        | {
+              kind: GeneralApiProblemKind.Ok;
+              data: IGroupSharedItem[] | undefined;
+          }
+        | GeneralApiProblem
+    > {
+        return this.withErrorHandler(async () => {
+            this._logger.info('Start fetching shareable items');
+            const userId = this._authService.userId;
+            const response = await this.authGet(`/user/${userId}/groups/shareable-items`);
+            if (response.kind === GeneralApiProblemKind.Ok) {
+                this._logger.info(`Fetching shareable items successfully: ${(response.data as [])?.length}`);
+            } else {
+                this._logger.info(`Fetching shareable items failed: ${response.kind}`);
+            }
+            return response;
+        });
+    }
+
     public async doGetGroup(userGroupId: number): Promise<
         | {
               kind: GeneralApiProblemKind.Ok;
@@ -49,7 +69,7 @@ export class ShareGroupService extends ApiAbstract {
         });
     }
 
-    public async doCreateGroup(body: { groupName: string; description?: string }): Promise<
+    public async doCreateGroup(body: { groupName: string; description?: string; groupSharedItems?: IGroupSharedItem[] }): Promise<
         | {
               kind: GeneralApiProblemKind.Ok;
               data: IShareGroup | undefined;
@@ -67,7 +87,7 @@ export class ShareGroupService extends ApiAbstract {
 
     public async doPatchGroup(
         userGroupId: number,
-        body: { groupName?: string; description?: string },
+        body: { groupName?: string; description?: string; groupSharedItems?: IGroupSharedItem[] },
     ): Promise<
         | {
               kind: GeneralApiProblemKind.Ok;

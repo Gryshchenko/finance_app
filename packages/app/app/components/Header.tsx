@@ -1,5 +1,5 @@
-import { ReactElement } from 'react';
-import { StyleProp, TextStyle, TouchableOpacity, TouchableOpacityProps, View, ViewStyle } from 'react-native';
+import { ReactElement, useState } from 'react';
+import { LayoutChangeEvent, StyleProp, TextStyle, TouchableOpacity, TouchableOpacityProps, View, ViewStyle } from 'react-native';
 
 import { isRTL } from '@/i18n';
 import { translate } from '@/i18n/translate';
@@ -189,19 +189,32 @@ export function Header(props: HeaderProps) {
     const titleContent = titleTx ? translate(titleTx, titleTxOptions) : title;
     const subtitleContent = subtitleTx ? translate(subtitleTx) : subtitle;
 
+    // Both sides get minWidth equal to the widest one, so the flex title stays
+    // centered even when only one side has an action.
+    const [leftWidth, setLeftWidth] = useState(0);
+    const [rightWidth, setRightWidth] = useState(0);
+    const sideMinWidth = Math.max(leftWidth, rightWidth);
+
+    const measureSide = (setWidth: (width: number) => void) => (event: LayoutChangeEvent) =>
+        setWidth(Math.ceil(event.nativeEvent.layout.width));
+
     return (
         <View style={[$container, $containerInsets, { backgroundColor }, $containerStyleOverride]}>
             <View style={[$styles.row, $wrapper, $styleOverride]}>
-                <HeaderAction
-                    tx={leftTx}
-                    text={leftText}
-                    icon={leftIcon}
-                    iconColor={leftIconColor}
-                    onPress={onLeftPress}
-                    txOptions={leftTxOptions}
-                    backgroundColor={backgroundColor}
-                    ActionComponent={LeftActionComponent}
-                />
+                <View style={[$actionWrapper, $actionWrapperLeft, { minWidth: sideMinWidth }]}>
+                    <View style={$actionMeasure} onLayout={measureSide(setLeftWidth)}>
+                        <HeaderAction
+                            tx={leftTx}
+                            text={leftText}
+                            icon={leftIcon}
+                            iconColor={leftIconColor}
+                            onPress={onLeftPress}
+                            txOptions={leftTxOptions}
+                            backgroundColor={backgroundColor}
+                            ActionComponent={LeftActionComponent}
+                        />
+                    </View>
+                </View>
 
                 {!!titleContent && (
                     <View
@@ -217,16 +230,20 @@ export function Header(props: HeaderProps) {
                     </View>
                 )}
 
-                <HeaderAction
-                    tx={rightTx}
-                    text={rightText}
-                    icon={rightIcon}
-                    iconColor={rightIconColor}
-                    onPress={onRightPress}
-                    txOptions={rightTxOptions}
-                    backgroundColor={backgroundColor}
-                    ActionComponent={RightActionComponent}
-                />
+                <View style={[$actionWrapper, $actionWrapperRight, { minWidth: sideMinWidth }]}>
+                    <View style={$actionMeasure} onLayout={measureSide(setRightWidth)}>
+                        <HeaderAction
+                            tx={rightTx}
+                            text={rightText}
+                            icon={rightIcon}
+                            iconColor={rightIconColor}
+                            onPress={onRightPress}
+                            txOptions={rightTxOptions}
+                            backgroundColor={backgroundColor}
+                            ActionComponent={RightActionComponent}
+                        />
+                    </View>
+                </View>
             </View>
         </View>
     );
@@ -318,6 +335,24 @@ const $actionIconContainer: ThemedStyle<ViewStyle> = ({ spacing }) => ({
 
 const $actionFillerContainer: ViewStyle = {
     width: 16,
+};
+
+const $actionWrapper: ViewStyle = {
+    height: '100%',
+    justifyContent: 'center',
+};
+
+const $actionWrapperLeft: ViewStyle = {
+    alignItems: 'flex-start',
+};
+
+const $actionWrapperRight: ViewStyle = {
+    alignItems: 'flex-end',
+};
+
+const $actionMeasure: ViewStyle = {
+    height: '100%',
+    justifyContent: 'center',
 };
 
 const $titleWrapperPointerEvents: ViewStyle = {

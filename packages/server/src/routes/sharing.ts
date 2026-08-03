@@ -17,6 +17,11 @@ const sharingRouter = express.Router({ mergeParams: true });
 sharingRouter.get('/connections', validateQuery({}), SharingController.getConnections);
 
 sharingRouter.get('/connections/pending', validateQuery({}), SharingController.getPendingRequests);
+
+sharingRouter.get('/connections/sent', validateQuery({}), SharingController.getSentRequests);
+
+sharingRouter.get('/connections/:connectionId', validateQuery({}), SharingController.getConnection);
+
 sharingRouter.post(
     '/invite',
     validateQuery({}),
@@ -43,12 +48,12 @@ sharingRouter.post(
 );
 
 sharingRouter.patch(
-    '/connection/:connectionId',
+    '/connection/:connectionId/owner',
     validateQuery({}),
     sanitizeRequestBody(['userGroupId']),
     routesInputValidation(patchMemberValidationRules, sharingConvertValidationMessageToErrorCode),
     routesInputValidation([validatePathQueryProperty('connectionId')]),
-    SharingController.patchMember,
+    SharingController.patchOwner,
 );
 
 sharingRouter.delete(
@@ -57,6 +62,14 @@ sharingRouter.delete(
     sanitizeRequestBody([]),
     routesInputValidation([validatePathQueryProperty('connectionId')]),
     SharingController.deleteMember,
+);
+
+sharingRouter.delete(
+    '/connection/:connectionId/leave',
+    validateQuery({}),
+    sanitizeRequestBody([]),
+    routesInputValidation([validatePathQueryProperty('connectionId')]),
+    SharingController.leave,
 );
 
 export { sharingRouter };
