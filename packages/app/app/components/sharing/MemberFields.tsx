@@ -11,7 +11,7 @@ import { spacing } from '@/theme/spacing';
 import { ThemedStyle } from '@/theme/types';
 
 export interface MemberForm {
-    userGroupId: number;
+    userGroupId: number | undefined;
 }
 
 interface IProps {
@@ -36,18 +36,15 @@ export const MemberFields: FC<IProps> = function MemberFields(_props) {
                         <Text text={user.email} style={themed($email)} />
                     </View>
                 </View>
-
-                {user.isOwner && (
-                    <View style={$section}>
-                        <Text tx={'sharing:access'} style={themed($sectionTitle)} />
-                        <GroupSelectDropdown
-                            preset={'default'}
-                            labelTx={'sharing:groupLabel'}
-                            value={form.userGroupId}
-                            onChange={(group: IShareGroup) => handleChange?.('userGroupId', group.userGroupId)}
-                        />
-                    </View>
-                )}
+                <View style={$section}>
+                    <Text tx={'sharing:access'} style={themed($sectionTitle)} />
+                    <GroupSelectDropdown
+                        preset={'default'}
+                        labelTx={'sharing:groupLabel'}
+                        value={form.userGroupId}
+                        onChange={(group: IShareGroup) => handleChange?.('userGroupId', group.userGroupId)}
+                    />
+                </View>
             </View>
         </GeneralDetailView>
     );

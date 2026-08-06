@@ -1,4 +1,4 @@
-import { IIncome, AccountStatusType, Time, ErrorCode, DEFAULT_INCOME_COLOR_IDS } from '@tenpercent/shared';
+import { IIncome, AccountStatusType, Time, ErrorCode, DEFAULT_INCOME_COLOR_IDS, Utils } from '@tenpercent/shared';
 
 import { ICreateIncome } from 'interfaces/ICreateIncome';
 import { IDatabaseConnection, IDBTransaction } from 'interfaces/IDatabaseConnection';
@@ -7,6 +7,7 @@ import { BaseError } from 'src/utils/errors/BaseError';
 import { DBError } from 'src/utils/errors/DBError';
 import { isBaseError } from 'src/utils/errors/isBaseError';
 import { NotFoundError } from 'src/utils/errors/NotFoundError';
+import { resolveAccessibleItems } from 'src/utils/resolveAccessibleItems';
 import { getOnlyNotEmptyProperties } from 'src/utils/validation/getOnlyNotEmptyProperties';
 import { validateAllowedProperties } from 'src/utils/validation/validateAllowedProperties';
 
@@ -61,14 +62,45 @@ export default class IncomeDataAccess extends LoggerBase implements IIncomeDataA
         this._logger.info(`Fetching incomes for userId ${userId}`);
 
         try {
-            const data = await this.getIncomeBaseQuery()
+            const ids = await resolveAccessibleItems(this._db.engine(), 'incomes', userId);
+            const query = await this._db
+                .engine()('incomes')
+                .select(
+                    'incomes.incomeId',
+                    'incomes.userId',
+                    'incomes.incomeName',
+                    'incomes.currencyCode',
+                    'incomes.createdAt',
+                    'incomes.updatedAt',
+                    'incomes.iconId',
+                    'incomes.colorId',
+                    'incomes.position',
+                    'currencies.currencyCode',
+                    'currencies.currencyName',
+                    'currencies.symbol',
+                )
                 .innerJoin('currencies', 'incomes.currencyCode', 'currencies.currencyCode')
-                .where({ userId, 'status': AccountStatusType.Enable, 'incomes.isDeleted': false })
+                .where({ 'status': AccountStatusType.Enable, 'incomes.isDeleted': false })
+                .where((qr) => {
+                    qr.where({ userId });
+                    if (Utils.isNotNull(ids) && ids.length > 0) {
+                        qr.orWhereIn('incomes.incomeId', ids);
+                    }
+                })
                 .orderBy('incomes.position', 'asc')
                 .orderBy('incomes.incomeId', 'asc');
+            const data = await query;
 
             this._logger.info(`Successfully fetched incomes for userId ${userId}`);
-            return data;
+            return Utils.greaterThen0(data?.length)
+                ? data.map((data) => ({
+                      ...data,
+                      isOwner: data.userId === userId,
+                      userId: undefined,
+                      createdAt: data?.createdAt ? Time.fromJSDateUTC(data.createdAt) : undefined,
+                      updatedAt: data?.updatedAt ? Time.fromJSDateUTC(data.updatedAt) : undefined,
+                  }))
+                : [];
         } catch (e) {
             this._logger.error(`Error fetching incomes for userId ${userId}: ${(e as { message: string }).message}`);
             throw new DBError({
@@ -82,9 +114,31 @@ export default class IncomeDataAccess extends LoggerBase implements IIncomeDataA
         this._logger.info(`Fetching income with ID ${incomeId} for userId ${userId}`);
 
         try {
-            const data = await this.getIncomeBaseQuery()
+            const ids = await resolveAccessibleItems(this._db.engine(), 'incomes', userId);
+            const data = await this._db
+                .engine()('incomes')
+                .select(
+                    'incomes.incomeId',
+                    'incomes.userId',
+                    'incomes.incomeName',
+                    'incomes.currencyCode',
+                    'incomes.createdAt',
+                    'incomes.updatedAt',
+                    'incomes.iconId',
+                    'incomes.colorId',
+                    'incomes.position',
+                    'currencies.currencyCode',
+                    'currencies.currencyName',
+                    'currencies.symbol',
+                )
                 .innerJoin('currencies', 'incomes.currencyCode', 'currencies.currencyCode')
-                .where({ userId, incomeId, 'status': AccountStatusType.Enable, 'incomes.isDeleted': false })
+                .where({ incomeId, 'status': AccountStatusType.Enable, 'incomes.isDeleted': false })
+                .where((qr) => {
+                    qr.where({ userId });
+                    if (Utils.isNotNull(ids) && ids.length > 0) {
+                        qr.orWhereIn('incomes.incomeId', ids);
+                    }
+                })
                 .first();
 
             if (data) {
@@ -100,6 +154,8 @@ export default class IncomeDataAccess extends LoggerBase implements IIncomeDataA
                 ...data,
                 createdAt: data?.createdAt ? Time.fromJSDateUTC(data.createdAt) : undefined,
                 updatedAt: data?.updatedAt ? Time.fromJSDateUTC(data.updatedAt) : undefined,
+                isOwner: data.userID === userId,
+                userId: undefined,
             };
         } catch (e) {
             this._logger.error(
@@ -113,24 +169,6 @@ export default class IncomeDataAccess extends LoggerBase implements IIncomeDataA
         }
     }
 
-    protected getIncomeBaseQuery() {
-        return this._db
-            .engine()('incomes')
-            .select(
-                'incomes.incomeId',
-                'incomes.userId',
-                'incomes.incomeName',
-                'incomes.currencyCode',
-                'incomes.createdAt',
-                'incomes.updatedAt',
-                'incomes.iconId',
-                'incomes.colorId',
-                'incomes.position',
-                'currencies.currencyCode',
-                'currencies.currencyName',
-                'currencies.symbol',
-            );
-    }
     async patch(userId: number, incomeId: number, properties: Partial<IIncome>, trx?: IDBTransaction): Promise<number> {
         try {
             this._logger.info(`Patch incomeId: ${incomeId} for userId: ${userId}`);

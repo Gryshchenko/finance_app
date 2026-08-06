@@ -17,12 +17,12 @@ import { SharingService } from '@/services/SharingService';
 import ToastService from '@/services/ToastService';
 import { OverviewPath } from '@/types/OverviewPath';
 
-export const MemberSettings: FC<{ data: IConnectedMember }> = function MemberSettings({ data }) {
+export const MemberSettings: FC<{ data: IConnectedMember | undefined }> = function MemberSettings({ data }) {
     const navigation = useNavigation<NavigationProp<OverviewTabParamList>>();
     const invalidateQuery = useInvalidateQuery();
     const { form, handleChange, isFetching, withFetching } = useEditView<MemberForm>(
         {
-            userGroupId: data.userGroupId,
+            userGroupId: data?.userGroupId,
         },
         undefined,
         String(data?.connectionId),
@@ -33,7 +33,9 @@ export const MemberSettings: FC<{ data: IConnectedMember }> = function MemberSet
     const handleSave = async () => {
         if (!data || form.userGroupId == null) return;
         await withFetching(async () => {
-            const response = await SharingService.instance().doPatchOwnerGroup(data.connectionId, form.userGroupId!);
+            const response = data.isOwner
+                ? await SharingService.instance().doPatchOwnerGroup(data.connectionId, form.userGroupId!)
+                : await SharingService.instance().doPatchMemberGroup(data.connectionId, form.userGroupId!);
             if (response.kind === GeneralApiProblemKind.Ok) {
                 ToastService.info({
                     title: 'common:info',

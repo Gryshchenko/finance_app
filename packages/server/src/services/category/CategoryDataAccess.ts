@@ -1,4 +1,4 @@
-import { ICategory, Time, ErrorCode } from '@tenpercent/shared';
+import { ICategory, Time, ErrorCode, Utils } from '@tenpercent/shared';
 
 import { ICreateCategory } from 'interfaces/ICreateCategory';
 import { IDatabaseConnection, IDBTransaction } from 'interfaces/IDatabaseConnection';
@@ -7,6 +7,7 @@ import { BaseError } from 'src/utils/errors/BaseError';
 import { DBError } from 'src/utils/errors/DBError';
 import { isBaseError } from 'src/utils/errors/isBaseError';
 import { NotFoundError } from 'src/utils/errors/NotFoundError';
+import { resolveAccessibleItems } from 'src/utils/resolveAccessibleItems';
 import { getOnlyNotEmptyProperties } from 'src/utils/validation/getOnlyNotEmptyProperties';
 import { validateAllowedProperties } from 'src/utils/validation/validateAllowedProperties';
 
@@ -68,18 +69,34 @@ export default class CategoryDataAccess extends LoggerBase implements ICategoryD
         this._logger.info(`Retrieving categories for user: ${userId}`);
 
         try {
-            const data = await this.getCategoryBaseQuery()
+            const ids = await resolveAccessibleItems(this._db.engine(), 'categories', userId);
+            const query = this.getCategoryBaseQuery()
                 .innerJoin('currencies', 'categories.currencyCode', 'currencies.currencyCode')
-                .where({ userId, 'categories.isDeleted': false })
+                .where({ 'categories.isDeleted': false })
+                .where((qr) => {
+                    qr.where({ userId });
+                    if (Utils.isNotNull(ids) && ids.length > 0) {
+                        qr.orWhereIn('categories.categoryId', ids);
+                    }
+                })
                 .orderBy('categories.position', 'asc')
                 .orderBy('categories.categoryId', 'asc');
 
+            const data = await query;
             if (data) {
                 this._logger.info(`Fetched ${data.length} categories retrieved successfully for user: ${userId}`);
             } else {
                 this._logger.warn(`Categories not found for user: ${userId}`);
             }
-            return data;
+            return Utils.greaterThen0(data?.length)
+                ? data.map((data) => ({
+                      ...data,
+                      isOwner: data.userId === userId,
+                      createdAt: data?.createdAt ? Time.fromJSDateUTC(data.createdAt) : undefined,
+                      updatedAt: data?.updatedAt ? Time.fromJSDateUTC(data.updatedAt) : undefined,
+                      userId: undefined,
+                  }))
+                : [];
         } catch (e) {
             this._logger.error(`Failed to retrieve categories for user: ${userId}. Error: ${(e as { message: string }).message}`);
             throw new DBError({
@@ -93,9 +110,17 @@ export default class CategoryDataAccess extends LoggerBase implements ICategoryD
     async get(userId: number, categoryId: number): Promise<ICategory | undefined> {
         this._logger.info(`Retrieving category ID ${categoryId} for user: ${userId}`);
         try {
+            const ids = await resolveAccessibleItems(this._db.engine(), 'categories', userId);
+
             const data = await this.getCategoryBaseQuery()
                 .innerJoin('currencies', 'categories.currencyCode', 'currencies.currencyCode')
-                .where({ userId, categoryId, 'categories.isDeleted': false })
+                .where({ categoryId, 'categories.isDeleted': false })
+                .where((qr) => {
+                    qr.where({ userId });
+                    if (Utils.isNotNull(ids) && ids.length > 0) {
+                        qr.orWhereIn('categories.categoryId', ids);
+                    }
+                })
                 .first();
 
             if (data) {
@@ -109,8 +134,10 @@ export default class CategoryDataAccess extends LoggerBase implements ICategoryD
 
             return {
                 ...data,
+                isOwner: data.userId === userId,
                 createdAt: data?.createdAt ? Time.fromJSDateUTC(data.createdAt) : undefined,
                 updatedAt: data?.updatedAt ? Time.fromJSDateUTC(data.updatedAt) : undefined,
+                userId: undefined,
             };
         } catch (e) {
             this._logger.error(
@@ -194,9 +221,9 @@ export default class CategoryDataAccess extends LoggerBase implements ICategoryD
             .engine()('categories')
             .select(
                 'categories.categoryId',
-                'categories.userId',
                 'categories.categoryName',
                 'categories.currencyCode',
+                'categories.userId',
                 'categories.iconId',
                 'categories.colorId',
                 'categories.budget',

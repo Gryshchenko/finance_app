@@ -12,6 +12,7 @@ export interface IConnectionMemberDataAccess {
     getPendingRequests(memberUserId: number): Promise<IPendingConnectionRequest[]>;
     updateStatus(memberUserId: number, connectionId: number, status: ConnectionStatus, trx?: IDBTransaction): Promise<number>;
     deleteConnection(memberUserId: number, connectionId: number, trx?: IDBTransaction): Promise<boolean>;
+    updateGroup(memberUserId: number, connectionId: number, userGroupId: number | null, trx?: IDBTransaction): Promise<number>;
 }
 
 export default class ConnectionMemberDataAccess extends LoggerBase implements IConnectionMemberDataAccess {
@@ -123,6 +124,36 @@ export default class ConnectionMemberDataAccess extends LoggerBase implements IC
             );
             throw new DBError({
                 message: `Deleting connection failed due to a database error: ${(e as { message: string }).message}`,
+                errorCode: ErrorCode.CONNECTION_ERROR,
+            });
+        }
+    }
+
+    public async updateGroup(
+        memberUserId: number,
+        connectionId: number,
+        userGroupId: number | null,
+        trx?: IDBTransaction,
+    ): Promise<number> {
+        validateConnectionId(memberUserId, 'memberUserId');
+        validateConnectionId(connectionId, 'connectionId');
+        if (userGroupId !== null) {
+            validateConnectionId(userGroupId, 'userGroupId');
+        }
+        try {
+            this._logger.info(`Updating group of connection ${connectionId} for memberUserId: ${memberUserId}`);
+            const query = trx || this._db.engine();
+            const updated = await query('userconnections')
+                .update({ memberUserGroupId: userGroupId, updatedAt: new Date() })
+                .where({ memberUserId, connectionId });
+            this._logger.info(`Updated connection ${connectionId} for memberUserId: ${memberUserId}, updated rows: ${updated}`);
+            return updated;
+        } catch (e) {
+            this._logger.error(
+                `Failed to update connection ${connectionId} for memberUserId: ${memberUserId}. Error: ${(e as { message: string }).message}`,
+            );
+            throw new DBError({
+                message: `Updating connection failed due to a database error: ${(e as { message: string }).message}`,
                 errorCode: ErrorCode.CONNECTION_ERROR,
             });
         }

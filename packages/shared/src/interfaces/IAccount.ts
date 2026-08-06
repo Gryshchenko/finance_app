@@ -10,4 +10,5 @@ export interface IAccount {
     colorId?: string | null;
     status: AccountStatusType;
     position: number;
+    isOwner: boolean;
 }

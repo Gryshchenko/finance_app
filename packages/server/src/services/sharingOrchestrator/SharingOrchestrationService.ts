@@ -155,6 +155,22 @@ export class SharingOrchestrationService extends LoggerBase {
         });
     }
 
+    public async patchMemberGroup(memberUserId: number, connectionId: number, userGroupId: number | null): Promise<void> {
+        return await this.withTransaction(async (trx: IDBTransaction) => {
+            const connection = await this._connectionMemberService.getConnection(memberUserId, connectionId, trx);
+            if (connection.status !== ConnectionStatus.Connected) {
+                throw new ValidationError({
+                    message: `Connection ${connectionId} is not connected`,
+                    errorCode: ErrorCode.CONNECTION_ERROR,
+                });
+            }
+            if (!Utils.isNull(userGroupId)) {
+                await this._groupService.getGroup(memberUserId, userGroupId as number, trx);
+            }
+            await this._connectionMemberService.updateGroup(memberUserId, connectionId, userGroupId, trx);
+        });
+    }
+
     public async removeMember(ownerUserId: number, connectionId: number): Promise<boolean> {
         await this._connectionOwnerService.getConnection(ownerUserId, connectionId);
         return await this._connectionOwnerService.deleteConnection(ownerUserId, connectionId);

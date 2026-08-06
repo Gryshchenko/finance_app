@@ -17,6 +17,7 @@ import { DBError } from 'src/utils/errors/DBError';
 import { isBaseError } from 'src/utils/errors/isBaseError';
 import { NotFoundError } from 'src/utils/errors/NotFoundError';
 import { ValidationError } from 'src/utils/errors/ValidationError';
+import { resolveAccessibleItems } from 'src/utils/resolveAccessibleItems';
 import { validateAllowedProperties } from 'src/utils/validation/validateAllowedProperties';
 
 interface ICursorData {
@@ -99,6 +100,9 @@ export default class TransactionDataAccess extends LoggerBase implements ITransa
         const { userId, from, to, incomeId, categoryId, accountId } = request;
         try {
             const knex = this._db.engine();
+            const categoriesIds = await resolveAccessibleItems(this._db.engine(), 'categories', userId);
+            const accountsIds = await resolveAccessibleItems(this._db.engine(), 'accounts', userId);
+            const incomesIds = await resolveAccessibleItems(this._db.engine(), 'incomes', userId);
             const query = knex('transactions')
                 .select(
                     'currencyCode',
@@ -113,10 +117,41 @@ export default class TransactionDataAccess extends LoggerBase implements ITransa
                         TransactionType.Transafer,
                     ]),
                 )
-                .where({ userId, isDeleted: false })
+                .where({ isDeleted: false })
                 .whereRaw(`"createdAt"::date >= ?::date AND "createdAt"::date <= ?::date`, [from, to])
                 .groupBy('currencyCode')
                 .groupByRaw(`to_char("createdAt", 'YYYY-MM-DD')`);
+
+            if (incomeId !== undefined || categoryId !== undefined || accountId !== undefined) {
+                query.where((qr) => {
+                    if (incomeId !== undefined) {
+                        qr.where('transactions.incomeId', incomeId).andWhere((qr) =>
+                            qr.where('transactions.userId', userId).orWhereIn('transactions.incomeId', incomesIds ?? []),
+                        );
+                    }
+                    if (categoryId !== undefined) {
+                        qr.where('transactions.categoryId', categoryId).andWhere((qr) =>
+                            qr.where('transactions.userId', userId).orWhereIn('transactions.categoryId', categoriesIds ?? []),
+                        );
+                    }
+                    if (accountId !== undefined) {
+                        qr.where('transactions.accountId', accountId).andWhere((qr) =>
+                            qr
+                                .where('transactions.userId', userId)
+                                .orWhereIn('transactions.accountId', accountsIds ?? [])
+                                .orWhereIn('transactions.targetAccountId', accountsIds ?? []),
+                        );
+                    }
+                });
+            } else {
+                query.where((qr) => {
+                    qr.where({ 'transactions.userId': userId })
+                        .orWhereIn('transactions.incomeId', incomesIds ?? [])
+                        .orWhereIn('transactions.categoryId', categoriesIds ?? [])
+                        .orWhereIn('transactions.accountId', accountsIds ?? [])
+                        .orWhereIn('transactions.targetAccountId', accountsIds ?? []);
+                });
+            }
 
             if (Utils.isNotNull(incomeId)) query.andWhere({ incomeId });
             if (Utils.isNotNull(categoryId)) query.andWhere({ categoryId });
@@ -154,6 +189,9 @@ export default class TransactionDataAccess extends LoggerBase implements ITransa
             throw new ValidationError({ message: `Unsupported stats groupBy: ${groupBy}`, errorCode: ErrorCode.STATS_ERROR });
         }
         try {
+            const categoriesIds = await resolveAccessibleItems(this._db.engine(), 'categories', userId);
+            const accountsIds = await resolveAccessibleItems(this._db.engine(), 'accounts', userId);
+            const incomesIds = await resolveAccessibleItems(this._db.engine(), 'incomes', userId);
             const knex = this._db.engine();
             const rows = await knex('transactions')
                 .select(
@@ -169,7 +207,19 @@ export default class TransactionDataAccess extends LoggerBase implements ITransa
                         TransactionType.Transafer,
                     ]),
                 )
-                .where({ userId, isDeleted: false })
+                .where({ isDeleted: false })
+                .where((qr) =>
+                    qr
+                        .andWhere('userId', userId)
+                        .orWhereIn(
+                            groupBy,
+                            groupBy === 'categoryId'
+                                ? (categoriesIds ?? [])
+                                : groupBy === 'incomeId'
+                                  ? (incomesIds ?? [])
+                                  : (accountsIds ?? []),
+                        ),
+                )
                 .whereNotNull(groupBy)
                 .whereRaw(`"createdAt"::date >= ?::date AND "createdAt"::date <= ?::date`, [from, to])
                 .groupBy(groupBy)
@@ -243,6 +293,9 @@ export default class TransactionDataAccess extends LoggerBase implements ITransa
         incomeId,
     }: ITransactionListItemsRequest): Promise<IPagination<ITransactionListItem>> {
         try {
+            const categoriesIds = await resolveAccessibleItems(this._db.engine(), 'categories', userId);
+            const accountsIds = await resolveAccessibleItems(this._db.engine(), 'accounts', userId);
+            const incomesIds = await resolveAccessibleItems(this._db.engine(), 'incomes', userId);
             const cleanFilters =
                 Object.fromEntries(
                     Object.entries({
@@ -263,24 +316,40 @@ export default class TransactionDataAccess extends LoggerBase implements ITransa
                 .leftJoin({ sourceAccount: 'accounts' }, 'transactions.accountId', 'sourceAccount.accountId')
                 .leftJoin({ targetAccount: 'accounts' }, 'transactions.targetAccountId', 'targetAccount.accountId')
                 .where({
-                    'transactions.userId': userId,
                     'transactions.isDeleted': false,
                 });
-            if (incomeId !== undefined) {
-                query.where({
-                    'transactions.incomeId': incomeId,
+
+            if (incomeId !== undefined || categoryId !== undefined || accountId !== undefined) {
+                query.where((qr) => {
+                    if (incomeId !== undefined) {
+                        qr.where('transactions.incomeId', incomeId).andWhere((qr) =>
+                            qr.where('transactions.userId', userId).orWhereIn('transactions.incomeId', incomesIds ?? []),
+                        );
+                    }
+                    if (categoryId !== undefined) {
+                        qr.where('transactions.categoryId', categoryId).andWhere((qr) =>
+                            qr.where('transactions.userId', userId).orWhereIn('transactions.categoryId', categoriesIds ?? []),
+                        );
+                    }
+                    if (accountId !== undefined) {
+                        qr.where('transactions.accountId', accountId).andWhere((qr) =>
+                            qr
+                                .where('transactions.userId', userId)
+                                .orWhereIn('transactions.accountId', accountsIds ?? [])
+                                .orWhereIn('transactions.targetAccountId', accountsIds ?? []),
+                        );
+                    }
+                });
+            } else {
+                query.where((qr) => {
+                    qr.where({ 'transactions.userId': userId })
+                        .orWhereIn('transactions.incomeId', incomesIds ?? [])
+                        .orWhereIn('transactions.categoryId', categoriesIds ?? [])
+                        .orWhereIn('transactions.accountId', accountsIds ?? [])
+                        .orWhereIn('transactions.targetAccountId', accountsIds ?? []);
                 });
             }
-            if (categoryId !== undefined) {
-                query.where({
-                    'transactions.categoryId': categoryId,
-                });
-            }
-            if (accountId !== undefined) {
-                query.where(function () {
-                    this.where('transactions.accountId', accountId).orWhere('transactions.targetAccountId', accountId);
-                });
-            }
+
             if (cursor) {
                 const { createdAt: cursorCreatedAt, transactionId: cursorTransactionId } = decodeCursor(cursor);
                 query.andWhere(function () {
@@ -377,7 +446,7 @@ export default class TransactionDataAccess extends LoggerBase implements ITransa
         }
     }
 
-    async patchTransaction(userId: unknown, properties: Partial<ITransaction>, trx?: IDBTransaction): Promise<number> {
+    async patchTransaction(userId: number, properties: Partial<ITransaction>, trx?: IDBTransaction): Promise<number> {
         const { transactionId } = properties;
         try {
             this._logger.info(`Patch transactionId: ${transactionId} for userId: ${userId}`);

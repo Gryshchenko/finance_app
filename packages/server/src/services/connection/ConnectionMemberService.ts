@@ -13,6 +13,7 @@ export interface IConnectionMemberService {
     getPendingRequests(memberUserId: number): Promise<IPendingConnectionRequest[]>;
     updateStatus(memberUserId: number, connectionId: number, status: ConnectionStatus, trx?: IDBTransaction): Promise<number>;
     leaveConnection(memberUserId: number, connectionId: number, trx?: IDBTransaction): Promise<boolean>;
+    updateGroup(memberUserId: number, connectionId: number, userGroupId: number | null, trx?: IDBTransaction): Promise<number>;
 }
 
 export default class ConnectionMemberService extends LoggerBase implements IConnectionMemberService {
@@ -66,6 +67,21 @@ export default class ConnectionMemberService extends LoggerBase implements IConn
             });
         }
         return await this._dataAccess.updateStatus(memberUserId, connectionId, status, trx);
+    }
+
+    public async updateGroup(
+        memberUserId: number,
+        connectionId: number,
+        userGroupId: number | null,
+        trx?: IDBTransaction,
+    ): Promise<number> {
+        if (Utils.isNull(memberUserId)) {
+            throw new ValidationError({ message: 'memberUserId cant be null', errorCode: ErrorCode.CONNECTION_ERROR });
+        }
+        if (Utils.isNull(connectionId)) {
+            throw new ValidationError({ message: 'connectionId cant be null', errorCode: ErrorCode.CONNECTION_ERROR });
+        }
+        return await this._dataAccess.updateGroup(memberUserId, connectionId, userGroupId, trx);
     }
 
     public async leaveConnection(memberUserId: number, connectionId: number, trx?: IDBTransaction): Promise<boolean> {

@@ -56,6 +56,15 @@ sharingRouter.patch(
     SharingController.patchOwner,
 );
 
+sharingRouter.patch(
+    '/connection/:connectionId/member',
+    validateQuery({}),
+    sanitizeRequestBody(['userGroupId']),
+    routesInputValidation(patchMemberValidationRules, sharingConvertValidationMessageToErrorCode),
+    routesInputValidation([validatePathQueryProperty('connectionId')]),
+    SharingController.patchMember,
+);
+
 sharingRouter.delete(
     '/connection/:connectionId',
     validateQuery({}),

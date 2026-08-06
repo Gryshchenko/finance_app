@@ -114,6 +114,23 @@ export class SharingController {
         }
     }
 
+    public static async patchMember(req: Request, res: Response) {
+        const responseBuilder = new ResponseBuilder();
+        try {
+            const connectionId = Number(req.params?.connectionId);
+            const userGroupId = Number(req.body?.userGroupId);
+            await SharingOrchestrationServiceBuilder.build().patchMemberGroup(
+                req.user?.userId as number,
+                connectionId,
+                userGroupId,
+            );
+            res.status(HttpCode.NO_CONTENT).json(responseBuilder.setStatus(ResponseStatusType.OK).setData({}).build());
+        } catch (e: unknown) {
+            SharingController.logger.error(`Patch member failed due reason: ${(e as { message: string }).message}`);
+            generateErrorResponse(res, responseBuilder, e as BaseError, ErrorCode.CONNECTION_ERROR);
+        }
+    }
+
     public static async deleteMember(req: Request, res: Response) {
         const responseBuilder = new ResponseBuilder();
         try {

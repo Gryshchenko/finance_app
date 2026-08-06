@@ -159,6 +159,24 @@ export class SharingService extends ApiAbstract {
             return response;
         });
     }
+    public async doPatchMemberGroup(
+        connectionId: number,
+        userGroupId: number,
+    ): Promise<
+        | {
+              kind: GeneralApiProblemKind.Ok;
+              data: undefined;
+          }
+        | GeneralApiProblem
+    > {
+        return this.withErrorHandler(async () => {
+            this._logger.info(`Start patching member ${connectionId}`);
+            const userId = this._authService.userId;
+            const response = await this.authPatch(`/user/${userId}/sharing/connection/${connectionId}/member`, { userGroupId });
+            this._logger.info(`Patch member finished: ${response.kind}`);
+            return response;
+        });
+    }
 
     public async doPatchOwnerGroup(
         connectionId: number,

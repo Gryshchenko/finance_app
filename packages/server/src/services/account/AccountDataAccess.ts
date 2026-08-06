@@ -15,6 +15,7 @@ import { BaseError } from 'src/utils/errors/BaseError';
 import { DBError } from 'src/utils/errors/DBError';
 import { isBaseError } from 'src/utils/errors/isBaseError';
 import { NotFoundError } from 'src/utils/errors/NotFoundError';
+import { resolveAccessibleItems } from 'src/utils/resolveAccessibleItems';
 import { getOnlyNotEmptyProperties } from 'src/utils/validation/getOnlyNotEmptyProperties';
 import { validateAllowedProperties } from 'src/utils/validation/validateAllowedProperties';
 
@@ -79,7 +80,8 @@ export default class AccountDataAccess extends LoggerBase implements IAccountDat
         try {
             this._logger.info(`Fetching all accounts for userId: ${userId}`);
 
-            const data = await this._db
+            const ids = await resolveAccessibleItems(this._db.engine(), 'accounts', userId);
+            const query = this._db
                 .engine()('accounts')
                 .select(
                     'accounts.accountId',
@@ -87,20 +89,38 @@ export default class AccountDataAccess extends LoggerBase implements IAccountDat
                     'accounts.accountName',
                     'accounts.currencyCode',
                     'accounts.iconId',
+                    'accounts.userId',
                     'accounts.colorId',
                     'accounts.position',
+                    'accounts.createdAt',
+                    'accounts.updatedAt',
                 )
-                .where({ userId, 'status': AccountStatusType.Enable, 'accounts.isDeleted': false })
-                .orderBy('accounts.position', 'asc')
-                .orderBy('accounts.accountId', 'asc');
+                .where({ 'status': AccountStatusType.Enable, 'accounts.isDeleted': false })
+                .where((qr) => {
+                    qr.where({ userId });
+                    if (Utils.isNotNull(ids) && ids.length > 0) {
+                        qr.orWhereIn('accounts.accountId', ids);
+                    }
+                });
+            query.orderBy('accounts.position', 'asc').orderBy('accounts.accountId', 'asc');
 
+            const data = await query;
             if (!data.length) {
                 this._logger.info(`No accounts found for userId: ${userId}`);
             } else {
                 this._logger.info(`Fetched ${data.length} accounts for userId: ${userId}`);
             }
 
-            return Utils.greaterThen0(data?.length) ? data.map((data) => ({ ...data, amount: Number(data?.amount) ?? 0 })) : [];
+            return Utils.greaterThen0(data?.length)
+                ? data.map((data) => ({
+                      ...data,
+                      amount: Number(data?.amount) ?? 0,
+                      isOwner: data.userId === userId,
+                      userId: undefined,
+                      createdAt: data?.createdAt ? Time.fromJSDateUTC(data.createdAt) : undefined,
+                      updatedAt: data?.updatedAt ? Time.fromJSDateUTC(data.updatedAt) : undefined,
+                  }))
+                : [];
         } catch (e) {
             this._logger.error(`Failed to fetch accounts for userId: ${userId}. Error: ${(e as { message: string }).message}`);
             throw new DBError({
@@ -115,6 +135,7 @@ export default class AccountDataAccess extends LoggerBase implements IAccountDat
         try {
             this._logger.info(`Fetching account with accountId: ${accountId} for userId: ${userId}`);
 
+            const ids = await resolveAccessibleItems(this._db.engine(), 'accounts', userId);
             const data = await this._db
                 .engine()('accounts')
                 .select(
@@ -123,6 +144,7 @@ export default class AccountDataAccess extends LoggerBase implements IAccountDat
                     'accounts.accountName',
                     'accounts.currencyCode',
                     'accounts.iconId',
+                    'accounts.userId',
                     'accounts.colorId',
                     'accounts.position',
                     'accounts.createdAt',
@@ -131,7 +153,13 @@ export default class AccountDataAccess extends LoggerBase implements IAccountDat
                     'currencies.symbol',
                 )
                 .innerJoin('currencies', 'accounts.currencyCode', 'currencies.currencyCode')
-                .where({ userId, accountId, 'status': AccountStatusType.Enable, 'accounts.isDeleted': false })
+                .where({ accountId, 'status': AccountStatusType.Enable, 'accounts.isDeleted': false })
+                .where((qr) => {
+                    qr.where({ userId });
+                    if (Utils.isNotNull(ids) && ids.length > 0) {
+                        qr.orWhereIn('accounts.accountId', ids);
+                    }
+                })
                 .first();
 
             if (!data) {
@@ -145,7 +173,11 @@ export default class AccountDataAccess extends LoggerBase implements IAccountDat
 
             return {
                 ...data,
+                isOwner: data.userId === userId,
                 amount: Utils.isNotNull(data.amount) ? Number(data.amount) : 0,
+                userId: undefined,
+                createdAt: data?.createdAt ? Time.fromJSDateUTC(data.createdAt) : undefined,
+                updatedAt: data?.updatedAt ? Time.fromJSDateUTC(data.updatedAt) : undefined,
             };
         } catch (e) {
             this._logger.error(

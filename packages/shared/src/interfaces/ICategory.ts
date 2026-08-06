@@ -3,7 +3,6 @@ import { AccountStatusType } from 'types/AccountStatusType';
 export interface ICategory {
     categoryName: string;
     categoryId: number;
-    userId: number;
     currencyCode: string;
     iconId: string;
     colorId?: string | null;
@@ -12,4 +11,5 @@ export interface ICategory {
     position: number;
     createdAt: Date;
     updatedAt: Date;
+    isOwner: boolean;
 }
