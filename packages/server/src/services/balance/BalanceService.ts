@@ -30,7 +30,10 @@ export default class BalanceService extends LoggerBase implements IBalanceServic
         this._accountService = accountService;
     }
     async get(userId: number): Promise<IBalance> {
-        const accounts = await this._accountService.getAccounts(userId);
+        // Net worth counts only the user's own accounts - accounts shared into a group are
+        // visible in lists/stats but must never inflate the owner's balance.
+        const accessibleAccounts = await this._accountService.getAccounts(userId);
+        const accounts = accessibleAccounts?.filter((account) => account.isOwner);
         const user = await this._profileService.get(userId);
         if (!user) {
             throw this.error(`User currency not found for userId: ${userId}`);

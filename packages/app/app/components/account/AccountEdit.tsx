@@ -19,6 +19,7 @@ import { InvalidationGroups } from '@/services/QueryCacheService';
 import ToastService from '@/services/ToastService';
 import type { BackTarget } from '@/types/BackTarget';
 import { OverviewPath } from '@/types/OverviewPath';
+import { ensureOwner } from '@/utils/ownerGuard';
 
 interface IAccountPros {
     data: Partial<IAccountClient> | undefined;
@@ -36,6 +37,7 @@ export const AccountEdit: FC<IAccountPros> = function AccountEdit(_props) {
     const goBackSmart = useGoBackSmart(back);
 
     const handlePatch = async () => {
+        if (!ensureOwner(form.isOwner)) return;
         await withFetching(async () => {
             const accountService = AccountService.instance();
             if (Utils.isEmpty(form.accountName)) return;
@@ -88,6 +90,7 @@ export const AccountEdit: FC<IAccountPros> = function AccountEdit(_props) {
     };
 
     const onDelete = () => {
+        if (!ensureOwner(form.isOwner)) return;
         AlertService.prompt(translate('accountScreen:deleteAccountTitle'), translate('accountScreen:deleteAccountMessage'), [
             { text: translate('common:keepData'), onPress: () => handleDelete(true) },
             { text: translate('common:deleteAll'), onPress: () => handleDelete(false) },

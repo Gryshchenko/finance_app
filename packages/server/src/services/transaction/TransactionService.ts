@@ -24,6 +24,7 @@ import {
 import { UnitOfWork } from 'src/repositories/UnitOfWork';
 import { CustomError } from 'src/utils/errors/CustomError';
 import { ValidationError } from 'src/utils/errors/ValidationError';
+import { assertAccessibleIds, resolveAccessibleItems } from 'src/utils/resolveAccessibleItems';
 import { AccountType } from 'types/AccountType';
 import { TransactionType } from 'types/TransactionType';
 
@@ -56,6 +57,7 @@ export default class TransactionService extends LoggerBase implements ITransacti
     }
 
     async createTransaction(transaction: ICreateTransaction): Promise<number | null> {
+        await this.validateItemsAccessible(transaction.userId, transaction);
         switch (transaction.transactionTypeId) {
             case TransactionType.Expense: {
                 return this.createExpenseTransaction(transaction);
@@ -72,6 +74,37 @@ export default class TransactionService extends LoggerBase implements ITransacti
         }
     }
 
+    /**
+     * A transaction may point at anything the user can reach - their own items or items shared
+     * with them through a group. Who may touch the transaction row itself is a separate rule,
+     * enforced owner-only by the data access layer.
+     */
+    private async validateItemsAccessible(userId: number, transaction: IPatchTransaction | ICreateTransaction): Promise<void> {
+        const { accountId, targetAccountId, categoryId, incomeId } = transaction;
+        const { accountIds, categoryIds, incomeIds } = await resolveAccessibleItems(this._db.engine(), userId);
+
+        const ensureAccessible = (
+            id: number | undefined,
+            ids: number[] | undefined,
+            entity: 'accounts' | 'incomes' | 'categories',
+            errorCode: ErrorCode,
+        ): void => {
+            if (Utils.isNull(id)) return;
+            if (!assertAccessibleIds(ids, entity).includes(id as number)) {
+                throw new ValidationError({
+                    message: `${entity} item with id ${id} is not accessible for userId ${userId}`,
+                    errorCode,
+                    statusCode: HttpCode.FORBIDDEN,
+                });
+            }
+        };
+
+        ensureAccessible(accountId, accountIds, 'accounts', ErrorCode.ACCOUNT_ERROR);
+        ensureAccessible(targetAccountId, accountIds, 'accounts', ErrorCode.ACCOUNT_ERROR);
+        ensureAccessible(categoryId, categoryIds, 'categories', ErrorCode.CATEGORY_ERROR);
+        ensureAccessible(incomeId, incomeIds, 'incomes', ErrorCode.INCOME_ERROR);
+    }
+
     async deleteTransaction(userId: number, transactionId: number): Promise<boolean> {
         const uow = new UnitOfWork(this._db);
         try {
@@ -82,13 +115,16 @@ export default class TransactionService extends LoggerBase implements ITransacti
 
             const trx = trxInProcess as IDBTransaction;
 
+            // getTransaction is share-scoped (a member may view a transaction on shared items),
+            // so the owner-only delete below is what rejects a foreign one - and it runs before
+            // any addAmount, so a rejected delete never moves money.
             const trs = await this._transactionDataAccess.getTransaction(userId, transactionId, trx);
-            const result = await this._transactionDataAccess.deleteTransaction(userId, transactionId, trx);
             if (!trs) {
                 throw new ValidationError({
                     message: 'Transaction could not be deleted',
                 });
             }
+            const result = await this._transactionDataAccess.deleteTransaction(userId, transactionId, trx);
             switch (trs.transactionTypeId) {
                 case TransactionType.Expense: {
                     await this._accountService.addAmount(userId, trs.accountId, trs.amount, trx);
@@ -144,6 +180,8 @@ export default class TransactionService extends LoggerBase implements ITransacti
                 targetAmount: transaction.targetAmount ?? (before.targetAmount as number),
                 targetCurrencyCode: transaction.targetCurrencyCode ?? (before.targetCurrencyCode as string),
             };
+
+            await this.validateItemsAccessible(userId, after);
 
             // currency follows the account: a transaction sitting in a USD account is a USD transaction.
             // When the account changes, adopt the new account's currency (the amount value is kept as-is).

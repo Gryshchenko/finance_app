@@ -6,4 +6,5 @@ export interface IAccountListItem {
     iconId: string;
     colorId?: string | null;
     position: number;
+    isOwner: boolean;
 }

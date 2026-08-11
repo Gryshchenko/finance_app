@@ -68,7 +68,6 @@ export type SettingsStackParamList = {
     goalsSurvey: undefined;
 };
 
-// Replay of the onboarding tour from Settings — nothing is reported to the server here.
 function SettingsTutorialScreen() {
     const navigation = useNavigation();
     return <OnboardingTutorialScreen onDone={() => navigation.goBack()} />;

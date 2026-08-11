@@ -18,6 +18,7 @@ import { InvalidationGroups } from '@/services/QueryCacheService';
 import ToastService from '@/services/ToastService';
 import { TransactionService } from '@/services/TransactionService';
 import type { BackTarget } from '@/types/BackTarget';
+import { ensureOwner } from '@/utils/ownerGuard';
 
 interface ITransactionPros {
     data: Partial<ITransactionClient> | undefined;
@@ -58,6 +59,7 @@ export const TransactionEdit: FC<ITransactionPros> = function TransactionEdit(_p
     };
 
     const handlePatch = async () => {
+        if (!ensureOwner(form.isOwner)) return;
         await withFetching(async () => {
             const transactionService = TransactionService.instance();
             const sameCurrency = !form.targetCurrencyCode || form.targetCurrencyCode === form.currencyCode;
@@ -113,6 +115,7 @@ export const TransactionEdit: FC<ITransactionPros> = function TransactionEdit(_p
     };
 
     const onDelete = () => {
+        if (!ensureOwner(form.isOwner)) return;
         AlertService.confirm(
             translate('transactionScreen:deleteTitle'),
             translate('transactionScreen:deleteMessage'),

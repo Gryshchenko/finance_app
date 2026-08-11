@@ -43,7 +43,6 @@ export const NumericKeypad: FC<NumericKeypadProps> = ({
 
     return (
         <View style={themed($keypad)}>
-            {/* Numeric grid — takes 3 of the 4 columns. */}
             <View style={$numericSection}>
                 {rows.map((row, rowIndex) => (
                     <View key={rowIndex} style={$row}>

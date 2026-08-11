@@ -9,6 +9,7 @@ export interface IIncome {
     colorId?: string | null;
     status: AccountStatusType;
     position: number;
+    isOwner: boolean;
     createdAt: Date;
     updatedAt: Date;
 }

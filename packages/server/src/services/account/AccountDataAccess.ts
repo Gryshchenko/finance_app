@@ -15,7 +15,7 @@ import { BaseError } from 'src/utils/errors/BaseError';
 import { DBError } from 'src/utils/errors/DBError';
 import { isBaseError } from 'src/utils/errors/isBaseError';
 import { NotFoundError } from 'src/utils/errors/NotFoundError';
-import { resolveAccessibleItems } from 'src/utils/resolveAccessibleItems';
+import { resolveAccessibleItems, assertAccessibleIds } from 'src/utils/resolveAccessibleItems';
 import { getOnlyNotEmptyProperties } from 'src/utils/validation/getOnlyNotEmptyProperties';
 import { validateAllowedProperties } from 'src/utils/validation/validateAllowedProperties';
 
@@ -80,7 +80,8 @@ export default class AccountDataAccess extends LoggerBase implements IAccountDat
         try {
             this._logger.info(`Fetching all accounts for userId: ${userId}`);
 
-            const ids = await resolveAccessibleItems(this._db.engine(), 'accounts', userId);
+            const { accountIds } = await resolveAccessibleItems(this._db.engine(), userId);
+            assertAccessibleIds(accountIds, 'accounts');
             const query = this._db
                 .engine()('accounts')
                 .select(
@@ -96,12 +97,7 @@ export default class AccountDataAccess extends LoggerBase implements IAccountDat
                     'accounts.updatedAt',
                 )
                 .where({ 'status': AccountStatusType.Enable, 'accounts.isDeleted': false })
-                .where((qr) => {
-                    qr.where({ userId });
-                    if (Utils.isNotNull(ids) && ids.length > 0) {
-                        qr.orWhereIn('accounts.accountId', ids);
-                    }
-                });
+                .whereIn('accounts.accountId', accountIds ?? []);
             query.orderBy('accounts.position', 'asc').orderBy('accounts.accountId', 'asc');
 
             const data = await query;
@@ -135,7 +131,8 @@ export default class AccountDataAccess extends LoggerBase implements IAccountDat
         try {
             this._logger.info(`Fetching account with accountId: ${accountId} for userId: ${userId}`);
 
-            const ids = await resolveAccessibleItems(this._db.engine(), 'accounts', userId);
+            const { accountIds } = await resolveAccessibleItems(this._db.engine(), userId);
+            assertAccessibleIds(accountIds, 'accounts');
             const data = await this._db
                 .engine()('accounts')
                 .select(
@@ -154,12 +151,7 @@ export default class AccountDataAccess extends LoggerBase implements IAccountDat
                 )
                 .innerJoin('currencies', 'accounts.currencyCode', 'currencies.currencyCode')
                 .where({ accountId, 'status': AccountStatusType.Enable, 'accounts.isDeleted': false })
-                .where((qr) => {
-                    qr.where({ userId });
-                    if (Utils.isNotNull(ids) && ids.length > 0) {
-                        qr.orWhereIn('accounts.accountId', ids);
-                    }
-                })
+                .whereIn('accounts.accountId', accountIds ?? [])
                 .first();
 
             if (!data) {
@@ -236,13 +228,16 @@ export default class AccountDataAccess extends LoggerBase implements IAccountDat
         try {
             this._logger.info(`Add amount ${amount} to accountId: ${accountId} for userId: ${userId}`);
 
+            const { accountIds } = await resolveAccessibleItems(this._db.engine(), userId);
+            assertAccessibleIds(accountIds, 'accounts');
             const query = trx || this._db.engine();
             const data = await query('accounts')
                 .update({
                     amount: this._db.engine().raw('amount + ?', [amount]),
                     updatedAt: Time.getISODateNowUTC(),
                 })
-                .where({ userId, accountId, isDeleted: false });
+                .where({ accountId, isDeleted: false })
+                .whereIn('accountId', accountIds ?? []);
 
             if (!data) {
                 throw new NotFoundError({

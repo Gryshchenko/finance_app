@@ -49,6 +49,7 @@ export class TransactionController {
                             targetAmount: transaction?.targetAmount,
                             description: transaction?.description,
                             createdAt: transaction?.createdAt,
+                            isOwner: transaction?.isOwner,
                         })
                         .build(),
                 );

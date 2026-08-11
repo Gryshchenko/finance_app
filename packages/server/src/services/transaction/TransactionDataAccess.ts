@@ -17,7 +17,7 @@ import { DBError } from 'src/utils/errors/DBError';
 import { isBaseError } from 'src/utils/errors/isBaseError';
 import { NotFoundError } from 'src/utils/errors/NotFoundError';
 import { ValidationError } from 'src/utils/errors/ValidationError';
-import { resolveAccessibleItems } from 'src/utils/resolveAccessibleItems';
+import { resolveAccessibleItems, assertAccessibleIds } from 'src/utils/resolveAccessibleItems';
 import { validateAllowedProperties } from 'src/utils/validation/validateAllowedProperties';
 
 interface ICursorData {
@@ -66,7 +66,7 @@ export interface ITransactionEntityStatsRequest {
     groupBy: 'categoryId' | 'incomeId' | 'accountId';
 }
 
-// Per-entity (currency) sums over a period — for "all categories/incomes with stats" lists.
+// Per-entity (currency) sums over a period- for "all categories/incomes with stats" lists.
 export interface ITransactionEntityStatsBucket {
     entityId: number;
     currencyCode: string;
@@ -94,15 +94,14 @@ export default class TransactionDataAccess extends LoggerBase implements ITransa
         this._db = db;
     }
 
-    // Read-time analytics: per (currency, day) income/expense/transfer sums over [from, to],
-    // optionally narrowed to a single income / category / account. Replaces the materialized daily_* tables.
     async getStats(request: ITransactionStatsRequest): Promise<ITransactionStatsBucket[]> {
         const { userId, from, to, incomeId, categoryId, accountId } = request;
         try {
             const knex = this._db.engine();
-            const categoriesIds = await resolveAccessibleItems(this._db.engine(), 'categories', userId);
-            const accountsIds = await resolveAccessibleItems(this._db.engine(), 'accounts', userId);
-            const incomesIds = await resolveAccessibleItems(this._db.engine(), 'incomes', userId);
+            const { incomeIds, accountIds, categoryIds } = await resolveAccessibleItems(this._db.engine(), userId);
+            const incomesIds = assertAccessibleIds(incomeIds, 'incomes');
+            const accountsIds = assertAccessibleIds(accountIds, 'accounts');
+            const categoriesIds = assertAccessibleIds(categoryIds, 'categories');
             const query = knex('transactions')
                 .select(
                     'currencyCode',
@@ -126,27 +125,25 @@ export default class TransactionDataAccess extends LoggerBase implements ITransa
                 query.where((qr) => {
                     if (incomeId !== undefined) {
                         qr.where('transactions.incomeId', incomeId).andWhere((qr) =>
-                            qr.where('transactions.userId', userId).orWhereIn('transactions.incomeId', incomesIds ?? []),
+                            qr.whereIn('transactions.incomeId', incomesIds ?? []),
                         );
                     }
                     if (categoryId !== undefined) {
                         qr.where('transactions.categoryId', categoryId).andWhere((qr) =>
-                            qr.where('transactions.userId', userId).orWhereIn('transactions.categoryId', categoriesIds ?? []),
+                            qr.whereIn('transactions.categoryId', categoriesIds ?? []),
                         );
                     }
                     if (accountId !== undefined) {
                         qr.where('transactions.accountId', accountId).andWhere((qr) =>
                             qr
-                                .where('transactions.userId', userId)
-                                .orWhereIn('transactions.accountId', accountsIds ?? [])
+                                .whereIn('transactions.accountId', accountsIds ?? [])
                                 .orWhereIn('transactions.targetAccountId', accountsIds ?? []),
                         );
                     }
                 });
             } else {
                 query.where((qr) => {
-                    qr.where({ 'transactions.userId': userId })
-                        .orWhereIn('transactions.incomeId', incomesIds ?? [])
+                    qr.whereIn('transactions.incomeId', incomesIds ?? [])
                         .orWhereIn('transactions.categoryId', categoriesIds ?? [])
                         .orWhereIn('transactions.accountId', accountsIds ?? [])
                         .orWhereIn('transactions.targetAccountId', accountsIds ?? []);
@@ -189,9 +186,10 @@ export default class TransactionDataAccess extends LoggerBase implements ITransa
             throw new ValidationError({ message: `Unsupported stats groupBy: ${groupBy}`, errorCode: ErrorCode.STATS_ERROR });
         }
         try {
-            const categoriesIds = await resolveAccessibleItems(this._db.engine(), 'categories', userId);
-            const accountsIds = await resolveAccessibleItems(this._db.engine(), 'accounts', userId);
-            const incomesIds = await resolveAccessibleItems(this._db.engine(), 'incomes', userId);
+            const { incomeIds, accountIds, categoryIds } = await resolveAccessibleItems(this._db.engine(), userId);
+            const incomesIds = assertAccessibleIds(incomeIds, 'incomes');
+            const accountsIds = assertAccessibleIds(accountIds, 'accounts');
+            const categoriesIds = assertAccessibleIds(categoryIds, 'categories');
             const knex = this._db.engine();
             const rows = await knex('transactions')
                 .select(
@@ -209,16 +207,14 @@ export default class TransactionDataAccess extends LoggerBase implements ITransa
                 )
                 .where({ isDeleted: false })
                 .where((qr) =>
-                    qr
-                        .andWhere('userId', userId)
-                        .orWhereIn(
-                            groupBy,
-                            groupBy === 'categoryId'
-                                ? (categoriesIds ?? [])
-                                : groupBy === 'incomeId'
-                                  ? (incomesIds ?? [])
-                                  : (accountsIds ?? []),
-                        ),
+                    qr.whereIn(
+                        groupBy,
+                        groupBy === 'categoryId'
+                            ? (categoriesIds ?? [])
+                            : groupBy === 'incomeId'
+                              ? (incomesIds ?? [])
+                              : (accountsIds ?? []),
+                    ),
                 )
                 .whereNotNull(groupBy)
                 .whereRaw(`"createdAt"::date >= ?::date AND "createdAt"::date <= ?::date`, [from, to])
@@ -293,9 +289,10 @@ export default class TransactionDataAccess extends LoggerBase implements ITransa
         incomeId,
     }: ITransactionListItemsRequest): Promise<IPagination<ITransactionListItem>> {
         try {
-            const categoriesIds = await resolveAccessibleItems(this._db.engine(), 'categories', userId);
-            const accountsIds = await resolveAccessibleItems(this._db.engine(), 'accounts', userId);
-            const incomesIds = await resolveAccessibleItems(this._db.engine(), 'incomes', userId);
+            const { incomeIds, accountIds, categoryIds } = await resolveAccessibleItems(this._db.engine(), userId);
+            const incomesIds = assertAccessibleIds(incomeIds, 'incomes');
+            const accountsIds = assertAccessibleIds(accountIds, 'accounts');
+            const categoriesIds = assertAccessibleIds(categoryIds, 'categories');
             const cleanFilters =
                 Object.fromEntries(
                     Object.entries({
@@ -323,27 +320,25 @@ export default class TransactionDataAccess extends LoggerBase implements ITransa
                 query.where((qr) => {
                     if (incomeId !== undefined) {
                         qr.where('transactions.incomeId', incomeId).andWhere((qr) =>
-                            qr.where('transactions.userId', userId).orWhereIn('transactions.incomeId', incomesIds ?? []),
+                            qr.whereIn('transactions.incomeId', incomesIds ?? []),
                         );
                     }
                     if (categoryId !== undefined) {
                         qr.where('transactions.categoryId', categoryId).andWhere((qr) =>
-                            qr.where('transactions.userId', userId).orWhereIn('transactions.categoryId', categoriesIds ?? []),
+                            qr.whereIn('transactions.categoryId', categoriesIds ?? []),
                         );
                     }
                     if (accountId !== undefined) {
                         qr.where('transactions.accountId', accountId).andWhere((qr) =>
                             qr
-                                .where('transactions.userId', userId)
-                                .orWhereIn('transactions.accountId', accountsIds ?? [])
+                                .whereIn('transactions.accountId', accountsIds ?? [])
                                 .orWhereIn('transactions.targetAccountId', accountsIds ?? []),
                         );
                     }
                 });
             } else {
                 query.where((qr) => {
-                    qr.where({ 'transactions.userId': userId })
-                        .orWhereIn('transactions.incomeId', incomesIds ?? [])
+                    qr.whereIn('transactions.incomeId', incomesIds ?? [])
                         .orWhereIn('transactions.categoryId', categoriesIds ?? [])
                         .orWhereIn('transactions.accountId', accountsIds ?? [])
                         .orWhereIn('transactions.targetAccountId', accountsIds ?? []);
@@ -401,6 +396,7 @@ export default class TransactionDataAccess extends LoggerBase implements ITransa
         try {
             this._logger.info(`Fetching transaction with transactionId: ${transactionId} for userId: ${userId}`);
 
+            const { accountIds, categoryIds, incomeIds } = await resolveAccessibleItems(this._db.engine(), userId);
             const query = trx || this._db.engine();
             const data = await query('transactions')
                 .select(
@@ -413,12 +409,36 @@ export default class TransactionDataAccess extends LoggerBase implements ITransa
                     'transactions.createdAt',
                     'transactions.updatedAt',
                     'transactions.currencyCode',
+                    'transactions.userId',
                     'transactions.targetAccountId',
                     'transactions.transactionTypeId',
                     'transactions.targetCurrencyCode',
                     'transactions.targetAmount',
                 )
-                .where({ userId, transactionId, 'transactions.isDeleted': false })
+                .where({ transactionId, 'transactions.isDeleted': false })
+                .andWhere((qb) => {
+                    qb.where((q) =>
+                        q
+                            .where('transactions.transactionTypeId', TransactionType.Income)
+                            .whereIn('transactions.incomeId', incomeIds ?? [])
+                            .whereIn('transactions.accountId', accountIds ?? []),
+                    )
+                        .orWhere((q) =>
+                            q
+                                .where('transactions.transactionTypeId', TransactionType.Expense)
+                                .whereIn('transactions.categoryId', categoryIds ?? [])
+                                .whereIn('transactions.accountId', accountIds ?? []),
+                        )
+                        .orWhere((q) =>
+                            q
+                                .where('transactions.transactionTypeId', TransactionType.Transafer)
+                                .where((inner) =>
+                                    inner
+                                        .whereIn('transactions.accountId', accountIds ?? [])
+                                        .orWhereIn('transactions.targetAccountId', accountIds ?? []),
+                                ),
+                        );
+                })
                 .first();
 
             if (!data) {
@@ -431,6 +451,8 @@ export default class TransactionDataAccess extends LoggerBase implements ITransa
             }
             return {
                 ...data,
+                isOwner: data.userId === userId,
+                userId: undefined,
                 createdAt: data?.createdAt ? Time.fromJSDateUTC(data.createdAt) : undefined,
                 updatedAt: data?.updatedAt ? Time.fromJSDateUTC(data.updatedAt) : undefined,
             };

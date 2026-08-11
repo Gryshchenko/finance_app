@@ -103,7 +103,7 @@ const SignUpGoalsScreenTab = (props: AppStackScreenProps<AppPath.SignUpGoals>) =
     </ResetOnBlur>
 );
 // Once the tutorial finishes, markSeen flips the cached tutorials flag and the
-// stack below swaps to Overview on its own — no navigation call needed here.
+// stack below swaps to Overview on its own- no navigation call needed here.
 const OnboardingTutorialScreenTab = () => (
     <ResetOnBlur>
         <OnboardingTutorialScreen reportView onDone={() => undefined} />

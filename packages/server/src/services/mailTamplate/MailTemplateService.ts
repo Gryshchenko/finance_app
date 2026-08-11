@@ -11,7 +11,6 @@ export interface IRenderedMail {
     text: string;
 }
 
-// Which flow a "resend code" email belongs to — selects the right wording.
 export enum ResendCodeContext {
     REGISTRATION = 'registration',
     EMAIL_CHANGE = 'emailChange',

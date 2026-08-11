@@ -11,4 +11,5 @@ export interface ITransaction {
     amount: number;
     description: string;
     createdAt: string;
+    isOwner?: boolean;
 }

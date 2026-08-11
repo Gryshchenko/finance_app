@@ -278,7 +278,6 @@ function SharingPreview() {
 
 // Categories slide: looping drag-and-drop demo. A "Cash" account box lifts, flies
 // onto the "Restaurants" category (which highlights as a drop target), and the
-// source slot shows a dashed placeholder — mirroring dashboard/Box/Box.tsx.
 function CategoriesPreview() {
     const {
         themed,

@@ -96,8 +96,8 @@ export default class StatsOrchestratorService extends LoggerBase implements ISta
         let transferTotal = 0;
 
         // Each bucket is per (currency, day) in native amounts. Convert every bucket whose currency
-        // differs from the user's base currency at that day's rate, then sum everything — including the
-        // base-currency buckets — into one base-currency summary.
+        // differs from the user's base currency at that day's rate, then sum everything- including the
+        // base-currency buckets- into one base-currency summary.
         for (const bucket of buckets) {
             const rate =
                 bucket.currencyCode === baseCurrency ? 1 : await this.resolveRate(bucket.currencyCode, baseCurrency, bucket.date);

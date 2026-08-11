@@ -147,6 +147,7 @@ const en = {
         saveChanges: 'Save changes',
         edit: 'Edit',
         delete: 'Delete',
+        notOwnerModify: 'Only the owner can change this item',
         create: 'Create',
         totalBalance: 'Total balance',
         income: 'Income',
@@ -516,7 +517,7 @@ const en = {
     signUpGoalsScreen: {
         kicker: 'A quick question',
         title: 'What do you want from TenPercent?',
-        body: "Pick everything that fits — we'll tailor your dashboard around it.",
+        body: "Pick everything that fits- we'll tailor your dashboard around it.",
         continue: 'Continue',
         selectAtLeastOne: 'Select at least one to continue',
         selectedOne: '1 goal selected',
@@ -538,7 +539,7 @@ const en = {
             welcome: {
                 kicker: 'Welcome',
                 title: 'Welcome to your money HQ',
-                body: 'Track income, spending and budgets across all your accounts — and see where every coin goes. Here is a quick tour of the main screens.',
+                body: 'Track income, spending and budgets across all your accounts- and see where every coin goes. Here is a quick tour of the main screens.',
             },
             accounts: {
                 kicker: 'Accounts',
@@ -563,12 +564,12 @@ const en = {
             sharing: {
                 kicker: 'Sharing',
                 title: 'Budget together',
-                body: 'Create a group and invite people to a shared budget. Tap a group to manage members — you control each person’s role.',
+                body: 'Create a group and invite people to a shared budget. Tap a group to manage members- you control each person’s role.',
             },
             categories: {
                 kicker: 'Categories',
                 title: 'Make spending make sense',
-                body: 'Create custom categories with icons. Drag an account box onto a category to log an expense there — each box shows what you spent this month.',
+                body: 'Create custom categories with icons. Drag an account box onto a category to log an expense there- each box shows what you spent this month.',
             },
         },
         preview: {

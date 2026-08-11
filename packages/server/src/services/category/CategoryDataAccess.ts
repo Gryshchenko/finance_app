@@ -7,7 +7,7 @@ import { BaseError } from 'src/utils/errors/BaseError';
 import { DBError } from 'src/utils/errors/DBError';
 import { isBaseError } from 'src/utils/errors/isBaseError';
 import { NotFoundError } from 'src/utils/errors/NotFoundError';
-import { resolveAccessibleItems } from 'src/utils/resolveAccessibleItems';
+import { resolveAccessibleItems, assertAccessibleIds } from 'src/utils/resolveAccessibleItems';
 import { getOnlyNotEmptyProperties } from 'src/utils/validation/getOnlyNotEmptyProperties';
 import { validateAllowedProperties } from 'src/utils/validation/validateAllowedProperties';
 
@@ -69,16 +69,12 @@ export default class CategoryDataAccess extends LoggerBase implements ICategoryD
         this._logger.info(`Retrieving categories for user: ${userId}`);
 
         try {
-            const ids = await resolveAccessibleItems(this._db.engine(), 'categories', userId);
+            const { categoryIds } = await resolveAccessibleItems(this._db.engine(), userId);
+            assertAccessibleIds(categoryIds, 'categories');
             const query = this.getCategoryBaseQuery()
                 .innerJoin('currencies', 'categories.currencyCode', 'currencies.currencyCode')
                 .where({ 'categories.isDeleted': false })
-                .where((qr) => {
-                    qr.where({ userId });
-                    if (Utils.isNotNull(ids) && ids.length > 0) {
-                        qr.orWhereIn('categories.categoryId', ids);
-                    }
-                })
+                .whereIn('categories.categoryId', categoryIds ?? [])
                 .orderBy('categories.position', 'asc')
                 .orderBy('categories.categoryId', 'asc');
 
@@ -110,17 +106,13 @@ export default class CategoryDataAccess extends LoggerBase implements ICategoryD
     async get(userId: number, categoryId: number): Promise<ICategory | undefined> {
         this._logger.info(`Retrieving category ID ${categoryId} for user: ${userId}`);
         try {
-            const ids = await resolveAccessibleItems(this._db.engine(), 'categories', userId);
+            const { categoryIds } = await resolveAccessibleItems(this._db.engine(), userId);
+            assertAccessibleIds(categoryIds, 'categories');
 
             const data = await this.getCategoryBaseQuery()
                 .innerJoin('currencies', 'categories.currencyCode', 'currencies.currencyCode')
                 .where({ categoryId, 'categories.isDeleted': false })
-                .where((qr) => {
-                    qr.where({ userId });
-                    if (Utils.isNotNull(ids) && ids.length > 0) {
-                        qr.orWhereIn('categories.categoryId', ids);
-                    }
-                })
+                .whereIn('categories.categoryId', categoryIds ?? [])
                 .first();
 
             if (data) {

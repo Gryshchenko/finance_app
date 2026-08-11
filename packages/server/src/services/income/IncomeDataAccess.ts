@@ -7,7 +7,7 @@ import { BaseError } from 'src/utils/errors/BaseError';
 import { DBError } from 'src/utils/errors/DBError';
 import { isBaseError } from 'src/utils/errors/isBaseError';
 import { NotFoundError } from 'src/utils/errors/NotFoundError';
-import { resolveAccessibleItems } from 'src/utils/resolveAccessibleItems';
+import { resolveAccessibleItems, assertAccessibleIds } from 'src/utils/resolveAccessibleItems';
 import { getOnlyNotEmptyProperties } from 'src/utils/validation/getOnlyNotEmptyProperties';
 import { validateAllowedProperties } from 'src/utils/validation/validateAllowedProperties';
 
@@ -62,7 +62,8 @@ export default class IncomeDataAccess extends LoggerBase implements IIncomeDataA
         this._logger.info(`Fetching incomes for userId ${userId}`);
 
         try {
-            const ids = await resolveAccessibleItems(this._db.engine(), 'incomes', userId);
+            const { incomeIds } = await resolveAccessibleItems(this._db.engine(), userId);
+            assertAccessibleIds(incomeIds, 'incomes');
             const query = await this._db
                 .engine()('incomes')
                 .select(
@@ -81,12 +82,7 @@ export default class IncomeDataAccess extends LoggerBase implements IIncomeDataA
                 )
                 .innerJoin('currencies', 'incomes.currencyCode', 'currencies.currencyCode')
                 .where({ 'status': AccountStatusType.Enable, 'incomes.isDeleted': false })
-                .where((qr) => {
-                    qr.where({ userId });
-                    if (Utils.isNotNull(ids) && ids.length > 0) {
-                        qr.orWhereIn('incomes.incomeId', ids);
-                    }
-                })
+                .whereIn('incomes.incomeId', incomeIds ?? [])
                 .orderBy('incomes.position', 'asc')
                 .orderBy('incomes.incomeId', 'asc');
             const data = await query;
@@ -114,7 +110,8 @@ export default class IncomeDataAccess extends LoggerBase implements IIncomeDataA
         this._logger.info(`Fetching income with ID ${incomeId} for userId ${userId}`);
 
         try {
-            const ids = await resolveAccessibleItems(this._db.engine(), 'incomes', userId);
+            const { incomeIds } = await resolveAccessibleItems(this._db.engine(), userId);
+            assertAccessibleIds(incomeIds, 'incomes');
             const data = await this._db
                 .engine()('incomes')
                 .select(
@@ -133,12 +130,7 @@ export default class IncomeDataAccess extends LoggerBase implements IIncomeDataA
                 )
                 .innerJoin('currencies', 'incomes.currencyCode', 'currencies.currencyCode')
                 .where({ incomeId, 'status': AccountStatusType.Enable, 'incomes.isDeleted': false })
-                .where((qr) => {
-                    qr.where({ userId });
-                    if (Utils.isNotNull(ids) && ids.length > 0) {
-                        qr.orWhereIn('incomes.incomeId', ids);
-                    }
-                })
+                .whereIn('incomes.incomeId', incomeIds ?? [])
                 .first();
 
             if (data) {
@@ -154,7 +146,7 @@ export default class IncomeDataAccess extends LoggerBase implements IIncomeDataA
                 ...data,
                 createdAt: data?.createdAt ? Time.fromJSDateUTC(data.createdAt) : undefined,
                 updatedAt: data?.updatedAt ? Time.fromJSDateUTC(data.updatedAt) : undefined,
-                isOwner: data.userID === userId,
+                isOwner: data.userId === userId,
                 userId: undefined,
             };
         } catch (e) {

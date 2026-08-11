@@ -5,7 +5,7 @@ export interface IEmailContent {
     title: string;
     greeting: string;
     intro: string;
-    // Big confirmation code shown in a highlighted box (optional — layout works without it too).
+    // Big confirmation code shown in a highlighted box (optional- layout works without it too).
     code?: string;
     codeLabel?: string;
     codeHint?: string;
@@ -15,7 +15,7 @@ export interface IEmailContent {
     year: number;
 }
 
-// Palette kept inline (email clients strip <style>/CSS variables — inline styles are the only safe option).
+// Palette kept inline (email clients strip <style>/CSS variables- inline styles are the only safe option).
 const COLOR = {
     bg: '#f4f5f7',
     card: '#ffffff',

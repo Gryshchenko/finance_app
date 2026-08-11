@@ -18,6 +18,7 @@ import { InvalidationGroups } from '@/services/QueryCacheService';
 import ToastService from '@/services/ToastService';
 import type { BackTarget } from '@/types/BackTarget';
 import { OverviewPath } from '@/types/OverviewPath';
+import { ensureOwner } from '@/utils/ownerGuard';
 
 interface IIncomePros {
     data: Partial<IIncome> | undefined;
@@ -35,6 +36,7 @@ export const IncomeEdit: FC<IIncomePros> = function IncomeEdit(_props) {
     const goBackSmart = useGoBackSmart(back);
 
     const handlePatch = async () => {
+        if (!ensureOwner(form.isOwner)) return;
         await withFetching(async () => {
             const incomeService = IncomeService.instance();
             if (Utils.isEmpty(form.incomeName)) return;
@@ -81,6 +83,7 @@ export const IncomeEdit: FC<IIncomePros> = function IncomeEdit(_props) {
     };
 
     const onDelete = () => {
+        if (!ensureOwner(form.isOwner)) return;
         AlertService.prompt(translate('incomeScreen:deleteIncomeTitle'), translate('incomeScreen:deleteIncomeMessage'), [
             { text: translate('common:keepData'), onPress: () => handleDelete(true) },
             { text: translate('common:deleteAll'), onPress: () => handleDelete(false) },
