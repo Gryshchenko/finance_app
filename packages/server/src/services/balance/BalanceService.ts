@@ -1,4 +1,4 @@
-import { IBalance, Utils, HttpCode, ErrorCode } from '@tenpercent/shared';
+import { IBalance, Utils, HttpCode, ErrorCode, StatsScope } from '@tenpercent/shared';
 
 import { LoggerBase } from 'helper/logger/LoggerBase';
 import { IAccountService } from 'services/account/AccountService';
@@ -8,7 +8,7 @@ import { IProfileService } from 'services/profile/ProfileService';
 import { CustomError } from 'src/utils/errors/CustomError';
 
 export interface IBalanceService {
-    get(userId: number): Promise<IBalance>;
+    get(userId: number, scope?: StatsScope): Promise<IBalance>;
 }
 
 export default class BalanceService extends LoggerBase implements IBalanceService {
@@ -29,11 +29,16 @@ export default class BalanceService extends LoggerBase implements IBalanceServic
         this._currencyService = currencyService;
         this._accountService = accountService;
     }
-    async get(userId: number): Promise<IBalance> {
+    async get(userId: number, scope: StatsScope = StatsScope.Own): Promise<IBalance> {
         // Net worth counts only the user's own accounts - accounts shared into a group are
-        // visible in lists/stats but must never inflate the owner's balance.
-        const accessibleAccounts = await this._accountService.getAccounts(userId);
-        const accounts = accessibleAccounts?.filter((account) => account.isOwner);
+        // visible in lists/stats but must never inflate the owner's balance. Hence the
+        // default here is `own`, unlike the stats endpoints which have always answered
+        // with own and shared merged.
+        //
+        // `shared` sums the accounts sitting in the user's groups instead: that is the
+        // group's common pot, not anybody's net worth, and every member sees the same
+        // number. Label it accordingly in the UI.
+        const accounts = await this._accountService.getAccounts(userId, scope);
         const user = await this._profileService.get(userId);
         if (!user) {
             throw this.error(`User currency not found for userId: ${userId}`);

@@ -1,4 +1,4 @@
-import { ErrorCode, StatsPeriod, HttpCode, ResponseStatusType, StatsType } from '@tenpercent/shared';
+import { ErrorCode, StatsPeriod, HttpCode, ResponseStatusType, StatsScope, StatsType } from '@tenpercent/shared';
 import { Request, Response } from 'express';
 
 import Logger from 'helper/logger/Logger';
@@ -6,6 +6,7 @@ import ResponseBuilder from 'helper/responseBuilder/ResponseBuilder';
 import { StatsOrchestratorServiceBuilder } from 'services/StatsOrchestrator/StatsOrchestratorServiceBuilder';
 import { BaseError } from 'src/utils/errors/BaseError';
 import { generateErrorResponse } from 'src/utils/generateErrorResponse';
+import { parseStatsScope } from 'src/utils/validation/parseStatsScope';
 
 export class StatsController {
     private static readonly logger = Logger.Of('StatsController');
@@ -15,7 +16,16 @@ export class StatsController {
             const from = String(req.query?.from);
             const to = String(req.query?.to);
             const period = String(req.query?.period) as StatsPeriod;
-            const category = await StatsOrchestratorServiceBuilder.build().summary(req.user?.userId as number, from, to, period);
+            // Historically this endpoint answered with own and shared items merged, so an
+            // absent scope must keep meaning `all`.
+            const scope = parseStatsScope(req.query?.scope, StatsScope.All);
+            const category = await StatsOrchestratorServiceBuilder.build().summary(
+                req.user?.userId as number,
+                from,
+                to,
+                period,
+                scope,
+            );
             res.status(HttpCode.OK).json(responseBuilder.setStatus(ResponseStatusType.OK).setData(category).build());
         } catch (e: unknown) {
             StatsController.logger.error(`Get summary failed due reason: ${(e as { message: string }).message}`);

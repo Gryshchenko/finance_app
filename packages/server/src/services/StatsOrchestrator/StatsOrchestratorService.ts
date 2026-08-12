@@ -7,6 +7,7 @@ import {
     IStatsResponse,
     ISummary,
     StatsPeriod,
+    StatsScope,
     StatsType,
     Time,
 } from '@tenpercent/shared';
@@ -22,9 +23,9 @@ import { CustomError } from 'src/utils/errors/CustomError';
 import { ValidationError } from 'src/utils/errors/ValidationError';
 
 export interface IStatsOrchestratorService {
-    summary(userId: number, from: string, to: string, period: StatsPeriod): Promise<ISummary>;
+    summary(userId: number, from: string, to: string, period: StatsPeriod, scope?: StatsScope): Promise<ISummary>;
     entityStats(userId: number, type: StatsType, id: number, from: string, to: string): Promise<IEntityStats>;
-    categoriesStats(userId: number, from: string, to: string): Promise<IStatsResponse<ICategoryStats>>;
+    categoriesStats(userId: number, from: string, to: string, scope?: StatsScope): Promise<IStatsResponse<ICategoryStats>>;
     incomesStats(userId: number, from: string, to: string): Promise<IStatsResponse<IIncomeStats>>;
 }
 
@@ -87,9 +88,9 @@ export default class StatsOrchestratorService extends LoggerBase implements ISta
         this._transactionsService = transactionsService;
     }
 
-    public async summary(userId: number, from: string, to: string, _period: StatsPeriod): Promise<ISummary> {
+    public async summary(userId: number, from: string, to: string, _period: StatsPeriod, scope?: StatsScope): Promise<ISummary> {
         const baseCurrency = await this._profileService.getUserCurrencyCode(userId);
-        const buckets = await this._transactionsService.getStats({ userId, from, to });
+        const buckets = await this._transactionsService.getStats({ userId, from, to, scope });
 
         let incomeTotal = 0;
         let expenseTotal = 0;
@@ -246,9 +247,16 @@ export default class StatsOrchestratorService extends LoggerBase implements ISta
         }
     }
 
-    public async categoriesStats(userId: number, from: string, to: string): Promise<IStatsResponse<ICategoryStats>> {
-        const categories = (await this._categoryService.gets(userId)) ?? [];
-        const buckets = await this._transactionsService.getStatsByEntity({ userId, from, to, groupBy: 'categoryId' });
+    public async categoriesStats(
+        userId: number,
+        from: string,
+        to: string,
+        scope?: StatsScope,
+    ): Promise<IStatsResponse<ICategoryStats>> {
+        // The category list is scoped too, otherwise the shared view would list every
+        // own category at amount 0 alongside the shared ones.
+        const categories = (await this._categoryService.gets(userId, scope)) ?? [];
+        const buckets = await this._transactionsService.getStatsByEntity({ userId, from, to, groupBy: 'categoryId', scope });
 
         // A category's spend lives in expense_total; each category is single-currency, so no conversion.
         // Start from the full category list so categories with no transactions still appear with amount 0.

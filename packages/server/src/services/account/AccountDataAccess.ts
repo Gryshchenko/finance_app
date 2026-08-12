@@ -5,6 +5,7 @@ import {
     AccountStatusType,
     IAccountListItem,
     ErrorCode,
+    StatsScope,
     DEFAULT_ACCOUNT_COLOR_IDS,
 } from '@tenpercent/shared';
 
@@ -21,7 +22,7 @@ import { validateAllowedProperties } from 'src/utils/validation/validateAllowedP
 
 export interface IAccountDataAccess {
     createAccounts(userId: number, accounts: ICreateAccount[], trx?: IDBTransaction): Promise<IAccount[]>;
-    getAccounts(userId: number, status?: AccountStatusType): Promise<IAccountListItem[] | undefined>;
+    getAccounts(userId: number, scope?: StatsScope): Promise<IAccountListItem[] | undefined>;
     getAccount(userId: number, accountId: number, status?: AccountStatusType): Promise<IAccount>;
     patchAccount(userId: number, accountId: number, properties: Partial<IAccount>, trx?: IDBTransaction): Promise<number>;
     addAmount(userId: number, accountId: number, amount: number, trx?: IDBTransaction): Promise<number>;
@@ -76,11 +77,11 @@ export default class AccountDataAccess extends LoggerBase implements IAccountDat
         }
     }
 
-    async getAccounts(userId: number): Promise<IAccountListItem[] | undefined> {
+    async getAccounts(userId: number, scope?: StatsScope): Promise<IAccountListItem[] | undefined> {
         try {
-            this._logger.info(`Fetching all accounts for userId: ${userId}`);
+            this._logger.info(`Fetching all accounts for userId: ${userId} scope: ${scope ?? StatsScope.All}`);
 
-            const { accountIds } = await resolveAccessibleItems(this._db.engine(), userId);
+            const { accountIds } = await resolveAccessibleItems(this._db.engine(), userId, scope);
             assertAccessibleIds(accountIds, 'accounts');
             const query = this._db
                 .engine()('accounts')

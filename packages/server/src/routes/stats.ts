@@ -8,7 +8,7 @@ const statsRouter = express.Router({ mergeParams: true });
 
 statsRouter.get(
     '/summary',
-    validateQuery({ from: 'date', to: 'date', period: 'string' }),
+    validateQuery({ from: 'date', to: 'date', period: 'string', scope: 'string?' }),
     validateFromToDateQuery({ from: 'date', to: 'date' }),
     StatsController.summary,
 );

@@ -6,6 +6,6 @@ import { validateQuery } from 'src/utils/validation/validateQuery';
 
 const balanceRouter = express.Router({ mergeParams: true });
 
-balanceRouter.get('/', validateQuery({}), routesInputValidation([]), BalanceController.get);
+balanceRouter.get('/', validateQuery({ scope: 'string?' }), routesInputValidation([]), BalanceController.get);
 
 export default balanceRouter;

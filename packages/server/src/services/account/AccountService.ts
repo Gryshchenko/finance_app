@@ -1,4 +1,4 @@
-import { IAccount, Utils, IAccountListItem, ErrorCode } from '@tenpercent/shared';
+import { IAccount, Utils, IAccountListItem, ErrorCode, StatsScope } from '@tenpercent/shared';
 
 import { LoggerBase } from 'helper/logger/LoggerBase';
 import { ICreateAccount } from 'interfaces/ICreateAccount';
@@ -11,7 +11,7 @@ import { validateAllowedProperties } from 'src/utils/validation/validateAllowedP
 export interface IAccountService {
     createAccount(userId: number, account: ICreateAccount, trx?: IDBTransaction): Promise<IAccount>;
     createAccounts(userId: number, accounts: ICreateAccount[], trx?: IDBTransaction): Promise<IAccount[]>;
-    getAccounts(userId: number): Promise<IAccountListItem[] | undefined>;
+    getAccounts(userId: number, scope?: StatsScope): Promise<IAccountListItem[] | undefined>;
     getAccount(userId: number, accountId: number): Promise<IAccount | undefined>;
     deleteAccount(userId: number, accountId: number, trx?: IDBTransaction): Promise<boolean>;
     patchAccount(userId: number, accountId: number, properties: Partial<IAccount>, trx?: IDBTransaction): Promise<number>;
@@ -66,8 +66,8 @@ export default class AccountService extends LoggerBase implements IAccountServic
             throw e;
         }
     }
-    async getAccounts(userId: number): Promise<IAccountListItem[] | undefined> {
-        return await this._accountDataAccess.getAccounts(userId);
+    async getAccounts(userId: number, scope?: StatsScope): Promise<IAccountListItem[] | undefined> {
+        return await this._accountDataAccess.getAccounts(userId, scope);
     }
     async deleteAccount(userId: number, accountId: number, trx?: IDBTransaction): Promise<boolean> {
         return await this._accountDataAccess.deleteAccount(userId, accountId, trx);

@@ -6,6 +6,7 @@ import {
     ITransactionListItemsRequest,
     ITransactionListItem,
     ErrorCode,
+    StatsScope,
     TransactionType,
 } from '@tenpercent/shared';
 
@@ -48,6 +49,8 @@ export interface ITransactionStatsRequest {
     incomeId?: number;
     categoryId?: number;
     accountId?: number;
+    /** Which slice of the user's items to count. Defaults to everything they can see. */
+    scope?: StatsScope;
 }
 
 // One (currency, day) bucket of native-amount sums per transaction type, computed on read from transactions.
@@ -64,6 +67,8 @@ export interface ITransactionEntityStatsRequest {
     from: string;
     to: string;
     groupBy: 'categoryId' | 'incomeId' | 'accountId';
+    /** Which slice of the user's items to count. Defaults to everything they can see. */
+    scope?: StatsScope;
 }
 
 // Per-entity (currency) sums over a period- for "all categories/incomes with stats" lists.
@@ -95,10 +100,10 @@ export default class TransactionDataAccess extends LoggerBase implements ITransa
     }
 
     async getStats(request: ITransactionStatsRequest): Promise<ITransactionStatsBucket[]> {
-        const { userId, from, to, incomeId, categoryId, accountId } = request;
+        const { userId, from, to, incomeId, categoryId, accountId, scope } = request;
         try {
             const knex = this._db.engine();
-            const { incomeIds, accountIds, categoryIds } = await resolveAccessibleItems(this._db.engine(), userId);
+            const { incomeIds, accountIds, categoryIds } = await resolveAccessibleItems(this._db.engine(), userId, scope);
             const incomesIds = assertAccessibleIds(incomeIds, 'incomes');
             const accountsIds = assertAccessibleIds(accountIds, 'accounts');
             const categoriesIds = assertAccessibleIds(categoryIds, 'categories');
@@ -181,12 +186,12 @@ export default class TransactionDataAccess extends LoggerBase implements ITransa
     // Read-time analytics grouped by entity (category/income/account): one row per (entity, currency)
     // with native-amount sums per type. Powers the "categories/incomes with stats" lists.
     async getStatsByEntity(request: ITransactionEntityStatsRequest): Promise<ITransactionEntityStatsBucket[]> {
-        const { userId, from, to, groupBy } = request;
+        const { userId, from, to, groupBy, scope } = request;
         if (!['categoryId', 'incomeId', 'accountId'].includes(groupBy)) {
             throw new ValidationError({ message: `Unsupported stats groupBy: ${groupBy}`, errorCode: ErrorCode.STATS_ERROR });
         }
         try {
-            const { incomeIds, accountIds, categoryIds } = await resolveAccessibleItems(this._db.engine(), userId);
+            const { incomeIds, accountIds, categoryIds } = await resolveAccessibleItems(this._db.engine(), userId, scope);
             const incomesIds = assertAccessibleIds(incomeIds, 'incomes');
             const accountsIds = assertAccessibleIds(accountIds, 'accounts');
             const categoriesIds = assertAccessibleIds(categoryIds, 'categories');
@@ -307,8 +312,9 @@ export default class TransactionDataAccess extends LoggerBase implements ITransa
                 .engine()('transactions')
                 .select<
                     ITransactionListItem[]
-                >('transactions.transactionId', 'transactions.amount', 'transactions.description', 'transactions.createdAt', 'transactions.currencyCode', 'transactions.targetAccountId', 'transactions.transactionTypeId', 'incomes.incomeName', 'categories.categoryName', 'sourceAccount.accountName', 'targetAccount.accountName as targetAccountName', 'transactions.targetCurrencyCode', 'transactions.targetAmount')
+                >('transactions.transactionId', 'transactions.amount', 'transactions.description', 'transactions.createdAt', 'transactions.currencyCode', 'transactions.targetAccountId', 'transactions.transactionTypeId', 'incomes.incomeName', 'categories.categoryName', 'sourceAccount.accountName', 'targetAccount.accountName as targetAccountName', 'transactions.targetCurrencyCode', 'transactions.targetAmount', 'profiles.publicName')
                 .leftJoin('incomes', 'transactions.incomeId', 'incomes.incomeId')
+                .innerJoin('profiles', 'transactions.userId', 'profiles.userId')
                 .leftJoin('categories', 'transactions.categoryId', 'categories.categoryId')
                 .leftJoin({ sourceAccount: 'accounts' }, 'transactions.accountId', 'sourceAccount.accountId')
                 .leftJoin({ targetAccount: 'accounts' }, 'transactions.targetAccountId', 'targetAccount.accountId')
@@ -414,8 +420,10 @@ export default class TransactionDataAccess extends LoggerBase implements ITransa
                     'transactions.transactionTypeId',
                     'transactions.targetCurrencyCode',
                     'transactions.targetAmount',
+                    'profiles.publicName',
                 )
                 .where({ transactionId, 'transactions.isDeleted': false })
+                .innerJoin('profiles', 'transactions.userId', 'profiles.userId')
                 .andWhere((qb) => {
                     qb.where((q) =>
                         q

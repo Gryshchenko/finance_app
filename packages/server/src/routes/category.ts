@@ -26,7 +26,7 @@ categoryRouter.post(
 
 categoriesRouter.get(
     '/stats',
-    validateQuery({ from: 'date', to: 'date', period: 'string' }),
+    validateQuery({ from: 'date', to: 'date', period: 'string', scope: 'string?' }),
     validateFromToDateQuery({ from: 'date', to: 'date' }),
     CategoryController.getStats,
 );

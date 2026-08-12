@@ -1,4 +1,4 @@
-import { ICategory, Time, ErrorCode, Utils } from '@tenpercent/shared';
+import { ICategory, Time, ErrorCode, StatsScope, Utils } from '@tenpercent/shared';
 
 import { ICreateCategory } from 'interfaces/ICreateCategory';
 import { IDatabaseConnection, IDBTransaction } from 'interfaces/IDatabaseConnection';
@@ -15,7 +15,7 @@ export interface ICategoryDataAccess {
     delete(userId: number, incomeId: number, trx?: IDBTransaction): Promise<boolean>;
     patch(userId: number, incomeId: number, properties: Partial<ICategory>, trx?: IDBTransaction): Promise<number>;
     create(userId: number, categories: ICreateCategory[], trx?: IDBTransaction): Promise<ICategory[]>;
-    gets(userId: number): Promise<ICategory[] | undefined>;
+    gets(userId: number, scope?: StatsScope): Promise<ICategory[] | undefined>;
     get(userId: number, categoryId: number): Promise<ICategory | undefined>;
 }
 export default class CategoryDataAccess extends LoggerBase implements ICategoryDataAccess {
@@ -65,11 +65,11 @@ export default class CategoryDataAccess extends LoggerBase implements ICategoryD
         }
     }
 
-    async gets(userId: number): Promise<ICategory[] | undefined> {
-        this._logger.info(`Retrieving categories for user: ${userId}`);
+    async gets(userId: number, scope?: StatsScope): Promise<ICategory[] | undefined> {
+        this._logger.info(`Retrieving categories for user: ${userId} scope: ${scope ?? StatsScope.All}`);
 
         try {
-            const { categoryIds } = await resolveAccessibleItems(this._db.engine(), userId);
+            const { categoryIds } = await resolveAccessibleItems(this._db.engine(), userId, scope);
             assertAccessibleIds(categoryIds, 'categories');
             const query = this.getCategoryBaseQuery()
                 .innerJoin('currencies', 'categories.currencyCode', 'currencies.currencyCode')

@@ -1,4 +1,4 @@
-import { ICategory, Utils } from '@tenpercent/shared';
+import { ICategory, StatsScope, Utils } from '@tenpercent/shared';
 
 import { LoggerBase } from 'helper/logger/LoggerBase';
 import { ICreateCategory } from 'interfaces/ICreateCategory';
@@ -12,7 +12,7 @@ export interface ICategoryService {
     delete(userId: number, incomeId: number, trx?: IDBTransaction): Promise<boolean>;
     patch(userId: number, incomeId: number, properties: Partial<ICategory>, trx?: IDBTransaction): Promise<number>;
     creates(userId: number, categories: ICreateCategory[], trx?: IDBTransaction): Promise<ICategory[]>;
-    gets(userId: number): Promise<ICategory[] | undefined>;
+    gets(userId: number, scope?: StatsScope): Promise<ICategory[] | undefined>;
     get(userId: number, categoryId: number): Promise<ICategory | undefined>;
 }
 
@@ -53,8 +53,8 @@ export default class CategoryService extends LoggerBase implements ICategoryServ
             throw e;
         }
     }
-    async gets(userId: number): Promise<ICategory[] | undefined> {
-        return await this._categoryDataAccess.gets(userId);
+    async gets(userId: number, scope?: StatsScope): Promise<ICategory[] | undefined> {
+        return await this._categoryDataAccess.gets(userId, scope);
     }
     async delete(userId: number, categoryId: number, trx?: IDBTransaction): Promise<boolean> {
         return await this._categoryDataAccess.delete(userId, categoryId, trx);
