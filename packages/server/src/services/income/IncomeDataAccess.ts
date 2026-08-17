@@ -1,4 +1,4 @@
-import { IIncome, AccountStatusType, Time, ErrorCode, DEFAULT_INCOME_COLOR_IDS, Utils } from '@tenpercent/shared';
+import { IIncome, AccountStatusType, Time, ErrorCode, DEFAULT_INCOME_COLOR_IDS, Utils, StatsScope } from '@tenpercent/shared';
 
 import { ICreateIncome } from 'interfaces/ICreateIncome';
 import { IDatabaseConnection, IDBTransaction } from 'interfaces/IDatabaseConnection';
@@ -13,8 +13,8 @@ import { validateAllowedProperties } from 'src/utils/validation/validateAllowedP
 
 export interface IIncomeDataAccess {
     create(userId: number, incomes: ICreateIncome[], trx?: IDBTransaction): Promise<IIncome[]>;
-    gets(userId: number): Promise<IIncome[] | undefined>;
-    get(userId: number, categoryId: number): Promise<IIncome | undefined>;
+    gets(userId: number, scope?: StatsScope): Promise<IIncome[] | undefined>;
+    get(userId: number, incomeId: number): Promise<IIncome | undefined>;
     patch(userId: number, incomeId: number, properties: Partial<IIncome>, trx?: IDBTransaction): Promise<number>;
     delete(userId: number, incomeId: number, trx?: IDBTransaction): Promise<boolean>;
 }
@@ -58,11 +58,11 @@ export default class IncomeDataAccess extends LoggerBase implements IIncomeDataA
         }
     }
 
-    public async gets(userId: number): Promise<IIncome[] | undefined> {
-        this._logger.info(`Fetching incomes for userId ${userId}`);
+    public async gets(userId: number, scope?: StatsScope): Promise<IIncome[] | undefined> {
+        this._logger.info(`Retrieving incomes for user: ${userId} scope: ${scope ?? StatsScope.All}`);
 
         try {
-            const { incomeIds } = await resolveAccessibleItems(this._db.engine(), userId);
+            const { incomeIds } = await resolveAccessibleItems(this._db.engine(), userId, scope);
             assertAccessibleIds(incomeIds, 'incomes');
             const query = await this._db
                 .engine()('incomes')

@@ -1,4 +1,4 @@
-import { ResponseStatusType, Time, ErrorCode, HttpCode, Utils, ITransactionListItem } from '@tenpercent/shared';
+import { ResponseStatusType, Time, ErrorCode, HttpCode, Utils, ITransactionListItem, StatsScope } from '@tenpercent/shared';
 import { Request, Response } from 'express';
 
 import Logger from 'helper/logger/Logger';
@@ -6,6 +6,7 @@ import ResponseBuilder from 'helper/responseBuilder/ResponseBuilder';
 import TransactionServiceBuilder from 'services/transaction/TransactionServiceBuilder';
 import { BaseError } from 'src/utils/errors/BaseError';
 import { generateErrorResponse } from 'src/utils/generateErrorResponse';
+import { parseStatsScope } from 'src/utils/validation/parseStatsScope';
 
 export class TransactionController {
     private static readonly logger = Logger.Of('TransactionController');
@@ -66,6 +67,7 @@ export class TransactionController {
             const accountId = Utils.greaterThen0(Number(req.query.accountId)) ? Number(req.query.accountId) : undefined;
             const categoryId = Utils.greaterThen0(Number(req.query.categoryId)) ? Number(req.query.categoryId) : undefined;
             const incomeId = Utils.greaterThen0(Number(req.query.incomeId)) ? Number(req.query.incomeId) : undefined;
+            const scope = parseStatsScope(req.query?.scope, StatsScope.All);
             const { data, limit, cursor } = await TransactionServiceBuilder.build().getTransactions({
                 userId: Number(req.user?.userId),
                 limit: Number(req.query.limit),
@@ -73,6 +75,7 @@ export class TransactionController {
                 accountId,
                 categoryId,
                 incomeId,
+                scope,
             });
 
             const transactionCount = data?.length ?? 0;

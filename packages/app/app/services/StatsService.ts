@@ -1,4 +1,4 @@
-import { IEntityStats, ISummary, StatsPeriod, StatsType } from '@tenpercent/shared';
+import { IEntityStats, ISummary, StatsPeriod, StatsScope, StatsType } from '@tenpercent/shared';
 
 import { ApiAbstract } from '@/services/api/apiAbstract';
 import { GeneralApiProblem, GeneralApiProblemKind } from '@/services/api/apiProblem';
@@ -13,7 +13,17 @@ export class StatsService extends ApiAbstract {
         return StatsService._instance || (StatsService._instance = new StatsService());
     }
 
-    public async doGetStats({ from, to, period }: { from: string; to: string; period: StatsPeriod }): Promise<
+    public async doGetStats({
+        from,
+        to,
+        period,
+        scope,
+    }: {
+        from: string;
+        to: string;
+        period: StatsPeriod;
+        scope?: StatsScope;
+    }): Promise<
         | {
               kind: GeneralApiProblemKind.Ok;
               data: ISummary | undefined;
@@ -23,7 +33,9 @@ export class StatsService extends ApiAbstract {
         return this.withErrorHandler(async () => {
             this._logger.info(`Start fetching stats from=${from} to=${to} period=${period}`);
             const userId = this._authService.userId;
-            const response = await this.authGet(`/user/${userId}/stats/summary?from=${from}&to=${to}&period=${period}`);
+            const response = await this.authGet(
+                `/user/${userId}/stats/summary?from=${from}&to=${to}&period=${period}${scope ? `&scope=${scope}` : ''}`,
+            );
             if (response.kind === GeneralApiProblemKind.Ok) {
                 this._logger.info(`Fetching stats successfully`);
             } else {

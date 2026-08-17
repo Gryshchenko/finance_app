@@ -47,6 +47,7 @@ export * from './types/LanguageType';
 export * from './types/ResponseStatusType';
 export * from './types/RoleType';
 export * from './types/StatsPeriod';
+export * from './types/StatsScope';
 export * from './types/TransactionFieldType';
 export * from './types/TransactionType';
 export * from './types/UserStatus';

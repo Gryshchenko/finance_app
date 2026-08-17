@@ -2,31 +2,45 @@ import { ErrorCode, HttpCode, Utils } from '@tenpercent/shared';
 
 import { LoggerBase } from 'helper/logger/LoggerBase';
 import { IDatabaseConnection, IDBTransaction } from 'interfaces/IDatabaseConnection';
+import { GroupOrchestrationService } from 'services/groupOrchestrator/GroupOrchestrationService';
 import { IIncomeService } from 'services/income/IncomeService';
 import { ITransactionService } from 'services/transaction/TransactionService';
 import DatabaseConnectionBuilder from 'src/repositories/DatabaseConnectionBuilder';
 import { UnitOfWork } from 'src/repositories/UnitOfWork';
 import { CustomError } from 'src/utils/errors/CustomError';
+import { ValidationError } from 'src/utils/errors/ValidationError';
 import { AccountType } from 'types/AccountType';
 
 export class IncomeOrchestrationService extends LoggerBase {
     private readonly _incomeService: IIncomeService;
     private readonly _transactionService: ITransactionService;
+    private readonly _groupOrchestrationService: GroupOrchestrationService;
     constructor({
         incomeService,
         transactionService,
+        groupOrchestrationService,
     }: {
         incomeService: IIncomeService;
         transactionService: ITransactionService;
+        groupOrchestrationService: GroupOrchestrationService;
     }) {
         super();
         this._incomeService = incomeService;
         this._transactionService = transactionService;
+        this._groupOrchestrationService = groupOrchestrationService;
     }
 
     public async delete(userId: number, incomeId: number, keepData: boolean): Promise<boolean> {
         return this.withTransaction(async (trx: IDBTransaction) => {
             try {
+                const sharedItemId = await this._groupOrchestrationService.getSharedEntity(userId, 'incomes', incomeId, trx);
+                if (Utils.isNotNull(sharedItemId)) {
+                    throw new ValidationError({
+                        message: `Delete income failed due reason: income ${incomeId} is shared with sharedItemId: ${sharedItemId}`,
+                        errorCode: ErrorCode.INCOME_DELETE_GROUP_ERROR,
+                        statusCode: HttpCode.BAD_REQUEST,
+                    });
+                }
                 if (!keepData) {
                     await this._transactionService.deleteTransactionsForEntity(
                         userId,

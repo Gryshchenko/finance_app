@@ -4,8 +4,8 @@ import { LoggerBase } from 'helper/logger/LoggerBase';
 import { ICreateAccount } from 'interfaces/ICreateAccount';
 import { IDatabaseConnection, IDBTransaction } from 'interfaces/IDatabaseConnection';
 import { IAccountService } from 'services/account/AccountService';
-import { IBalanceService } from 'services/balance/BalanceService';
 import { ICurrencyService } from 'services/currency/CurrencyService';
+import { GroupOrchestrationService } from 'services/groupOrchestrator/GroupOrchestrationService';
 import { ITransactionService } from 'services/transaction/TransactionService';
 import DatabaseConnectionBuilder from 'src/repositories/DatabaseConnectionBuilder';
 import { UnitOfWork } from 'src/repositories/UnitOfWork';
@@ -16,24 +16,24 @@ import { AccountType } from 'types/AccountType';
 export class AccountOrchestrationService extends LoggerBase {
     private readonly _accountService: IAccountService;
     private readonly _currencyService: ICurrencyService;
-    private readonly _balanceService: IBalanceService;
     private readonly _transactionService: ITransactionService;
+    private readonly _groupOrchestrationService: GroupOrchestrationService;
     constructor({
         accountService,
-        balanceService,
         currencyService,
         transactionService,
+        groupOrchestrationService,
     }: {
         accountService: IAccountService;
         currencyService: ICurrencyService;
-        balanceService: IBalanceService;
         transactionService: ITransactionService;
+        groupOrchestrationService: GroupOrchestrationService;
     }) {
         super();
         this._accountService = accountService;
         this._currencyService = currencyService;
-        this._balanceService = balanceService;
         this._transactionService = transactionService;
+        this._groupOrchestrationService = groupOrchestrationService;
     }
 
     public async create(userId: number, account: ICreateAccount): Promise<IAccount> {
@@ -61,6 +61,14 @@ export class AccountOrchestrationService extends LoggerBase {
     public async delete(userId: number, accountId: number, keepData: boolean): Promise<boolean> {
         return this.withTransaction(async (trx: IDBTransaction) => {
             try {
+                const sharedItemId = await this._groupOrchestrationService.getSharedEntity(userId, 'accounts', accountId, trx);
+                if (Utils.isNotNull(sharedItemId)) {
+                    throw new ValidationError({
+                        message: `Delete account failed due reason: account ${accountId} is shared with sharedItemId: ${sharedItemId}`,
+                        errorCode: ErrorCode.ACCOUNT_DELETE_GROUP_ERROR,
+                        statusCode: HttpCode.BAD_REQUEST,
+                    });
+                }
                 if (!keepData) {
                     await this._transactionService.deleteTransactionsForEntity(
                         userId,

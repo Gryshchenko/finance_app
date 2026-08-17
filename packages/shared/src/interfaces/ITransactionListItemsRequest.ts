@@ -1,3 +1,5 @@
+import { StatsScope } from 'types/StatsScope';
+
 export interface ITransactionListItemsRequest {
     userId: number;
     limit: number;
@@ -5,4 +7,5 @@ export interface ITransactionListItemsRequest {
     accountId?: number;
     categoryId?: number;
     incomeId?: number;
+    scope?: StatsScope;
 }

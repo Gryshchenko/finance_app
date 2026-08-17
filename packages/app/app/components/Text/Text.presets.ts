@@ -3,7 +3,7 @@ import { TextStyle } from 'react-native';
 import type { ThemedStyle, ThemedStyleArray } from '@/theme/types';
 import { typography } from '@/theme/typography';
 
-export type TextPresets = 'default' | 'bold' | 'heading' | 'subheading' | 'formLabel' | 'formHelper';
+export type TextPresets = 'default' | 'bold' | 'heading' | 'subheading' | 'formLabel' | 'formHelper' | 'kicker';
 
 export type TextSizes = keyof typeof $sizeStyles;
 export type TextWeights = keyof typeof typography.primary;
@@ -42,4 +42,10 @@ export const $presets: Record<TextPresets, ThemedStyleArray<TextStyle>> = {
     subheading: [$baseStyle, { ...$sizeStyles.lg, ...$fontWeightStyles.medium }],
     formLabel: [$baseStyle, { ...$fontWeightStyles.medium }],
     formHelper: [$baseStyle, { ...$sizeStyles.sm, ...$fontWeightStyles.normal }],
+    /** Small uppercase accent label above a screen/section title. */
+    kicker: [
+        $baseStyle,
+        { ...$sizeStyles.xxs, ...$fontWeightStyles.medium, letterSpacing: 1.4, textTransform: 'uppercase' },
+        ({ colors }) => ({ color: colors.tint }),
+    ],
 };

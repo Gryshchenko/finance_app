@@ -152,4 +152,13 @@ export class GroupOrchestrationService extends LoggerBase {
             return await this._groupService.deleteGroup(userId, userGroupId, trx);
         });
     }
+
+    public async getSharedEntity(
+        userId: number,
+        entityName: 'accounts' | 'incomes' | 'categories',
+        entityId: number,
+        trx?: IDBTransaction,
+    ): Promise<number | null> {
+        return await this._groupSharedItemService.getSharedEntity(userId, entityName, entityId, trx);
+    }
 }

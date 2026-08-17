@@ -82,6 +82,41 @@ export const colors = {
      */
     separator: palette.neutral300,
     /**
+     * Recessed fill sitting just off the background: icon tiles, progress tracks,
+     * inert chips.
+     */
+    surfaceMuted: palette.neutral200,
+    /**
+     * Inverted "hero" block (Balance Insights). It stays dark in both themes, so
+     * the values are spelled out here instead of being derived from the palette -
+     * the palette neutrals flip between light and dark.
+     */
+    hero: {
+        background: palette.neutral800,
+        text: palette.neutral100,
+        /** Secondary copy on the dark block. */
+        textDim: 'rgba(255, 255, 255, 0.55)',
+        /** Uppercase micro-labels above a value. */
+        label: 'rgba(255, 255, 255, 0.5)',
+        /** Inner stat cells. */
+        surface: 'rgba(255, 255, 255, 0.07)',
+        /** Unfilled part of the income/spent bar. */
+        track: 'rgba(255, 255, 255, 0.12)',
+        /** green400 reads muddy on #191015 - this is the on-dark variant. */
+        positive: '#4ADE80',
+        positiveBackground: 'rgba(39, 174, 96, 0.16)',
+        negative: '#FF7A7A',
+        negativeBackground: 'rgba(214, 48, 49, 0.18)',
+    },
+    /**
+     * Segmented control (Mine / Shared scope toggle).
+     */
+    segmented: {
+        track: palette.neutral300,
+        thumb: palette.neutral100,
+        shadow: 'rgba(25, 16, 21, 0.12)',
+    },
+    /**
      * Error messages.
      */
     error: palette.angry600,

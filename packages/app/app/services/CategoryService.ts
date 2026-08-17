@@ -34,7 +34,7 @@ export class CategoryService extends ApiAbstract {
         });
     }
 
-    public async doGetCategoriesWithStats({ from, to, period }: IGetStatsProperties): Promise<
+    public async doGetCategoriesWithStats({ from, to, period, scope }: IGetStatsProperties): Promise<
         | {
               kind: GeneralApiProblemKind.Ok;
               data: IStatsResponse<ICategoryStats>;
@@ -47,7 +47,9 @@ export class CategoryService extends ApiAbstract {
             }
             this._logger.info(`Start fetching categories with stats from`);
             const userId = this._authService.userId;
-            const response = await this.authGet(`/user/${userId}/categories/stats?from=${from}&to=${to}&period=${period}`);
+            const response = await this.authGet(
+                `/user/${userId}/categories/stats?from=${from}&to=${to}&period=${period}${scope ? `&scope=${scope}` : ''}`,
+            );
             if (response.kind === GeneralApiProblemKind.Ok) {
                 this._logger.info(`Fetching categories with stats successfully: ${(response.data as ICategory[])?.length}`);
             } else {

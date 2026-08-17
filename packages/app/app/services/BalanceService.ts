@@ -1,4 +1,4 @@
-import { IBalance } from '@tenpercent/shared';
+import { IBalance, StatsScope } from '@tenpercent/shared';
 
 import { ApiAbstract } from '@/services/api/apiAbstract';
 import { GeneralApiProblem, GeneralApiProblemKind } from '@/services/api/apiProblem';
@@ -13,7 +13,7 @@ export class BalanceService extends ApiAbstract {
         return BalanceService._instance || (BalanceService._instance = new BalanceService());
     }
 
-    public async doGetBalance(): Promise<
+    public async doGetBalance(scope?: StatsScope): Promise<
         | {
               kind: GeneralApiProblemKind.Ok;
               data: IBalance | undefined;
@@ -23,7 +23,7 @@ export class BalanceService extends ApiAbstract {
         return this.withErrorHandler(async () => {
             this._logger.info(`Start fetching balance`);
             const userId = this._authService.userId;
-            const response = await this.authGet(`/user/${userId}/balance/`);
+            const response = await this.authGet(`/user/${userId}/balance/${scope ? `?scope=${scope}` : ''}`);
             if (response.kind === GeneralApiProblemKind.Ok) {
                 this._logger.info(`Fetching stats successfully`);
             } else {

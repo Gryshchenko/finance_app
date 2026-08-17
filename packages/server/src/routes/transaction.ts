@@ -42,6 +42,7 @@ transactionsRouter.get(
         accountId: 'number?',
         categoryId: 'number?',
         incomeId: 'number?',
+        scope: 'string?',
     }),
     TransactionController.getAll,
 );

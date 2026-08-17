@@ -1,4 +1,4 @@
-import { IIncome, Utils } from '@tenpercent/shared';
+import { IIncome, StatsScope, Utils } from '@tenpercent/shared';
 
 import { LoggerBase } from 'helper/logger/LoggerBase';
 import { ICreateIncome } from 'interfaces/ICreateIncome';
@@ -10,8 +10,8 @@ import { validateAllowedProperties } from 'src/utils/validation/validateAllowedP
 export interface IIncomeService {
     creates(userId: number, incomes: ICreateIncome[], trx?: IDBTransaction): Promise<IIncome[]>;
     create(userId: number, incomes: ICreateIncome, trx?: IDBTransaction): Promise<IIncome>;
-    gets(userId: number): Promise<IIncome[] | undefined>;
-    get(userId: number, accountId: number): Promise<IIncome | undefined>;
+    gets(userId: number, scope?: StatsScope): Promise<IIncome[] | undefined>;
+    get(userId: number, incomeId: number): Promise<IIncome | undefined>;
     delete(userId: number, incomeId: number, trx?: IDBTransaction): Promise<boolean>;
     patch(userId: number, incomeId: number, properties: Partial<IIncome>, trx?: IDBTransaction): Promise<number>;
 }
@@ -55,8 +55,8 @@ export default class IncomeService extends LoggerBase implements IIncomeService 
             throw e;
         }
     }
-    async gets(userId: number): Promise<IIncome[] | undefined> {
-        return await this._incomeDataAccess.gets(userId);
+    async gets(userId: number, scope?: StatsScope): Promise<IIncome[] | undefined> {
+        return await this._incomeDataAccess.gets(userId, scope);
     }
     async delete(userId: number, incomeId: number, trx?: IDBTransaction): Promise<boolean> {
         return await this._incomeDataAccess.delete(userId, incomeId, trx);

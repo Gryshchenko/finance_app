@@ -230,7 +230,7 @@ export const $labelSelectedStyle: ThemedStyle<TextStyle> = () => ({
 });
 
 export const $borderFocusStyle: ThemedStyle<ViewStyle> = ({ colors }) => ({
-    borderColor: colors.palette.neutral900,
+    borderColor: colors.tint,
 });
 
 export const $borderNoFocusStyle: ThemedStyle<ViewStyle> = ({ colors }) => ({

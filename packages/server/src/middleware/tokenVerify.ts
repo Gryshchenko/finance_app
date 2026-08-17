@@ -116,6 +116,7 @@ export const tokenVerify = createTokenMiddleware({
     errorCode: ErrorCode.TOKEN_INVALID_ERROR,
     statusCode: HttpCode.UNAUTHORIZED,
     extractToken: (req) => extractToken(req.headers.authorization),
+    ignoreExpiration: false,
     checkBlacklist: true,
     lookupUser: true,
 });
@@ -126,7 +127,7 @@ export const tokenLongVerify = createTokenMiddleware({
     errorCode: ErrorCode.TOKEN_LONG_INVALID_ERROR,
     statusCode: HttpCode.BAD_REQUEST,
     extractToken: (req) => req.body?.token,
-    ignoreExpiration: true,
+    ignoreExpiration: false,
     checkBlacklist: true,
     lookupUser: true,
 });
@@ -137,6 +138,7 @@ export const tokenResetVerify = createTokenMiddleware({
     errorCode: ErrorCode.TOKEN_RESET_INVALID_ERROR,
     statusCode: HttpCode.UNAUTHORIZED,
     extractToken: (req) => extractToken(req.headers.authorization),
+    ignoreExpiration: false,
     checkBlacklist: true,
     lookupUser: false,
 });

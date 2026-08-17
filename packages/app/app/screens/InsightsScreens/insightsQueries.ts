@@ -1,4 +1,4 @@
-import { ICategoryStats, IStatsResponse, ISummary, StatsPeriod, Time } from '@tenpercent/shared';
+import { ICategoryStats, IStatsResponse, ISummary, StatsPeriod, StatsScope, Time } from '@tenpercent/shared';
 
 import { GeneralApiProblemKind } from '@/services/api/apiProblem';
 import { CategoryService } from '@/services/CategoryService';
@@ -17,13 +17,13 @@ function getMonthRange(monthStartISO: string): { from: string; to: string } | nu
     return { from, to };
 }
 
-export async function fetchMonthSummary(monthStartISO: string): Promise<ISummary | null> {
+export async function fetchMonthSummary(monthStartISO: string, scope?: StatsScope): Promise<ISummary | null> {
     try {
         const range = getMonthRange(monthStartISO);
         if (!range) {
             throw new Error(`Invalid month for summary: ${monthStartISO}`);
         }
-        const response = await StatsService.instance().doGetStats({ ...range, period: StatsPeriod.Month });
+        const response = await StatsService.instance().doGetStats({ ...range, period: StatsPeriod.Month, scope });
         switch (response.kind) {
             case GeneralApiProblemKind.Ok: {
                 return response.data as ISummary;
@@ -38,13 +38,20 @@ export async function fetchMonthSummary(monthStartISO: string): Promise<ISummary
     }
 }
 
-export async function fetchMonthCategoriesStats(monthStartISO: string): Promise<IStatsResponse<ICategoryStats>> {
+export async function fetchMonthCategoriesStats(
+    monthStartISO: string,
+    scope?: StatsScope,
+): Promise<IStatsResponse<ICategoryStats>> {
     try {
         const range = getMonthRange(monthStartISO);
         if (!range) {
             throw new Error(`Invalid month for categories stats: ${monthStartISO}`);
         }
-        const response = await CategoryService.instance().doGetCategoriesWithStats({ ...range, period: StatsPeriod.Month });
+        const response = await CategoryService.instance().doGetCategoriesWithStats({
+            ...range,
+            period: StatsPeriod.Month,
+            scope,
+        });
         switch (response.kind) {
             case GeneralApiProblemKind.Ok: {
                 return response.data as IStatsResponse<ICategoryStats>;

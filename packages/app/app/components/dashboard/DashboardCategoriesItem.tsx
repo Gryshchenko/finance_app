@@ -1,5 +1,5 @@
 import { ComponentType } from 'react';
-import { ICategoryStats, IStatsResponse, StatsPeriod, Time } from '@tenpercent/shared';
+import { ICategoryStats, IStatsResponse, StatsPeriod, StatsScope, Time } from '@tenpercent/shared';
 
 import { boxDataItemAdapter } from '@/components/dashboard/Box/boxDataItemAdapter';
 import { ItemType } from '@/components/dashboard/Box/ItemBox';
@@ -14,7 +14,7 @@ import { QueryKeys, QueryStaleTimes } from '@/services/QueryCacheService';
 import { BoxDataItemType } from '@/types/BoxDataItemType';
 import { Logger } from '@/utils/logger/Logger';
 
-export async function fetchCategories(): Promise<IStatsResponse<ICategoryStats>> {
+export async function fetchCategories(scope?: StatsScope): Promise<IStatsResponse<ICategoryStats>> {
     try {
         const from = Time.toMonthStart(Time.getISODateNowUTC());
         const to = Time.getISODateNowUTC();
@@ -26,6 +26,7 @@ export async function fetchCategories(): Promise<IStatsResponse<ICategoryStats>>
             from,
             to,
             period: StatsPeriod.Month,
+            scope,
         });
         switch (response.kind) {
             case GeneralApiProblemKind.Ok: {
@@ -42,7 +43,8 @@ export async function fetchCategories(): Promise<IStatsResponse<ICategoryStats>>
 }
 
 export default function DashboardCategoriesItem() {
-    const categories = useAppQuery<IStatsResponse<ICategoryStats>>(QueryKeys.categoriesStats(), fetchCategories, {
+    // Wrapped: react-query would otherwise pass its context object as `scope`.
+    const categories = useAppQuery<IStatsResponse<ICategoryStats>>(QueryKeys.categoriesStats(), () => fetchCategories(), {
         staleTime: QueryStaleTimes.dashboard,
     });
 

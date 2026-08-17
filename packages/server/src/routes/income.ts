@@ -53,7 +53,7 @@ incomesRouter.get('/', validateQuery({}), IncomeController.gets);
 
 incomesRouter.get(
     '/stats',
-    validateQuery({ from: 'date', to: 'date', period: 'string' }),
+    validateQuery({ from: 'date', to: 'date', period: 'string', scope: 'string?' }),
     validateFromToDateQuery({ from: 'date', to: 'date' }),
     IncomeController.getStats,
 );

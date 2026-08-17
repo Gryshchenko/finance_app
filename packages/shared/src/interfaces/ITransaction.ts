@@ -12,4 +12,5 @@ export interface ITransaction {
     description: string;
     createdAt: string;
     isOwner?: boolean;
+    publicName?: string;
 }

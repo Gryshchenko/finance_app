@@ -1,4 +1,4 @@
-import { StatsType } from '@tenpercent/shared';
+import { StatsScope, StatsType } from '@tenpercent/shared';
 
 export const QueryKeys = {
     accounts: () => ['accounts'] as const,
@@ -9,12 +9,17 @@ export const QueryKeys = {
     currencies: () => ['currencies'] as const,
     entityStats: (entityId: number, statsType: StatsType) => ['entityStats', entityId, statsType] as const,
 
-    stats: () => ['stats'] as const,
-    balance: () => ['balance'] as const,
+    // Scope goes last and is left off entirely when absent, so the scope-less key stays
+    // a prefix of every scoped one: `invalidateQueries(['stats'])` still clears own,
+    // shared and the default variant in one call.
+    stats: (scope?: StatsScope) => (scope ? (['stats', scope] as const) : (['stats'] as const)),
+    balance: (scope?: StatsScope) => (scope ? (['balance', scope] as const) : (['balance'] as const)),
     incomesStats: () => ['incomesStats'] as const,
-    categoriesStats: () => ['categoriesStats'] as const,
-    monthSummary: (monthStart: string) => ['monthSummary', monthStart] as const,
-    monthCategoriesStats: (monthStart: string) => ['monthCategoriesStats', monthStart] as const,
+    categoriesStats: (scope?: StatsScope) => (scope ? (['categoriesStats', scope] as const) : (['categoriesStats'] as const)),
+    monthSummary: (monthStart: string, scope?: StatsScope) =>
+        scope ? (['monthSummary', monthStart, scope] as const) : (['monthSummary', monthStart] as const),
+    monthCategoriesStats: (monthStart: string, scope?: StatsScope) =>
+        scope ? (['monthCategoriesStats', monthStart, scope] as const) : (['monthCategoriesStats', monthStart] as const),
 
     rates: (currencyCode?: string, targetCurrencyCode?: string) => ['rates', currencyCode, targetCurrencyCode] as const,
 

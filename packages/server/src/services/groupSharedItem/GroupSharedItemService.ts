@@ -21,6 +21,12 @@ export interface IGroupSharedItemService {
     getShareItems(userId: number, shareGroupId: number, trx?: IDBTransaction): Promise<IGroupSharedItem[] | []>;
     getShareableItems(userId: number): Promise<IGroupSharedItem[] | []>;
     deleteSharedItemsForGroup(userId: number, userGroupId: number, trx?: IDBTransaction): Promise<void>;
+    getSharedEntity(
+        userId: number,
+        entityName: 'accounts' | 'incomes' | 'categories',
+        entityId: number,
+        trx?: IDBTransaction,
+    ): Promise<number | null>;
 }
 
 export default class GroupSharedItemService extends LoggerBase implements IGroupSharedItemService {
@@ -79,5 +85,25 @@ export default class GroupSharedItemService extends LoggerBase implements IGroup
 
     async deleteSharedItemsForGroup(userId: number, userGroupId: number, trx?: IDBTransaction): Promise<void> {
         return await this._groupSharedItemDataAccess.deleteSharedItemsForGroup(userId, userGroupId, trx);
+    }
+    async getSharedEntity(
+        userId: number,
+        entityName: 'accounts' | 'incomes' | 'categories',
+        entityId: number,
+        trx?: IDBTransaction,
+    ): Promise<number | null> {
+        if (Utils.isNull(userId)) {
+            throw new ValidationError({ message: 'userId cant be null', errorCode: ErrorCode.GROUP_ERROR });
+        }
+        if (!['accounts', 'incomes', 'categories'].includes(entityName)) {
+            throw new ValidationError({
+                message: 'entityName must be accounts, incomes or categories',
+                errorCode: ErrorCode.GROUP_ERROR,
+            });
+        }
+        if (Utils.isNull(entityId)) {
+            throw new ValidationError({ message: 'entityId cant be null', errorCode: ErrorCode.GROUP_ERROR });
+        }
+        return await this._groupSharedItemDataAccess.getSharedEntity(userId, entityName, entityId, trx);
     }
 }

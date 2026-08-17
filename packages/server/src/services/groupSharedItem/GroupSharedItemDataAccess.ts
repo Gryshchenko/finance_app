@@ -21,6 +21,12 @@ export interface IGroupSharedItemDataAccess {
     getShareItems(userId: number, userGroupId: number, trx?: IDBTransaction): Promise<IGroupSharedItem[] | []>;
     getShareableItems(userId: number): Promise<IGroupSharedItem[] | []>;
     deleteSharedItemsForGroup(userId: number, userGroupId: number, trx?: IDBTransaction): Promise<void>;
+    getSharedEntity(
+        userId: number,
+        entityName: 'accounts' | 'incomes' | 'categories',
+        entityId: number,
+        trx?: IDBTransaction,
+    ): Promise<number | null>;
 }
 
 export default class GroupSharedItemDataAccess extends LoggerBase implements IGroupSharedItemDataAccess {
@@ -66,8 +72,7 @@ export default class GroupSharedItemDataAccess extends LoggerBase implements IGr
                                 ?,
                                 "${entityKey}"
                               FROM ${entityTableName} 
-
-                              WHERE "userId" = ? AND "${entityKey}" in (${ids.map(() => '?').join(',')})
+                              WHERE "userId" = ? AND "${entityKey}" in (${ids.map(() => '?').join(',')}) AND "isDeleted" = false
                               ON CONFLICT ("userId", "userGroupId", "${entityKey}")
                               DO UPDATE set "updatedAt" = now()
                               RETURNING "sharedItemId"
@@ -148,13 +153,13 @@ export default class GroupSharedItemDataAccess extends LoggerBase implements IGr
             const data = await this._db.engine().raw(
                 `
                    SELECT a."accountId" as id, 'account' as type, a."accountName" as name, false as "isShared"
-                   FROM accounts as a WHERE a."userId" = ?
+                   FROM accounts as a WHERE a."userId" = ? and a."isDeleted" = false
                    UNION ALL
                    SELECT i."incomeId" as id, 'income' as type, i."incomeName" as name, false as "isShared"
-                   FROM incomes as i WHERE i."userId" = ?
+                   FROM incomes as i WHERE i."userId" = ? and i."isDeleted" = false
                    UNION ALL
                    SELECT c."categoryId" as id, 'category' as type, c."categoryName" as name, false as "isShared"
-                   FROM categories as c WHERE c."userId" = ?
+                   FROM categories as c WHERE c."userId" = ? and c."isDeleted" = false
                    ORDER BY type, name
                 `,
                 [userId, userId, userId],
@@ -180,7 +185,7 @@ export default class GroupSharedItemDataAccess extends LoggerBase implements IGr
                         (gsi."sharedItemId" IS NOT NULL) as "isShared"
                    FROM accounts as a 
                    LEFT JOIN groupshareditem as gsi ON a."accountId" = gsi."accountId" AND gsi."userGroupId" = ?
-                   WHERE a."userId" = ?
+                   WHERE a."userId" = ? and a."isDeleted" = false
                    UNION ALL
                    SELECT
                        i."incomeId" as id,
@@ -189,7 +194,7 @@ export default class GroupSharedItemDataAccess extends LoggerBase implements IGr
                        (gsi."sharedItemId" IS NOT NULL) as "isShared"
                    FROM incomes as i
                    LEFT JOIN groupshareditem as gsi ON i."incomeId" = gsi."incomeId" AND gsi."userGroupId" = ?
-                   WHERE i."userId" = ?
+                   WHERE i."userId" = ? and i."isDeleted" = false
                    UNION ALL
                    SELECT
                        c."categoryId" as id,
@@ -198,7 +203,7 @@ export default class GroupSharedItemDataAccess extends LoggerBase implements IGr
                        (gsi."sharedItemId" IS NOT NULL) as "isShared"
                    FROM categories as c
                             LEFT JOIN groupshareditem as gsi ON c."categoryId" = gsi."categoryId" AND gsi."userGroupId" = ?
-                   WHERE c."userId" = ?
+                   WHERE c."userId" = ? and c."isDeleted" = false
                    
                    ORDER BY type, name
                 `,
@@ -224,6 +229,57 @@ export default class GroupSharedItemDataAccess extends LoggerBase implements IGr
             );
             throw new DBError({
                 message: `Deleting shared items failed due to a database error: ${(e as { message: string }).message}`,
+                errorCode: ErrorCode.GROUP_SHARED_ERROR,
+            });
+        }
+    }
+    public async getSharedEntity(
+        userId: number,
+        entityName: 'accounts' | 'incomes' | 'categories',
+        entityId: number,
+        trx?: IDBTransaction,
+    ): Promise<number | null> {
+        try {
+            this._logger.info(`Fetching shared entity for userId: ${userId}, entityName: ${entityName}, entityId: ${entityId}`);
+            const query = trx || this._db.engine();
+            const data = await query('groupshareditem')
+                .select('sharedItemId')
+                .where({ userId })
+                .andWhere((qr) => {
+                    switch (entityName) {
+                        case 'incomes':
+                            qr.where(`incomeId`, entityId);
+                            break;
+                        case 'categories':
+                            qr.where(`categoryId`, entityId);
+                            break;
+                        case 'accounts':
+                            qr.where(`accountId`, entityId);
+                            break;
+                        default:
+                            throw new ValidationError({
+                                message: `Invalid entity name: ${entityName}`,
+                                errorCode: ErrorCode.GROUP_SHARED_ERROR,
+                            });
+                    }
+                })
+                .first();
+
+            if (!data) {
+                this._logger.info(
+                    `No shared entity found for userId: ${userId}, entityName: ${entityName}, entityId: ${entityId}`,
+                );
+                return null;
+            }
+
+            this._logger.info(`Fetched shared entity for userId: ${userId}, entityName: ${entityName}, entityId: ${entityId}`);
+            return data.sharedItemId;
+        } catch (e) {
+            this._logger.error(
+                `Failed to fetch shared entity for userId: ${userId}, entityName: ${entityName}, entityId: ${entityId}. Error: ${(e as { message: string }).message}`,
+            );
+            throw new DBError({
+                message: `Fetching shared entity failed due to a database error: ${(e as { message: string }).message}`,
                 errorCode: ErrorCode.GROUP_SHARED_ERROR,
             });
         }

@@ -1,5 +1,5 @@
 import { TextStyle, View, ViewStyle } from 'react-native';
-import { IBalance, ISummary, StatsPeriod, Time } from '@tenpercent/shared';
+import { IBalance, ISummary, StatsPeriod, StatsScope, Time } from '@tenpercent/shared';
 
 import { PressableIcon } from '@/components/Icon';
 import { Skeleton } from '@/components/Skeleton';
@@ -15,13 +15,14 @@ import { ThemedStyle } from '@/theme/types';
 import { CurrencyUtils } from '@/utils/CurrencyUtils';
 import { Logger } from '@/utils/logger/Logger';
 
-export async function fetchStats(): Promise<ISummary | null> {
+export async function fetchStats(scope?: StatsScope): Promise<ISummary | null> {
     try {
         const statsService = StatsService.instance();
         const response = await statsService.doGetStats({
             to: Time.getISODateNowUTC() as string,
             from: Time.toMonthStart(Time.getISODateNowUTC()) as string,
             period: StatsPeriod.Month,
+            scope,
         });
         switch (response.kind) {
             case GeneralApiProblemKind.Ok: {
@@ -37,10 +38,10 @@ export async function fetchStats(): Promise<ISummary | null> {
     }
 }
 
-export async function fetchBalance(): Promise<IBalance | null> {
+export async function fetchBalance(scope?: StatsScope): Promise<IBalance | null> {
     try {
         const statsService = BalanceService.instance();
-        const response = await statsService.doGetBalance();
+        const response = await statsService.doGetBalance(scope);
         switch (response.kind) {
             case GeneralApiProblemKind.Ok: {
                 return response.data as IBalance;
@@ -61,12 +62,16 @@ interface BalanceSummaryProps {
 }
 
 export const BalanceSummary: React.FC<BalanceSummaryProps> = ({ onPress }) => {
-    const { data: statsData, isPending: statsPending } = useAppQuery<ISummary | null>(QueryKeys.stats(), fetchStats, {
+    // Wrapped rather than passed by reference: react-query calls the query function with
+    // a context object, which would land in the optional `scope` argument.
+    const { data: statsData, isPending: statsPending } = useAppQuery<ISummary | null>(QueryKeys.stats(), () => fetchStats(), {
         staleTime: QueryStaleTimes.dashboard,
     });
-    const { data: balanceData, isPending: balancePending } = useAppQuery<IBalance | null>(QueryKeys.balance(), fetchBalance, {
-        staleTime: QueryStaleTimes.dashboard,
-    });
+    const { data: balanceData, isPending: balancePending } = useAppQuery<IBalance | null>(
+        QueryKeys.balance(),
+        () => fetchBalance(),
+        { staleTime: QueryStaleTimes.dashboard },
+    );
     const { themed, theme } = useAppTheme();
     const { defaultCurrency } = useCurrency();
 

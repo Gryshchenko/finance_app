@@ -51,6 +51,30 @@ export const colors = {
     tint: palette.primary500,
     tintInactive: palette.neutral300,
     separator: palette.neutral300,
+    /** @see colors.surfaceMuted - lifted off the dark background instead of tinted down. */
+    surfaceMuted: '#2A2126',
+    /**
+     * @see colors.hero - the block is dark in both themes; here it is lifted above
+     * the (already dark) screen background rather than inverted.
+     */
+    hero: {
+        background: '#241A20',
+        text: '#FFFFFF',
+        textDim: 'rgba(255, 255, 255, 0.55)',
+        label: 'rgba(255, 255, 255, 0.5)',
+        surface: 'rgba(255, 255, 255, 0.07)',
+        track: 'rgba(255, 255, 255, 0.12)',
+        positive: '#4ADE80',
+        positiveBackground: 'rgba(39, 174, 96, 0.16)',
+        negative: '#FF7A7A',
+        negativeBackground: 'rgba(214, 48, 49, 0.18)',
+    },
+    /** @see colors.segmented */
+    segmented: {
+        track: '#241A20',
+        thumb: '#3A3035',
+        shadow: 'rgba(0, 0, 0, 0.4)',
+    },
     error: palette.angry500,
     errorBackground: palette.angry100,
     toast: {

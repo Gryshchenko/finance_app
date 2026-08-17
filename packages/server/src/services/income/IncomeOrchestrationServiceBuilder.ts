@@ -1,4 +1,5 @@
 import { IDatabaseConnection } from 'interfaces/IDatabaseConnection';
+import { GroupOrchestrationServiceBuilder } from 'services/groupOrchestrator/GroupOrchestrationServiceBuilder';
 import { IncomeOrchestrationService } from 'services/income/IncomeOrchestrationService';
 import IncomeServiceBuilder from 'services/income/IncomeServiceBuilder';
 import TransactionServiceBuilder from 'services/transaction/TransactionServiceBuilder';
@@ -10,6 +11,7 @@ export class IncomeOrchestrationServiceBuilder {
         return new IncomeOrchestrationService({
             incomeService: IncomeServiceBuilder.build(databaseConnection),
             transactionService: TransactionServiceBuilder.build(databaseConnection),
+            groupOrchestrationService: GroupOrchestrationServiceBuilder.build(databaseConnection),
         });
     }
 }

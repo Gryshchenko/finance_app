@@ -26,7 +26,7 @@ export interface IStatsOrchestratorService {
     summary(userId: number, from: string, to: string, period: StatsPeriod, scope?: StatsScope): Promise<ISummary>;
     entityStats(userId: number, type: StatsType, id: number, from: string, to: string): Promise<IEntityStats>;
     categoriesStats(userId: number, from: string, to: string, scope?: StatsScope): Promise<IStatsResponse<ICategoryStats>>;
-    incomesStats(userId: number, from: string, to: string): Promise<IStatsResponse<IIncomeStats>>;
+    incomesStats(userId: number, from: string, to: string, scope?: StatsScope): Promise<IStatsResponse<IIncomeStats>>;
 }
 
 /**
@@ -41,7 +41,7 @@ const vsLastMonthPct = (current: number, previous: number): number | null => {
     const curr = Number(current);
     const prev = Number(previous);
     if (prev === 0) {
-        return 0;
+        return curr === 0 ? 0 : null;
     }
     return Math.round(((curr - prev) / prev) * 100);
 };
@@ -275,9 +275,14 @@ export default class StatsOrchestratorService extends LoggerBase implements ISta
         return { from, to, items, total };
     }
 
-    public async incomesStats(userId: number, from: string, to: string): Promise<IStatsResponse<IIncomeStats>> {
+    public async incomesStats(
+        userId: number,
+        from: string,
+        to: string,
+        scope?: StatsScope,
+    ): Promise<IStatsResponse<IIncomeStats>> {
         const incomes = (await this._incomeService.gets(userId)) ?? [];
-        const buckets = await this._transactionsService.getStatsByEntity({ userId, from, to, groupBy: 'incomeId' });
+        const buckets = await this._transactionsService.getStatsByEntity({ userId, from, to, groupBy: 'incomeId', scope });
 
         const amountByIncome = new Map<number, number>();
         for (const bucket of buckets) {

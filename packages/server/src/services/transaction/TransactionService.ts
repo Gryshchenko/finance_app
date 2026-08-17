@@ -30,7 +30,12 @@ import { TransactionType } from 'types/TransactionType';
 
 export interface ITransactionService {
     createTransaction(transactions: ICreateTransaction): Promise<number | null>;
-    getTransactions({ userId, limit, cursor }: ITransactionListItemsRequest): Promise<IPagination<ITransactionListItem | null>>;
+    getTransactions({
+        userId,
+        limit,
+        cursor,
+        scope,
+    }: ITransactionListItemsRequest): Promise<IPagination<ITransactionListItem | null>>;
     getStats(request: ITransactionStatsRequest): Promise<ITransactionStatsBucket[]>;
     getStatsByEntity(request: ITransactionEntityStatsRequest): Promise<ITransactionEntityStatsBucket[]>;
     getTransaction(userId: number, transactionId: number): Promise<ITransaction | undefined>;

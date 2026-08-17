@@ -1,6 +1,12 @@
 const en = {
     errorCode: {
         GROUP_DELETE_WITH_MEMBERS_ERROR: 'Group cannot be deleted because it has connected members.',
+        ACCOUNT_DELETE_GROUP_ERROR:
+            'Account cannot be deleted while it is shared. Open Groups, remove it from the group, then delete it.',
+        CATEGORY_DELETE_GROUP_ERROR:
+            'Category cannot be deleted while it is shared. Open Groups, remove it from the group, then delete it.',
+        INCOME_DELETE_GROUP_ERROR:
+            'Income cannot be deleted while it is shared. Open Groups, remove it from the group, then delete it.',
         RESET_PASSWORD_ERROR: 'We couldn’t reset your password.',
         FORBIDDEN_ERROR: 'Access is forbidden.',
         REJECTED_ERROR: 'The request was rejected.',
@@ -333,19 +339,18 @@ const en = {
     },
     insights: {
         title: 'Balance Insights',
-        totalIncome: 'Total Income',
         totalBalance: 'Total Balance',
         allAccounts: 'All Accounts',
-        trendVs: 'Trend vs {{month}}',
-        growing: 'Consistent Growth',
-        declining: 'Declining Balance',
-        steady: 'Steady Balance',
+        sharedAccounts: 'Shared Accounts',
+        spent: 'Spent',
+        netFlowVs: 'Net flow vs {{month}}',
+        percentSpent: '{{percent}}% spent',
+        scopeMine: 'Mine',
+        scopeShared: 'Shared',
         categories: 'Categories',
         compareWith: 'Compare With',
         categoriesEmpty: 'No category spending this month yet.',
         newSpending: 'new',
-        vsLastMonth: 'vs last month',
-        vsMonth: 'vs {{month}}',
     },
     settingsScreen: {
         name: 'Settings',

@@ -13,4 +13,5 @@ export interface ITransactionListItem {
     transactionTypeId: TransactionType;
     targetAmount?: number;
     targetCurrencyCode?: string;
+    publicName?: string;
 }

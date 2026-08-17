@@ -1,28 +1,32 @@
 import { FC, useMemo, useState } from 'react';
 import { NativeScrollEvent, NativeSyntheticEvent, ScrollView, TextStyle, View, ViewStyle } from 'react-native';
-import { MaterialIcons } from '@expo/vector-icons';
 import {
     CategoryIconType,
     DateFormat,
     DateTime,
     IBalance,
     ICategoryStats,
+    IConnectedMember,
     IStatsResponse,
     ISummary,
+    StatsScope,
     Time,
 } from '@tenpercent/shared';
 
 import { fetchBalance, fetchStats } from '@/components/BalanceSummary';
-import { CategoryIcon } from '@/components/CategoryIcon';
 import { fetchCategories } from '@/components/dashboard/DashboardCategoriesItem';
 import { EmptyState } from '@/components/EmptyState';
+import { DeltaKind, InsightsCategoryRow } from '@/components/insights/InsightsCategoryRow';
+import { InsightsHero } from '@/components/insights/InsightsHero';
 import { IMonthOption, MonthPicker } from '@/components/insights/MonthPicker';
+import { InsightsScope, ScopeToggle } from '@/components/insights/ScopeToggle';
 import { PendingState } from '@/components/PengingState';
 import { Text } from '@/components/Text';
 import { useCurrency } from '@/context/CurrencyContext';
 import { useAppQuery } from '@/hooks/useAppQuery';
 import { translate } from '@/i18n/translate';
 import { fetchMonthCategoriesStats, fetchMonthSummary } from '@/screens/InsightsScreens/insightsQueries';
+import { fetchConnections } from '@/screens/SharingScreens/sharingQueries';
 import { QueryKeys, QueryStaleTimes } from '@/services/QueryCacheService';
 import { useAppTheme } from '@/theme/context';
 import { spacing } from '@/theme/spacing';
@@ -42,6 +46,13 @@ function formatPercent(value: number): string {
     return `${value >= 0 ? '+' : ''}${value.toFixed(1)}%`;
 }
 
+/** Splits a money value the way the hero draws it: whole part large, cents small. */
+function splitMoney(value: number, currency: string): [string, string] {
+    const [whole, cents] = Math.abs(value).toFixed(2).split('.');
+    const sign = value < 0 ? '-' : '';
+    return [`${sign}${CurrencyUtils.formatWithDelimiter(whole, currency, 0, false)}`, `.${cents}`];
+}
+
 interface IProps {
     onScroll?: (event: NativeSyntheticEvent<NativeScrollEvent>) => void;
     /** Height of the pinned blur header - the content starts exactly below it. */
@@ -51,11 +62,10 @@ interface IProps {
 }
 
 export const BalanceInsights: FC<IProps> = ({ onScroll, contentPaddingTop, contentPaddingBottom }) => {
-    const {
-        themed,
-        theme: { colors },
-    } = useAppTheme();
+    const { themed } = useAppTheme();
     const { defaultCurrency, getCurrencySymbol } = useCurrency();
+
+    const [scope, setScope] = useState<InsightsScope>(StatsScope.Own);
 
     const nowISO = Time.getISODateNowUTC();
     // Comparison target: any past month, previous one by default.
@@ -73,41 +83,48 @@ export const BalanceInsights: FC<IProps> = ({ onScroll, contentPaddingTop, conte
     const [compareMonth, setCompareMonth] = useState<string>(monthOptions[0].monthStart);
     const compareMonthLabel = Time.formatUTCDate(compareMonth, DateFormat.MONTH_YEAR);
     const currentMonthLabel = Time.formatUTCDate(nowISO, DateFormat.MONTH_YEAR);
-    // Compact "vs Jun" form for category rows; the year is only spelled out when the
-    // comparison crosses a year boundary (e.g. "Dec '25"). The default target (the
-    // previous month) reads as "vs last month".
-    const compareDt = DateTime.fromISO(compareMonth, { zone: 'utc' });
-    const compareShortLabel = compareDt.year === DateTime.utc().year ? compareDt.toFormat('LLL') : compareDt.toFormat("LLL ''yy");
-    const rowVsLabel =
-        compareMonth === monthOptions[0].monthStart
-            ? translate('insights:vsLastMonth')
-            : translate('insights:vsMonth', { month: compareShortLabel });
 
-    const { data: summary, isPending: summaryPending } = useAppQuery<ISummary | null>(QueryKeys.stats(), fetchStats, {
-        staleTime: QueryStaleTimes.dashboard,
+    // Drives whether the Mine / Shared switch is offered at all. Gated on accepted
+    // connections rather than on groups: a group nobody joined shares nothing, and
+    // "Shared" spans every group anyway - the screen never names one.
+    const { data: connections } = useAppQuery<IConnectedMember[] | undefined>(QueryKeys.sharingConnections(), fetchConnections, {
+        staleTime: QueryStaleTimes.list,
     });
-    const { data: balance, isPending: balancePending } = useAppQuery<IBalance | null>(QueryKeys.balance(), fetchBalance, {
-        staleTime: QueryStaleTimes.dashboard,
-    });
+
+    const memberCount = connections?.length ?? 0;
+    // Fall back to `own` if the connections disappear while the shared tab is open.
+    const activeScope = scope === StatsScope.Shared && memberCount > 0 ? StatsScope.Shared : StatsScope.Own;
+
+    const { data: summary, isPending: summaryPending } = useAppQuery<ISummary | null>(
+        QueryKeys.stats(activeScope),
+        () => fetchStats(activeScope),
+        { staleTime: QueryStaleTimes.dashboard },
+    );
+    const { data: balance, isPending: balancePending } = useAppQuery<IBalance | null>(
+        QueryKeys.balance(activeScope),
+        () => fetchBalance(activeScope),
+        { staleTime: QueryStaleTimes.dashboard },
+    );
     const { data: categories, isPending: categoriesPending } = useAppQuery<IStatsResponse<ICategoryStats>>(
-        QueryKeys.categoriesStats(),
-        fetchCategories,
+        QueryKeys.categoriesStats(activeScope),
+        () => fetchCategories(activeScope),
         { staleTime: QueryStaleTimes.dashboard },
     );
     const { data: compareSummary, isPending: compareSummaryPending } = useAppQuery<ISummary | null>(
-        QueryKeys.monthSummary(compareMonth),
-        () => fetchMonthSummary(compareMonth),
+        QueryKeys.monthSummary(compareMonth, activeScope),
+        () => fetchMonthSummary(compareMonth, activeScope),
         { staleTime: QueryStaleTimes.detail },
     );
-    const { data: compareCategories, isPending: compareCategoriesPending } = useAppQuery<IStatsResponse<ICategoryStats>>(
-        QueryKeys.monthCategoriesStats(compareMonth),
-        () => fetchMonthCategoriesStats(compareMonth),
+    const { data: compareCategories, isPending: comparePending } = useAppQuery<IStatsResponse<ICategoryStats>>(
+        QueryKeys.monthCategoriesStats(compareMonth, activeScope),
+        () => fetchMonthCategoriesStats(compareMonth, activeScope),
         { staleTime: QueryStaleTimes.detail },
     );
 
-    if (summaryPending || balancePending || categoriesPending) {
-        return <PendingState />;
-    }
+    const isShared = activeScope === StatsScope.Shared;
+    // Switching scope refetches, so this is true again on every toggle - the spinner
+    // replaces the content only, never the toggle the user just tapped.
+    const contentPending = summaryPending || balancePending || categoriesPending;
 
     const income = summary?.income_total ?? 0;
     const expenses = summary?.expense_total ?? 0;
@@ -118,14 +135,23 @@ export const BalanceInsights: FC<IProps> = ({ onScroll, contentPaddingTop, conte
     const netCurrent = income - expenses;
     const netCompare = (compareSummary?.income_total ?? 0) - (compareSummary?.expense_total ?? 0);
     const trendPercent = compareSummaryPending ? undefined : percentChange(netCurrent, netCompare);
-    const trendUp = netCurrent >= 0;
-    const trendColor = trendUp ? colors.palette.green400 : colors.error;
-    const trendLabelTx = netCurrent > 0 ? 'insights:growing' : netCurrent < 0 ? 'insights:declining' : 'insights:steady';
+    const trendUp = trendPercent != null ? trendPercent >= 0 : netCurrent >= 0;
+    const trendText = trendPercent === undefined ? '…' : trendPercent === null ? '—' : formatPercent(trendPercent);
+
+    // How much of what came in this month has already gone out. With no income the
+    // bar reads as fully spent as soon as there is any spending at all.
+    const spentRatio = income > 0 ? Math.min(expenses / income, 1) : expenses > 0 ? 1 : 0;
+    const spentPercent = Math.round(spentRatio * 100);
+
+    const scopeName = translate(isShared ? 'insights:sharedAccounts' : 'insights:allAccounts');
+    const heroKicker = `${currentMonthLabel} · ${scopeName}`;
 
     const compareAmounts = new Map<number, number>(
         (compareCategories?.items ?? []).map((item) => [item.categoryId, item.amount ?? 0]),
     );
-    const categoryItems = categories?.items ?? [];
+    // Sorted by spend: the share bars only read as a ranking if the list is ordered.
+    const categoryItems = [...(categories?.items ?? [])].sort((a, b) => (b.amount ?? 0) - (a.amount ?? 0));
+    const maxAmount = categoryItems.reduce((max, item) => Math.max(max, item.amount ?? 0), 0);
 
     return (
         <ScrollView
@@ -138,183 +164,92 @@ export const BalanceInsights: FC<IProps> = ({ onScroll, contentPaddingTop, conte
             scrollEventThrottle={16}
             showsVerticalScrollIndicator={false}
         >
-            {/* Top metrics */}
-            <View style={$metricsRow}>
-                <View style={themed($metricCard)}>
-                    <Text text={currentMonthLabel} style={themed($metricEyebrow)} />
-                    <View>
-                        <Text tx={'insights:totalIncome'} style={themed($metricLabel)} />
-                        <Text
-                            text={CurrencyUtils.formatWithDelimiter(income, defaultCurrency, 2, true)}
-                            style={themed($metricValue)}
-                        />
-                    </View>
+            {/* Only offered when there is somebody to share with. */}
+            {memberCount > 0 && (
+                <View style={$scopeToggleWrapper}>
+                    <ScopeToggle scope={scope} onChange={setScope} memberCount={memberCount} />
                 </View>
-                <View style={themed($metricCard)}>
-                    <Text tx={'insights:allAccounts'} style={themed($metricEyebrow)} />
-                    <View>
-                        <Text tx={'insights:totalBalance'} style={themed($metricLabel)} />
-                        <Text
-                            text={CurrencyUtils.formatWithDelimiter(totalBalance, defaultCurrency, 2, true)}
-                            style={themed($metricValue)}
-                        />
-                    </View>
-                </View>
-            </View>
+            )}
 
-            {/* Balance trend vs selected month */}
-            <View style={themed($trendCard)}>
-                <View style={$styles.flex1}>
-                    <Text text={translate('insights:trendVs', { month: compareMonthLabel })} style={themed($metricEyebrow)} />
-                    <Text tx={trendLabelTx} style={themed($trendTitle)} />
+            {contentPending ? (
+                <View style={$pendingBlock}>
+                    <PendingState />
                 </View>
-                <View style={themed($trendBadge)}>
-                    <MaterialIcons name={trendUp ? 'trending-up' : 'trending-down'} size={18} color={trendColor} />
-                    <Text
-                        text={trendPercent === undefined ? '…' : trendPercent === null ? '—' : formatPercent(trendPercent)}
-                        style={[themed($trendValue), { color: trendColor }]}
-                    />
-                </View>
-            </View>
-
-            {/* Categories for the current month with dynamics vs the selected month */}
-            <View style={themed($sectionHeader)}>
-                <Text tx={'insights:categories'} style={themed($sectionTitle)} />
-                <MonthPicker options={monthOptions} selected={compareMonth} onSelect={setCompareMonth} />
-            </View>
-
-            {categoryItems.length === 0 ? (
-                <EmptyState headingTx={'insights:categories'} contentTx={'insights:categoriesEmpty'} />
             ) : (
-                <View style={themed($card)}>
-                    {categoryItems.map((item, index) => (
-                        <CategoryRow
-                            vsLabel={rowVsLabel}
-                            key={item.categoryId}
-                            item={item}
-                            compareAmount={compareAmounts.get(item.categoryId) ?? 0}
-                            comparePending={compareCategoriesPending}
-                            isLast={index === categoryItems.length - 1}
-                            currencySymbol={getCurrencySymbol(item.currencyCode)}
-                        />
-                    ))}
-                </View>
+                <>
+                    <InsightsHero
+                        kicker={heroKicker}
+                        balance={splitMoney(totalBalance, defaultCurrency)}
+                        income={CurrencyUtils.formatWithDelimiter(income, defaultCurrency, 2, true)}
+                        spent={CurrencyUtils.formatWithDelimiter(expenses, defaultCurrency, 2, true)}
+                        trend={trendText}
+                        trendUp={trendUp}
+                        trendNote={translate('insights:netFlowVs', { month: compareMonthLabel })}
+                        spentRatio={spentRatio}
+                        spentLabel={translate('insights:percentSpent', { percent: spentPercent })}
+                    />
+
+                    {/* Categories for the current month with dynamics vs the selected month */}
+                    <View style={themed($sectionHeader)}>
+                        <Text tx={'insights:categories'} style={themed($sectionTitle)} />
+                        <MonthPicker options={monthOptions} selected={compareMonth} onSelect={setCompareMonth} />
+                    </View>
+
+                    {categoryItems.length === 0 ? (
+                        <EmptyState headingTx={'insights:categories'} contentTx={'insights:categoriesEmpty'} />
+                    ) : (
+                        categoryItems.map((item, index) => {
+                            const amount = item.amount ?? 0;
+                            const delta = percentChange(amount, compareAmounts.get(item.categoryId) ?? 0);
+                            const deltaKind: DeltaKind = comparePending
+                                ? 'flat'
+                                : delta === null
+                                  ? 'new'
+                                  : delta > 0
+                                    ? 'up'
+                                    : delta < 0
+                                      ? 'down'
+                                      : 'flat';
+
+                            return (
+                                <InsightsCategoryRow
+                                    key={item.categoryId}
+                                    name={item.categoryName}
+                                    icon={item.iconId as CategoryIconType}
+                                    amount={CurrencyUtils.formatWithDelimiter(
+                                        amount,
+                                        getCurrencySymbol(item.currencyCode),
+                                        2,
+                                        true,
+                                    )}
+                                    // Share of the biggest category, so the top row fills the bar.
+                                    share={maxAmount > 0 ? amount / maxAmount : 0}
+                                    delta={
+                                        comparePending
+                                            ? '…'
+                                            : delta === null
+                                              ? translate('insights:newSpending').toUpperCase()
+                                              : formatPercent(delta)
+                                    }
+                                    deltaKind={deltaKind}
+                                    isLast={index === categoryItems.length - 1}
+                                />
+                            );
+                        })
+                    )}
+                </>
             )}
         </ScrollView>
     );
 };
 
-const CategoryRow: FC<{
-    item: ICategoryStats;
-    compareAmount: number;
-    comparePending: boolean;
-    isLast: boolean;
-    currencySymbol: string | undefined;
-    vsLabel: string;
-}> = ({ item, compareAmount, comparePending, isLast, currencySymbol, vsLabel }) => {
-    const {
-        themed,
-        theme: { colors },
-    } = useAppTheme();
-
-    const amount = item.amount ?? 0;
-    const delta = percentChange(amount, compareAmount);
-    // These are expenses: spending more than in the comparison month is bad news.
-    const deltaColor = delta === null || delta === 0 ? colors.textDim : delta > 0 ? colors.error : colors.palette.green400;
-
-    return (
-        <View style={[themed($row), !isLast && themed($rowBorder)]}>
-            <View style={$rowLeft}>
-                <CategoryIcon name={item.iconId as CategoryIconType} size={22} color={colors.textDim} />
-                <Text text={item.categoryName} style={themed($rowTitle)} numberOfLines={1} />
-            </View>
-            <View style={$rowRight}>
-                <Text text={CurrencyUtils.formatWithDelimiter(amount, currencySymbol, 2, true)} style={themed($rowAmount)} />
-                {comparePending ? (
-                    <Text text={'…'} style={themed($rowDeltaPending)} />
-                ) : (
-                    <View style={$rowDeltaRow}>
-                        <Text
-                            text={delta === null ? translate('insights:newSpending') : formatPercent(delta)}
-                            style={[themed($rowDelta), { color: deltaColor }]}
-                        />
-                        <Text text={vsLabel} style={themed($rowVsLabel)} />
-                    </View>
-                )}
-            </View>
-        </View>
-    );
+const $pendingBlock: ViewStyle = {
+    minHeight: 280,
 };
 
-const $metricsRow: ViewStyle = {
-    flexDirection: 'row',
-    gap: spacing.sm,
+const $scopeToggleWrapper: ViewStyle = {
+    marginBottom: spacing.sm,
 };
-
-const $metricCard: ThemedStyle<ViewStyle> = ({ colors }) => ({
-    flex: 1,
-    height: 120,
-    justifyContent: 'space-between',
-    padding: spacing.md,
-    backgroundColor: colors.palette.neutral100,
-    borderWidth: 1,
-    borderColor: colors.border,
-});
-
-const $metricEyebrow: ThemedStyle<TextStyle> = ({ colors, typography }) => ({
-    fontSize: 11,
-    textTransform: 'uppercase',
-    letterSpacing: 1.5,
-    color: colors.textDim,
-    fontFamily: typography.fonts.funnelSans.medium,
-});
-
-const $metricLabel: ThemedStyle<TextStyle> = ({ colors, typography }) => ({
-    fontSize: 12,
-    color: colors.textDim,
-    fontFamily: typography.primary.normal,
-    marginBottom: 2,
-});
-
-const $metricValue: ThemedStyle<TextStyle> = ({ colors, typography }) => ({
-    fontSize: 18,
-    color: colors.text,
-    fontFamily: typography.fonts.funnelSans.medium,
-});
-
-const $trendCard: ThemedStyle<ViewStyle> = ({ colors }) => ({
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
-    gap: spacing.md,
-    marginTop: spacing.sm,
-    padding: spacing.md,
-    backgroundColor: colors.palette.neutral100,
-    borderWidth: 1,
-    borderColor: colors.border,
-});
-
-const $trendTitle: ThemedStyle<TextStyle> = ({ colors, typography }) => ({
-    fontSize: 16,
-    color: colors.text,
-    fontFamily: typography.primary.semiBold,
-    marginTop: 4,
-});
-
-const $trendBadge: ThemedStyle<ViewStyle> = ({ colors }) => ({
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: spacing.xs,
-    paddingHorizontal: spacing.sm,
-    paddingVertical: spacing.xs,
-    borderWidth: 1,
-    borderColor: colors.border,
-});
-
-const $trendValue: ThemedStyle<TextStyle> = ({ typography }) => ({
-    fontSize: 16,
-    fontFamily: typography.fonts.funnelSans.medium,
-});
 
 const $sectionHeader: ThemedStyle<ViewStyle> = ({ colors }) => ({
     flexDirection: 'row',
@@ -322,7 +257,6 @@ const $sectionHeader: ThemedStyle<ViewStyle> = ({ colors }) => ({
     justifyContent: 'space-between',
     marginTop: spacing.lg,
     paddingBottom: spacing.xs,
-    marginBottom: spacing.sm,
     borderBottomWidth: 1,
     borderBottomColor: colors.border,
 });
@@ -333,75 +267,4 @@ const $sectionTitle: ThemedStyle<TextStyle> = ({ colors, typography }) => ({
     letterSpacing: 1.5,
     color: colors.textDim,
     fontFamily: typography.primary.medium,
-});
-
-const $card: ThemedStyle<ViewStyle> = ({ colors }) => ({
-    backgroundColor: colors.palette.neutral100,
-    borderWidth: 1,
-    borderColor: colors.border,
-    overflow: 'hidden',
-});
-
-const $row: ThemedStyle<ViewStyle> = () => ({
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
-    gap: spacing.md,
-    paddingHorizontal: spacing.md,
-    paddingVertical: spacing.xs,
-});
-
-const $rowBorder: ThemedStyle<ViewStyle> = ({ colors }) => ({
-    borderBottomWidth: 1,
-    borderBottomColor: colors.border,
-});
-
-const $rowLeft: ViewStyle = {
-    flex: 1,
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: spacing.md,
-};
-
-const $rowRight: ViewStyle = {
-    alignItems: 'flex-end',
-};
-
-const $rowTitle: ThemedStyle<TextStyle> = ({ colors, typography }) => ({
-    fontSize: 16,
-    color: colors.text,
-    fontFamily: typography.primary.medium,
-    flexShrink: 1,
-});
-
-const $rowAmount: ThemedStyle<TextStyle> = ({ colors, typography }) => ({
-    fontSize: 16,
-    color: colors.text,
-    fontFamily: typography.fonts.funnelSans.medium,
-    lineHeight: 18,
-});
-
-const $rowDeltaRow: ViewStyle = {
-    flexDirection: 'row',
-    alignItems: 'baseline',
-    gap: 4,
-    marginTop: 2,
-};
-
-const $rowDelta: ThemedStyle<TextStyle> = ({ typography }) => ({
-    fontSize: 14,
-    fontFamily: typography.fonts.funnelSans.bold,
-});
-
-const $rowVsLabel: ThemedStyle<TextStyle> = ({ colors, typography }) => ({
-    fontSize: 12,
-    color: colors.textDim,
-    fontFamily: typography.primary.normal,
-});
-
-const $rowDeltaPending: ThemedStyle<TextStyle> = ({ colors, typography }) => ({
-    fontSize: 12,
-    color: colors.textDim,
-    fontFamily: typography.primary.medium,
-    marginTop: 2,
 });

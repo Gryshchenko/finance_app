@@ -292,9 +292,10 @@ export default class TransactionDataAccess extends LoggerBase implements ITransa
         accountId,
         categoryId,
         incomeId,
+        scope,
     }: ITransactionListItemsRequest): Promise<IPagination<ITransactionListItem>> {
         try {
-            const { incomeIds, accountIds, categoryIds } = await resolveAccessibleItems(this._db.engine(), userId);
+            const { incomeIds, accountIds, categoryIds } = await resolveAccessibleItems(this._db.engine(), userId, scope);
             const incomesIds = assertAccessibleIds(incomeIds, 'incomes');
             const accountsIds = assertAccessibleIds(accountIds, 'accounts');
             const categoriesIds = assertAccessibleIds(categoryIds, 'categories');
@@ -424,29 +425,31 @@ export default class TransactionDataAccess extends LoggerBase implements ITransa
                 )
                 .where({ transactionId, 'transactions.isDeleted': false })
                 .innerJoin('profiles', 'transactions.userId', 'profiles.userId')
-                .andWhere((qb) => {
-                    qb.where((q) =>
-                        q
-                            .where('transactions.transactionTypeId', TransactionType.Income)
-                            .whereIn('transactions.incomeId', incomeIds ?? [])
-                            .whereIn('transactions.accountId', accountIds ?? []),
-                    )
-                        .orWhere((q) =>
-                            q
+                .andWhere((qr) =>
+                    qr
+                        .where('transactions.userId', userId)
+                        .orWhere((qr) =>
+                            qr
+                                .where('transactions.transactionTypeId', TransactionType.Income)
+                                .whereIn('transactions.incomeId', incomeIds ?? [])
+                                .whereIn('transactions.accountId', accountIds ?? []),
+                        )
+                        .orWhere((qr) =>
+                            qr
                                 .where('transactions.transactionTypeId', TransactionType.Expense)
                                 .whereIn('transactions.categoryId', categoryIds ?? [])
                                 .whereIn('transactions.accountId', accountIds ?? []),
                         )
-                        .orWhere((q) =>
-                            q
+                        .orWhere((qr) =>
+                            qr
                                 .where('transactions.transactionTypeId', TransactionType.Transafer)
                                 .where((inner) =>
                                     inner
                                         .whereIn('transactions.accountId', accountIds ?? [])
                                         .orWhereIn('transactions.targetAccountId', accountIds ?? []),
                                 ),
-                        );
-                })
+                        ),
+                )
                 .first();
 
             if (!data) {

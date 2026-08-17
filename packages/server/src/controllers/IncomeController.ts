@@ -1,4 +1,4 @@
-import { ErrorCode, HttpCode, ResponseStatusType, Utils } from '@tenpercent/shared';
+import { ErrorCode, HttpCode, ResponseStatusType, StatsScope, Utils } from '@tenpercent/shared';
 import { Request, Response } from 'express';
 
 import Logger from 'helper/logger/Logger';
@@ -9,6 +9,7 @@ import { StatsOrchestratorServiceBuilder } from 'services/StatsOrchestrator/Stat
 import { BaseError } from 'src/utils/errors/BaseError';
 import { ValidationError } from 'src/utils/errors/ValidationError';
 import { generateErrorResponse } from 'src/utils/generateErrorResponse';
+import { parseStatsScope } from 'src/utils/validation/parseStatsScope';
 
 export class IncomeController {
     private static readonly logger = Logger.Of('IncomeController');
@@ -17,7 +18,14 @@ export class IncomeController {
         try {
             const from = String(req.query?.from);
             const to = String(req.query?.to);
-            const category = await StatsOrchestratorServiceBuilder.build().incomesStats(req.user?.userId as number, from, to);
+            // Same as the summary endpoint: no scope has always meant own + shared.
+            const scope = parseStatsScope(req.query?.scope, StatsScope.All);
+            const category = await StatsOrchestratorServiceBuilder.build().incomesStats(
+                req.user?.userId as number,
+                from,
+                to,
+                scope,
+            );
             res.status(HttpCode.OK).json(responseBuilder.setStatus(ResponseStatusType.OK).setData(category).build());
         } catch (e: unknown) {
             IncomeController.logger.error(`Get income stats failed due reason: ${(e as { message: string }).message}`);

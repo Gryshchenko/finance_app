@@ -136,7 +136,7 @@ const $submit: ThemedStyle<ViewStyle> = ({ colors }) => ({
     flex: 1,
     alignItems: 'center',
     justifyContent: 'center',
-    backgroundColor: colors.palette.neutral800,
+    backgroundColor: colors.tint,
 });
 
 const $submitPressed: ViewStyle = {
