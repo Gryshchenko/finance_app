@@ -1,5 +1,6 @@
-import { ErrorCode, HttpCode, RoleType } from '@tenpercent/shared';
+import { ErrorCode, HttpCode, RoleType, Utils } from '@tenpercent/shared';
 
+import { IDatabaseConnection, IDBTransaction } from 'interfaces/IDatabaseConnection';
 import AuthService from 'services/auth/AuthService';
 import { ConfirmationHelper } from 'services/confirmation/ConfirmationHelper';
 import { IForgotPasswordDataAccess } from 'services/forgotPassword/ForgotPasswordDataAccess';
@@ -8,6 +9,8 @@ import { IUserService } from 'services/user/UserService';
 import UserServiceUtils from 'services/user/UserServiceUtils';
 import { getConfig } from 'src/config/config';
 import { LoggerBase } from 'src/helper/logger/LoggerBase';
+import { UnitOfWork } from 'src/repositories/UnitOfWork';
+import { CustomError } from 'src/utils/errors/CustomError';
 import { ValidationError } from 'src/utils/errors/ValidationError';
 
 const FORGET_CODE_EXPIRES_IN: [number, number, number] = [0, 10, 0]; // 10 minutes
@@ -22,16 +25,19 @@ export interface IForgotPasswordService {
 export default class ForgotPasswordService extends LoggerBase implements IForgotPasswordService {
     private readonly _dataAccess: IForgotPasswordDataAccess;
     private readonly _userService: IUserService;
+    private readonly _db: IDatabaseConnection;
     private readonly _mailNotification: IMailNotificationService;
 
     public constructor(
         dataAccess: IForgotPasswordDataAccess,
         userService: IUserService,
+        db: IDatabaseConnection,
         mailNotification: IMailNotificationService,
     ) {
         super();
         this._dataAccess = dataAccess;
         this._userService = userService;
+        this._db = db;
         this._mailNotification = mailNotification;
     }
 
@@ -88,7 +94,19 @@ export default class ForgotPasswordService extends LoggerBase implements IForgot
     }
     public async confirm(email: string, confirmationCode: number): Promise<{ resetToken: string; userId: number }> {
         this._logger.info(`Forgot password confirm requested`);
+        const uow = new UnitOfWork(this._db);
+        let committed = false;
         try {
+            await uow.start();
+            const trxInProcess = uow.getTransaction();
+            if (Utils.isNull(trxInProcess)) {
+                throw new CustomError({
+                    message: 'Transaction not initiated. Forgot password could not be confirmed',
+                    errorCode: ErrorCode.TRANSACTION_ERROR,
+                    statusCode: HttpCode.INTERNAL_SERVER_ERROR,
+                });
+            }
+            const trx = trxInProcess as unknown as IDBTransaction;
             const record = await this._dataAccess.getActiveByEmail(email);
 
             if (!record) {
@@ -101,8 +119,15 @@ export default class ForgotPasswordService extends LoggerBase implements IForgot
 
             ConfirmationHelper.validateCode(record.confirmationCode, confirmationCode);
 
-            await this._dataAccess.confirm(email);
+            await this._dataAccess.confirm(email, trx);
+            // Proving control of the mailbox is enough to lock every existing session out, so
+            // an attacker holding a stolen token cannot outlive the reset flow.
+            await this._userService.revokeAllSessions(record.userId, trx);
+            await uow.commit();
+            committed = true;
 
+            // Minted after the revocation is committed: its `iat` must not predate the new
+            // epoch, otherwise the reset token would be rejected by the token middleware.
             const resetToken = AuthService.createJWToken(
                 record.userId,
                 RoleType.Default,
@@ -114,6 +139,9 @@ export default class ForgotPasswordService extends LoggerBase implements IForgot
             this._logger.info(`Forgot password confirmed for userId: ${record.userId}`);
             return { resetToken, userId: record.userId };
         } catch (e) {
+            if (!committed) {
+                await uow.rollback();
+            }
             this._logger.error(`Forgot password confirm failed: ${(e as { message: string }).message}`);
             throw e;
         }

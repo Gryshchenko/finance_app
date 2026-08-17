@@ -170,6 +170,28 @@
             "symbol": "€"
         }
     ],
+    "currencies": [
+        "BGN",
+        "BRL",
+        "CHF",
+        "CZK",
+        "DKK",
+        "ETB",
+        "EUR",
+        "GBP",
+        "GEL",
+        "HRK",
+        "HUF",
+        "JPY",
+        "NOK",
+        "PLN",
+        "RON",
+        "RUB",
+        "SEK",
+        "TRY",
+        "UAH",
+        "USD"
+    ],
     "defaults": {
         "language": "en-US",
         "currencyCode": "USD"

@@ -131,7 +131,7 @@ export class ProfileController {
                     tokenValidation({
                         token: tokenLong,
                         userId: Number((req.user as IUser).userId),
-                        purpose: ['access'],
+                        purpose: ['refresh'],
                         strategy: 'long',
                     })
                 ) {

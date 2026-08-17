@@ -98,6 +98,19 @@ function createTokenMiddleware(options: TokenMiddlewareOptions) {
                 req.user = { userId: Number(payload.sub) };
             }
 
+            const validFromSec = await UserServiceBuilder.build().getSessionsValidFromSec(Number(payload.sub));
+            if (validFromSec !== null && (payload.iat ?? 0) < validFromSec) {
+                return res
+                    .status(HttpCode.UNAUTHORIZED)
+                    .json(
+                        responseBuilder
+                            .setStatus(ResponseStatusType.INTERNAL)
+                            .setError({ errorCode: ErrorCode.TOKEN_PAYLOAD_ERROR })
+                            .build(),
+                    )
+                    .end();
+            }
+
             _logger.info(`Token '${options.purpose}' passed validation`);
             return next();
         } catch (e: unknown) {

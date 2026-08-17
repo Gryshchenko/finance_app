@@ -14,7 +14,7 @@
  * so they will FAIL until the bug is fixed.
  */
 
-import { closeTestApp, createUser, deleteUserAfterTest, generateSecureRandom } from '../TestsUtils.';
+import { closeTestApp, createUser, deleteUserAfterTest, generateRandomEmail, generateSecureRandom } from '../TestsUtils.';
 import DatabaseConnection from '../../src/repositories/DatabaseConnection';
 import config from '../../src/config/dbConfig';
 import { HttpCode, UserStatus } from '@tenpercent/shared';
@@ -404,5 +404,122 @@ describe('6. Long-token / refresh security', () => {
         const refreshResponse = await agent.post(`/auth/${userId}/refresh`).send({ token: longToken });
 
         expect(refreshResponse.status).toBe(HttpCode.FORBIDDEN);
+    });
+});
+
+// ─────────────────────────────────────────────────────────────────────────────
+// 7. Server-side session revocation
+// ─────────────────────────────────────────────────────────────────────────────
+
+const RESET_PASSWORD = 'ValidPass1!';
+
+/** Runs /auth/forget + /auth/forget-confirm and returns the reset token. */
+async function runForgetFlow(
+    agent: ReturnType<typeof request.agent>,
+    db: ReturnType<typeof DatabaseConnection.instance>,
+    email: string,
+    userId: number,
+): Promise<string> {
+    await agent.post('/auth/forget').send({ email }).expect(HttpCode.NO_CONTENT);
+
+    const record = await db
+        .engine()('password_forgot')
+        .select('confirmationCode')
+        .where({ userId })
+        .orderBy('id', 'desc')
+        .first();
+
+    const confirmResponse = await agent
+        .post('/auth/forget-confirm')
+        .send({ email, confirmationCode: record.confirmationCode })
+        .expect(HttpCode.OK);
+
+    return confirmResponse.body.data.resetToken as string;
+}
+
+describe('7. Server-side session revocation', () => {
+    /**
+     * The whole point of the sessionsValidFrom epoch: a token living on a device that never
+     * talks to the reset flow must still die. Blacklisting alone cannot do this, because the
+     * server never sees that token.
+     *
+     * The other device's token is signed with an `iat` a minute in the past rather than taken
+     * from a live login: `iat` only has one-second resolution, so a token minted in the same
+     * second as the revocation is indistinguishable from one minted just after it and stays
+     * valid. That sub-second window is inherent to the timestamp epoch.
+     */
+    it('kills a token from another device that was never sent to the server', async () => {
+        const db = DatabaseConnection.instance(config);
+        const resetAgent = request.agent(server);
+        const otherDevice = request.agent(server);
+        const email = generateRandomEmail();
+
+        const { userId } = await createUser({
+            agent: resetAgent,
+            databaseConnection: db,
+            email,
+            password: RESET_PASSWORD,
+        });
+        userIds.push(userId);
+
+        const otherDeviceAuth = `Bearer ${signAccessToken(userId, {
+            purpose: 'access',
+            iat: Math.floor(Date.now() / 1000) - 60,
+        })}`;
+        await otherDevice.get(profileUrl(userId)).set('authorization', otherDeviceAuth).expect(HttpCode.OK);
+
+        await runForgetFlow(resetAgent, db, email, userId);
+
+        await otherDevice.get(profileUrl(userId)).set('authorization', otherDeviceAuth).expect(HttpCode.UNAUTHORIZED);
+    });
+
+    /**
+     * The revocation and the reset token are minted moments apart. If the epoch were compared
+     * with sub-second precision, or written after the token, the reset flow would dead-lock on
+     * its own token.
+     */
+    it('leaves the reset token issued by forget-confirm usable', async () => {
+        const db = DatabaseConnection.instance(config);
+        const agent = request.agent(server);
+        const email = generateRandomEmail();
+
+        const { userId } = await createUser({
+            agent,
+            databaseConnection: db,
+            email,
+            password: RESET_PASSWORD,
+        });
+        userIds.push(userId);
+
+        const resetToken = await runForgetFlow(agent, db, email, userId);
+
+        await agent
+            .post(`/auth/${userId}/forget-change`)
+            .set('authorization', `Bearer ${resetToken}`)
+            .send({ newPassword: 'NewSecure2@' })
+            .expect(HttpCode.NO_CONTENT);
+    });
+
+    it('leaves other users untouched', async () => {
+        const db = DatabaseConnection.instance(config);
+        const resetAgent = request.agent(server);
+        const bystanderAgent = request.agent(server);
+        const email = generateRandomEmail();
+
+        const { userId } = await createUser({
+            agent: resetAgent,
+            databaseConnection: db,
+            email,
+            password: RESET_PASSWORD,
+        });
+        const { userId: bystanderId, authorization: bystanderAuth } = await createUser({
+            agent: bystanderAgent,
+            databaseConnection: db,
+        });
+        userIds.push(userId, bystanderId);
+
+        await runForgetFlow(resetAgent, db, email, userId);
+
+        await bystanderAgent.get(profileUrl(bystanderId)).set('authorization', bystanderAuth).expect(HttpCode.OK);
     });
 });

@@ -5,6 +5,7 @@ import { EmailConfirmationController } from 'controllers/EmailConfirmationContro
 import tokenVerify from 'middleware/tokenVerify';
 import userIdVerify from 'middleware/userIdVerify';
 import userStatusVerify from 'middleware/userStatusVerify';
+import { confirmationCodeRule } from 'src/utils/validation/fieldRules';
 import routesInputValidation from 'src/utils/validation/routesInputValidation';
 import { sanitizeRequestBody } from 'src/utils/validation/sanitizeRequestBody';
 import { validatePathConfirmationCodeProperty } from 'src/utils/validation/validatePathConfirmationCodeProperty';
@@ -16,7 +17,7 @@ emailConfirmationRouter.use(tokenVerify, userIdVerify, userStatusVerify(UserStat
 
 emailConfirmationRouter.post(
     '/resend',
-    sanitizeRequestBody([]),
+    sanitizeRequestBody({}),
     validateQuery({}),
     routesInputValidation([]),
     EmailConfirmationController.resend,
@@ -24,7 +25,7 @@ emailConfirmationRouter.post(
 
 emailConfirmationRouter.post(
     '/verify',
-    sanitizeRequestBody(['confirmationCode']),
+    sanitizeRequestBody({ confirmationCode: confirmationCodeRule() }),
     validateQuery({}),
     routesInputValidation([validatePathConfirmationCodeProperty('confirmationCode')]),
     EmailConfirmationController.verify,

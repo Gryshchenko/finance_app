@@ -793,7 +793,8 @@ CREATE TABLE public.users (
     salt character varying(256) NOT NULL,
     status integer,
     "createdAt" timestamp without time zone DEFAULT CURRENT_TIMESTAMP NOT NULL,
-    "updatedAt" timestamp without time zone
+    "updatedAt" timestamp without time zone,
+    "sessionsValidFrom" timestamp without time zone
 );
 
 

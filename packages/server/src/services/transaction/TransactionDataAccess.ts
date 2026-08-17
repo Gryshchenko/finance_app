@@ -19,7 +19,7 @@ import { isBaseError } from 'src/utils/errors/isBaseError';
 import { NotFoundError } from 'src/utils/errors/NotFoundError';
 import { ValidationError } from 'src/utils/errors/ValidationError';
 import { resolveAccessibleItems, assertAccessibleIds } from 'src/utils/resolveAccessibleItems';
-import { resolvePageSize } from 'src/utils/validation/querySchema';
+import { resolvePageSize } from 'src/utils/validation/fieldRules';
 import { validateAllowedProperties } from 'src/utils/validation/validateAllowedProperties';
 
 interface ICursorData {

@@ -68,8 +68,9 @@ export class AuthController {
             ) {
                 await authService.logout(token as string);
             }
-            await authService.logout(tokenLong);
-
+            // revokeOnce blacklists the long token itself, atomically. Calling logout() on it
+            // first would write the same blacklist key and make this check always report the
+            // token as already used.
             if (!(await authService.revokeOnce(tokenLong))) {
                 throw new CustomError({
                     message: 'Refresh token already used',
@@ -118,6 +119,7 @@ export class AuthController {
                     await authService.logout(tokenLong);
                 }
             }
+            await authService.logout(token);
 
             AuthController.logger.info('Logout successful');
             res.status(HttpCode.OK).json(responseBuilder.setStatus(ResponseStatusType.OK).build());

@@ -6,9 +6,11 @@ import UserServiceBuilder from 'src/services/user/UserServiceBuilder';
 
 export default class ForgotPasswordServiceBuilder {
     public static build() {
+        const db = DatabaseConnectionBuilder.build();
         return new ForgotPasswordService(
-            new ForgotPasswordDataAccess(DatabaseConnectionBuilder.build()),
+            new ForgotPasswordDataAccess(db),
             UserServiceBuilder.build(),
+            db,
             MailNotificationServiceBuilder.build(),
         );
     }

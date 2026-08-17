@@ -6,6 +6,6 @@ import { validateQuery } from 'src/utils/validation/validateQuery';
 
 const router = express.Router({ mergeParams: true });
 
-router.get('/', validateQuery({}), sanitizeRequestBody([]), OverviewController.overview);
+router.get('/', validateQuery({}), sanitizeRequestBody({}), OverviewController.overview);
 
 export default router;

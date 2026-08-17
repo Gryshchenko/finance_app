@@ -1,10 +1,19 @@
-import { UserStatus } from '@tenpercent/shared';
+import { UserStatus, VALID_OAUTH_PROVIDERS } from '@tenpercent/shared';
 import express from 'express';
 
 import tokenVerify, { tokenLongVerify, tokenResetVerify } from 'middleware/tokenVerify';
 import userIdVerify from 'middleware/userIdVerify';
 import userStatusVerify from 'middleware/userStatusVerify';
 import { AuthController } from 'src/controllers/AuthController';
+import {
+    confirmationCodeRule,
+    currencyCodeRule,
+    emailRule,
+    enumRule,
+    localeRule,
+    nameRule,
+    secretRule,
+} from 'src/utils/validation/fieldRules';
 import {
     forgetPasswordValidationRules,
     forgetConfirmPasswordValidationRules,
@@ -20,11 +29,22 @@ import routesInputValidation from '../utils/validation/routesInputValidation';
 
 const router = express.Router();
 
-router.post('/logout', validateQuery({}), tokenVerify, routesInputValidation(logoutValidationRules), AuthController.logout);
+/** Passwords are only bounded here; strength is enforced by the express-validator rules. */
+const passwordRule = (optional = false) => secretRule({ optional, maxLength: 30 });
+
+router.post(
+    '/logout',
+    validateQuery({}),
+    sanitizeRequestBody({ token: secretRule({ optional: true }) }),
+    tokenVerify,
+    routesInputValidation(logoutValidationRules),
+    AuthController.logout,
+);
 
 router.post(
     '/:userId/refresh',
     validateQuery({}),
+    sanitizeRequestBody({ token: secretRule() }),
     routesInputValidation(refreshTokenValidation),
     tokenLongVerify,
     userIdVerify,
@@ -37,7 +57,7 @@ router.get('/:userId/verify', validateQuery({}), tokenVerify, userIdVerify, rout
 router.post(
     '/login',
     validateQuery({}),
-    sanitizeRequestBody(['email', 'password']),
+    sanitizeRequestBody({ email: emailRule(), password: passwordRule() }),
     routesInputValidation(loginValidationRules),
     AuthController.login,
 );
@@ -45,7 +65,13 @@ router.post(
 router.post(
     '/oauth',
     validateQuery({}),
-    sanitizeRequestBody(['provider', 'idToken', 'locale', 'publicName', 'currencyCode']),
+    sanitizeRequestBody({
+        provider: enumRule(VALID_OAUTH_PROVIDERS, { optional: false }),
+        idToken: secretRule(),
+        locale: localeRule(),
+        publicName: nameRule({ optional: true, minLength: 2, maxLength: 40 }),
+        currencyCode: currencyCodeRule({ optional: true }),
+    }),
     routesInputValidation(oauthValidationRules),
     AuthController.oauth,
 );
@@ -53,7 +79,7 @@ router.post(
 router.post(
     '/forget',
     validateQuery({}),
-    sanitizeRequestBody(['email']),
+    sanitizeRequestBody({ email: emailRule() }),
     routesInputValidation(forgetPasswordValidationRules),
     AuthController.forget,
 );
@@ -61,7 +87,7 @@ router.post(
 router.post(
     '/forget-refresh',
     validateQuery({}),
-    sanitizeRequestBody(['email']),
+    sanitizeRequestBody({ email: emailRule() }),
     routesInputValidation(forgetPasswordValidationRules),
     AuthController.forgetRefresh,
 );
@@ -69,7 +95,7 @@ router.post(
 router.post(
     '/forget-confirm',
     validateQuery({}),
-    sanitizeRequestBody(['email', 'confirmationCode']),
+    sanitizeRequestBody({ email: emailRule(), confirmationCode: confirmationCodeRule() }),
     routesInputValidation(forgetConfirmPasswordValidationRules),
     AuthController.forgetConfirm,
 );
@@ -79,7 +105,7 @@ router.post(
     tokenResetVerify,
     userIdVerify,
     validateQuery({}),
-    sanitizeRequestBody(['newPassword']),
+    sanitizeRequestBody({ newPassword: passwordRule() }),
     routesInputValidation(forgetChangePasswordValidationRules),
     AuthController.forgetChange,
 );

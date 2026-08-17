@@ -4,6 +4,7 @@ import express from 'express';
 import { ExchangeRateController } from 'controllers/ExchangeRateController';
 import tokenVerify from 'middleware/tokenVerify';
 import userStatusVerify from 'middleware/userStatusVerify';
+import { currencyCodeRule, dateRule } from 'src/utils/validation/fieldRules';
 import routesInputValidation from 'src/utils/validation/routesInputValidation';
 import { validateQuery } from 'src/utils/validation/validateQuery';
 
@@ -13,7 +14,11 @@ exchangeRates.use(tokenVerify, userStatusVerify(UserStatus.ACTIVE));
 
 exchangeRates.get(
     '/',
-    validateQuery({ currency: 'string', targetCurrency: 'string', date: '?date' }),
+    validateQuery({
+        currency: currencyCodeRule(),
+        targetCurrency: currencyCodeRule(),
+        date: dateRule({ optional: true }),
+    }),
     routesInputValidation([]),
     ExchangeRateController.get,
 );

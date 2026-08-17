@@ -62,6 +62,10 @@ export function createSignupValidationRules(field: string, type: string, options
             .bail()
             .isFloat(floatOptions)
             .withMessage(`Field ${field} must be a number ${rangeDescription}`);
+    } else if (type === 'boolean') {
+        // Previously unhandled: a `'boolean'` rule applied no check at all, so `keepData`
+        // could be any JSON value the caller liked.
+        validatorChain = validatorChain.isBoolean({ strict: true }).withMessage(`Field ${field} must be a boolean`);
     } else if (type === 'string') {
         validatorChain = validatorChain.isString().withMessage(`Field ${field} must be a string`).bail();
         if (field === 'locale') {
@@ -91,7 +95,7 @@ export function createSignupValidationRules(field: string, type: string, options
     return [validatorChain];
 }
 
-const convertFieldToReason = (field: string): string => {
+export const convertFieldToReason = (field: string): string => {
     switch (field) {
         case 'email':
             return 'validation:email';

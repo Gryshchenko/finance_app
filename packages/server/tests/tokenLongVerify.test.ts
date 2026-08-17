@@ -65,7 +65,10 @@ describe('tokenLongVerify (unit)', () => {
 
     beforeEach(() => {
         blacklistMock = { isBlacklisted: jest.fn().mockResolvedValue(false) };
-        userServiceMock = { get: jest.fn().mockResolvedValue({ userId: 123 }) };
+        userServiceMock = {
+            get: jest.fn().mockResolvedValue({ userId: 123 }),
+            getSessionsValidFromSec: jest.fn().mockResolvedValue(null),
+        };
         (TokenBlacklistBuilder.build as jest.Mock).mockReturnValue(blacklistMock);
         (UserServiceBuilder.build as jest.Mock).mockReturnValue(userServiceMock);
     });

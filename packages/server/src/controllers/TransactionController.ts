@@ -6,8 +6,8 @@ import ResponseBuilder from 'helper/responseBuilder/ResponseBuilder';
 import TransactionServiceBuilder from 'services/transaction/TransactionServiceBuilder';
 import { BaseError } from 'src/utils/errors/BaseError';
 import { generateErrorResponse } from 'src/utils/generateErrorResponse';
+import { resolvePageSize } from 'src/utils/validation/fieldRules';
 import { parseStatsScope } from 'src/utils/validation/parseStatsScope';
-import { resolvePageSize } from 'src/utils/validation/querySchema';
 
 export class TransactionController {
     private static readonly logger = Logger.Of('TransactionController');

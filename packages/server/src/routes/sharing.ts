@@ -1,6 +1,7 @@
 import express from 'express';
 
 import { SharingController } from 'controllers/SharingController';
+import { emailRule, idRule } from 'src/utils/validation/fieldRules';
 import routesInputValidation from 'src/utils/validation/routesInputValidation';
 import { sanitizeRequestBody } from 'src/utils/validation/sanitizeRequestBody';
 import {
@@ -20,12 +21,21 @@ sharingRouter.get('/connections/pending', validateQuery({}), SharingController.g
 
 sharingRouter.get('/connections/sent', validateQuery({}), SharingController.getSentRequests);
 
-sharingRouter.get('/connections/:connectionId', validateQuery({}), SharingController.getConnection);
+sharingRouter.get(
+    '/connections/:connectionId',
+    validateQuery({}),
+    // This was the one connection route that read `:connectionId` without validating it.
+    routesInputValidation([validatePathQueryProperty('connectionId')]),
+    SharingController.getConnection,
+);
 
 sharingRouter.post(
     '/invite',
     validateQuery({}),
-    sanitizeRequestBody(['email', 'userGroupId']),
+    sanitizeRequestBody(
+        { email: emailRule({ maxLength: 100 }), userGroupId: idRule({ optional: false }) },
+        sharingConvertValidationMessageToErrorCode,
+    ),
     routesInputValidation(inviteUserValidationRules, sharingConvertValidationMessageToErrorCode),
     SharingController.invite,
 );
@@ -33,7 +43,7 @@ sharingRouter.post(
 sharingRouter.post(
     '/connection/:connectionId/accept',
     validateQuery({}),
-    sanitizeRequestBody(['userGroupId']),
+    sanitizeRequestBody({ userGroupId: idRule() }, sharingConvertValidationMessageToErrorCode),
     routesInputValidation(acceptRequestValidationRules, sharingConvertValidationMessageToErrorCode),
     routesInputValidation([validatePathQueryProperty('connectionId')]),
     SharingController.accept,
@@ -42,7 +52,7 @@ sharingRouter.post(
 sharingRouter.post(
     '/connection/:connectionId/decline',
     validateQuery({}),
-    sanitizeRequestBody([]),
+    sanitizeRequestBody({}),
     routesInputValidation([validatePathQueryProperty('connectionId')]),
     SharingController.decline,
 );
@@ -50,7 +60,7 @@ sharingRouter.post(
 sharingRouter.patch(
     '/connection/:connectionId/owner',
     validateQuery({}),
-    sanitizeRequestBody(['userGroupId']),
+    sanitizeRequestBody({ userGroupId: idRule({ optional: false }) }, sharingConvertValidationMessageToErrorCode),
     routesInputValidation(patchMemberValidationRules, sharingConvertValidationMessageToErrorCode),
     routesInputValidation([validatePathQueryProperty('connectionId')]),
     SharingController.patchOwner,
@@ -59,7 +69,7 @@ sharingRouter.patch(
 sharingRouter.patch(
     '/connection/:connectionId/member',
     validateQuery({}),
-    sanitizeRequestBody(['userGroupId']),
+    sanitizeRequestBody({ userGroupId: idRule({ optional: false }) }, sharingConvertValidationMessageToErrorCode),
     routesInputValidation(patchMemberValidationRules, sharingConvertValidationMessageToErrorCode),
     routesInputValidation([validatePathQueryProperty('connectionId')]),
     SharingController.patchMember,
@@ -68,7 +78,7 @@ sharingRouter.patch(
 sharingRouter.delete(
     '/connection/:connectionId',
     validateQuery({}),
-    sanitizeRequestBody([]),
+    sanitizeRequestBody({}),
     routesInputValidation([validatePathQueryProperty('connectionId')]),
     SharingController.deleteMember,
 );
@@ -76,7 +86,7 @@ sharingRouter.delete(
 sharingRouter.delete(
     '/connection/:connectionId/leave',
     validateQuery({}),
-    sanitizeRequestBody([]),
+    sanitizeRequestBody({}),
     routesInputValidation([validatePathQueryProperty('connectionId')]),
     SharingController.leave,
 );

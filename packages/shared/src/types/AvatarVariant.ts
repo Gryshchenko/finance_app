@@ -1,3 +1,7 @@
+/**
+ * Generated-avatar style. Each value names a drawing routine in the avatar renderer,
+ * so a variant outside the set renders nothing at all.
+ */
 export type AvatarVariant = 'marble' | 'beam' | 'pixel' | 'sunset' | 'ring' | 'bauhaus';
 
 export const AVATAR_VARIANTS: AvatarVariant[] = ['beam', 'marble', 'pixel', 'sunset', 'ring', 'bauhaus'];

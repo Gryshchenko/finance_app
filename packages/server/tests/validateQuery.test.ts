@@ -1,7 +1,7 @@
 import { HttpCode } from '@tenpercent/shared';
 import { Request, Response } from 'express';
 
-import { cursorRule, idRule, limitRule, QUERY_LIMITS, resolvePageSize } from '../src/utils/validation/querySchema';
+import { cursorRule, idRule, limitRule, FIELD_LIMITS, resolvePageSize } from '../src/utils/validation/fieldRules';
 import { validateQuery } from '../src/utils/validation/validateQuery';
 
 type QueryValue = string | string[] | Record<string, string> | undefined;
@@ -31,7 +31,7 @@ describe('validateQuery - pagination bounds', () => {
     });
 
     it('accepts the maximum page size', () => {
-        const { next } = run(listSchema, { limit: String(QUERY_LIMITS.MAX_PAGE_SIZE) });
+        const { next } = run(listSchema, { limit: String(FIELD_LIMITS.MAX_PAGE_SIZE) });
 
         expect(next).toHaveBeenCalled();
     });
@@ -102,7 +102,7 @@ describe('validateQuery - normalisation', () => {
     });
 
     it('substitutes a declared default for an absent parameter', () => {
-        const { req, next } = run({ limit: limitRule({ optional: true, default: QUERY_LIMITS.DEFAULT_PAGE_SIZE }) }, {});
+        const { req, next } = run({ limit: limitRule({ optional: true, default: FIELD_LIMITS.DEFAULT_PAGE_SIZE }) }, {});
 
         expect(next).toHaveBeenCalled();
         expect(req.query.limit).toBe('20');
@@ -118,14 +118,14 @@ describe('validateQuery - normalisation', () => {
 
 describe('validateQuery - strings and unexpected parameters', () => {
     it('rejects a cursor longer than the cursor cap', () => {
-        const { next, res } = run(listSchema, { limit: '10', cursor: 'a'.repeat(QUERY_LIMITS.MAX_CURSOR_LENGTH + 1) });
+        const { next, res } = run(listSchema, { limit: '10', cursor: 'a'.repeat(FIELD_LIMITS.MAX_CURSOR_LENGTH + 1) });
 
         expect(res.status).toHaveBeenCalledWith(HttpCode.BAD_REQUEST);
         expect(next).not.toHaveBeenCalled();
     });
 
     it('rejects a string longer than the default cap', () => {
-        const { next, res } = run({ scope: 'string?' }, { scope: 'a'.repeat(QUERY_LIMITS.MAX_STRING_LENGTH + 1) });
+        const { next, res } = run({ scope: 'string?' }, { scope: 'a'.repeat(FIELD_LIMITS.MAX_STRING_LENGTH + 1) });
 
         expect(res.status).toHaveBeenCalledWith(HttpCode.BAD_REQUEST);
         expect(next).not.toHaveBeenCalled();
@@ -162,12 +162,12 @@ describe('validateQuery - strings and unexpected parameters', () => {
 
 describe('resolvePageSize', () => {
     it('caps a page size at the maximum', () => {
-        expect(resolvePageSize(100000000)).toBe(QUERY_LIMITS.MAX_PAGE_SIZE);
+        expect(resolvePageSize(100000000)).toBe(FIELD_LIMITS.MAX_PAGE_SIZE);
     });
 
     it('raises a page size below the minimum', () => {
-        expect(resolvePageSize(0)).toBe(QUERY_LIMITS.MIN_PAGE_SIZE);
-        expect(resolvePageSize(-1)).toBe(QUERY_LIMITS.MIN_PAGE_SIZE);
+        expect(resolvePageSize(0)).toBe(FIELD_LIMITS.MIN_PAGE_SIZE);
+        expect(resolvePageSize(-1)).toBe(FIELD_LIMITS.MIN_PAGE_SIZE);
     });
 
     it('truncates a fractional page size', () => {
@@ -175,10 +175,10 @@ describe('resolvePageSize', () => {
     });
 
     it('falls back to the default page size for an unparseable value', () => {
-        expect(resolvePageSize(undefined)).toBe(QUERY_LIMITS.DEFAULT_PAGE_SIZE);
-        expect(resolvePageSize('abc')).toBe(QUERY_LIMITS.DEFAULT_PAGE_SIZE);
-        expect(resolvePageSize(NaN)).toBe(QUERY_LIMITS.DEFAULT_PAGE_SIZE);
-        expect(resolvePageSize(Infinity)).toBe(QUERY_LIMITS.DEFAULT_PAGE_SIZE);
+        expect(resolvePageSize(undefined)).toBe(FIELD_LIMITS.DEFAULT_PAGE_SIZE);
+        expect(resolvePageSize('abc')).toBe(FIELD_LIMITS.DEFAULT_PAGE_SIZE);
+        expect(resolvePageSize(NaN)).toBe(FIELD_LIMITS.DEFAULT_PAGE_SIZE);
+        expect(resolvePageSize(Infinity)).toBe(FIELD_LIMITS.DEFAULT_PAGE_SIZE);
     });
 
     it('passes an in-range page size through', () => {

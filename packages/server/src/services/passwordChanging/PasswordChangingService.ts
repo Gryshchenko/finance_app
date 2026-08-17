@@ -131,6 +131,7 @@ export default class PasswordChangingService extends LoggerBase implements IPass
             await this._dataAccess.confirm(userId, record.id, trx);
             // Apply the exact hash+salt pair that was stored during request
             await this._userService.updateUserPassword(userId, record.passwordHash, record.salt, trx);
+            await this._userService.revokeAllSessions(userId, trx);
 
             this._logger.info(`Password change confirmed for userId ${userId}`);
             await uow.commit();

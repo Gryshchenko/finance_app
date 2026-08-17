@@ -23,6 +23,8 @@ export interface IUserDataAccess {
     getUserEmail(userId: number, trx?: IDBTransaction): Promise<{ email: string } | undefined>;
     updateUserPassword(userId: number, passwordHash: string, salt: string, trx?: IDBTransaction): Promise<boolean>;
     getUserIdByMail(email: string, trx?: IDBTransaction): Promise<number | undefined>;
+    setSessionsValidFrom(userId: number, date: string, trx?: IDBTransaction): Promise<void>;
+    getSessionsValidFromSec(userId: number): Promise<number | null>;
 }
 
 export default class UserDataService extends LoggerBase implements IUserDataAccess {
@@ -243,6 +245,68 @@ export default class UserDataService extends LoggerBase implements IUserDataAcce
             this._logger.error(`Error patch user for userId ${userId}: ${(e as { message: string }).message}`);
             throw new DBError({
                 message: `Error patch user for userId ${userId}: ${(e as { message: string }).message}`,
+                statusCode: isBaseError(e) ? (e as unknown as BaseError)?.getStatusCode() : undefined,
+                errorCode: ErrorCode.USER_ERROR,
+            });
+        }
+    }
+    public async setSessionsValidFrom(userId: number, date: string, trx?: IDBTransaction): Promise<void> {
+        const allowedProperties = {
+            sessionsValidFrom: date,
+        };
+        this._logger.info(`Set session valid from: userId ${userId}`);
+
+        try {
+            const allowedKeys = ['sessionsValidFrom'];
+            validateAllowedProperties(allowedProperties, allowedKeys);
+            const properestForUpdate = getOnlyNotEmptyProperties(allowedProperties, allowedKeys);
+            const query = trx || this._db.engine();
+            const data = await query('users').where({ userId }).update(properestForUpdate);
+
+            if (data) {
+                this._logger.info(`Successfully set session valid from for userId ${userId}`);
+            } else {
+                throw new ValidationError({
+                    message: `No found for userId: ${userId}`,
+                    errorCode: ErrorCode.USER_ERROR,
+                    statusCode: HttpCode.NOT_FOUND,
+                    payload: {
+                        field: 'userId',
+                        reason: 'not_found',
+                    },
+                });
+            }
+        } catch (e) {
+            this._logger.error(`Error set session valid from for userId ${userId}: ${(e as { message: string }).message}`);
+            throw new DBError({
+                message: `Err set session valid from for userId ${userId}: ${(e as { message: string }).message}`,
+                statusCode: isBaseError(e) ? (e as unknown as BaseError)?.getStatusCode() : undefined,
+                errorCode: ErrorCode.USER_ERROR,
+            });
+        }
+    }
+    public async getSessionsValidFromSec(userId: number): Promise<number | null> {
+        this._logger.info(`Get session valid from: userId ${userId}`);
+        try {
+            const query = this._db.engine();
+            const data = await query('users')
+                .select(query.raw('EXTRACT(EPOCH FROM "sessionsValidFrom") as "validFromSec"'))
+                .where({ userId })
+                .first<{ validFromSec: string | null } | undefined>();
+
+            // NULL means sessions were never revoked for this user - every token stays valid.
+            if (!data || data.validFromSec === null || data.validFromSec === undefined) {
+                return null;
+            }
+
+            // `iat` is truncated to whole seconds, so the epoch is floored to match. A token
+            // minted in the same second as the revocation survives; that is what lets the
+            // revoking request hand back a fresh token.
+            return Math.floor(Number(data.validFromSec));
+        } catch (e) {
+            this._logger.error(`Error set session valid from for userId ${userId}: ${(e as { message: string }).message}`);
+            throw new DBError({
+                message: `Err set session valid from for userId ${userId}: ${(e as { message: string }).message}`,
                 statusCode: isBaseError(e) ? (e as unknown as BaseError)?.getStatusCode() : undefined,
                 errorCode: ErrorCode.USER_ERROR,
             });

@@ -304,14 +304,9 @@ describe('POST /register/signup', () => {
         expect(response.body).toStrictEqual({
             data: {},
             errors: [
-                {
-                    errorCode: ErrorCode.PASSWORD_INVALID_ERROR,
-                    msg: expect.any(String),
-                    payload: {
-                        field: 'password',
-                        reason: 'validation:password',
-                    },
-                },
+                // A null password is now rejected by the body schema as a missing required
+                // field, so it produces one error instead of the two express-validator
+                // chains (isStrongPassword + isLength) both failing on the same value.
                 {
                     errorCode: ErrorCode.PASSWORD_INVALID_ERROR,
                     msg: expect.any(String),
@@ -394,7 +389,9 @@ describe('POST /register/signup', () => {
             errors: [
                 {
                     errorCode: ErrorCode.UNKNOWN_ERROR,
-                    msg: 'Field currencyCode must be a string',
+                    // The body schema rejects the absent field before the express-validator
+                    // chain gets to complain that it is not a string.
+                    msg: 'Field currencyCode is required',
                     payload: {
                         field: 'currencyCode',
                         reason: 'validation:unsupportedCurrency',
@@ -405,7 +402,27 @@ describe('POST /register/signup', () => {
         });
     });
 
-    const testCases = [LanguageType.US, LanguageType.FR, LanguageType.DK, LanguageType.DE, 'aa-AA'];
+    it('should reject a locale outside the supported set', async () => {
+        const response = await request(app).post('/register/signup').send({
+            currencyCode: 'USD',
+            email: generateRandomEmail(),
+            password: generateRandomPassword(),
+            publicName: generateRandomName(),
+            locale: 'aa-AA',
+        });
+
+        expect(response.status).toBe(HttpCode.BAD_REQUEST);
+        expect(response.body.errors[0]).toStrictEqual({
+            errorCode: ErrorCode.LOCALE_INVALID_ERROR,
+            msg: expect.any(String),
+            payload: {
+                field: 'locale',
+                reason: 'validation:unsupportedLanguage',
+            },
+        });
+    });
+
+    const testCases = [LanguageType.US, LanguageType.FR, LanguageType.DK, LanguageType.DE];
     testCases.forEach((locale) => {
         it(`check users accounts, incomes, category for locale: ${locale}`, async () => {
             const databaseConnection = DatabaseConnection.instance(config);
@@ -435,7 +452,7 @@ describe('POST /register/signup', () => {
             const categories = await databaseConnection.engine()('categories').select('*').where({ userId: user.userId });
             const incomes = await databaseConnection.engine()('incomes').select('*').where({ userId: user.userId });
             expect(profile.publicName).toStrictEqual(publicName);
-            expect(profile.locale).toStrictEqual(locale === 'aa-AA' ? LanguageType.US : locale);
+            expect(profile.locale).toStrictEqual(locale);
             expect(profile.userId).toStrictEqual(userId);
 
             userIds.push(user.userId);

@@ -2,6 +2,7 @@ import { ErrorCode, HttpCode, RoleType, Time, Utils } from '@tenpercent/shared';
 import crypto from 'crypto';
 import jwt, { Algorithm, DecodeOptions, JwtPayload } from 'jsonwebtoken';
 
+import { IDBTransaction } from 'interfaces/IDatabaseConnection';
 import { IUser } from 'interfaces/IUser';
 import { JwtPayloadCustom, TokenPurpose } from 'services/auth/passport-setup';
 import TokenBlacklistBuilder from 'services/auth/TokenBlacklistBuilder';
@@ -15,6 +16,7 @@ import { ValidationError } from 'src/utils/errors/ValidationError';
 
 export interface IAuthService {
     login(email: string, password: string): Promise<{ user: IUser; token: string }>;
+    revokeAllSessions(userId: number, trx?: IDBTransaction): Promise<void>;
 }
 
 export default class AuthService extends LoggerBase implements IAuthService {
@@ -160,5 +162,8 @@ export default class AuthService extends LoggerBase implements IAuthService {
     }
     async revokeOnce(token: string): Promise<boolean> {
         return TokenBlacklistBuilder.build().revokeOnce(token);
+    }
+    async revokeAllSessions(userId: number, trx?: IDBTransaction): Promise<void> {
+        return this.userService.revokeAllSessions(userId, trx);
     }
 }

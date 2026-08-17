@@ -72,7 +72,7 @@ export default class GroupSharedItemDataAccess extends LoggerBase implements IGr
                                 ?,
                                 "${entityKey}"
                               FROM ${entityTableName} 
-                              WHERE "userId" = ? AND "${entityKey}" in (${ids.map(() => '?').join(',')}) AND "isDeleted" = false
+                              WHERE "userId" = ? AND "${entityKey}" in (${[...uniqueIds].map(() => '?').join(',')}) AND "isDeleted" = false
                               ON CONFLICT ("userId", "userGroupId", "${entityKey}")
                               DO UPDATE set "updatedAt" = now()
                               RETURNING "sharedItemId"

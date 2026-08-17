@@ -1,4 +1,4 @@
-import { UserStatus } from '@tenpercent/shared';
+import { Time, UserStatus } from '@tenpercent/shared';
 
 import { ICreateUser } from 'interfaces/ICreateUser';
 import { IDBTransaction } from 'interfaces/IDatabaseConnection';
@@ -16,6 +16,8 @@ export interface IUserService {
     create(email: string, password: string, trx?: IDBTransaction): Promise<ICreateUser>;
     patch(userId: number, properties: Partial<{ email: string; status: UserStatus }>, trx?: IDBTransaction): Promise<void>;
     updateUserPassword(userId: number, passwordHash: string, salt: string, trx?: IDBTransaction): Promise<boolean>;
+    revokeAllSessions(userId: number, trx?: IDBTransaction): Promise<void>;
+    getSessionsValidFromSec(userId: number): Promise<number | null>;
 }
 export default class UserService extends LoggerBase implements IUserService {
     private readonly _userDataAccess: IUserDataAccess;
@@ -63,5 +65,11 @@ export default class UserService extends LoggerBase implements IUserService {
         trx?: IDBTransaction,
     ): Promise<void> {
         return await this._userDataAccess.patch(userId, properties, trx);
+    }
+    public async revokeAllSessions(userId: number, trx?: IDBTransaction): Promise<void> {
+        return await this._userDataAccess.setSessionsValidFrom(userId, Time.getISODateNowUTC(), trx);
+    }
+    public async getSessionsValidFromSec(userId: number): Promise<number | null> {
+        return await this._userDataAccess.getSessionsValidFromSec(userId);
     }
 }

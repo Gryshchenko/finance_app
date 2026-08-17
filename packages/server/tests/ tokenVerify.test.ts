@@ -19,6 +19,7 @@ jest.mock('../src/services/auth/TokenBlacklistBuilder', () => ({
 jest.mock('../src/services/user/UserServiceBuilder', () => {
     const mockUserService = {
         get: jest.fn(),
+        getSessionsValidFromSec: jest.fn(),
     };
     return {
         __esModule: true,
@@ -67,6 +68,8 @@ describe('tokenVerify middleware', () => {
         (TokenBlacklistBuilder.build as jest.Mock).mockReturnValue(blacklistMock);
         jest.clearAllMocks();
         (TokenBlacklistBuilder.build as jest.Mock).mockReturnValue(blacklistMock);
+        // Sessions were never revoked for this user, so the epoch check is a no-op.
+        _mockUserService.getSessionsValidFromSec.mockResolvedValue(null);
     });
 
     it('should return 401 if no token provided', async () => {

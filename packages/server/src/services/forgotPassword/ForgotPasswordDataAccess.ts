@@ -1,6 +1,6 @@
 import { Time, ErrorCode } from '@tenpercent/shared';
 
-import { IDatabaseConnection } from 'interfaces/IDatabaseConnection';
+import { IDatabaseConnection, IDBTransaction } from 'interfaces/IDatabaseConnection';
 import { IForgotPassword } from 'interfaces/IForgotPassword';
 import { LoggerBase } from 'src/helper/logger/LoggerBase';
 import { DBError } from 'src/utils/errors/DBError';
@@ -8,7 +8,7 @@ import { DBError } from 'src/utils/errors/DBError';
 export interface IForgotPasswordDataAccess {
     create(userId: number, email: string, confirmationCode: number, expiresAt: Date): Promise<boolean>;
     getActiveByEmail(email: string): Promise<IForgotPassword | undefined>;
-    confirm(email: string): Promise<boolean>;
+    confirm(email: string, trx?: IDBTransaction): Promise<boolean>;
     refresh(email: string, confirmationCode: number, expiresAt: Date): Promise<boolean>;
 }
 
@@ -60,11 +60,11 @@ export default class ForgotPasswordDataAccess extends LoggerBase implements IFor
         }
     }
 
-    public async confirm(email: string): Promise<boolean> {
+    public async confirm(email: string, trx?: IDBTransaction): Promise<boolean> {
         this._logger.info(`Confirming forgot password request`);
         try {
-            const updated = await this._db
-                .engine()<IForgotPassword>('password_forgot')
+            const query = trx || this._db.engine();
+            const updated = await query<IForgotPassword>('password_forgot')
                 .where({ email, confirmed: false })
                 .update({ confirmed: true });
 

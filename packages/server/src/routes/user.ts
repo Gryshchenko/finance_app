@@ -31,7 +31,7 @@ userRouter.get(
     '/:userId',
     userIdVerify,
     routesInputValidation([validatePathQueryProperty('userId')]),
-    sanitizeRequestBody([]),
+    sanitizeRequestBody({}),
     validateQuery({}),
     UserController.get,
 );

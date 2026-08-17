@@ -54,6 +54,9 @@ export * from './types/UserStatus';
 export * from './types/CategoryIconType';
 export * from './types/ColorIdType';
 export * from './types/StatsType';
+export * from './types/GoalType';
+export * from './types/OAuthProvider';
+export * from './types/SharedItemType';
 
 // --- Utils ---
 export * from './utils/Utils';
