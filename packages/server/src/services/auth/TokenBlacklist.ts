@@ -48,6 +48,22 @@ class TokenBlacklist {
         const hash = crypto.createHash('sha256').update(token).digest('hex');
         return `blacklist:${hash}`;
     }
+    async revokeOnce(token: string): Promise<boolean> {
+        const decoded = jwt.decode(token) as jwt.JwtPayload;
+
+        if (!decoded || !decoded.exp) {
+            throw new CustomError({
+                message: 'Invalid token, no exp field',
+                statusCode: HttpCode.UNAUTHORIZED,
+                errorCode: ErrorCode.TOKEN_EXPIRED_ERROR,
+            });
+        }
+
+        const ttl = decoded.exp - Math.floor(Date.now() / 1000);
+        if (ttl <= 0) return false;
+
+        return this.store.setIfNotExists(this.keyFor(token), true, ttl);
+    }
 }
 
 export { TokenBlacklist };

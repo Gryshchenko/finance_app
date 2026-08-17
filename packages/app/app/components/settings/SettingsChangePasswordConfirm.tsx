@@ -14,6 +14,7 @@ import { SettingsPath } from '@/navigators/SettingsStackNavigator';
 import { settingsChangePasswordConfirmSchema } from '@/schems/validationSchemas';
 import { $timer } from '@/screens/SignUpConfirmationScreen';
 import { buildGeneralApiBaseHandler, GeneralApiProblemKind, handleBadDataResponse } from '@/services/api/apiProblem';
+import { AuthService } from '@/services/AuthService';
 import { ChangePasswordService } from '@/services/ChangePasswordService';
 import ToastService from '@/services/ToastService';
 import { useAppTheme } from '@/theme/context';
@@ -64,7 +65,7 @@ export const SettingsChangePasswordConfirmation: FC = function SettingsChangePas
             const response = await changePasswordService.confirm(Number(form.confirmationCode));
             if (response.kind === GeneralApiProblemKind.Ok) {
                 ToastService.success({ title: 'common:success', message: 'settingsChangePasswordConfirmScreen:successMessage' });
-                navigation.navigate(OverviewPath.Settings, { screen: SettingsPath.Settings });
+                await AuthService.instance().unauthorized();
             } else if (response.kind === GeneralApiProblemKind.BadData) {
                 handleBadDataResponse(response.errors, setErrors);
             } else {

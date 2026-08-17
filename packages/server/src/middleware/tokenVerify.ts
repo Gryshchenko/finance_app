@@ -144,3 +144,47 @@ export const tokenResetVerify = createTokenMiddleware({
 });
 
 export default tokenVerify;
+
+export const tokenValidation = ({
+    token,
+    userId,
+    purpose,
+    strategy,
+}: {
+    strategy: 'regular' | 'long' | 'reset';
+    token: string;
+    userId: number;
+    purpose: TokenPurpose[];
+}): boolean => {
+    try {
+        let secret: string;
+        switch (strategy) {
+            case 'regular':
+                secret = getConfig().jwtSecret;
+                break;
+            case 'long':
+                secret = getConfig().jwtLongSecret;
+                break;
+            case 'reset':
+                secret = getConfig().jwtResetSecret;
+                break;
+            default: {
+                throw new Error(`Invalid strategy: ${strategy}`);
+            }
+        }
+        const payload = jwt.verify(token, secret, {
+            algorithms: [getConfig().jwtAlgorithm as Algorithm],
+            issuer: getConfig().jwtIssuer,
+            audience: getConfig().jwtAudience,
+            subject: String(userId),
+        }) as JwtPayloadCustom;
+        if (!payload.purpose) {
+            Logger.Of('TokenValidation').warn(`Refresh token not revoked: purpose is missing`);
+            return false;
+        }
+        return purpose.includes(payload.purpose) && payload.sub === String(userId);
+    } catch (e) {
+        Logger.Of('TokenValidation').warn(`Refresh token not revoked: ${(e as Error).message}`);
+        return false;
+    }
+};

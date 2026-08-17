@@ -58,7 +58,7 @@ router.post(
 
 router.post(
     '/password-change/verify',
-    sanitizeRequestBody(['confirmationCode']),
+    sanitizeRequestBody(['confirmationCode', 'tokenLong']),
     validateQuery({}),
     routesInputValidation(confirmPasswordChangeValidationRules),
     ProfileController.confirmPasswordChange,

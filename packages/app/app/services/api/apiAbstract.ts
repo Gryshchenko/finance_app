@@ -5,7 +5,6 @@ import axiosRetry from 'axios-retry';
 
 import Config from '@/config';
 import { IClientConfig } from '@/interfaces/IClientConfig';
-import { IRefreshResponse } from '@/interfaces/IRefreshResponse';
 import { GeneralApiProblem, GeneralApiProblemKind, getGeneralApiProblem } from '@/services/api/apiProblem';
 import type { ApiConfig } from '@/services/api/types';
 import { AuthService } from '@/services/AuthService';
@@ -32,38 +31,12 @@ export abstract class ApiAbstract {
             },
         });
         this._authService = authService;
-        createAuthRefreshInterceptor(this.apisauce.axiosInstance, this.refresh.bind(this));
+        createAuthRefreshInterceptor(this.apisauce.axiosInstance, () => this._authService.doRefresh());
         axiosRetry(this.apisauce.axiosInstance, {
             retries: 3,
             retryDelay: axiosRetry.exponentialDelay,
             retryCondition: (error) => axiosRetry.isNetworkOrIdempotentRequestError(error),
         });
-    }
-
-    private async refresh(): Promise<boolean> {
-        try {
-            const isAuthorized = this._authService.isAuthorized;
-            if (!isAuthorized) return true;
-            const userId = this._authService.userId;
-            const tokenLong = await this._authService.getTokenLong();
-            if (!userId) throw new Error('refresh failed userId empty');
-            const response: ApiResponse<IResponse<IRefreshResponse>> = await this.apisauce.post(`auth/${userId}/refresh`, {
-                token: tokenLong,
-            });
-            if (!response.ok) {
-                const problem = getGeneralApiProblem(response);
-                this._logger.error('refresh failed problem', JSON.stringify(problem));
-                return false;
-            }
-            const newToken = response.data?.data?.token;
-            if (!newToken) throw new Error('refresh failed token empty');
-            this._authService.token = newToken;
-            this._logger.info('Token updated on refresh');
-            return true;
-        } catch (e) {
-            this._logger.error('Token refresh failed due reason', (e as { message: string }).message);
-            return false;
-        }
     }
 
     private async buildResponse<T>(fn: () => Promise<ApiResponse<IResponse<T>>>): Promise<GeneralApiProblem<T>> {

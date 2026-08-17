@@ -44,7 +44,6 @@ app.use(checkCors());
 
 app.use(express.json({ limit: '5kb' }));
 app.use(express.urlencoded({ limit: '5kb', extended: true }));
-app.use(express.json());
 app.use(helmet());
 app.use(passport.initialize());
 

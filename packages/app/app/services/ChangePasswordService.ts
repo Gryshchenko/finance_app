@@ -1,5 +1,6 @@
 import { ApiAbstract } from '@/services/api/apiAbstract';
 import { GeneralApiProblem, GeneralApiProblemKind } from '@/services/api/apiProblem';
+import { AuthService } from '@/services/AuthService';
 import { Logger } from '@/utils/logger/Logger';
 
 export class ChangePasswordService extends ApiAbstract {
@@ -67,8 +68,10 @@ export class ChangePasswordService extends ApiAbstract {
         return this.withErrorHandler(async () => {
             this._logger.info('Confirm password change');
             const userId = this._authService.userId;
+            const tokenLong = await AuthService.instance().getTokenLong();
             const response = await this.authPost<undefined>(`/user/${userId}/profile/password-change/verify`, {
                 confirmationCode,
+                tokenLong,
             });
             if (response.kind === GeneralApiProblemKind.Ok) {
                 this._logger.info('Confirm password change successfully');

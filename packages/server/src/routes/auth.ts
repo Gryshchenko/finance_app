@@ -10,7 +10,7 @@ import {
     forgetConfirmPasswordValidationRules,
     forgetChangePasswordValidationRules,
 } from 'src/utils/validation/forgetPasswordValidationRules';
-import loginValidationRules from 'src/utils/validation/loginValidationRules';
+import loginValidationRules, { logoutValidationRules } from 'src/utils/validation/loginValidationRules';
 import oauthValidationRules from 'src/utils/validation/oauthValidationRules';
 import refreshTokenValidation from 'src/utils/validation/refreshTokenValidationRules';
 import { sanitizeRequestBody } from 'src/utils/validation/sanitizeRequestBody';
@@ -20,7 +20,7 @@ import routesInputValidation from '../utils/validation/routesInputValidation';
 
 const router = express.Router();
 
-router.post('/logout', validateQuery({}), tokenVerify, routesInputValidation([]), AuthController.logout);
+router.post('/logout', validateQuery({}), tokenVerify, routesInputValidation(logoutValidationRules), AuthController.logout);
 
 router.post(
     '/:userId/refresh',

@@ -120,6 +120,46 @@
             "get": {
                 "tags": ["Transaction"],
                 "description": "This endpoint allows to get a user transactions",
+                "parameters": [
+                    {
+                        "name": "limit",
+                        "in": "query",
+                        "required": true,
+                        "description": "Page size. A value outside the range is rejected with 400.",
+                        "schema": { "type": "integer", "minimum": 1, "maximum": 100 }
+                    },
+                    {
+                        "name": "cursor",
+                        "in": "query",
+                        "required": false,
+                        "description": "Opaque cursor returned by the previous page.",
+                        "schema": { "type": "string", "maxLength": 256 }
+                    },
+                    {
+                        "name": "accountId",
+                        "in": "query",
+                        "required": false,
+                        "schema": { "type": "integer", "minimum": 1 }
+                    },
+                    {
+                        "name": "categoryId",
+                        "in": "query",
+                        "required": false,
+                        "schema": { "type": "integer", "minimum": 1 }
+                    },
+                    {
+                        "name": "incomeId",
+                        "in": "query",
+                        "required": false,
+                        "schema": { "type": "integer", "minimum": 1 }
+                    },
+                    {
+                        "name": "scope",
+                        "in": "query",
+                        "required": false,
+                        "schema": { "type": "string" }
+                    }
+                ],
                 "responses": {
                     "200": {
                         "description": "Successful authentication, returns transaction data",

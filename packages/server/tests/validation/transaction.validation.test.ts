@@ -499,6 +499,34 @@ describe('GET /user/:userId/transactions/ - query param validation', () => {
         await agent.get(url('limit=10&foo=bar')).set('authorization', authorization).expect(HttpCode.BAD_REQUEST);
     });
 
+    it('400 - limit above the maximum page size', async () => {
+        await agent.get(url('limit=100000000')).set('authorization', authorization).expect(HttpCode.BAD_REQUEST);
+    });
+
+    it('400 - limit is negative', async () => {
+        await agent.get(url('limit=-1')).set('authorization', authorization).expect(HttpCode.BAD_REQUEST);
+    });
+
+    it('400 - limit is zero', async () => {
+        await agent.get(url('limit=0')).set('authorization', authorization).expect(HttpCode.BAD_REQUEST);
+    });
+
+    it('400 - limit is fractional', async () => {
+        await agent.get(url('limit=0.5')).set('authorization', authorization).expect(HttpCode.BAD_REQUEST);
+    });
+
+    it('400 - limit is empty', async () => {
+        await agent.get(url('limit=')).set('authorization', authorization).expect(HttpCode.BAD_REQUEST);
+    });
+
+    it('400 - limit is repeated', async () => {
+        await agent.get(url('limit=10&limit=99999')).set('authorization', authorization).expect(HttpCode.BAD_REQUEST);
+    });
+
+    it('200 - limit at the maximum page size is accepted', async () => {
+        await agent.get(url('limit=100')).set('authorization', authorization).expect(HttpCode.OK);
+    });
+
     it('400 - accountId is a string', async () => {
         await agent.get(url('limit=10&accountId=abc')).set('authorization', authorization).expect(HttpCode.BAD_REQUEST);
     });

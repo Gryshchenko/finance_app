@@ -1,6 +1,7 @@
 import express from 'express';
 
 import { TransactionController } from 'controllers/TransactionController';
+import { cursorRule, idRule, limitRule } from 'src/utils/validation/querySchema';
 import routesInputValidation from 'src/utils/validation/routesInputValidation';
 import { sanitizeRequestBody } from 'src/utils/validation/sanitizeRequestBody';
 import {
@@ -37,11 +38,11 @@ transactionRouter.post(
 transactionsRouter.get(
     '/',
     validateQuery({
-        cursor: 'string?',
-        limit: 'number',
-        accountId: 'number?',
-        categoryId: 'number?',
-        incomeId: 'number?',
+        cursor: cursorRule(),
+        limit: limitRule(),
+        accountId: idRule(),
+        categoryId: idRule(),
+        incomeId: idRule(),
         scope: 'string?',
     }),
     TransactionController.getAll,

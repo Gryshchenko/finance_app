@@ -50,7 +50,10 @@ const confirmEmailChangeValidationRules = [
     ...createSignupValidationRules('newEmail', 'email', { max: 100 }),
 ];
 
-const confirmPasswordChangeValidationRules = [validatePathConfirmationCodeProperty('confirmationCode')];
+const confirmPasswordChangeValidationRules = [
+    validatePathConfirmationCodeProperty('confirmationCode'),
+    ...createSignupValidationRules('tokenLong', 'string'),
+];
 
 const refreshEmailChangeCodeValidationRules = [...createSignupValidationRules('newEmail', 'email', { max: 100 })];
 

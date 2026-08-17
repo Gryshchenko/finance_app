@@ -7,6 +7,7 @@ import TransactionServiceBuilder from 'services/transaction/TransactionServiceBu
 import { BaseError } from 'src/utils/errors/BaseError';
 import { generateErrorResponse } from 'src/utils/generateErrorResponse';
 import { parseStatsScope } from 'src/utils/validation/parseStatsScope';
+import { resolvePageSize } from 'src/utils/validation/querySchema';
 
 export class TransactionController {
     private static readonly logger = Logger.Of('TransactionController');
@@ -70,7 +71,7 @@ export class TransactionController {
             const scope = parseStatsScope(req.query?.scope, StatsScope.All);
             const { data, limit, cursor } = await TransactionServiceBuilder.build().getTransactions({
                 userId: Number(req.user?.userId),
-                limit: Number(req.query.limit),
+                limit: resolvePageSize(req.query.limit),
                 cursor: Utils.isNotEmpty(req.query.cursor as string) ? (req.query.cursor as string) : undefined,
                 accountId,
                 categoryId,

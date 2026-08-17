@@ -24,7 +24,14 @@ export default class AuthService extends LoggerBase implements IAuthService {
         super();
         this.userService = services.userService;
     }
-    async refresh(token: string | undefined, userId: number | undefined, role: RoleType): Promise<string> {
+    async refresh(
+        token: string | undefined,
+        userId: number | undefined,
+        role: RoleType,
+    ): Promise<{
+        token: string;
+        tokenLong: string;
+    }> {
         const throwError = (message: string) => {
             throw new CustomError({
                 message,
@@ -42,7 +49,16 @@ export default class AuthService extends LoggerBase implements IAuthService {
         if (!decoded?.exp) {
             throwError('Token has no expiration');
         }
-        return AuthService.createJWToken(userId as number, role, getConfig().jwtSecret, getConfig().jwtExpiresIn);
+        return {
+            token: AuthService.createJWToken(userId as number, role, getConfig().jwtSecret, getConfig().jwtExpiresIn),
+            tokenLong: AuthService.createJWToken(
+                userId as number,
+                role,
+                getConfig().jwtLongSecret,
+                getConfig().jwtLongExpiresIn,
+                'refresh',
+            ),
+        };
     }
     async logout(token: string): Promise<void> {
         const decoded = AuthService.decode(jwt.decode, token);
@@ -141,5 +157,8 @@ export default class AuthService extends LoggerBase implements IAuthService {
         if (!decoded.sub) return null;
 
         return decoded;
+    }
+    async revokeOnce(token: string): Promise<boolean> {
+        return TokenBlacklistBuilder.build().revokeOnce(token);
     }
 }

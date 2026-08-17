@@ -4,6 +4,7 @@ import { Request, Response } from 'express';
 import Logger from 'helper/logger/Logger';
 import ResponseBuilder from 'helper/responseBuilder/ResponseBuilder';
 import { IUser } from 'interfaces/IUser';
+import { tokenValidation } from 'middleware/tokenVerify';
 import AuthServiceBuilder from 'services/auth/AuthServiceBuilder';
 import ForgotPasswordServiceBuilder from 'services/forgotPassword/ForgotPasswordServiceBuilder';
 import OAuthServiceBuilder from 'services/oauth/OAuthServiceBuilder';
@@ -47,14 +48,45 @@ export class AuthController {
     public static async refresh(req: Request, res: Response) {
         const responseBuilder = new ResponseBuilder();
         try {
-            const token = String(req.body.token);
+            const authService = AuthServiceBuilder.build();
+
+            const token = extractToken(req.headers.authorization);
+            const tokenLong = String(req.body.token);
+
             const user = req.user;
             const userId = Number(user?.userId);
-            const newToken = await AuthServiceBuilder.build().refresh(token, userId, RoleType.Default);
-            res.setHeader('Authorization', `Bearer ${newToken}`);
-            res.status(HttpCode.OK).json(responseBuilder.setStatus(ResponseStatusType.OK).setData({ token: newToken }).build());
+
+            const newTokens = await authService.refresh(tokenLong, userId, RoleType.Default);
+
+            if (
+                tokenValidation({
+                    token: token as string,
+                    userId: Number((req.user as IUser).userId),
+                    purpose: ['access'],
+                    strategy: 'regular',
+                })
+            ) {
+                await authService.logout(token as string);
+            }
+            await authService.logout(tokenLong);
+
+            if (!(await authService.revokeOnce(tokenLong))) {
+                throw new CustomError({
+                    message: 'Refresh token already used',
+                    statusCode: HttpCode.BAD_REQUEST,
+                    errorCode: ErrorCode.TOKEN_LONG_INVALID_ERROR,
+                });
+            }
+
+            res.setHeader('Authorization', `Bearer ${newTokens.token}`);
+            res.status(HttpCode.OK).json(
+                responseBuilder
+                    .setStatus(ResponseStatusType.OK)
+                    .setData({ token: newTokens.token, tokenLong: newTokens.tokenLong })
+                    .build(),
+            );
         } catch (e) {
-            AuthController.logger.info(`Verify failed due reason: ${(e as { message: string }).message}`);
+            AuthController.logger.info(`Refresh failed due reason: ${(e as { message: string }).message}`);
             generateErrorResponse(res, responseBuilder, e as BaseError, ErrorCode.TOKEN_LONG_INVALID_ERROR);
         }
     }
@@ -72,11 +104,19 @@ export class AuthController {
             }
 
             const authService = AuthServiceBuilder.build();
-            await authService.logout(token as string);
 
-            const longToken = req.body?.token;
-            if (longToken && typeof longToken === 'string') {
-                await authService.logout(longToken);
+            const tokenLong = req.body?.token;
+            if (typeof tokenLong === 'string' && tokenLong) {
+                if (
+                    tokenValidation({
+                        token: tokenLong,
+                        userId: Number((req.user as IUser).userId),
+                        purpose: ['refresh'],
+                        strategy: 'long',
+                    })
+                ) {
+                    await authService.logout(tokenLong);
+                }
             }
 
             AuthController.logger.info('Logout successful');

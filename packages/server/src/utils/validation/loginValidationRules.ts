@@ -8,4 +8,6 @@ const loginValidationRules = [
     ...createSignupValidationRules('email', 'email', { max: 150 }),
 ];
 
+export const logoutValidationRules = [...createSignupValidationRules('token', 'string', { optional: true })];
+
 export default loginValidationRules;

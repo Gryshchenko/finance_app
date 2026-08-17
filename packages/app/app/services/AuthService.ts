@@ -1,6 +1,14 @@
-import { IUserClient, ErrorCode, Utils, UserStatus } from '@tenpercent/shared';
+import { IUserClient, ErrorCode, Utils, UserStatus, IResponse } from '@tenpercent/shared';
+import { ApiResponse, ApisauceInstance, create } from 'apisauce';
 
-import { buildGeneralApiBadData, GeneralApiProblem, GeneralApiProblemKind } from '@/services/api/apiProblem';
+import Config from '@/config';
+import { IRefreshResponse } from '@/interfaces/IRefreshResponse';
+import {
+    buildGeneralApiBadData,
+    GeneralApiProblem,
+    GeneralApiProblemKind,
+    getGeneralApiProblem,
+} from '@/services/api/apiProblem';
 import { LoginService } from '@/services/LoginService';
 import { SecureStorage } from '@/services/SecureStorage';
 import { SecureStorageKey } from '@/types/SecureStorageKey';
@@ -15,6 +23,26 @@ interface IExtra {
 
 export class AuthService {
     protected readonly _logger: Logger = Logger.Of('AuthService');
+
+    /**
+     * Shared across every ApiAbstract subclass: each of them owns a separate axios
+     * instance, so axios-auth-refresh cannot deduplicate concurrent refreshes on its
+     * own. Since the server rotates the refresh token, a second concurrent call would
+     * present an already-revoked token and fail.
+     */
+    private _refreshInFlight: Promise<boolean> | null = null;
+
+    /**
+     * Deliberately free of the auth-refresh interceptor and of axios-retry: a rotated
+     * refresh token is single-use, so a replayed request would be rejected.
+     */
+    private readonly _api: ApisauceInstance = create({
+        baseURL: Config.API_URL,
+        timeout: 10000,
+        headers: {
+            Accept: 'application/json',
+        },
+    });
 
     private static _instance: AuthService;
 
@@ -239,10 +267,76 @@ export class AuthService {
     }
 
     public async logout(): Promise<{ kind: GeneralApiProblemKind.Ok } | GeneralApiProblem> {
-        const response = await LoginService.instance().doLogout();
+        const token = await AuthService.instance().getTokenLong();
+        const response = await LoginService.instance().doLogout({ token });
         if (response.kind === GeneralApiProblemKind.Ok) {
             await AuthService.instance().unauthorized();
         }
         return response;
+    }
+
+    public async updateTokens({ token, tokenLong }: { token: string; tokenLong: string }): Promise<boolean> {
+        try {
+            const credential = await this.getCredentialFromSecureStore();
+            if (!credential) throw new Error('Credential store empty');
+
+            const userStr = this.serialization({ ...credential, token, tokenLong });
+            if (!userStr) throw new Error('Serialization failed');
+
+            const storage = new SecureStorage();
+            await storage.save(SecureStorageKey.AuthCredential, userStr);
+
+            this._token = token;
+            return true;
+        } catch (e) {
+            this._logger.error('Update tokens failed', (e as { message: string }).message);
+            return false;
+        }
+    }
+
+    public async doRefresh(): Promise<boolean> {
+        if (this._refreshInFlight) return this._refreshInFlight;
+
+        // Reset in finally, not then: a rejected refresh must not leave the lock held
+        // forever, otherwise the app can never refresh again.
+        this._refreshInFlight = this.refresh().finally(() => {
+            this._refreshInFlight = null;
+        });
+
+        return this._refreshInFlight;
+    }
+
+    private async refresh(): Promise<boolean> {
+        try {
+            if (!this.isAuthorized) return true;
+            const userId = this.userId;
+            if (!userId) throw new Error('refresh failed userId empty');
+            const tokenLong = await this.getTokenLong();
+            if (!tokenLong) throw new Error('refresh failed tokenLong empty');
+
+            const response: ApiResponse<IResponse<IRefreshResponse>> = await this._api.post(
+                `auth/${userId}/refresh`,
+                { token: tokenLong },
+                { headers: { Authorization: `Bearer ${this._token}` } },
+            );
+            if (!response.ok) {
+                this._logger.error('refresh failed problem', JSON.stringify(getGeneralApiProblem(response)));
+                return false;
+            }
+
+            const tokens = response.data?.data;
+            if (!tokens) throw new Error('refresh failed token obj empty');
+            if (!tokens.token) throw new Error('refresh failed token empty');
+            if (!tokens.tokenLong) throw new Error('refresh failed tokenLong empty');
+
+            if (!(await this.updateTokens({ token: tokens.token, tokenLong: tokens.tokenLong }))) {
+                throw new Error('refresh failed to persist tokens');
+            }
+            this._logger.info('Token updated on refresh');
+            return true;
+        } catch (e) {
+            this._logger.error('Token refresh failed due reason', (e as { message: string }).message);
+            return false;
+        }
     }
 }

@@ -14,6 +14,7 @@ export interface IKeyValueStore {
     get<T = unknown>(key: string): Promise<T | null>;
     delete(key: string): Promise<void>;
     exists(key: string): Promise<boolean>;
+    setIfNotExists(key: string, value: unknown, ttlSeconds: number): Promise<boolean>;
 }
 
 class KeyValueStore extends LoggerBase implements IKeyValueStore {
@@ -85,6 +86,12 @@ class KeyValueStore extends LoggerBase implements IKeyValueStore {
     async exists(key: string): Promise<boolean> {
         const result = await this.client.exists(this.key(key));
         return result === 1;
+    }
+
+    async setIfNotExists(key: string, value: unknown, ttlSeconds: number): Promise<boolean> {
+        const stringified = JSON.stringify(value);
+        const result = await this.client.set(this.key(key), stringified, 'EX', ttlSeconds, 'NX');
+        return result === 'OK';
     }
 }
 

@@ -19,6 +19,7 @@ import { isBaseError } from 'src/utils/errors/isBaseError';
 import { NotFoundError } from 'src/utils/errors/NotFoundError';
 import { ValidationError } from 'src/utils/errors/ValidationError';
 import { resolveAccessibleItems, assertAccessibleIds } from 'src/utils/resolveAccessibleItems';
+import { resolvePageSize } from 'src/utils/validation/querySchema';
 import { validateAllowedProperties } from 'src/utils/validation/validateAllowedProperties';
 
 interface ICursorData {
@@ -287,13 +288,16 @@ export default class TransactionDataAccess extends LoggerBase implements ITransa
 
     async getTransactions({
         userId,
-        limit = 20,
+        limit,
         cursor,
         accountId,
         categoryId,
         incomeId,
         scope,
     }: ITransactionListItemsRequest): Promise<IPagination<ITransactionListItem>> {
+        // Clamped again here rather than trusted: this method is also reachable from
+        // services that never went through `validateQuery`.
+        const pageSize = resolvePageSize(limit);
         try {
             const { incomeIds, accountIds, categoryIds } = await resolveAccessibleItems(this._db.engine(), userId, scope);
             const incomesIds = assertAccessibleIds(incomeIds, 'incomes');
@@ -367,7 +371,7 @@ export default class TransactionDataAccess extends LoggerBase implements ITransa
 
             query.orderBy('transactions.createdAt', 'desc');
             query.orderBy('transactions.transactionId', 'desc');
-            query.limit(limit);
+            query.limit(pageSize);
 
             const data = await query;
 
@@ -385,7 +389,7 @@ export default class TransactionDataAccess extends LoggerBase implements ITransa
             return {
                 data: Utils.greaterThen0(data?.length) ? data : [],
                 cursor: nextCursor,
-                limit,
+                limit: pageSize,
             };
         } catch (e) {
             this._logger.error(

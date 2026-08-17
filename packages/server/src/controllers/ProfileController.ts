@@ -4,6 +4,7 @@ import { Request, Response } from 'express';
 import Logger from 'helper/logger/Logger';
 import ResponseBuilder from 'helper/responseBuilder/ResponseBuilder';
 import { IUser } from 'interfaces/IUser';
+import { tokenValidation } from 'middleware/tokenVerify';
 import AuthServiceBuilder from 'services/auth/AuthServiceBuilder';
 import ProfileServiceBuilder from 'services/profile/ProfileServiceBuilder';
 import ProfileServiceUtils from 'services/profile/ProfileServiceUtils';
@@ -121,9 +122,25 @@ export class ProfileController {
         try {
             const token = extractToken(req.headers.authorization);
             const userFromSession = req.user as IUser;
-            const { confirmationCode } = req.body;
+            const { confirmationCode, tokenLong } = req.body;
             await ProfileServiceBuilder.build().confirmPasswordChange(userFromSession.userId, Number(confirmationCode));
-            await AuthServiceBuilder.build().logout(token as string);
+
+            const authService = AuthServiceBuilder.build();
+            if (typeof tokenLong === 'string' && tokenLong) {
+                if (
+                    tokenValidation({
+                        token: tokenLong,
+                        userId: Number((req.user as IUser).userId),
+                        purpose: ['access'],
+                        strategy: 'long',
+                    })
+                ) {
+                    await authService.logout(tokenLong);
+                }
+            }
+
+            await authService.logout(token as string);
+
             res.status(HttpCode.NO_CONTENT).json(responseBuilder.setStatus(ResponseStatusType.OK).setData({}).build());
         } catch (e: unknown) {
             ProfileController.logger.error(`Confirm password change failed due reason: ${(e as { message: string }).message}`);

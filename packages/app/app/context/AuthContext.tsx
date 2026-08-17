@@ -161,7 +161,8 @@ export const AuthProvider: FC<PropsWithChildren<AuthProviderProps>> = ({ childre
 
     const doLogout = useCallback(async (): Promise<boolean> => {
         try {
-            const response = await LoginService.instance().doLogout();
+            const token = await AuthService.instance().getTokenLong();
+            const response = await LoginService.instance().doLogout({ token });
 
             switch (response.kind) {
                 case GeneralApiProblemKind.Ok: {
