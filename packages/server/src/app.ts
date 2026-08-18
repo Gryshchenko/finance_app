@@ -5,8 +5,10 @@ import passport from 'passport';
 import path from 'path';
 
 import Logger from 'helper/logger/Logger';
-import { checkCors } from 'middleware/checkCors';
-import { checkOriginReferer } from 'middleware/checkOriginReferer';
+import { errorHandler } from 'middleware/errorHandler';
+import { globalLimiter, readLimiter } from 'middleware/limiters';
+import { notFound } from 'middleware/notFound';
+import { rateLimitMiddleware } from 'middleware/rateLimit';
 import { currenciesRouter, currencyRouter } from 'routes/currency';
 import exchangeRates from 'routes/exchangeRates';
 import { CurrencyOrchestratorServiceBuilder } from 'services/currencyOrchestrator/CurrencyOrchestratorServiceBuilder';
@@ -25,6 +27,8 @@ import passportSetup from './services/auth/passport-setup';
 const app = express();
 const port = getConfig().appPort ?? 3000;
 
+app.set('trust proxy', 1);
+
 passportSetup(passport);
 
 app.use((req: Request, res: Response, next: NextFunction) => {
@@ -39,9 +43,6 @@ app.use((req: Request, res: Response, next: NextFunction) => {
     next();
 });
 
-app.use(checkOriginReferer);
-app.use(checkCors());
-
 app.use(express.json({ limit: '5kb' }));
 app.use(express.urlencoded({ limit: '5kb', extended: true }));
 app.use(helmet());
@@ -49,6 +50,7 @@ app.use(passport.initialize());
 
 app.use(
     '/public',
+    rateLimitMiddleware(readLimiter, (req) => String(req.ip ?? 'unknown')),
     express.static(path.join(process.cwd(), 'public'), {
         etag: true,
         lastModified: true,
@@ -62,6 +64,8 @@ app.use(
     }),
 );
 
+app.use(rateLimitMiddleware(globalLimiter));
+
 app.use('/auth', authRouter);
 app.use('/user', userRouter);
 app.use('/register', registerRouter);
@@ -71,6 +75,10 @@ app.use('/exchange-rates', exchangeRates);
 app.get('/', (req: Request, res: Response) => {
     res.send('Hello World!!!');
 });
+
+// Order matters: the 404 has to sit after every router, and the error handler after the 404.
+app.use(notFound);
+app.use(errorHandler);
 
 const httpsServer = createServer(app);
 

@@ -7,6 +7,7 @@ import { IMailNotificationService } from 'services/notification/MailNotification
 import { IUserService } from 'services/user/UserService';
 import { LoggerBase } from 'src/helper/logger/LoggerBase';
 import { ValidationError } from 'src/utils/errors/ValidationError';
+import { maskEmail } from 'src/utils/maskPII';
 
 const CHANGE_CODE_EXPIRES_IN: [number, number, number] = [0, 10, 0];
 
@@ -122,7 +123,7 @@ export default class EmailConfirmationService extends LoggerBase implements IEma
             const result = await this._dataAccess.confirm(userId, email, trx);
             await this.userService.patch(userId, { status: UserStatus.ACTIVE, email: record.email }, trx);
 
-            this._logger.info(`Email change confirmed for userId ${userId}, new email: ${record.email}`);
+            this._logger.info(`Email change confirmed for userId ${userId}, new email: ${maskEmail(record.email)}`);
             return result;
         } catch (e) {
             this._logger.error(`Email change confirmation failed for userId ${userId}: ${(e as { message: string }).message}`);

@@ -11,6 +11,7 @@ import { BaseError } from 'src/utils/errors/BaseError';
 import { DBError } from 'src/utils/errors/DBError';
 import { isBaseError } from 'src/utils/errors/isBaseError';
 import { ValidationError } from 'src/utils/errors/ValidationError';
+import { maskEmail } from 'src/utils/maskPII';
 import { getOnlyNotEmptyProperties } from 'src/utils/validation/getOnlyNotEmptyProperties';
 import { validateAllowedProperties } from 'src/utils/validation/validateAllowedProperties';
 
@@ -61,13 +62,13 @@ export default class UserDataService extends LoggerBase implements IUserDataAcce
 
     public async getUserAuthenticationData(email: string, trx?: IDBTransaction): Promise<IGetUserAuthenticationData | undefined> {
         try {
-            this._logger.info(`Getting authentication data for email: ${email}`);
+            this._logger.info(`Getting authentication data for email: ${maskEmail(email)}`);
             const query = trx || this._db.engine();
             const response = await query<{ email: string }>('users')
                 .select('userId', 'email', 'salt', 'passwordHash')
                 .where({ email })
                 .first();
-            this._logger.info(`Authentication data retrieved for email: ${email}`);
+            this._logger.info(`Authentication data retrieved for email: ${maskEmail(email)}`);
             return response || undefined;
         } catch (e) {
             this._logger.error(
@@ -103,7 +104,7 @@ export default class UserDataService extends LoggerBase implements IUserDataAcce
 
     public async create(email: string, passwordHash: string, salt: string, trx?: IDBTransaction): Promise<ICreateUserServer> {
         try {
-            this._logger.info(`Creating user with email: ${email}`);
+            this._logger.info(`Creating user with email: ${maskEmail(email)}`);
             const query = trx || this._db.engine();
             const data = await query('users').insert(
                 {
@@ -114,12 +115,12 @@ export default class UserDataService extends LoggerBase implements IUserDataAcce
                 },
                 ['userId', 'status', 'email', 'createdAt', 'updatedAt'],
             );
-            this._logger.info(`User created successfully with email: ${email}`);
+            this._logger.info(`User created successfully with email: ${maskEmail(email)}`);
             return data[0];
         } catch (e) {
-            this._logger.error(`Error creating user with email: ${email} - ${(e as { message: string }).message}`);
+            this._logger.error(`Error creating user with email: ${maskEmail(email)} - ${(e as { message: string }).message}`);
             throw new DBError({
-                message: `Error creating user with email: ${email} - ${(e as { message: string }).message}`,
+                message: `Error creating user with email: ${maskEmail(email)} - ${(e as { message: string }).message}`,
                 statusCode: isBaseError(e) ? (e as unknown as BaseError)?.getStatusCode() : undefined,
                 errorCode: isBaseError(e) ? (e as unknown as BaseError)?.getErrorCode() : ErrorCode.USER_ERROR,
             });
@@ -128,15 +129,15 @@ export default class UserDataService extends LoggerBase implements IUserDataAcce
 
     public async getUserIdByMail(email: string, trx?: IDBTransaction): Promise<number | undefined> {
         try {
-            this._logger.info(`Retrieving email for email: ${email}`);
+            this._logger.info(`Retrieving userId for email: ${maskEmail(email)}`);
             const query = trx || this._db.engine();
             const response = await query<IUser>('users').select('userId').where({ email }).first();
-            this._logger.info(`Email retrieved for email: ${email}`);
+            this._logger.info(`UserId retrieved for email: ${maskEmail(email)}`);
             return response?.userId || undefined;
         } catch (e) {
-            this._logger.error(`Error retrieving userId for email: ${email} - ${(e as { message: string }).message}`);
+            this._logger.error(`Error retrieving userId for email: ${maskEmail(email)} - ${(e as { message: string }).message}`);
             throw new DBError({
-                message: `Error retrieving userId for email: ${email} - ${(e as { message: string }).message}`,
+                message: `Error retrieving userId for email: ${maskEmail(email)} - ${(e as { message: string }).message}`,
                 statusCode: isBaseError(e) ? (e as unknown as BaseError)?.getStatusCode() : undefined,
                 errorCode: isBaseError(e) ? (e as unknown as BaseError)?.getErrorCode() : ErrorCode.USER_ERROR,
             });

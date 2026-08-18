@@ -2,6 +2,8 @@ import { UserStatus } from '@tenpercent/shared';
 import express from 'express';
 
 import { UserController } from 'controllers/UserController';
+import { userLimiter } from 'middleware/limiters';
+import { rateLimitMiddleware } from 'middleware/rateLimit';
 import userIdVerify from 'middleware/userIdVerify';
 import userStatusVerify from 'middleware/userStatusVerify';
 import balance from 'routes/balance';
@@ -25,7 +27,11 @@ import tokenVerify from '../middleware/tokenVerify';
 
 const userRouter = express.Router({ mergeParams: true });
 
-userRouter.use(tokenVerify, userStatusVerify(UserStatus.ACTIVE));
+userRouter.use(
+    tokenVerify,
+    userStatusVerify(UserStatus.ACTIVE),
+    rateLimitMiddleware(userLimiter, (req) => String(req.user?.userId ?? req.ip ?? 'unknown')),
+);
 
 userRouter.get(
     '/:userId',

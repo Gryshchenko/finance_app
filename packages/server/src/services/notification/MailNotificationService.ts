@@ -4,6 +4,7 @@ import { NotificationType } from 'services/notification/NotificationType';
 import { LoggerBase } from 'src/helper/logger/LoggerBase';
 import Translations from 'src/services/translations/Translations';
 import { TranslationKey } from 'src/types/TranslationKey';
+import { maskEmail } from 'src/utils/maskPII';
 
 export interface IMailNotificationService {
     sendRegistrationConfirmation(email: string, code: number, expiresInMinutes: number): Promise<void>;
@@ -66,7 +67,7 @@ export default class MailNotificationService extends LoggerBase implements IMail
                 html: mail.html,
             });
         } catch (e) {
-            this._logger.error(`Failed to send email to ${email}: ${(e as { message: string }).message}`);
+            this._logger.error(`Failed to send email to ${maskEmail(email)}: ${(e as { message: string }).message}`);
         }
     }
 }

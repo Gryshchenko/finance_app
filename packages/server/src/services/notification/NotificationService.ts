@@ -1,6 +1,7 @@
 import { IMailService } from 'services/mail/MailService';
 import { getConfig } from 'src/config/config';
 import { LoggerBase } from 'src/helper/logger/LoggerBase';
+import { maskEmail } from 'src/utils/maskPII';
 
 import { NotificationType } from './NotificationType';
 
@@ -39,7 +40,7 @@ export default class NotificationService extends LoggerBase implements INotifica
                     text: payload.text,
                     html: payload.html,
                 });
-                this._logger.info(`Email notification sent to: ${payload.to.email}`);
+                this._logger.info(`Email notification sent to: ${maskEmail(payload.to.email)}`);
                 break;
 
             default: {

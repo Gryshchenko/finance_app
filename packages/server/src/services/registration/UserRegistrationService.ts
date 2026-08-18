@@ -24,6 +24,7 @@ import { IGroupService } from 'services/group/GroupService';
 import { IIncomeService } from 'services/income/IncomeService';
 import { IProfileService } from 'services/profile/ProfileService';
 import { IUserService } from 'services/user/UserService';
+import UserServiceUtils from 'services/user/UserServiceUtils';
 import { IUserRoleService } from 'services/userRole/UserRoleService';
 import { getConfig } from 'src/config/config';
 import currency_initial from 'src/config/currency_initial';
@@ -129,6 +130,12 @@ export default class UserRegistrationService extends LoggerBase {
             const locale = TranslationsUtils.convertToSupportLocale(localeFromUser);
             const otherUser = await this.userService.getUserAuthenticationData(email);
             if (otherUser) {
+                // A taken address used to be rejected here immediately, while a free one went on to
+                // an argon2 hash costing 64MB and ~100ms. That difference is measurable from outside
+                // and answers "is this address registered?" regardless of what the body says. Spending
+                // the same work before rejecting closes the timing channel; the response body is still
+                // distinguishable, see the note on `signup` in routes/register.ts.
+                await UserServiceUtils.hashPassword(password, UserServiceUtils.getRandomSalt());
                 throw new ValidationError({
                     message: 'A user with this email already exists',
                     errorCode: ErrorCode.SIGNUP_USER_ALREADY_EXISTS_ERROR,

@@ -64,13 +64,19 @@ export const FIELD_LIMITS = {
     MAX_ARRAY_LENGTH: 100,
     /** longest entity name the schema accepts anywhere */
     MAX_NAME_LENGTH: 128,
-    /**
-     * Confirmation codes are 8 digits, but `ConfirmationHelper.generateCode` zero-pads
-     * and then parses back to a number, so a generated code can carry fewer than 8
-     * significant digits. The lower bound is therefore 0, not 10000000.
-     */
-    CONFIRMATION_CODE_MIN: 0,
+    /** `ConfirmationHelper.generateCode` draws uniformly from the full 8-digit range. */
+    CONFIRMATION_CODE_MIN: 10000000,
     CONFIRMATION_CODE_MAX: 99999999,
+    /**
+     * Ceiling on any single monetary value. The aggregate tables (`*_total` columns) are
+     * `numeric(18,2)`, i.e. 16 integer digits, and every amount is summed into them - so the
+     * per-row cap has to leave room for many rows. 10^12 allows a billion maximal transactions
+     * before a total can overflow, while still being far above any real balance.
+     *
+     * Without a cap, `Number.MAX_SAFE_INTEGER` was accepted: one such row makes every later
+     * insert fail on `numeric field overflow` and corrupts the running totals.
+     */
+    MAX_AMOUNT: 1_000_000_000_000,
 } as const;
 
 const HEX_COLOR_PATTERN = /^#([0-9a-fA-F]{3}|[0-9a-fA-F]{6})$/;
@@ -90,12 +96,17 @@ export const intRule = (options: RuleOptions & { min: number; max: number; defau
     default: options.default,
 });
 
-/** Monetary or fractional value. `gt` expresses "must be positive" without excluding 0.01. */
+/**
+ * Monetary or fractional value. `gt` expresses "must be positive" without excluding 0.01.
+ *
+ * The default window is `±FIELD_LIMITS.MAX_AMOUNT` rather than the safe-integer range: an
+ * amount the database cannot store is a 400, not a 500 halfway through a transaction.
+ */
 export const numberRule = (options: RuleOptions & { min?: number; max?: number; gt?: number } = {}): IFieldSpec => ({
     type: 'number',
     optional: options.optional ?? false,
-    min: options.min ?? Number.MIN_SAFE_INTEGER,
-    max: options.max ?? Number.MAX_SAFE_INTEGER,
+    min: options.min ?? -FIELD_LIMITS.MAX_AMOUNT,
+    max: options.max ?? FIELD_LIMITS.MAX_AMOUNT,
     gt: options.gt,
 });
 

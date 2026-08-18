@@ -33,6 +33,8 @@ export enum HttpCode {
     /** The request was well-formed but was unable to be followed due to semantic errors. Often used for validation errors. */
     UNPROCESSABLE_ENTITY = 422,
 
+    TOO_MANY_REQUESTS = 429,
+
     // Server errors (5xx)
 
     /** The server has encountered a situation it does not know how to handle. */

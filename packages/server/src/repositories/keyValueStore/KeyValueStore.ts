@@ -3,10 +3,6 @@ import Redis from 'ioredis';
 import { LoggerBase } from 'helper/logger/LoggerBase';
 import { getConfig } from 'src/config/config';
 
-export enum KeyValueStoreKeys {
-    TokenShort = 'tokenShort',
-}
-
 export interface IKeyValueStore {
     connect(): Promise<void>;
     disconnect(): Promise<void>;
@@ -92,6 +88,10 @@ class KeyValueStore extends LoggerBase implements IKeyValueStore {
         const stringified = JSON.stringify(value);
         const result = await this.client.set(this.key(key), stringified, 'EX', ttlSeconds, 'NX');
         return result === 'OK';
+    }
+
+    public getClient(): Redis {
+        return this.client;
     }
 }
 

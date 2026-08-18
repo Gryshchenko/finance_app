@@ -7,6 +7,7 @@ import { IMailNotificationService } from 'services/notification/MailNotification
 import { IUserService } from 'services/user/UserService';
 import { LoggerBase } from 'src/helper/logger/LoggerBase';
 import { ValidationError } from 'src/utils/errors/ValidationError';
+import { maskEmail } from 'src/utils/maskPII';
 
 const CHANGE_CODE_EXPIRES_IN: [number, number, number] = [0, 10, 0];
 
@@ -117,7 +118,7 @@ export default class EmailChangingService extends LoggerBase implements IEmailCh
             await this._dataAccess.confirm(userId, trx);
             await this._userService.patch(userId, { email: record.email, status: UserStatus.ACTIVE }, trx);
 
-            this._logger.info(`Email change confirmed for userId ${userId}, new email: ${record.email}`);
+            this._logger.info(`Email change confirmed for userId ${userId}, new email: ${maskEmail(record.email)}`);
             return true;
         } catch (e) {
             this._logger.error(`Email change confirmation failed for userId ${userId}: ${(e as { message: string }).message}`);

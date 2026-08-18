@@ -10,6 +10,7 @@ import { LoggerBase } from 'src/helper/logger/LoggerBase';
 import UserRegistrationService from 'src/services/registration/UserRegistrationService';
 import { CustomError } from 'src/utils/errors/CustomError';
 import { ValidationError } from 'src/utils/errors/ValidationError';
+import { maskEmail } from 'src/utils/maskPII';
 
 export interface IOAuthResult {
     user: IUser;
@@ -68,7 +69,7 @@ export default class OAuthService extends LoggerBase implements IOAuthService {
 
         // 1. Verify idToken with provider
         const userInfo = await oauthProvider.verify(idToken);
-        this._logger.info(`OAuth token verified for provider: ${provider}, email: ${userInfo.email}`);
+        this._logger.info(`OAuth token verified for provider: ${provider}, email: ${maskEmail(userInfo.email)}`);
 
         // 2. Check if OAuth link already exists → login
         const existingLink = await this._oauthDataAccess.findByProviderId(provider, userInfo.providerId);
@@ -86,7 +87,7 @@ export default class OAuthService extends LoggerBase implements IOAuthService {
         }
 
         // 4. New user → register + link
-        this._logger.info(`New OAuth user, creating account for email: ${userInfo.email}`);
+        this._logger.info(`New OAuth user, creating account for email: ${maskEmail(userInfo.email)}`);
         return this.registerNewUser(provider, userInfo, locale, publicName, currencyCode);
     }
 

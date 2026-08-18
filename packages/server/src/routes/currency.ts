@@ -2,6 +2,8 @@ import { UserStatus } from '@tenpercent/shared';
 import express from 'express';
 
 import { CurrencyController } from 'controllers/CurrencyController';
+import { readLimiter } from 'middleware/limiters';
+import { rateLimitMiddleware } from 'middleware/rateLimit';
 import tokenVerify from 'middleware/tokenVerify';
 import userStatusVerify from 'middleware/userStatusVerify';
 import { currencyCodeRule } from 'src/utils/validation/fieldRules';
@@ -12,9 +14,11 @@ const currencyRouter = express.Router({ mergeParams: true });
 
 const currenciesRouter = express.Router({ mergeParams: true });
 
-currencyRouter.use(tokenVerify, userStatusVerify(UserStatus.ACTIVE));
+const perUserReadLimit = rateLimitMiddleware(readLimiter, (req) => String(req.user?.userId ?? req.ip ?? 'unknown'));
 
-currenciesRouter.use(tokenVerify, userStatusVerify(UserStatus.ACTIVE));
+currencyRouter.use(tokenVerify, userStatusVerify(UserStatus.ACTIVE), perUserReadLimit);
+
+currenciesRouter.use(tokenVerify, userStatusVerify(UserStatus.ACTIVE), perUserReadLimit);
 
 currencyRouter.get('/', validateQuery({ currency: currencyCodeRule() }), routesInputValidation([]), CurrencyController.get);
 
