@@ -18,6 +18,7 @@ export enum GeneralApiProblemKind {
     Unauthorized = 'unauthorized', // Authentication required (401)
     Forbidden = 'forbidden', // Access denied (403)
     NotFound = 'not-found', // Resource not found (404)
+    TooManyRequests = 'too-many-requests', // Rate limit budget spent (429)
     Rejected = 'rejected', // Other client-side error (4xx)
     Unknown = 'unknown', // Unexpected error
     BadData = 'bad-data', // Malformed or unexpected response data
@@ -34,6 +35,7 @@ export type GeneralApiProblem<T = unknown> =
     | ({ kind: GeneralApiProblemKind.Unauthorized } & IResponse<undefined>)
     | ({ kind: GeneralApiProblemKind.Forbidden } & IResponse<undefined>)
     | ({ kind: GeneralApiProblemKind.NotFound } & IResponse<undefined>)
+    | ({ kind: GeneralApiProblemKind.TooManyRequests } & IResponse<undefined>)
     | ({ kind: GeneralApiProblemKind.Rejected } & IResponse<undefined>)
     | { kind: GeneralApiProblemKind.Unknown; temporary: true }
     | ({ kind: GeneralApiProblemKind.BadData } & IResponse<undefined>);
@@ -74,6 +76,13 @@ export function getGeneralApiProblem(response: ApiResponse<IResponse>): GeneralA
                 case HttpCode.NOT_FOUND:
                     return {
                         kind: GeneralApiProblemKind.NotFound,
+                        data: undefined,
+                        status: response.data?.status,
+                        errors: response.data?.errors,
+                    };
+                case HttpCode.TOO_MANY_REQUESTS:
+                    return {
+                        kind: GeneralApiProblemKind.TooManyRequests,
                         data: undefined,
                         status: response.data?.status,
                         errors: response.data?.errors,
@@ -171,6 +180,10 @@ export function buildGeneralApiBaseHandler(
     switch (problem.kind) {
         case GeneralApiProblemKind.Forbidden:
             handler('errorCode:FORBIDDEN_ERROR' as TxKeyPath);
+            break;
+        case GeneralApiProblemKind.TooManyRequests:
+            // Deliberately silent: RateLimitService already showed how long the wait is, and a
+            // second, vaguer toast on top of it only muddies that.
             break;
         case GeneralApiProblemKind.Rejected:
             handler('errorCode:REJECTED_ERROR' as TxKeyPath);

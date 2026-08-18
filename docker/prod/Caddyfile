@@ -1,0 +1,19 @@
+# TLS terminator for the API.
+#
+# Caddy obtains and renews the Let's Encrypt certificate itself over the HTTP-01
+# challenge, which needs ports 80 and 443 reachable from the internet. Port 80
+# has to stay open after the first issuance too - renewals use the same
+# challenge, and Caddy's :80 -> :443 redirect is what answers it.
+
+{
+    email {$ACME_EMAIL}
+}
+
+{$API_DOMAIN} {
+    encode zstd gzip
+
+    # app.ts sets `trust proxy` to 1, which matches exactly this one hop: the
+    # client IP the rate limiters key on is read from the X-Forwarded-For that
+    # Caddy adds here. Another proxy in front of this one would break that.
+    reverse_proxy server:{$PORT}
+}

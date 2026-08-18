@@ -8,6 +8,7 @@ import { IClientConfig } from '@/interfaces/IClientConfig';
 import { GeneralApiProblem, GeneralApiProblemKind, getGeneralApiProblem } from '@/services/api/apiProblem';
 import type { ApiConfig } from '@/services/api/types';
 import { AuthService } from '@/services/AuthService';
+import RateLimitService from '@/services/RateLimitService';
 import { Logger } from '@/utils/logger/Logger';
 
 export const DEFAULT_API_CONFIG = {
@@ -31,6 +32,12 @@ export abstract class ApiAbstract {
             },
         });
         this._authService = authService;
+        // Every answer carries the rate limit budget, including the ones that never reach a
+        // screen (a refused refresh, a retried GET), so the check belongs here rather than in
+        // the per-call response mapping.
+        this.apisauce.addMonitor((response) => {
+            RateLimitService.handleResponse(response.headers, response.status);
+        });
         createAuthRefreshInterceptor(this.apisauce.axiosInstance, () => this._authService.doRefresh());
         axiosRetry(this.apisauce.axiosInstance, {
             retries: 3,

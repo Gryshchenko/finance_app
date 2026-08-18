@@ -17,3 +17,15 @@ test-ci:
 		--abort-on-container-exit \
 		--exit-code-from ten-percent
 	docker compose -f docker/tests/compose.yaml down
+
+.PHONY: build-prod
+build-prod: ## Build the production server image.
+	COMPOSE_BAKE=true docker compose -f docker/prod/compose.yaml build
+
+.PHONY: start-prod
+start-prod: ## Start the production server container.
+	docker compose -f docker/prod/compose.yaml up -d
+
+.PHONY: stop-prod
+stop-prod: ## Stop the production server container.
+	docker compose -f docker/prod/compose.yaml down

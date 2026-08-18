@@ -1,0 +1,30 @@
+.git
+.github
+.idea
+.expo
+.husky
+**/node_modules
+**/dist
+**/.DS_Store
+**/*.log
+
+# Never bake secrets or local state into an image
+**/.env
+**/.env.*
+dump.rdb
+
+# Mobile app build output - the server image does not need it
+android
+ios
+packages/app/android
+packages/app/ios
+
+# Test / report artefacts
+**/jest-coverage
+**/jest-html-report
+**/coverage
+**/*.tsbuildinfo
+
+# Local mkcert material - never belongs in a build context
+**/*.pem
+**/certs

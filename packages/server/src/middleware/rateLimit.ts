@@ -16,7 +16,7 @@ const storeClient = () =>
 
 type LimiterOptions = Omit<IRateLimiterStoreOptions, 'storeClient' | 'insuranceLimiter'>;
 
-const isLocalDev = process.env.NODE_ENV !== 'development';
+const isLocalDev = process.env.NODE_ENV === 'development';
 
 export function createLimiter(options: LimiterOptions): RateLimiterRedis {
     return new RateLimiterRedis({

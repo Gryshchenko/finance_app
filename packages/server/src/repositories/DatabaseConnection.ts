@@ -35,12 +35,12 @@ export default class DatabaseConnection implements IDatabaseConnection {
                 ssl: ssl ? { rejectUnauthorized: true } : false,
                 pool: {
                     min: 1,
-                    max: 100,
+                    max: 20,
                 },
             },
             pool: {
-                min: 0,
-                max: 100,
+                min: 1,
+                max: 20,
             },
         });
     }

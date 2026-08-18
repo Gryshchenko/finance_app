@@ -19,6 +19,7 @@ const en = {
         UNKNOWN_ERROR: 'Something went wrong on our side.',
         REQUEST_TIMEOUT_ERROR: 'That took too long. Let’s give it another try.',
         QUERY_DATA_ERROR: 'We couldn’t load the requested data.',
+        TOO_MANY_REQUESTS_ERROR: 'Too many requests. Please slow down and try again in a moment.',
 
         EMAIL_INVALID_ERROR: 'Please double-check your email address.',
         NAME_INVALID_ERROR: 'That name doesn’t seem right.',
@@ -141,6 +142,15 @@ const en = {
         resendButton: 'Resend code',
         goToLogin: 'Go Back to Login',
         success: 'Your email has been successfully confirmed.',
+    },
+    rateLimit: {
+        lastAttempt: 'One attempt left. After that this action will be temporarily blocked.',
+        blocked: 'You have used all attempts. This action is blocked, try again in {{duration}}.',
+        blockedUntil: 'You have used all attempts. This action is blocked until {{time}} (about {{duration}}).',
+        blockedUnknown: 'You have used all attempts. This action is blocked, please try again later.',
+        durationSeconds: '{{value}} sec',
+        durationMinutes: '{{value}} min',
+        durationHours: '{{value}} h',
     },
     common: {
         selectIcon: 'Select icon',

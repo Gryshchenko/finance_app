@@ -1,3 +1,4 @@
+import type { TOptions } from 'i18next';
 import ToastManager, { Toast } from 'toastify-react-native';
 
 import { DefaultToast } from '@/components/DefaultToast';
@@ -18,6 +19,8 @@ export interface ToestMessage {
     message: TxKeyPath;
     duration?: number;
     systemMessage?: string;
+    /** Interpolation values for `message`, e.g. `{ duration: '2 min' }`. */
+    txOptions?: TOptions;
 }
 
 interface ToastOptions {
@@ -25,16 +28,17 @@ interface ToastOptions {
     text2: TxKeyPath;
     type: ToastType;
     duration?: number;
+    txOptions?: TOptions;
 }
 
 class ToastService {
     protected static _logger: Logger = Logger.Of('ToastService');
-    static show({ text1, text2, type = ToastType.Info, duration = 3000 }: ToastOptions) {
+    static show({ text1, text2, type = ToastType.Info, duration = 3000, txOptions }: ToastOptions) {
         Toast.show({
             // @ts-ignore
             type: 'custom',
             text1: translate(text1),
-            text2: translate(text2),
+            text2: translate(text2, txOptions),
             visibilityTime: duration,
             position: 'top',
             props: {
@@ -43,40 +47,44 @@ class ToastService {
         });
     }
 
-    static success({ title = 'common:success', message, duration }: ToestMessage) {
+    static success({ title = 'common:success', message, duration, txOptions }: ToestMessage) {
         this.show({
             text1: title,
             text2: message,
             type: ToastType.Success,
             duration,
+            txOptions,
         });
     }
 
-    static error({ title = 'common:error', message, duration, systemMessage }: ToestMessage) {
+    static error({ title = 'common:error', message, duration, systemMessage, txOptions }: ToestMessage) {
         ToastService._logger.error(`Error: ${systemMessage}`);
         this.show({
             text1: title,
             text2: message,
             type: ToastType.Error,
             duration,
+            txOptions,
         });
     }
 
-    static info({ title = 'common:info', message, duration }: ToestMessage) {
+    static info({ title = 'common:info', message, duration, txOptions }: ToestMessage) {
         this.show({
             text1: title,
             text2: message,
             type: ToastType.Info,
             duration,
+            txOptions,
         });
     }
 
-    static warning({ title = 'common:warning', message, duration }: ToestMessage) {
+    static warning({ title = 'common:warning', message, duration, txOptions }: ToestMessage) {
         this.show({
             text1: title,
             text2: message,
             type: ToastType.Warning,
             duration,
+            txOptions,
         });
     }
 

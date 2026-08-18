@@ -1,0 +1,14 @@
+{
+    "extends": "./tsconfig.json",
+    "compilerOptions": {
+        "types": ["node"],
+        "sourceMap": false,
+        "composite": false,
+        "declaration": false,
+        "declarationMap": false,
+        "incremental": false
+    },
+    "include": ["src/**/*"],
+    "exclude": ["node_modules", "dist", "tests"],
+    "references": [{ "path": "../shared" }]
+}

@@ -1,74 +1,254 @@
+# Production stack: Caddy (TLS) + server + PostgreSQL + Redis on a single host.
+#
+# Only Caddy is exposed to the internet; the server and both data services are
+# reachable over the compose network alone. This file carries no values of its own: everything is read from
+# the host environment (AWS SSM / Secrets Manager exported into the shell, or an
+# env file supplied by the deployment).
+#
+# Moving to managed data services later needs no code change: point DB_HOST /
+# REDIS_HOST at the managed endpoints, set DB_SSL=true, and delete the two
+# services below along with the server's `depends_on`.
 services:
-    ten-percent:
+    server:
+        image: ${SERVER_IMAGE:-tenpercent-server}:${SERVER_IMAGE_TAG:-latest}
         build:
             context: ../../
-            dockerfile: docker/tests/Dockerfile
-        container_name: ten-percent
+            dockerfile: docker/prod/Dockerfile
+        container_name: tenpercent-server
+        restart: unless-stopped
+        init: true
+        stop_grace_period: 30s
         depends_on:
             postgres:
+                condition: service_healthy
+            redis:
                 condition: service_healthy
         environment:
             # ====================
             # App
             # ====================
-            - ENV=test
-            - APP_NAME=Tenpercent-test
-            - PORT=3001
-            - NODE_ENV=production
-            - ORIGIN=http://localhost:3001
+            # PORT needs a value at all times: app.ts does Number(PORT) and would
+            # otherwise bind a random port.
+            - PORT=${PORT:-3000}
+            - APP_NAME
+            - ORIGIN
+            - LOG_LEVEL
 
             # ====================
             # JWT
             # ====================
-            - JWT_SECRET=42bb61fa5d10c2181b619abbff42ea877d01490f32825dbfcbaa73ee33d2520470bec00c1b318ac01f333f942d9e4bf3b256a65ffa4d4a286eb2e7002f477a13
-            - JWT_LONG_SECRET=ef2f22b0b1650bb61fa5d10c2181b619abbff42ea877d01490f32825dbfcbaa73ee33d2520470bec00c1b318ac01f333f94d47479b5cdece47c814f18dcc6e264fc677449
-            - JWT_ISSUER=test
-            - JWT_AUDIENCE=test.net
-            - JWT_ALGORITHM=HS384
-            - JWT_EXPIRES_IN=1h
-            - JWT_LONG_EXPIRES_IN=1m
-            - JWT_EXPIRES_SEC=540
+            - JWT_SECRET
+            - JWT_LONG_SECRET
+            - JWT_RESET_SECRET
+            - JWT_ISSUER
+            - JWT_AUDIENCE
+            - JWT_ALGORITHM
+            - JWT_EXPIRES_IN
+            - JWT_LONG_EXPIRES_IN
+            - JWT_RESET_EXPIRES_IN
 
             # ====================
-            # PostgreSQL (Neon)
+            # PostgreSQL
             # ====================
-            - DB_NAME=test_db
-            - DB_USER=test_user
-            - DB_PASS=test_password
-            - DB_PORT=5432
-            - DB_HOST=postgres
-        ports:
-            - '3000:3000'
+            # DB_HOST defaults to the bundled service. Pointing it at a managed
+            # endpoint also means DB_SSL=true - and knex verifies the chain
+            # (DatabaseConnection.ts), so the provider's CA has to reach Node
+            # through NODE_EXTRA_CA_CERTS.
+            - DB_NAME=${DB_NAME:?DB_NAME is required}
+            - DB_USER=${DB_USER:?DB_USER is required}
+            - DB_PASS=${DB_PASS:?DB_PASS is required}
+            - DB_HOST=${DB_HOST:-postgres}
+            - DB_PORT=${DB_PORT:-5432}
+            - DB_SSL=${DB_SSL:-false}
+
+            # ====================
+            # Redis
+            # ====================
+            # `requirepass` defines no ACL user, so REDIS_USERNAME stays empty
+            # here - ioredis then authenticates with the password alone.
+            - REDIS_HOST=${REDIS_HOST:-redis}
+            - REDIS_PORT=${REDIS_PORT:-6379}
+            - REDIS_USERNAME
+            - REDIS_PASSWORD=${REDIS_PASSWORD:?REDIS_PASSWORD is required}
+            - REDIS_PREFIX
+
+            # ====================
+            # Mail + AWS
+            # ====================
+            # AWS_ACCESS_KEY_ID / AWS_SECRET_ACCESS_KEY stay unset when the host
+            # runs with an instance role - the SDK then picks the role up itself.
+            - MAIL_PROVIDER
+            - MAIL_API_KEY
+            - MAIL_NO_REPLY
+            - AWS_REGION
+            - AWS_ACCESS_KEY_ID
+            - AWS_SECRET_ACCESS_KEY
+
+            # ====================
+            # Third party
+            # ====================
+            - RATE_PROVIDER_API
+            - RATE_PROVIDER_URL
+            - GOOGLE_CLIENT_ID
+            - APPLE_CLIENT_ID
+        # No `ports`: the only route in is through caddy. To reach the API from
+        # the instance itself for debugging, use `docker compose exec`.
+        expose:
+            - '${PORT:-3000}'
+        healthcheck:
+            test: ['CMD', 'wget', '-qO-', 'http://127.0.0.1:${PORT:-3000}/']
+            interval: 30s
+            timeout: 5s
+            retries: 3
+            start_period: 20s
+        security_opt:
+            - no-new-privileges:true
+        logging:
+            driver: json-file
+            options:
+                max-size: '10m'
+                max-file: '5'
         networks:
-            - app-tier
-        tn-redis-master:
-            container_name: tn-redis-master
-            image: 'bitnami/redis:latest'
-            environment:
-                - REDIS_REPLICATION_MODE=master
-                - REDIS_PASSWORD=redispassword
-            ports:
-                - '6379:6379'
-            networks:
-                - app-tier
-        tn-postgres:
-            container_name: tn-postgres
-            image: postgres:16-alpine
-            volumes:
-                - ./db/schema.sql:/docker-entrypoint-initdb.d/01-schema.sql
-            environment:
-                - POSTGRES_DB=test_db
-                - POSTGRES_USER=test_user
-                - POSTGRES_PASSWORD=test_password
-            ports:
-                - '5432:5432'
-            healthcheck:
-                test: ['CMD-SHELL', 'pg_isready -U test_user -d test_db']
-                interval: 5s
-                timeout: 5s
-                retries: 5
-            networks:
-                - app-tier
+            - backend
+
+    caddy:
+        image: caddy:2-alpine
+        container_name: tenpercent-caddy
+        restart: unless-stopped
+        # Start order only, no health condition: Caddy has to come up even when
+        # the server is broken, or it can never answer an ACME challenge.
+        depends_on:
+            - server
+        environment:
+            - API_DOMAIN=${API_DOMAIN:?API_DOMAIN is required}
+            # Where Let's Encrypt sends expiry warnings if renewal ever stalls.
+            - ACME_EMAIL=${ACME_EMAIL:?ACME_EMAIL is required}
+            - PORT=${PORT:-3000}
+        ports:
+            - '80:80'
+            - '443:443'
+            # HTTP/3. Dropping this line costs nothing but a fallback to TCP.
+            - '443:443/udp'
+        volumes:
+            - ./Caddyfile:/etc/caddy/Caddyfile:ro
+            # Issued certificates and the ACME account key. Losing this volume
+            # forces a full re-issue, and Let's Encrypt caps duplicate
+            # certificates at 5 per week - back it up, or at least never
+            # `down -v` this stack casually.
+            - caddy-data:/data
+            - caddy-config:/config
+        healthcheck:
+            test: ['CMD', 'caddy', 'version']
+            interval: 30s
+            timeout: 5s
+            retries: 3
+            start_period: 10s
+        security_opt:
+            - no-new-privileges:true
+        logging:
+            driver: json-file
+            options:
+                max-size: '10m'
+                max-file: '5'
+        networks:
+            - backend
+
+    postgres:
+        image: postgres:16-alpine
+        container_name: tenpercent-postgres
+        restart: unless-stopped
+        # A slow shutdown risks an unclean stop; give the checkpoint room.
+        stop_grace_period: 60s
+        environment:
+            - POSTGRES_DB=${DB_NAME:?DB_NAME is required}
+            - POSTGRES_USER=${DB_USER:?DB_USER is required}
+            - POSTGRES_PASSWORD=${DB_PASS:?DB_PASS is required}
+            - POSTGRES_INITDB_ARGS=--data-checksums
+        # Sized for a 1GB instance. Raise along with the instance type.
+        # max_connections sits above knex's pool max (100, DatabaseConnection.ts)
+        # so an exhausted pool cannot lock out the superuser slots.
+        command:
+            - postgres
+            - -c
+            - max_connections=120
+            - -c
+            - shared_buffers=128MB
+            - -c
+            - effective_cache_size=384MB
+            - -c
+            - work_mem=4MB
+            - -c
+            - maintenance_work_mem=64MB
+        volumes:
+            - postgres-data:/var/lib/postgresql/data
+            # Runs once, and only against an empty volume. Every later schema
+            # change needs a migration - editing this file does nothing to a
+            # database that already exists.
+            - ../local/db/schema.sql:/docker-entrypoint-initdb.d/01-schema.sql:ro
+        healthcheck:
+            test: ['CMD-SHELL', 'pg_isready -U "$$POSTGRES_USER" -d "$$POSTGRES_DB"']
+            interval: 10s
+            timeout: 5s
+            retries: 5
+            start_period: 30s
+        security_opt:
+            - no-new-privileges:true
+        logging:
+            driver: json-file
+            options:
+                max-size: '10m'
+                max-file: '5'
+        networks:
+            - backend
+
+    redis:
+        image: redis:7-alpine
+        container_name: tenpercent-redis
+        restart: unless-stopped
+        stop_grace_period: 30s
+        environment:
+            - REDIS_PASSWORD=${REDIS_PASSWORD:?REDIS_PASSWORD is required}
+        # This instance is not a cache: it holds the token blacklist and
+        # sessionsValidFrom. Hence AOF (a restart that lost the data would make
+        # revoked tokens valid again) and noeviction (an eviction under memory
+        # pressure would drop a revocation silently). RDB is off - AOF covers it.
+        # The shell wrapper is what expands REDIS_PASSWORD; redis-server itself
+        # does not read the environment.
+        command:
+            - sh
+            - -c
+            - >
+                exec redis-server
+                --requirepass "$$REDIS_PASSWORD"
+                --appendonly yes
+                --appendfsync everysec
+                --maxmemory 128mb
+                --maxmemory-policy noeviction
+                --save ""
+        volumes:
+            - redis-data:/data
+        healthcheck:
+            test: ['CMD-SHELL', 'redis-cli --no-auth-warning -a "$$REDIS_PASSWORD" ping | grep -q PONG']
+            interval: 10s
+            timeout: 5s
+            retries: 5
+            start_period: 10s
+        security_opt:
+            - no-new-privileges:true
+        logging:
+            driver: json-file
+            options:
+                max-size: '10m'
+                max-file: '5'
+        networks:
+            - backend
+
+volumes:
+    postgres-data:
+    redis-data:
+    caddy-data:
+    caddy-config:
+
 networks:
-    app-tier:
+    backend:
         driver: bridge
