@@ -17,19 +17,25 @@ COPY packages/server/package.json ./packages/server/
 COPY packages/shared/package.json ./packages/shared/
 
 # 3. Install only server + shared deps (skip the heavy app package)
-RUN pnpm install --filter "@tenpercent/server..." --filter "tenpercent/shared..."
+RUN pnpm install --filter "@tenpercent/server..." --filter "@tenpercent/shared..."
 
 # 4. Copy shared source and build it
 COPY packages/shared ./packages/shared
-RUN pnpm --filter "tenpercent/shared" build
+RUN pnpm --filter "@tenpercent/shared" build
 
 # 5. Copy server source
 COPY packages/server/tsconfig.json ./packages/server/
 COPY packages/server/types.d.ts ./packages/server/
-COPY packages/server/jest.config.js ./packages/server/
+COPY packages/server/jest.config.js packages/server/jest.unit.config.js packages/server/jest.integration.config.js ./packages/server/
 COPY packages/server/jest.setup.ts ./packages/server/
 COPY packages/server/src ./packages/server/src
 COPY packages/server/tests ./packages/server/tests
+# Read at import time by src/config/appConfigFile.ts (the currency allow-list the clients are
+# offered), so the suites cannot even load their modules without it.
+COPY packages/server/public ./packages/server/public
+# tests/currencyCatalogue.test.ts checks the served currency catalogue against the rows the
+# database is seeded with, and reads the seed straight from the schema file.
+COPY docker/tests/db/schema.sql ./docker/tests/db/schema.sql
 
 WORKDIR /app/packages/server
 CMD ["pnpm", "run", "jest-test"]

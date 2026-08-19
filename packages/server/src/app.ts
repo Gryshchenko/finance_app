@@ -1,3 +1,9 @@
+// Must stay the first import: Sentry instruments express/http/pg/ioredis as they are
+// loaded, and a module already required keeps the unpatched reference.
+
+import './instrument';
+
+import * as Sentry from '@sentry/node';
 import { ResponseStatusType, ErrorCode } from '@tenpercent/shared';
 import express, { NextFunction, Request, Response } from 'express';
 import helmet from 'helmet';
@@ -6,6 +12,7 @@ import path from 'path';
 
 import Logger from 'helper/logger/Logger';
 import { errorHandler } from 'middleware/errorHandler';
+import { httpMetrics } from 'middleware/httpMetrics';
 import { globalLimiter, readLimiter } from 'middleware/limiters';
 import { notFound } from 'middleware/notFound';
 import { rateLimitMiddleware } from 'middleware/rateLimit';
@@ -15,6 +22,7 @@ import { CurrencyOrchestratorServiceBuilder } from 'services/currencyOrchestrato
 import { getConfig } from 'src/config/config';
 import { createServer } from 'src/createServer';
 import ResponseBuilder from 'src/helper/responseBuilder/ResponseBuilder';
+import { startMetricsServer } from 'src/metrics/metricsServer';
 import DatabaseConnectionBuilder from 'src/repositories/DatabaseConnectionBuilder';
 import { KeyValueStoreBuilder } from 'src/repositories/keyValueStore/KeyValueStoreBuilder';
 import { getLocalIP } from 'src/utils/getLocalIP';
@@ -28,6 +36,10 @@ const app = express();
 const port = getConfig().appPort ?? 3000;
 
 app.set('trust proxy', 1);
+
+// First in the chain on purpose: a request refused by a rate limiter or rejected by the body
+// parser is exactly the one worth counting, and anything mounted above this is invisible to it.
+app.use(httpMetrics);
 
 passportSetup(passport);
 
@@ -78,11 +90,16 @@ app.get('/', (req: Request, res: Response) => {
 
 // Order matters: the 404 has to sit after every router, and the error handler after the 404.
 app.use(notFound);
+// Completes the request's trace and marks it failed. Reporting stays with
+// `captureError`, so `shouldHandleError` refuses every event and nothing is sent twice.
+Sentry.setupExpressErrorHandler(app, { shouldHandleError: () => false });
 app.use(errorHandler);
 
 const httpsServer = createServer(app);
+let metricsServer: ReturnType<typeof startMetricsServer>;
 
 if (process.env.NODE_ENV !== 'test') {
+    metricsServer = startMetricsServer();
     httpsServer.listen(port, async () => {
         const ip = getLocalIP();
         CurrencyOrchestratorServiceBuilder.build()
@@ -97,8 +114,11 @@ if (process.env.NODE_ENV !== 'test') {
 async function shutdown(signal: unknown): Promise<void> {
     Logger.Of('shutdown').info(`[app] received ${signal}, closing…`);
     httpsServer.close();
+    metricsServer?.close();
     await DatabaseConnectionBuilder.build().close();
     await KeyValueStoreBuilder.build().disconnect();
+    // Events are batched; without this the last ones die with the process.
+    await Sentry.flush(2000);
     Logger.Of('shutdown').info('[app] closed');
 }
 process.on('SIGINT', () => void shutdown('SIGINT'));
@@ -106,6 +126,7 @@ process.on('SIGINT', () => void shutdown('SIGINT'));
 process.on('SIGTERM', () => void shutdown('SIGTERM'));
 
 process.on('uncaughtException', (err) => {
+    Sentry.captureException(err, { tags: { source: 'uncaughtException' } });
     Logger.Of('uncaughtException').error('Error', {
         error: err instanceof Error ? err.message : JSON.stringify(err),
         stack: err instanceof Error ? err.stack : undefined,
@@ -113,6 +134,7 @@ process.on('uncaughtException', (err) => {
 });
 
 process.on('unhandledRejection', (err) => {
+    Sentry.captureException(err, { tags: { source: 'unhandledRejection' } });
     Logger.Of('unhandledRejection').error('Error', {
         error: err instanceof Error ? err.message : JSON.stringify(err),
         stack: err instanceof Error ? err.stack : undefined,

@@ -91,10 +91,33 @@ services:
             - RATE_PROVIDER_URL
             - GOOGLE_CLIENT_ID
             - APPLE_CLIENT_ID
+
+            # ====================
+            # Sentry
+            # ====================
+            # An unset SENTRY_DSN leaves the SDK uninitialised and every capture a
+            # no-op, so the stack still comes up without a Sentry project.
+            # SENTRY_RELEASE should carry the deployed git sha - it is what ties an
+            # event back to the code that raised it.
+            - SENTRY_DSN
+            - SENTRY_ENVIRONMENT=${SENTRY_ENVIRONMENT:-production}
+            - SENTRY_RELEASE
+            - SENTRY_TRACES_SAMPLE_RATE=${SENTRY_TRACES_SAMPLE_RATE:-0.1}
+
+            # ====================
+            # Metrics
+            # ====================
+            # Prometheus text format on a port of its own (src/metrics/metricsServer.ts).
+            # It is deliberately not on PORT: caddy proxies every path of the public
+            # site to PORT, so `/metrics` there would be world-readable.
+            - METRICS_ENABLED=${METRICS_ENABLED:-true}
+            - METRICS_PORT=${METRICS_PORT:-9464}
         # No `ports`: the only route in is through caddy. To reach the API from
         # the instance itself for debugging, use `docker compose exec`.
         expose:
             - '${PORT:-3000}'
+            # Reachable from the compose network only - this is what prometheus scrapes.
+            - '${METRICS_PORT:-9464}'
         healthcheck:
             test: ['CMD', 'wget', '-qO-', 'http://127.0.0.1:${PORT:-3000}/']
             interval: 30s
@@ -129,6 +152,10 @@ services:
             - '443:443'
             # HTTP/3. Dropping this line costs nothing but a fallback to TCP.
             - '443:443/udp'
+        # Not under `ports`: the metrics site block in the Caddyfile is for prometheus on the
+        # compose network, and must stay off the public interface.
+        expose:
+            - '2020'
         volumes:
             - ./Caddyfile:/etc/caddy/Caddyfile:ro
             # Issued certificates and the ACME account key. Losing this volume
@@ -170,7 +197,7 @@ services:
         command:
             - postgres
             - -c
-            - max_connections=120
+            - max_connections=20
             - -c
             - shared_buffers=128MB
             - -c

@@ -1,3 +1,4 @@
+import * as Sentry from '@sentry/node';
 import { HttpCode, ResponseStatusType, extractToken, ErrorCode } from '@tenpercent/shared';
 import { NextFunction, Request, Response } from 'express';
 import jwt, { Algorithm } from 'jsonwebtoken';
@@ -97,6 +98,12 @@ function createTokenMiddleware(options: TokenMiddlewareOptions) {
             } else {
                 req.user = { userId: Number(payload.sub) };
             }
+
+            // The only point where the caller's identity is known for every authenticated
+            // route. Sentry's isolation scope is per-request, so this tags the events that
+            // the rest of this request produces and never leaks into the next one.
+            // Id only - no email or name, so an event carries no personal data.
+            Sentry.setUser({ id: String(payload.sub) });
 
             const validFromSec = await UserServiceBuilder.build().getSessionsValidFromSec(Number(payload.sub));
             if (validFromSec !== null && (payload.iat ?? 0) < validFromSec) {

@@ -1,32 +1,6 @@
-/**
- * If you're using Sentry
- *   Expo https://docs.expo.dev/guides/using-sentry/
- */
-// import * as Sentry from "@sentry/react-native"
+import * as Sentry from '@sentry/react-native';
 
-/**
- * If you're using Crashlytics: https://rnfirebase.io/crashlytics/usage
- */
-// import crashlytics from "@react-native-firebase/crashlytics"
-
-/**
- * If you're using Bugsnag:
- *   RN   https://docs.bugsnag.com/platforms/react-native/)
- *   Expo https://docs.bugsnag.com/platforms/react-native/expo/
- */
-// import Bugsnag from "@bugsnag/react-native"
-// import Bugsnag from "@bugsnag/expo"
-
-/**
- *  This is where you put your crash reporting service initialization code to call in `./app/app.tsx`
- */
-export const initCrashReporting = () => {
-    // Sentry.init({
-    //   dsn: "YOUR DSN HERE",
-    //   debug: true, // If `true`, Sentry will try to print out useful debugging information if something goes wrong with sending the event. Set it to `false` in production
-    // })
-    // Bugsnag.start("YOUR API KEY")
-};
+import Config from '@/config';
 
 /**
  * Error classifications used to sort errors on error reporting services.
@@ -44,6 +18,45 @@ export enum ErrorType {
 }
 
 /**
+ * Starts Sentry. Called once from `./app/app.tsx`, before anything renders.
+ *
+ * Without a DSN nothing is initialised and every function below stays a callable
+ * no-op, which is what a local run without a Sentry project wants. `__DEV__` is
+ * excluded on purpose: a red screen already says more than an event would, and
+ * reloading over a broken hot module would flood the project.
+ */
+export const initCrashReporting = () => {
+    if (!Config.sentryDsn || __DEV__) return;
+
+    Sentry.init({
+        dsn: Config.sentryDsn,
+        // Ties an event to the JS bundle it came from, so a stack trace can be
+        // symbolicated against the source maps uploaded for that build.
+        environment: process.env.EXPO_PUBLIC_SENTRY_ENVIRONMENT ?? 'production',
+        tracesSampleRate: Config.sentryTracesSampleRate,
+        // The default attaches the device name and, on some platforms, the user's
+        // IP. This app never needs either to act on a crash report.
+        sendDefaultPii: false,
+    });
+};
+
+/**
+ * Identifies the crashes belonging to one account, so a report can be tied back to
+ * a support request. The numeric id only - no email or name reaches Sentry.
+ */
+export const setCrashReportingUser = (userId: number) => {
+    Sentry.setUser({ id: String(userId) });
+};
+
+/**
+ * Drops the identity on logout, so events raised afterwards are not attributed to
+ * whoever used the device last.
+ */
+export const clearCrashReportingUser = () => {
+    Sentry.setUser(null);
+};
+
+/**
  * Manually report a handled error.
  */
 export const reportCrash = (error: Error, type: ErrorType = ErrorType.FATAL) => {
@@ -53,10 +66,6 @@ export const reportCrash = (error: Error, type: ErrorType = ErrorType.FATAL) => 
         console.error(error);
         console.log(message, type);
     } else {
-        // In production, utilize crash reporting service of choice below:
-        // RN
-        // Sentry.captureException(error)
-        // crashlytics().recordError(error)
-        // Bugsnag.notify(error)
+        Sentry.captureException(error, { tags: { error_type: type } });
     }
 };

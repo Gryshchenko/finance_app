@@ -43,6 +43,24 @@ interface IConfig {
     rateProviderUrl: string;
     googleClientId: string;
     appleClientId: string;
+    sentryDsn: string;
+    sentryEnvironment: string;
+    sentryRelease: string | undefined;
+    sentryTracesSampleRate: number;
+    metricsEnabled: boolean;
+    metricsPort: number;
+    rateLimitEnabled: boolean;
+}
+
+/**
+ * Local development and the jest suites drive every request from a single address, so one run
+ * spends the per-IP budgets - and the counters live in Redis, where they outlast the process
+ * that spent them, which turns every later run red too. Neither environment is exposed, so the
+ * limiters default to off there. `RATE_LIMIT_ENABLED` overrides the default in either
+ * direction: that is how a test that wants to exercise a limiter turns it back on.
+ */
+function rateLimitEnabledByDefault(): boolean {
+    return process.env.NODE_ENV !== 'development' && process.env.NODE_ENV !== 'test';
 }
 
 export function getConfig(): IConfig {
@@ -81,5 +99,16 @@ export function getConfig(): IConfig {
         awsSecretAccessKey: process.env.AWS_SECRET_ACCESS_KEY as string,
         googleClientId: (process.env.TEST_GOOGLE_CLIENT_ID ?? process.env.GOOGLE_CLIENT_ID) as string,
         appleClientId: (process.env.TEST_APPLE_CLIENT_ID ?? process.env.APPLE_CLIENT_ID) as string,
+        // Empty DSN disables Sentry entirely - see src/instrument.ts.
+        sentryDsn: process.env.SENTRY_DSN ?? '',
+        sentryEnvironment: process.env.SENTRY_ENVIRONMENT ?? process.env.NODE_ENV ?? 'development',
+        // Set by the deployment (a git sha) so an event points at the code that produced it.
+        sentryRelease: process.env.SENTRY_RELEASE || undefined,
+        sentryTracesSampleRate: Number(process.env.SENTRY_TRACES_SAMPLE_RATE ?? 0.1),
+        // On unless switched off. The endpoint lives on its own port (see metricsServer.ts),
+        // which is never published, so leaving it on costs nothing outside the compose network.
+        metricsEnabled: (process.env.METRICS_ENABLED ?? 'true') === 'true',
+        metricsPort: Number(process.env.METRICS_PORT ?? 9464),
+        rateLimitEnabled: (process.env.RATE_LIMIT_ENABLED ?? String(rateLimitEnabledByDefault())) === 'true',
     };
 }

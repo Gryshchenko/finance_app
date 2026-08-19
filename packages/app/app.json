@@ -68,6 +68,14 @@
             }
         ],
         [
+            "@sentry/react-native/expo",
+            {
+                "url": "https://sentry.io/",
+                "project": "tenpercent-app",
+                "organization": "tenpercent"
+            }
+        ],
+        [
             "react-native-edge-to-edge",
             {
                 "android": {

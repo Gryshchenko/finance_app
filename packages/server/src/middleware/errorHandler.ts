@@ -3,6 +3,7 @@ import { NextFunction, Request, Response } from 'express';
 
 import Logger from 'helper/logger/Logger';
 import ResponseBuilder from 'helper/responseBuilder/ResponseBuilder';
+import { captureError } from 'src/utils/captureError';
 import { BaseError } from 'src/utils/errors/BaseError';
 
 const logger = Logger.Of('ErrorHandler');
@@ -54,6 +55,12 @@ export const errorHandler = (error: unknown, req: Request, res: Response, next: 
         error: error instanceof Error ? error.message : JSON.stringify(error),
         stack: error instanceof Error ? error.stack : undefined,
     });
+
+    // A malformed body is the client's mistake and already answered with a 4xx - the
+    // only thing worth an event here is what nobody expected.
+    if (!bodyParserError) {
+        captureError(error, { errorCode, source: 'errorHandler' });
+    }
 
     // The response was already started - the only correct move is to let Express abort the socket.
     if (res.headersSent) return next(error);

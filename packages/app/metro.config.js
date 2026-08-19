@@ -1,9 +1,15 @@
 /* eslint-env node */
 // Learn more https://docs.expo.io/guides/customizing-metro
-const { getDefaultConfig } = require('expo/metro-config');
+// Sentry's Expo entry point, not `withSentryConfig` - that one is for bare React
+// Native and replaces the serializer outright, which breaks `expo export` (Expo
+// installs its own custom serializer for Hermes bytecode). This returns Expo's own
+// default config with Sentry's debug-id plugin added alongside it.
+const { getSentryExpoConfig } = require('@sentry/react-native/metro');
 
 /** @type {import('expo/metro-config').MetroConfig} */
-const config = getDefaultConfig(__dirname);
+// A debug id in each bundle is what pairs a minified stack trace with the source
+// map uploaded for that exact build.
+const config = getSentryExpoConfig(__dirname);
 
 config.transformer.babelTransformerPath = require.resolve('react-native-svg-transformer');
 

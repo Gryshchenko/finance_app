@@ -5,6 +5,7 @@ import { RateLimiterRedis, RateLimiterMemory, RateLimiterRes, IRateLimiterStoreO
 import Logger from 'helper/logger/Logger';
 import { getConfig } from 'src/config/config';
 import ResponseBuilder from 'src/helper/responseBuilder/ResponseBuilder';
+import { observeRateLimitRejection } from 'src/metrics/metrics';
 import { KeyValueStore } from 'src/repositories/keyValueStore/KeyValueStore';
 
 const storeClient = () =>
@@ -15,8 +16,6 @@ const storeClient = () =>
     }).getClient();
 
 type LimiterOptions = Omit<IRateLimiterStoreOptions, 'storeClient' | 'insuranceLimiter'>;
-
-const isLocalDev = process.env.NODE_ENV === 'development';
 
 export function createLimiter(options: LimiterOptions): RateLimiterRedis {
     return new RateLimiterRedis({
@@ -49,7 +48,13 @@ export function setRateLimitHeaders(res: Response, limit: number, state: RateLim
     res.setHeader('X-RateLimit-Reset', String(Math.ceil(state.msBeforeNext / 1000)));
 }
 
-export function rejectTooManyRequests(res: Response, rejection: RateLimiterRes, limit?: number): void {
+/**
+ * `limiter` names which budget ran out. It comes from the limiter's own `keyPrefix`, a value
+ * this module writes (middleware/limiters.ts), so the label set stays closed no matter what a
+ * client sends.
+ */
+export function rejectTooManyRequests(res: Response, rejection: RateLimiterRes, limit?: number, limiter = 'unknown'): void {
+    observeRateLimitRejection(limiter, 'quota');
     const retryAfter = Math.ceil(rejection.msBeforeNext / 1000) || 1;
     res.setHeader('Retry-After', String(retryAfter));
     if (limit !== undefined) {
@@ -79,7 +84,8 @@ const LIMITER_FAILURE_RETRY_AFTER_SEC = 5;
  * `Retry-After` is set for the same reason it is on the 429 path, so a client needs one backoff
  * branch for "refused, try later" instead of two.
  */
-export function rejectSomethingGoWrongRequests(res: Response): void {
+export function rejectSomethingGoWrongRequests(res: Response, limiter = 'unknown'): void {
+    observeRateLimitRejection(limiter, 'backend');
     res.setHeader('Retry-After', String(LIMITER_FAILURE_RETRY_AFTER_SEC));
     res.status(HttpCode.SERVICE_UNAVAILABLE).send(
         new ResponseBuilder().setStatus(ResponseStatusType.INTERNAL).setError({ errorCode: ErrorCode.UNKNOWN_ERROR }).build(),
@@ -92,7 +98,9 @@ export function rateLimitMiddleware(
 ) {
     const limit = limiter.points;
     return (req: Request, res: Response, next: NextFunction): void => {
-        if (isLocalDev) {
+        // Read per request rather than at import time so a test can flip the switch around a
+        // single case (config.ts explains when the limiters are off by default).
+        if (!getConfig().rateLimitEnabled) {
             next();
             return;
         }
@@ -109,11 +117,11 @@ export function rateLimitMiddleware(
             })
             .catch((rejection: unknown) => {
                 if (rejection instanceof RateLimiterRes) {
-                    rejectTooManyRequests(res, rejection, limit);
+                    rejectTooManyRequests(res, rejection, limit, limiter.keyPrefix);
                     return;
                 }
                 Logger.Of('RateLimit').error('Limiter failure', rejection);
-                rejectSomethingGoWrongRequests(res);
+                rejectSomethingGoWrongRequests(res, limiter.keyPrefix);
             });
     };
 }

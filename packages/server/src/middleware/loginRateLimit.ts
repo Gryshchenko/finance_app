@@ -4,6 +4,7 @@ import { RateLimiterRes } from 'rate-limiter-flexible';
 import Logger from 'helper/logger/Logger';
 import { loginAccountLimiter, loginIpLimiter } from 'middleware/limiters';
 import { rejectSomethingGoWrongRequests, rejectTooManyRequests, setRateLimitHeaders } from 'middleware/rateLimit';
+import { getConfig } from 'src/config/config';
 
 const accountKey = (req: Request) => `${String(req.body?.email ?? '').toLowerCase()}`;
 
@@ -13,6 +14,12 @@ const accountKey = (req: Request) => `${String(req.body?.email ?? '').toLowerCas
  * simultaneous attempts all read the same pre-attempt counter.
  */
 export async function loginRateLimit(req: Request, res: Response, next: NextFunction): Promise<void> {
+    // Same switch the generic middleware honours - see config.ts.
+    if (!getConfig().rateLimitEnabled) {
+        next();
+        return;
+    }
+
     const ipKey = req.ip ?? 'unknown';
     const accKey = accountKey(req);
 
@@ -22,11 +29,13 @@ export async function loginRateLimit(req: Request, res: Response, next: NextFunc
         setRateLimitHeaders(res, loginAccountLimiter.points, accountState);
     } catch (rejection: unknown) {
         if (rejection instanceof RateLimiterRes) {
-            rejectTooManyRequests(res, rejection, loginAccountLimiter.points);
+            // Both budgets are consumed in one `Promise.all`, so which of the two rejected is
+            // not recoverable here - the metric attributes the refusal to the pair.
+            rejectTooManyRequests(res, rejection, loginAccountLimiter.points, 'rl:login');
             return;
         }
         Logger.Of('LoginRateLimit').error('Limiter failure', rejection);
-        rejectSomethingGoWrongRequests(res);
+        rejectSomethingGoWrongRequests(res, 'rl:login');
         return;
     }
 

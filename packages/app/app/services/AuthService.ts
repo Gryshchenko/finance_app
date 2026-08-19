@@ -12,6 +12,7 @@ import {
 import { LoginService } from '@/services/LoginService';
 import { SecureStorage } from '@/services/SecureStorage';
 import { SecureStorageKey } from '@/types/SecureStorageKey';
+import { clearCrashReportingUser, setCrashReportingUser } from '@/utils/crashReporting';
 import { ErrorUtils } from '@/utils/errors/ErrorUtils';
 import { ValidationError } from '@/utils/errors/ValidationError';
 import { Logger } from '@/utils/logger/Logger';
@@ -81,6 +82,9 @@ export class AuthService {
     public set userId(value: number | null) {
         if (Utils.isNull(this._userId)) {
             this._userId = value;
+            if (value !== null) {
+                setCrashReportingUser(value);
+            }
         }
     }
 
@@ -196,6 +200,9 @@ export class AuthService {
             }
             this._token = token;
             this._userId = userId;
+            // Attaches the account to every crash raised from here on, so a report can be
+            // matched to a support request without the app ever sending an email or a name.
+            setCrashReportingUser(userId);
 
             await this.setCredentialToSecureStore({
                 userId,
@@ -217,6 +224,8 @@ export class AuthService {
             this._logger.info('Start logout process');
             this._userId = null;
             this._token = null;
+            // Otherwise the next person on this device inherits the previous identity.
+            clearCrashReportingUser();
             this.isAuthorized = false;
             await this.cleanCredentialStore();
             this._logger.info('Logout process success finished');

@@ -556,7 +556,7 @@ describe('entityStats - Expense edge cases', () => {
             period: StatsPeriod.Month,
             type: StatsType.Expense,
         });
-        expect(data).toEqual({ spendMTD: 500, vsLastMonthSpendPct: 0, budgetTotal: 100 });
+        expect(data).toEqual({ spendMTD: 500, vsLastMonthSpendPct: null, budgetTotal: 100 });
     });
 
     it('returns negative pct when spending decreased', async () => {

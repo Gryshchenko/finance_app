@@ -6,7 +6,7 @@ import { ErrorCode, TransactionType } from '@tenpercent/shared';
 import { ResponseStatusType } from '@tenpercent/shared';
 import { HttpCode } from '@tenpercent/shared';
 import { createExpenseTransaction, patchTransaction, tryCreateTransaction, tryPatchTransaction } from './TransactionsTestUtils';
-import { getAccount } from '../account/AccountTestUtils';
+import { createAccount, getAccount } from '../account/AccountTestUtils';
 
 // eslint-disable-next-line @typescript-eslint/no-require-imports
 const request = require('supertest');
@@ -94,9 +94,10 @@ describe('POST /transaction/create - expense', () => {
 
         const { accounts, categories } = await getOverview(agent, userId, authorization);
         const accountId = accounts[0].accountId;
-        const accountIdPatch = accounts[1].accountId;
         const currencyCode = accounts[0].currencyCode;
         const categoryId = categories[0].categoryId;
+        // Registration seeds a single account, so the account to move the transaction to is ours to create.
+        const accountIdPatch = await createAccount(agent, userId, authorization, currencyCode, 1000, 'Patch target');
 
         const accountBefore = await getAccount(agent, userId, authorization, accountId);
         const accountPatchBefore = await getAccount(agent, userId, authorization, accountIdPatch);
@@ -144,9 +145,10 @@ describe('POST /transaction/create - expense', () => {
 
         const { accounts, categories } = await getOverview(agent, userId, authorization);
         const accountId = accounts[0].accountId;
-        const accountIdPatch = accounts[1].accountId;
         const currencyCode = accounts[0].currencyCode;
         const categoryId = categories[0].categoryId;
+        // Registration seeds a single account, so the account to move the transaction to is ours to create.
+        const accountIdPatch = await createAccount(agent, userId, authorization, currencyCode, 1000, 'Patch target');
 
         const accountBefore = await getAccount(agent, userId, authorization, accountId);
         const accountPatchBefore = await getAccount(agent, userId, authorization, accountIdPatch);

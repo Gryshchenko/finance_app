@@ -202,9 +202,9 @@ describe.each([
         const expense = await entityStatsOf(series, 0, StatsType.Expense);
 
         expect(income.incomeMTD).toBe(series.amounts[0]);
-        expect(income.vsLastMonthIncomePct).toBe(0);
+        expect(income.vsLastMonthIncomePct).toBeNull();
         expect(expense.spendMTD).toBe(series.amounts[0]);
-        expect(expense.vsLastMonthSpendPct).toBe(0);
+        expect(expense.vsLastMonthSpendPct).toBeNull();
     });
 
     it('the whole run cancels itself out, so the account never left its starting amount', async () => {

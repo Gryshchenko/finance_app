@@ -3,6 +3,8 @@ packages:
 
 allowBuilds:
     '@scarf/scarf': true
+    # Fetches the sentry-cli binary that uploads source maps during a native build.
+    '@sentry/cli': true
     argon2: true
     unrs-resolver: true
 

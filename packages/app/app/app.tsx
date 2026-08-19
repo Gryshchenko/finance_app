@@ -24,6 +24,7 @@ if (__DEV__ && Platform.OS !== 'web') {
 
 import { useFonts } from 'expo-font';
 import * as Linking from 'expo-linking';
+import * as Sentry from '@sentry/react-native';
 import { QueryClientProvider } from '@tanstack/react-query';
 import { GestureHandlerRootView } from 'react-native-gesture-handler';
 import { KeyboardProvider } from 'react-native-keyboard-controller';
@@ -31,6 +32,7 @@ import { initialWindowMetrics, SafeAreaProvider } from 'react-native-safe-area-c
 
 import { queryClient } from '@/services/queryClient';
 import { SecureBiometricStorage } from '@/services/SecureBiometricStorage';
+import { initCrashReporting } from '@/utils/crashReporting';
 
 import { AuthProvider } from './context/AuthContext';
 import { initI18n } from './i18n';
@@ -39,6 +41,10 @@ import { useNavigationPersistence } from './navigators/navigationUtilities';
 import { ThemeProvider } from './theme/context';
 import { customFontsToLoad } from './theme/typography';
 import { loadDateFnsLocale } from './utils/formatDate';
+
+// At module scope on purpose: an error thrown while the first render is still on its
+// way up would be missed by an effect that has not run yet.
+initCrashReporting();
 
 export const NAVIGATION_PERSISTENCE_KEY = 'NAVIGATION_STATE';
 
@@ -60,7 +66,7 @@ const config = {
  * @param {AppProps} props - The props for the `App` component.
  * @returns {JSX.Element} The rendered `App` component.
  */
-export function App() {
+function AppRoot() {
     const {
         initialNavigationState,
         onNavigationStateChange,
@@ -112,3 +118,10 @@ export function App() {
         </SafeAreaProvider>
     );
 }
+
+/**
+ * `Sentry.wrap` is what connects the native layer: it reports the crashes JS never
+ * sees, tracks session health for the release health charts, and times the app start.
+ * Uninitialised - no DSN, or a dev build - it hands the component straight back.
+ */
+export const App = Sentry.wrap(AppRoot);

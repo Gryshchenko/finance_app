@@ -95,3 +95,9 @@ web-build/
 !.yarn/releases
 !.yarn/sdks
 !.yarn/versions
+
+# tsc output must never sit next to the sources it was built from: jest resolves `.js`
+# before `.ts`, so a stale build silently shadows the real module (app/i18n/en.js did
+# exactly that, and the i18n test failed on keys that were present in en.ts all along).
+app/**/*.js
+app/**/*.d.ts

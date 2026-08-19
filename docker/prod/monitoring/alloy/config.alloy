@@ -1,0 +1,170 @@
+// Collector for Grafana Cloud.
+//
+// Alloy scrapes the same targets a local Prometheus would and forwards them straight to the
+// Cloud endpoint; nothing is stored here beyond a write-ahead log that covers an outage.
+//
+// Alloy rather than Prometheus for one concrete reason: Prometheus does not expand environment
+// variables in its configuration file, so the Cloud token would have to be a file on the host.
+// `sys.env` below reads the same shell environment the rest of this deployment already gets
+// from SSM, and no credential is written to disk.
+//
+// Required environment (see compose.monitoring.yaml):
+//   GRAFANA_CLOUD_PROM_URL   https://prometheus-prod-NN-prod-<region>.grafana.net/api/prom/push
+//   GRAFANA_CLOUD_PROM_USER  the numeric instance id from the Cloud portal
+//   GRAFANA_CLOUD_API_KEY    an access policy token with metrics:write
+
+prometheus.remote_write "cloud" {
+	// Attached to every series on the way out. `env` is what separates this host from the next
+	// one once a second deployment writes into the same Cloud stack.
+	external_labels = {
+		env = "production",
+	}
+
+	endpoint {
+		url = sys.env("GRAFANA_CLOUD_PROM_URL")
+
+		basic_auth {
+			username = sys.env("GRAFANA_CLOUD_PROM_USER")
+			password = sys.env("GRAFANA_CLOUD_API_KEY")
+		}
+	}
+}
+
+// The API itself: HTTP latency by normalized route, rate-limit refusals, the knex pool, and
+// node process metrics. Served on its own port so it never reaches the public site - see
+// src/metrics/metricsServer.ts.
+prometheus.scrape "server" {
+	targets         = [{"__address__" = "server:9464"}]
+	job_name        = "server"
+	scrape_interval = "30s"
+	forward_to      = [prometheus.remote_write.cloud.receiver]
+}
+
+// Host: CPU, memory, disk. The disk series matter most - the postgres volume filling up is the
+// failure that takes the API down without a single application error being logged first.
+prometheus.scrape "node" {
+	targets         = [{"__address__" = "node-exporter:9100"}]
+	job_name        = "node"
+	scrape_interval = "30s"
+	forward_to      = [prometheus.remote_write.cloud.receiver]
+}
+
+prometheus.scrape "postgres" {
+	targets         = [{"__address__" = "postgres-exporter:9187"}]
+	job_name        = "postgres"
+	scrape_interval = "30s"
+	forward_to      = [prometheus.remote_write.cloud.receiver]
+}
+
+prometheus.scrape "redis" {
+	targets         = [{"__address__" = "redis-exporter:9121"}]
+	job_name        = "redis"
+	scrape_interval = "30s"
+	forward_to      = [prometheus.remote_write.cloud.receiver]
+}
+
+// Edge view: request rate and status codes as the internet sees them, plus TLS handshakes.
+// Served by the `:2020` site block in the Caddyfile, not by the admin API.
+prometheus.scrape "caddy" {
+	targets         = [{"__address__" = "caddy:2020"}]
+	job_name        = "caddy"
+	scrape_interval = "30s"
+	forward_to      = [prometheus.remote_write.cloud.receiver]
+}
+
+// Per-container CPU/memory, restarts and OOM kills.
+//
+// cAdvisor is the one target that can spend a 10k free-tier series budget on its own. The
+// filter below keeps the handful of series worth having; widen the list deliberately, and check
+// the Cloud usage dashboard afterwards.
+prometheus.scrape "cadvisor" {
+	targets         = [{"__address__" = "cadvisor:8080"}]
+	job_name        = "cadvisor"
+	scrape_interval = "60s"
+	forward_to      = [prometheus.relabel.cadvisor.receiver]
+}
+
+prometheus.relabel "cadvisor" {
+	forward_to = [prometheus.remote_write.cloud.receiver]
+
+	rule {
+		source_labels = ["__name__"]
+		regex         = "container_(cpu_usage_seconds_total|memory_working_set_bytes|memory_usage_bytes|network_(receive|transmit)_bytes_total|fs_usage_bytes|last_seen|start_time_seconds|oom_events_total)"
+		action        = "keep"
+	}
+
+	// Every container also reports under an empty name (the cgroup root); those duplicate what
+	// node-exporter already says about the host.
+	rule {
+		source_labels = ["name"]
+		regex         = ""
+		action        = "drop"
+	}
+}
+
+// Alloy watching itself. Without this a broken remote_write is invisible: the Cloud stack
+// simply stops receiving, which looks the same as an idle service. Only the delivery and
+// scrape-health series are kept - the rest is Go runtime detail.
+prometheus.scrape "alloy" {
+	targets         = [{"__address__" = "localhost:12345"}]
+	job_name        = "alloy"
+	scrape_interval = "60s"
+	forward_to      = [prometheus.relabel.alloy.receiver]
+}
+
+prometheus.relabel "alloy" {
+	forward_to = [prometheus.remote_write.cloud.receiver]
+
+	rule {
+		source_labels = ["__name__"]
+		regex         = "(up|scrape_samples_scraped|prometheus_remote_storage_(samples_total|samples_failed_total|samples_dropped_total|samples_pending|highest_timestamp_in_seconds|queue_highest_sent_timestamp_seconds))"
+		action        = "keep"
+	}
+}
+
+// ---------------------------------------------------------------------------
+// Container logs -> Grafana Cloud Loki (opt-in)
+// ---------------------------------------------------------------------------
+//
+// The free tier includes ~50GB of logs, and pino already writes structured JSON, so this is the
+// cheapest large win left. It is commented out rather than enabled because of what it costs:
+// `discovery.docker` needs the Docker socket, and a process holding that socket can start a
+// privileged container - it is root on the host in practice. Mounting it `:ro` does not change
+// that; the flag applies to the socket file, not to the API behind it.
+//
+// This stack already runs cAdvisor privileged, so the exposure is not new - but it is a
+// decision worth making on purpose. To enable: uncomment this block, add the two Loki variables
+// to compose.monitoring.yaml, and mount /var/run/docker.sock into the alloy service.
+//
+// discovery.docker "containers" {
+// 	host             = "unix:///var/run/docker.sock"
+// 	refresh_interval = "30s"
+// }
+//
+// discovery.relabel "containers" {
+// 	targets = discovery.docker.containers.targets
+//
+// 	rule {
+// 		source_labels = ["__meta_docker_container_name"]
+// 		regex         = "/(.*)"
+// 		target_label  = "container"
+// 	}
+// }
+//
+// loki.source.docker "containers" {
+// 	host       = "unix:///var/run/docker.sock"
+// 	targets    = discovery.relabel.containers.output
+// 	labels     = { env = "production" }
+// 	forward_to = [loki.write.cloud.receiver]
+// }
+//
+// loki.write "cloud" {
+// 	endpoint {
+// 		url = sys.env("GRAFANA_CLOUD_LOKI_URL")
+//
+// 		basic_auth {
+// 			username = sys.env("GRAFANA_CLOUD_LOKI_USER")
+// 			password = sys.env("GRAFANA_CLOUD_API_KEY")
+// 		}
+// 	}
+// }

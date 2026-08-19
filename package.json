@@ -6,10 +6,7 @@
         "packages/*"
     ],
     "dependencies": {
-        "luxon": "^3.6.1",
-        "expo": "~54.0.33",
-        "react": "19.1.0",
-        "react-native": "0.81.5"
+        "luxon": "^3.6.1"
     },
     "devDependencies": {
         "@babel/core": "^7.20.0",
@@ -45,8 +42,8 @@
         "eslint": "pnpm --filter './packages/server' run eslint && pnpm --filter './packages/app' run eslint && pnpm --filter './packages/shared' run eslint",
         "eslint:check": "pnpm --filter './packages/server' run eslint:check && pnpm --filter './packages/app' run eslint:check && pnpm --filter './packages/shared' run eslint:check",
         "prepare": "husky install",
-        "android": "expo run:android",
-        "ios": "expo run:ios"
+        "android": "pnpm --filter './packages/app' run android",
+        "ios": "pnpm --filter './packages/app' run ios"
     },
     "pnpm": {
         "neverBuiltDependencies": [

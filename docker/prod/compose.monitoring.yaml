@@ -1,0 +1,147 @@
+# Metrics collection, layered on top of compose.yaml:
+#
+#   docker compose -f compose.yaml -f compose.monitoring.yaml up -d
+#
+# It is a separate file so the API can be deployed without it, and so a collector restart never
+# touches the API. Both files must be passed on every command once it is running - a plain
+# `docker compose -f compose.yaml up -d` would consider these services orphans.
+#
+# There is no Grafana and no Prometheus here: the dashboards and the series database live in
+# Grafana Cloud, and this host only runs the exporters plus the agent that ships their output.
+# Nothing in this file is published to the internet; the one published port is Alloy's own UI,
+# bound to the host's loopback address and reached over an SSH tunnel:
+#
+#   ssh -L 12345:127.0.0.1:12345 user@host   # then http://localhost:12345
+services:
+    alloy:
+        image: grafana/alloy:v1.7.1
+        container_name: tenpercent-alloy
+        restart: unless-stopped
+        command:
+            - run
+            # The UI is also the scrape target for Alloy's own metrics, so it binds inside the
+            # container network rather than to localhost only. Reaching it from outside the host
+            # still needs the tunnel above - see `ports`.
+            - --server.http.listen-addr=0.0.0.0:12345
+            - --storage.path=/var/lib/alloy/data
+            - /etc/alloy/config.alloy
+        environment:
+            # From the Grafana Cloud portal: Connections -> Prometheus -> Send metrics.
+            # The token needs the `metrics:write` scope and nothing else.
+            - GRAFANA_CLOUD_PROM_URL=${GRAFANA_CLOUD_PROM_URL:?GRAFANA_CLOUD_PROM_URL is required}
+            - GRAFANA_CLOUD_PROM_USER=${GRAFANA_CLOUD_PROM_USER:?GRAFANA_CLOUD_PROM_USER is required}
+            - GRAFANA_CLOUD_API_KEY=${GRAFANA_CLOUD_API_KEY:?GRAFANA_CLOUD_API_KEY is required}
+        ports:
+            # Loopback only - see the note at the top of this file.
+            - '127.0.0.1:12345:12345'
+        volumes:
+            - ./monitoring/alloy/config.alloy:/etc/alloy/config.alloy:ro
+            # The write-ahead log. Losing it costs whatever had not been delivered yet, which is
+            # why it is a volume and not a tmpfs: a restart during a Cloud outage keeps the gap
+            # to the outage itself.
+            - alloy-data:/var/lib/alloy/data
+        security_opt:
+            - no-new-privileges:true
+        logging:
+            driver: json-file
+            options:
+                max-size: '10m'
+                max-file: '3'
+        networks:
+            - backend
+
+    node-exporter:
+        image: prom/node-exporter:v1.8.2
+        container_name: tenpercent-node-exporter
+        restart: unless-stopped
+        # The host's process and network namespaces, read-only: without them the exporter would
+        # describe its own container instead of the machine.
+        pid: host
+        command:
+            - --path.rootfs=/host
+            - --collector.filesystem.mount-points-exclude=^/(sys|proc|dev|host|etc|rootfs/var/lib/docker)($$|/)
+        volumes:
+            - /:/host:ro,rslave
+        security_opt:
+            - no-new-privileges:true
+        logging:
+            driver: json-file
+            options:
+                max-size: '10m'
+                max-file: '3'
+        networks:
+            - backend
+
+    cadvisor:
+        image: gcr.io/cadvisor/cadvisor:v0.49.1
+        container_name: tenpercent-cadvisor
+        restart: unless-stopped
+        # cAdvisor reads every container's cgroup, which is a privileged operation by
+        # definition. This is the one container in the stack with that access; the trade is
+        # per-container memory and OOM-kill visibility, which nothing else here provides. Drop
+        # this service and the `cadvisor` scrape in config.alloy if that trade is not worth it.
+        privileged: true
+        devices:
+            - /dev/kmsg:/dev/kmsg
+        volumes:
+            - /:/rootfs:ro
+            - /var/run:/var/run:ro
+            - /sys:/sys:ro
+            - /var/lib/docker/:/var/lib/docker:ro
+            - /dev/disk/:/dev/disk:ro
+        logging:
+            driver: json-file
+            options:
+                max-size: '10m'
+                max-file: '3'
+        networks:
+            - backend
+
+    postgres-exporter:
+        image: quay.io/prometheuscommunity/postgres-exporter:v0.16.0
+        container_name: tenpercent-postgres-exporter
+        restart: unless-stopped
+        depends_on:
+            postgres:
+                condition: service_healthy
+        environment:
+            # The application's own credentials. A dedicated read-only role with pg_monitor
+            # would be tighter, and is worth doing once this outgrows one host - the exporter
+            # needs nothing but SELECT on the statistics views.
+            - DATA_SOURCE_NAME=postgresql://${DB_USER}:${DB_PASS}@postgres:5432/${DB_NAME}?sslmode=disable
+        security_opt:
+            - no-new-privileges:true
+        logging:
+            driver: json-file
+            options:
+                max-size: '10m'
+                max-file: '3'
+        networks:
+            - backend
+
+    redis-exporter:
+        image: oliver006/redis_exporter:v1.67.0
+        container_name: tenpercent-redis-exporter
+        restart: unless-stopped
+        depends_on:
+            redis:
+                condition: service_healthy
+        environment:
+            - REDIS_ADDR=redis://redis:6379
+            - REDIS_PASSWORD=${REDIS_PASSWORD:?REDIS_PASSWORD is required}
+        security_opt:
+            - no-new-privileges:true
+        logging:
+            driver: json-file
+            options:
+                max-size: '10m'
+                max-file: '3'
+        networks:
+            - backend
+
+volumes:
+    alloy-data:
+
+networks:
+    backend:
+        driver: bridge

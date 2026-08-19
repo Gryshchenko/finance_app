@@ -9,6 +9,14 @@
     email {$ACME_EMAIL}
 }
 
+# Caddy's own metrics: requests, statuses and latency as the internet sees them, plus TLS
+# handshakes and certificate ages. This is a plain HTTP site block on a port that compose never
+# publishes, not the admin endpoint - the admin API can rewrite Caddy's entire configuration,
+# and nothing needs that reachable just to read a counter.
+:2020 {
+    metrics
+}
+
 {$API_DOMAIN} {
     encode zstd gzip
 

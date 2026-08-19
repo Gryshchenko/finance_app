@@ -7,6 +7,8 @@ services:
         depends_on:
             postgres:
                 condition: service_healthy
+            redis-master:
+                condition: service_started
         environment:
             # ====================
             # App
@@ -27,6 +29,10 @@ services:
             - JWT_EXPIRES_IN=1h
             - JWT_LONG_EXPIRES_IN=1m
             - JWT_EXPIRES_SEC=540
+            # The password-reset token is signed with its own secret (see config.ts): without
+            # it every forget-confirm answers 500 instead of handing out a reset token.
+            - JWT_RESET_SECRET=9d0f1a7c4b83e26af51d7c9b0e4a3f68d25c7b1e94a06f3d8c5b2e7a1f4d9c063b8e5a2f7d1c4b09e63a5f8d2c7b1e40
+            - JWT_RESET_EXPIRES_IN=15m
 
             # ====================
             # PostgreSQL (Neon)
@@ -36,6 +42,17 @@ services:
             - DB_PASS=test_password
             - DB_PORT=5432
             - DB_HOST=postgres
+
+            # ====================
+            # Redis
+            # ====================
+            # Token blacklist and session state - the suites talk to a real instance, so these
+            # have to match the redis-master service below.
+            - REDIS_HOST=redis-master
+            - REDIS_PORT=6379
+            - REDIS_PASSWORD=redispassword
+            - REDIS_PREFIX=tenpercent.test
+            - REDIS_MASTER_NAME=mymaster
         ports:
             - '3000:3000'
         networks:

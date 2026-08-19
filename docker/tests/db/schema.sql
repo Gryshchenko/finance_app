@@ -2,12 +2,12 @@
 -- PostgreSQL database dump
 --
 
-\restrict jSiTkT0UP6ocGFTqHz2zxZbPxDcgKhvTwT0ptVhQcE5w8BmZafqkochGF9w4v94
+\restrict lCvOaAqAKCN5IyrH74nlboqVmtt9MA5YnySFPy6YV7naSlakoUCldHDn2kpQ0Im
 
--- Dumped from database version 16.11 (f45eb12)
--- Dumped by pg_dump version 16.11 (Homebrew)
+-- Dumped from database version 16.14
+-- Dumped by pg_dump version 16.14 (Homebrew)
 
--- Started on 2026-01-21 16:30:36 CET
+-- Started on 2026-08-19 20:17:22 CEST
 
 SET statement_timeout = 0;
 SET lock_timeout = 0;
@@ -20,12 +20,29 @@ SET xmloption = content;
 SET client_min_messages = warning;
 SET row_security = off;
 
+--
+-- TOC entry 4 (class 2615 OID 2200)
+-- Name: public; Type: SCHEMA; Schema: -; Owner: -
+--
+
+CREATE SCHEMA IF NOT EXISTS public;
+
+
+--
+-- TOC entry 3774 (class 0 OID 0)
+-- Dependencies: 4
+-- Name: SCHEMA public; Type: COMMENT; Schema: -; Owner: -
+--
+
+COMMENT ON SCHEMA public IS 'standard public schema';
+
+
 SET default_tablespace = '';
 
 SET default_table_access_method = heap;
 
 --
--- TOC entry 232 (class 1259 OID 33102)
+-- TOC entry 217 (class 1259 OID 16397)
 -- Name: accounts; Type: TABLE; Schema: public; Owner: -
 --
 
@@ -35,19 +52,19 @@ CREATE TABLE public.accounts (
     "accountName" character varying(128) NOT NULL,
     amount numeric NOT NULL,
     "currencyCode" character varying(3) NOT NULL,
-    "iconId" character varying(64),
-    "colorId" character varying(64),
-    "createdAt" timestamp with time zone DEFAULT CURRENT_TIMESTAMP NOT NULL,
-    "updatedAt" timestamp with time zone,
+    "createdAt" timestamp without time zone DEFAULT CURRENT_TIMESTAMP NOT NULL,
+    "updatedAt" timestamp without time zone,
     status smallint,
     "isDeleted" boolean DEFAULT false NOT NULL,
     "deletedAt" timestamp with time zone,
+    "iconId" character varying,
+    "colorId" character varying,
     "position" integer DEFAULT 0 NOT NULL
 );
 
 
 --
--- TOC entry 231 (class 1259 OID 33101)
+-- TOC entry 218 (class 1259 OID 16405)
 -- Name: accounts_accountId_seq; Type: SEQUENCE; Schema: public; Owner: -
 --
 
@@ -61,8 +78,8 @@ CREATE SEQUENCE public."accounts_accountId_seq"
 
 
 --
--- TOC entry 3574 (class 0 OID 0)
--- Dependencies: 231
+-- TOC entry 3775 (class 0 OID 0)
+-- Dependencies: 218
 -- Name: accounts_accountId_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: -
 --
 
@@ -70,7 +87,7 @@ ALTER SEQUENCE public."accounts_accountId_seq" OWNED BY public.accounts."account
 
 
 --
--- TOC entry 244 (class 1259 OID 229377)
+-- TOC entry 219 (class 1259 OID 16406)
 -- Name: balance; Type: TABLE; Schema: public; Owner: -
 --
 
@@ -78,13 +95,13 @@ CREATE TABLE public.balance (
     "balanceId" integer NOT NULL,
     "userId" integer NOT NULL,
     balance numeric NOT NULL,
-    "createdAt" timestamp with time zone DEFAULT now() NOT NULL,
-    "updatedAt" timestamp with time zone
+    "createdAt" timestamp without time zone DEFAULT now() NOT NULL,
+    "updatedAt" timestamp without time zone
 );
 
 
 --
--- TOC entry 243 (class 1259 OID 229376)
+-- TOC entry 220 (class 1259 OID 16412)
 -- Name: balance_balanceId_seq; Type: SEQUENCE; Schema: public; Owner: -
 --
 
@@ -98,8 +115,8 @@ CREATE SEQUENCE public."balance_balanceId_seq"
 
 
 --
--- TOC entry 3575 (class 0 OID 0)
--- Dependencies: 243
+-- TOC entry 3776 (class 0 OID 0)
+-- Dependencies: 220
 -- Name: balance_balanceId_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: -
 --
 
@@ -107,7 +124,7 @@ ALTER SEQUENCE public."balance_balanceId_seq" OWNED BY public.balance."balanceId
 
 
 --
--- TOC entry 234 (class 1259 OID 33121)
+-- TOC entry 221 (class 1259 OID 16413)
 -- Name: categories; Type: TABLE; Schema: public; Owner: -
 --
 
@@ -116,20 +133,20 @@ CREATE TABLE public.categories (
     "categoryName" character varying(128) NOT NULL,
     "userId" integer NOT NULL,
     "currencyCode" character varying(3) NOT NULL,
-    "iconId" character varying(64),
-    "createdAt" timestamp with time zone DEFAULT CURRENT_TIMESTAMP NOT NULL,
-    "updatedAt" timestamp with time zone,
+    "createdAt" timestamp without time zone DEFAULT CURRENT_TIMESTAMP NOT NULL,
+    "updatedAt" timestamp without time zone,
     status smallint,
     "isDeleted" boolean DEFAULT false NOT NULL,
     "deletedAt" timestamp with time zone,
+    "iconId" character varying,
+    "colorId" character varying,
     budget numeric(12,2),
-    "colorId" character varying(64),
     "position" integer DEFAULT 0 NOT NULL
 );
 
 
 --
--- TOC entry 233 (class 1259 OID 33120)
+-- TOC entry 222 (class 1259 OID 16421)
 -- Name: categories_categoryId_seq; Type: SEQUENCE; Schema: public; Owner: -
 --
 
@@ -143,8 +160,8 @@ CREATE SEQUENCE public."categories_categoryId_seq"
 
 
 --
--- TOC entry 3576 (class 0 OID 0)
--- Dependencies: 233
+-- TOC entry 3777 (class 0 OID 0)
+-- Dependencies: 222
 -- Name: categories_categoryId_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: -
 --
 
@@ -152,7 +169,7 @@ ALTER SEQUENCE public."categories_categoryId_seq" OWNED BY public.categories."ca
 
 
 --
--- TOC entry 226 (class 1259 OID 33048)
+-- TOC entry 223 (class 1259 OID 16422)
 -- Name: currencies; Type: TABLE; Schema: public; Owner: -
 --
 
@@ -164,22 +181,7 @@ CREATE TABLE public.currencies (
 
 
 --
--- TOC entry 225 (class 1259 OID 33047)
--- (currencies surrogate sequence removed)
---
-
-
-
---
--- TOC entry 3577 (class 0 OID 0)
--- Dependencies: 225
--- (currencies surrogate sequence removed)
---
-
-
-
---
--- TOC entry 245 (class 1259 OID 237568)
+-- TOC entry 224 (class 1259 OID 16425)
 -- Name: currencyRates; Type: TABLE; Schema: public; Owner: -
 --
 
@@ -187,22 +189,12 @@ CREATE TABLE public."currencyRates" (
     "baseCurrency" character varying(3) NOT NULL,
     "targetCurrency" character varying(3) NOT NULL,
     rate numeric(18,6) NOT NULL,
-    "updatedAt" timestamp with time zone DEFAULT now() NOT NULL
+    "updatedAt" timestamp without time zone DEFAULT now() NOT NULL
 );
-
-
-CREATE TABLE public.historical_currency_rates (
-                                                  "baseCurrency" character varying(3) NOT NULL,
-                                                  "targetCurrency" character varying(3) NOT NULL,
-                                                  rate numeric(18,6) NOT NULL,
-                                                  date date NOT NULL,
-                                                  "updatedAt" timestamp without time zone DEFAULT now() NOT NULL
-);
-
 
 
 --
--- TOC entry 224 (class 1259 OID 33039)
+-- TOC entry 226 (class 1259 OID 16433)
 -- Name: currencytype; Type: TABLE; Schema: public; Owner: -
 --
 
@@ -214,7 +206,7 @@ CREATE TABLE public.currencytype (
 
 
 --
--- TOC entry 223 (class 1259 OID 33038)
+-- TOC entry 227 (class 1259 OID 16436)
 -- Name: currencytype_currencyTypeId_seq; Type: SEQUENCE; Schema: public; Owner: -
 --
 
@@ -228,8 +220,8 @@ CREATE SEQUENCE public."currencytype_currencyTypeId_seq"
 
 
 --
--- TOC entry 3578 (class 0 OID 0)
--- Dependencies: 223
+-- TOC entry 3778 (class 0 OID 0)
+-- Dependencies: 227
 -- Name: currencytype_currencyTypeId_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: -
 --
 
@@ -237,7 +229,7 @@ ALTER SEQUENCE public."currencytype_currencyTypeId_seq" OWNED BY public.currency
 
 
 --
--- TOC entry 249 (class 1259 OID 426001)
+-- TOC entry 228 (class 1259 OID 16437)
 -- Name: daily_accounts_stats; Type: TABLE; Schema: public; Owner: -
 --
 
@@ -251,12 +243,12 @@ CREATE TABLE public.daily_accounts_stats (
     "currencyCode" character varying(3),
     "targetCurrencyCode" character varying(3),
     "accountId" integer NOT NULL,
-    "updatedAt" timestamp with time zone DEFAULT now() NOT NULL
+    "updatedAt" timestamp without time zone DEFAULT now() NOT NULL
 );
 
 
 --
--- TOC entry 248 (class 1259 OID 425984)
+-- TOC entry 229 (class 1259 OID 16445)
 -- Name: daily_categories_stats; Type: TABLE; Schema: public; Owner: -
 --
 
@@ -268,12 +260,12 @@ CREATE TABLE public.daily_categories_stats (
     "currencyCode" character varying(3),
     "targetCurrencyCode" character varying(3),
     "categoryId" integer NOT NULL,
-    "updatedAt" timestamp with time zone DEFAULT now() NOT NULL
+    "updatedAt" timestamp without time zone DEFAULT now() NOT NULL
 );
 
 
 --
--- TOC entry 250 (class 1259 OID 426019)
+-- TOC entry 230 (class 1259 OID 16451)
 -- Name: daily_incomes_stats; Type: TABLE; Schema: public; Owner: -
 --
 
@@ -285,12 +277,12 @@ CREATE TABLE public.daily_incomes_stats (
     "currencyCode" character varying(3),
     "targetCurrencyCode" character varying(3),
     "incomeId" integer NOT NULL,
-    "updatedAt" timestamp with time zone DEFAULT now() NOT NULL
+    "updatedAt" timestamp without time zone DEFAULT now() NOT NULL
 );
 
 
 --
--- TOC entry 246 (class 1259 OID 409600)
+-- TOC entry 231 (class 1259 OID 16457)
 -- Name: daily_stats; Type: TABLE; Schema: public; Owner: -
 --
 
@@ -301,12 +293,12 @@ CREATE TABLE public.daily_stats (
     income_total numeric(18,2) DEFAULT 0 NOT NULL,
     expense_total numeric(18,2) DEFAULT 0 NOT NULL,
     transfer_total numeric(18,2) DEFAULT 0 NOT NULL,
-    "updatedAt" timestamp with time zone DEFAULT now() NOT NULL
+    "updatedAt" timestamp without time zone DEFAULT now() NOT NULL
 );
 
 
 --
--- TOC entry 251 (class 1259 OID 426036)
+-- TOC entry 232 (class 1259 OID 16464)
 -- Name: daily_transfer_stats; Type: TABLE; Schema: public; Owner: -
 --
 
@@ -319,12 +311,51 @@ CREATE TABLE public.daily_transfer_stats (
     "targetCurrencyCode" character varying(3),
     "accountId" integer NOT NULL,
     "targetAccountId" integer NOT NULL,
-    "updatedAt" timestamp with time zone DEFAULT now() NOT NULL
+    "updatedAt" timestamp without time zone DEFAULT now() NOT NULL
 );
 
 
 --
--- TOC entry 238 (class 1259 OID 33177)
+-- TOC entry 233 (class 1259 OID 16470)
+-- Name: email_changing; Type: TABLE; Schema: public; Owner: -
+--
+
+CREATE TABLE public.email_changing (
+    id integer NOT NULL,
+    "userId" integer NOT NULL,
+    "confirmationCode" integer NOT NULL,
+    confirmed boolean DEFAULT false,
+    email character varying(100) NOT NULL,
+    "createdAt" timestamp without time zone DEFAULT now() NOT NULL,
+    "expiresAt" timestamp without time zone NOT NULL
+);
+
+
+--
+-- TOC entry 234 (class 1259 OID 16475)
+-- Name: email_changing_id_seq; Type: SEQUENCE; Schema: public; Owner: -
+--
+
+CREATE SEQUENCE public.email_changing_id_seq
+    AS integer
+    START WITH 1
+    INCREMENT BY 1
+    NO MINVALUE
+    NO MAXVALUE
+    CACHE 1;
+
+
+--
+-- TOC entry 3779 (class 0 OID 0)
+-- Dependencies: 234
+-- Name: email_changing_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: -
+--
+
+ALTER SEQUENCE public.email_changing_id_seq OWNED BY public.email_changing.id;
+
+
+--
+-- TOC entry 235 (class 1259 OID 16476)
 -- Name: email_confirmations; Type: TABLE; Schema: public; Owner: -
 --
 
@@ -334,14 +365,14 @@ CREATE TABLE public.email_confirmations (
     email character varying(100) NOT NULL,
     "confirmationCode" integer NOT NULL,
     confirmed boolean DEFAULT false,
-    "createdAt" timestamp with time zone DEFAULT CURRENT_TIMESTAMP NOT NULL,
-    "expiresAt" timestamp with time zone NOT NULL,
-    status smallint NOT NULL
+    "createdAt" timestamp without time zone DEFAULT now() NOT NULL,
+    "expiresAt" timestamp without time zone NOT NULL,
+    status smallint DEFAULT 3 NOT NULL
 );
 
 
 --
--- TOC entry 237 (class 1259 OID 33176)
+-- TOC entry 236 (class 1259 OID 16482)
 -- Name: email_confirmations_confirmationId_seq; Type: SEQUENCE; Schema: public; Owner: -
 --
 
@@ -355,8 +386,8 @@ CREATE SEQUENCE public."email_confirmations_confirmationId_seq"
 
 
 --
--- TOC entry 3579 (class 0 OID 0)
--- Dependencies: 237
+-- TOC entry 3780 (class 0 OID 0)
+-- Dependencies: 236
 -- Name: email_confirmations_confirmationId_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: -
 --
 
@@ -364,22 +395,34 @@ ALTER SEQUENCE public."email_confirmations_confirmationId_seq" OWNED BY public.e
 
 
 --
--- TOC entry 222 (class 1259 OID 33025)
+-- TOC entry 215 (class 1259 OID 16385)
+-- Name: goals; Type: TABLE; Schema: public; Owner: -
+--
+
+CREATE TABLE public.goals (
+    "userId" integer NOT NULL,
+    "selectedGoals" text[] NOT NULL,
+    "createdAt" timestamp without time zone DEFAULT CURRENT_TIMESTAMP NOT NULL
+);
+
+
+--
+-- TOC entry 237 (class 1259 OID 16483)
 -- Name: groupinvitations; Type: TABLE; Schema: public; Owner: -
 --
 
 CREATE TABLE public.groupinvitations (
     "invitationId" integer NOT NULL,
-    "userGroupId" integer,
-    "invitedEmail" character varying(128),
-    status integer,
-    "createdAt" timestamp with time zone NOT NULL,
-    "updatedAt" timestamp with time zone
+    "userGroupId" integer NOT NULL,
+    "invitedEmail" character varying(128) NOT NULL,
+    status integer NOT NULL,
+    "createdAt" timestamp without time zone DEFAULT CURRENT_TIMESTAMP NOT NULL,
+    "updatedAt" timestamp without time zone
 );
 
 
 --
--- TOC entry 221 (class 1259 OID 33024)
+-- TOC entry 238 (class 1259 OID 16486)
 -- Name: groupinvitations_invitationId_seq; Type: SEQUENCE; Schema: public; Owner: -
 --
 
@@ -393,8 +436,8 @@ CREATE SEQUENCE public."groupinvitations_invitationId_seq"
 
 
 --
--- TOC entry 3580 (class 0 OID 0)
--- Dependencies: 221
+-- TOC entry 3781 (class 0 OID 0)
+-- Dependencies: 238
 -- Name: groupinvitations_invitationId_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: -
 --
 
@@ -402,7 +445,61 @@ ALTER SEQUENCE public."groupinvitations_invitationId_seq" OWNED BY public.groupi
 
 
 --
--- TOC entry 230 (class 1259 OID 33085)
+-- TOC entry 261 (class 1259 OID 16846)
+-- Name: groupshareditem; Type: TABLE; Schema: public; Owner: -
+--
+
+CREATE TABLE public.groupshareditem (
+    "sharedItemId" integer NOT NULL,
+    "userGroupId" integer NOT NULL,
+    "userId" integer NOT NULL,
+    "accountId" integer,
+    "incomeId" integer,
+    "categoryId" integer,
+    "updatedAt" timestamp without time zone,
+    "createdAt" timestamp without time zone DEFAULT CURRENT_TIMESTAMP NOT NULL
+);
+
+
+--
+-- TOC entry 262 (class 1259 OID 16850)
+-- Name: groupshareditem_sharedItemId_seq; Type: SEQUENCE; Schema: public; Owner: -
+--
+
+CREATE SEQUENCE public."groupshareditem_sharedItemId_seq"
+    AS integer
+    START WITH 1
+    INCREMENT BY 1
+    NO MINVALUE
+    NO MAXVALUE
+    CACHE 1;
+
+
+--
+-- TOC entry 3782 (class 0 OID 0)
+-- Dependencies: 262
+-- Name: groupshareditem_sharedItemId_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: -
+--
+
+ALTER SEQUENCE public."groupshareditem_sharedItemId_seq" OWNED BY public.groupshareditem."sharedItemId";
+
+
+--
+-- TOC entry 225 (class 1259 OID 16429)
+-- Name: historical_currency_rates; Type: TABLE; Schema: public; Owner: -
+--
+
+CREATE TABLE public.historical_currency_rates (
+    "baseCurrency" character varying(3) NOT NULL,
+    "targetCurrency" character varying(3) NOT NULL,
+    rate numeric(18,6) NOT NULL,
+    date date NOT NULL,
+    "updatedAt" timestamp without time zone DEFAULT now() NOT NULL
+);
+
+
+--
+-- TOC entry 239 (class 1259 OID 16487)
 -- Name: incomes; Type: TABLE; Schema: public; Owner: -
 --
 
@@ -411,19 +508,19 @@ CREATE TABLE public.incomes (
     "userId" integer NOT NULL,
     "incomeName" character varying(128) NOT NULL,
     "currencyCode" character varying(3) NOT NULL,
-    "iconId" character varying(64),
-    "colorId" character varying(64),
-    "createdAt" timestamp with time zone DEFAULT CURRENT_TIMESTAMP NOT NULL,
-    "updatedAt" timestamp with time zone,
+    "createdAt" timestamp without time zone DEFAULT CURRENT_TIMESTAMP NOT NULL,
+    "updatedAt" timestamp without time zone,
     status smallint,
     "isDeleted" boolean DEFAULT false NOT NULL,
     "deletedAt" timestamp with time zone,
+    "iconId" character varying,
+    "colorId" character varying,
     "position" integer DEFAULT 0 NOT NULL
 );
 
 
 --
--- TOC entry 229 (class 1259 OID 33084)
+-- TOC entry 240 (class 1259 OID 16495)
 -- Name: incomes_incomeId_seq; Type: SEQUENCE; Schema: public; Owner: -
 --
 
@@ -437,8 +534,8 @@ CREATE SEQUENCE public."incomes_incomeId_seq"
 
 
 --
--- TOC entry 3581 (class 0 OID 0)
--- Dependencies: 229
+-- TOC entry 3783 (class 0 OID 0)
+-- Dependencies: 240
 -- Name: incomes_incomeId_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: -
 --
 
@@ -446,23 +543,86 @@ ALTER SEQUENCE public."incomes_incomeId_seq" OWNED BY public.incomes."incomeId";
 
 
 --
--- TOC entry 247 (class 1259 OID 409614)
--- Name: monthly_stats; Type: TABLE; Schema: public; Owner: -
+-- TOC entry 241 (class 1259 OID 16496)
+-- Name: password_changing; Type: TABLE; Schema: public; Owner: -
 --
 
-CREATE TABLE public.monthly_stats (
+CREATE TABLE public.password_changing (
+    id integer NOT NULL,
     "userId" integer NOT NULL,
-    year integer NOT NULL,
-    month integer NOT NULL,
-    income_total numeric(18,2) DEFAULT 0 NOT NULL,
-    expense_total numeric(18,2) DEFAULT 0 NOT NULL,
-    transfer_total numeric(18,2) DEFAULT 0 NOT NULL,
-    "updatedAt" timestamp with time zone DEFAULT now() NOT NULL
+    "confirmationCode" integer NOT NULL,
+    confirmed boolean DEFAULT false,
+    "passwordHash" character varying(256) NOT NULL,
+    salt character varying(100) NOT NULL,
+    "createdAt" timestamp without time zone DEFAULT now() NOT NULL,
+    "expiresAt" timestamp without time zone NOT NULL
 );
 
 
 --
--- TOC entry 228 (class 1259 OID 33064)
+-- TOC entry 242 (class 1259 OID 16501)
+-- Name: password_changing_id_seq; Type: SEQUENCE; Schema: public; Owner: -
+--
+
+CREATE SEQUENCE public.password_changing_id_seq
+    AS integer
+    START WITH 1
+    INCREMENT BY 1
+    NO MINVALUE
+    NO MAXVALUE
+    CACHE 1;
+
+
+--
+-- TOC entry 3784 (class 0 OID 0)
+-- Dependencies: 242
+-- Name: password_changing_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: -
+--
+
+ALTER SEQUENCE public.password_changing_id_seq OWNED BY public.password_changing.id;
+
+
+--
+-- TOC entry 243 (class 1259 OID 16502)
+-- Name: password_forgot; Type: TABLE; Schema: public; Owner: -
+--
+
+CREATE TABLE public.password_forgot (
+    id integer NOT NULL,
+    "userId" integer NOT NULL,
+    email character varying(100) NOT NULL,
+    "confirmationCode" integer NOT NULL,
+    confirmed boolean DEFAULT false,
+    "createdAt" timestamp without time zone DEFAULT now() NOT NULL,
+    "expiresAt" timestamp without time zone NOT NULL
+);
+
+
+--
+-- TOC entry 244 (class 1259 OID 16507)
+-- Name: password_forgot_id_seq; Type: SEQUENCE; Schema: public; Owner: -
+--
+
+CREATE SEQUENCE public.password_forgot_id_seq
+    AS integer
+    START WITH 1
+    INCREMENT BY 1
+    NO MINVALUE
+    NO MAXVALUE
+    CACHE 1;
+
+
+--
+-- TOC entry 3785 (class 0 OID 0)
+-- Dependencies: 244
+-- Name: password_forgot_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: -
+--
+
+ALTER SEQUENCE public.password_forgot_id_seq OWNED BY public.password_forgot.id;
+
+
+--
+-- TOC entry 245 (class 1259 OID 16508)
 -- Name: profiles; Type: TABLE; Schema: public; Owner: -
 --
 
@@ -472,15 +632,15 @@ CREATE TABLE public.profiles (
     "publicName" character varying(50),
     "currencyCode" character varying(3),
     "additionalInfo" jsonb,
-    "createdAt" timestamp with time zone DEFAULT CURRENT_TIMESTAMP NOT NULL,
-    "updatedAt" timestamp with time zone,
+    "createdAt" timestamp without time zone DEFAULT CURRENT_TIMESTAMP NOT NULL,
+    "updatedAt" timestamp without time zone,
     locale character varying(10),
     "mailConfirmed" boolean DEFAULT false
 );
 
 
 --
--- TOC entry 227 (class 1259 OID 33063)
+-- TOC entry 246 (class 1259 OID 16515)
 -- Name: profiles_profileId_seq; Type: SEQUENCE; Schema: public; Owner: -
 --
 
@@ -494,8 +654,8 @@ CREATE SEQUENCE public."profiles_profileId_seq"
 
 
 --
--- TOC entry 3582 (class 0 OID 0)
--- Dependencies: 227
+-- TOC entry 3786 (class 0 OID 0)
+-- Dependencies: 246
 -- Name: profiles_profileId_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: -
 --
 
@@ -503,7 +663,7 @@ ALTER SEQUENCE public."profiles_profileId_seq" OWNED BY public.profiles."profile
 
 
 --
--- TOC entry 218 (class 1259 OID 32987)
+-- TOC entry 247 (class 1259 OID 16516)
 -- Name: roles; Type: TABLE; Schema: public; Owner: -
 --
 
@@ -514,7 +674,7 @@ CREATE TABLE public.roles (
 
 
 --
--- TOC entry 217 (class 1259 OID 32986)
+-- TOC entry 248 (class 1259 OID 16519)
 -- Name: roles_roleId_seq; Type: SEQUENCE; Schema: public; Owner: -
 --
 
@@ -528,8 +688,8 @@ CREATE SEQUENCE public."roles_roleId_seq"
 
 
 --
--- TOC entry 3583 (class 0 OID 0)
--- Dependencies: 217
+-- TOC entry 3787 (class 0 OID 0)
+-- Dependencies: 248
 -- Name: roles_roleId_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: -
 --
 
@@ -537,7 +697,7 @@ ALTER SEQUENCE public."roles_roleId_seq" OWNED BY public.roles."roleId";
 
 
 --
--- TOC entry 242 (class 1259 OID 163848)
+-- TOC entry 249 (class 1259 OID 16520)
 -- Name: transactionTypes; Type: TABLE; Schema: public; Owner: -
 --
 
@@ -548,7 +708,7 @@ CREATE TABLE public."transactionTypes" (
 
 
 --
--- TOC entry 241 (class 1259 OID 163847)
+-- TOC entry 250 (class 1259 OID 16523)
 -- Name: transactionTypes_transactionTypeId_seq; Type: SEQUENCE; Schema: public; Owner: -
 --
 
@@ -562,8 +722,8 @@ CREATE SEQUENCE public."transactionTypes_transactionTypeId_seq"
 
 
 --
--- TOC entry 3584 (class 0 OID 0)
--- Dependencies: 241
+-- TOC entry 3788 (class 0 OID 0)
+-- Dependencies: 250
 -- Name: transactionTypes_transactionTypeId_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: -
 --
 
@@ -571,7 +731,7 @@ ALTER SEQUENCE public."transactionTypes_transactionTypeId_seq" OWNED BY public."
 
 
 --
--- TOC entry 236 (class 1259 OID 33143)
+-- TOC entry 251 (class 1259 OID 16524)
 -- Name: transactions; Type: TABLE; Schema: public; Owner: -
 --
 
@@ -584,8 +744,8 @@ CREATE TABLE public.transactions (
     amount numeric NOT NULL,
     description character varying(256),
     "currencyCode" character varying(3) NOT NULL,
-    "createdAt" timestamp with time zone DEFAULT now() NOT NULL,
-    "updatedAt" timestamp with time zone,
+    "createdAt" timestamp without time zone DEFAULT now() NOT NULL,
+    "updatedAt" timestamp without time zone,
     "transactionTypeId" integer NOT NULL,
     "targetAccountId" integer,
     "targetAmount" numeric,
@@ -596,7 +756,7 @@ CREATE TABLE public.transactions (
 
 
 --
--- TOC entry 235 (class 1259 OID 33142)
+-- TOC entry 252 (class 1259 OID 16531)
 -- Name: transactions_transactionId_seq; Type: SEQUENCE; Schema: public; Owner: -
 --
 
@@ -610,8 +770,8 @@ CREATE SEQUENCE public."transactions_transactionId_seq"
 
 
 --
--- TOC entry 3585 (class 0 OID 0)
--- Dependencies: 235
+-- TOC entry 3789 (class 0 OID 0)
+-- Dependencies: 252
 -- Name: transactions_transactionId_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: -
 --
 
@@ -619,23 +779,81 @@ ALTER SEQUENCE public."transactions_transactionId_seq" OWNED BY public.transacti
 
 
 --
--- TOC entry 220 (class 1259 OID 33011)
+-- TOC entry 216 (class 1259 OID 16391)
+-- Name: tutorials; Type: TABLE; Schema: public; Owner: -
+--
+
+CREATE TABLE public.tutorials (
+    "userId" integer NOT NULL,
+    "isOnBoardingTutorialView" boolean,
+    "isAccountTutorialView" boolean,
+    "isDashboardTutorialView" boolean,
+    "isBalanceInsightsTutorialView" boolean,
+    "isIncomeTutorialView" boolean,
+    "isSharingTutorialView" boolean,
+    "isCategoryTutorialView" boolean,
+    "onBoardingViewedSlidesCount" integer,
+    "createdAt" timestamp without time zone DEFAULT CURRENT_TIMESTAMP NOT NULL
+);
+
+
+--
+-- TOC entry 258 (class 1259 OID 16805)
+-- Name: userconnections; Type: TABLE; Schema: public; Owner: -
+--
+
+CREATE TABLE public.userconnections (
+    "connectionId" integer NOT NULL,
+    "memberUserId" integer NOT NULL,
+    "userGroupId" integer,
+    "ownerUserId" integer NOT NULL,
+    status integer NOT NULL,
+    "updatedAt" timestamp without time zone,
+    "createdAt" timestamp without time zone DEFAULT CURRENT_TIMESTAMP NOT NULL,
+    "memberUserGroupId" integer
+);
+
+
+--
+-- TOC entry 260 (class 1259 OID 16826)
+-- Name: userconnections_connectionId_seq; Type: SEQUENCE; Schema: public; Owner: -
+--
+
+CREATE SEQUENCE public."userconnections_connectionId_seq"
+    AS integer
+    START WITH 1
+    INCREMENT BY 1
+    NO MINVALUE
+    NO MAXVALUE
+    CACHE 1;
+
+
+--
+-- TOC entry 3790 (class 0 OID 0)
+-- Dependencies: 260
+-- Name: userconnections_connectionId_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: -
+--
+
+ALTER SEQUENCE public."userconnections_connectionId_seq" OWNED BY public.userconnections."connectionId";
+
+
+--
+-- TOC entry 259 (class 1259 OID 16814)
 -- Name: usergroups; Type: TABLE; Schema: public; Owner: -
 --
 
 CREATE TABLE public.usergroups (
     "userGroupId" integer NOT NULL,
     "userId" integer NOT NULL,
-    "groupRole" integer,
     "groupName" character varying(128) NOT NULL,
-    "description" character varying(256),
-    "createdAt" timestamp without time zone DEFAULT CURRENT_TIMESTAMP NOT NULL,
-    "updatedAt" timestamp without time zone
+    description character varying(256),
+    "updatedAt" timestamp without time zone,
+    "createdAt" timestamp without time zone DEFAULT CURRENT_TIMESTAMP NOT NULL
 );
 
 
 --
--- TOC entry 219 (class 1259 OID 33010)
+-- TOC entry 253 (class 1259 OID 16532)
 -- Name: usergroups_userGroupId_seq; Type: SEQUENCE; Schema: public; Owner: -
 --
 
@@ -649,8 +867,8 @@ CREATE SEQUENCE public."usergroups_userGroupId_seq"
 
 
 --
--- TOC entry 3586 (class 0 OID 0)
--- Dependencies: 219
+-- TOC entry 3791 (class 0 OID 0)
+-- Dependencies: 253
 -- Name: usergroups_userGroupId_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: -
 --
 
@@ -658,7 +876,7 @@ ALTER SEQUENCE public."usergroups_userGroupId_seq" OWNED BY public.usergroups."u
 
 
 --
--- TOC entry 240 (class 1259 OID 81921)
+-- TOC entry 254 (class 1259 OID 16533)
 -- Name: userroles; Type: TABLE; Schema: public; Owner: -
 --
 
@@ -670,7 +888,7 @@ CREATE TABLE public.userroles (
 
 
 --
--- TOC entry 239 (class 1259 OID 81920)
+-- TOC entry 255 (class 1259 OID 16536)
 -- Name: userroles_userRoleId_seq; Type: SEQUENCE; Schema: public; Owner: -
 --
 
@@ -684,8 +902,8 @@ CREATE SEQUENCE public."userroles_userRoleId_seq"
 
 
 --
--- TOC entry 3587 (class 0 OID 0)
--- Dependencies: 239
+-- TOC entry 3792 (class 0 OID 0)
+-- Dependencies: 255
 -- Name: userroles_userRoleId_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: -
 --
 
@@ -693,7 +911,7 @@ ALTER SEQUENCE public."userroles_userRoleId_seq" OWNED BY public.userroles."user
 
 
 --
--- TOC entry 216 (class 1259 OID 32975)
+-- TOC entry 256 (class 1259 OID 16537)
 -- Name: users; Type: TABLE; Schema: public; Owner: -
 --
 
@@ -710,7 +928,7 @@ CREATE TABLE public.users (
 
 
 --
--- TOC entry 215 (class 1259 OID 32974)
+-- TOC entry 257 (class 1259 OID 16543)
 -- Name: users_userId_seq; Type: SEQUENCE; Schema: public; Owner: -
 --
 
@@ -724,8 +942,8 @@ CREATE SEQUENCE public."users_userId_seq"
 
 
 --
--- TOC entry 3588 (class 0 OID 0)
--- Dependencies: 215
+-- TOC entry 3793 (class 0 OID 0)
+-- Dependencies: 257
 -- Name: users_userId_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: -
 --
 
@@ -733,7 +951,7 @@ ALTER SEQUENCE public."users_userId_seq" OWNED BY public.users."userId";
 
 
 --
--- TOC entry 3292 (class 2604 OID 33105)
+-- TOC entry 3433 (class 2604 OID 16544)
 -- Name: accounts accountId; Type: DEFAULT; Schema: public; Owner: -
 --
 
@@ -741,7 +959,7 @@ ALTER TABLE ONLY public.accounts ALTER COLUMN "accountId" SET DEFAULT nextval('p
 
 
 --
--- TOC entry 3306 (class 2604 OID 229380)
+-- TOC entry 3437 (class 2604 OID 16545)
 -- Name: balance balanceId; Type: DEFAULT; Schema: public; Owner: -
 --
 
@@ -749,7 +967,7 @@ ALTER TABLE ONLY public.balance ALTER COLUMN "balanceId" SET DEFAULT nextval('pu
 
 
 --
--- TOC entry 3295 (class 2604 OID 33124)
+-- TOC entry 3439 (class 2604 OID 16546)
 -- Name: categories categoryId; Type: DEFAULT; Schema: public; Owner: -
 --
 
@@ -757,14 +975,7 @@ ALTER TABLE ONLY public.categories ALTER COLUMN "categoryId" SET DEFAULT nextval
 
 
 --
--- TOC entry 3285 (class 2604 OID 33051)
--- (currencies surrogate-key default removed)
---
-
-
-
---
--- TOC entry 3284 (class 2604 OID 33042)
+-- TOC entry 3445 (class 2604 OID 16547)
 -- Name: currencytype currencyTypeId; Type: DEFAULT; Schema: public; Owner: -
 --
 
@@ -772,7 +983,15 @@ ALTER TABLE ONLY public.currencytype ALTER COLUMN "currencyTypeId" SET DEFAULT n
 
 
 --
--- TOC entry 3301 (class 2604 OID 33180)
+-- TOC entry 3464 (class 2604 OID 16548)
+-- Name: email_changing id; Type: DEFAULT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.email_changing ALTER COLUMN id SET DEFAULT nextval('public.email_changing_id_seq'::regclass);
+
+
+--
+-- TOC entry 3467 (class 2604 OID 16549)
 -- Name: email_confirmations confirmationId; Type: DEFAULT; Schema: public; Owner: -
 --
 
@@ -780,7 +999,7 @@ ALTER TABLE ONLY public.email_confirmations ALTER COLUMN "confirmationId" SET DE
 
 
 --
--- TOC entry 3283 (class 2604 OID 33028)
+-- TOC entry 3471 (class 2604 OID 16550)
 -- Name: groupinvitations invitationId; Type: DEFAULT; Schema: public; Owner: -
 --
 
@@ -788,7 +1007,15 @@ ALTER TABLE ONLY public.groupinvitations ALTER COLUMN "invitationId" SET DEFAULT
 
 
 --
--- TOC entry 3289 (class 2604 OID 33088)
+-- TOC entry 3498 (class 2604 OID 16876)
+-- Name: groupshareditem sharedItemId; Type: DEFAULT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.groupshareditem ALTER COLUMN "sharedItemId" SET DEFAULT nextval('public."groupshareditem_sharedItemId_seq"'::regclass);
+
+
+--
+-- TOC entry 3473 (class 2604 OID 16551)
 -- Name: incomes incomeId; Type: DEFAULT; Schema: public; Owner: -
 --
 
@@ -796,7 +1023,23 @@ ALTER TABLE ONLY public.incomes ALTER COLUMN "incomeId" SET DEFAULT nextval('pub
 
 
 --
--- TOC entry 3286 (class 2604 OID 33067)
+-- TOC entry 3477 (class 2604 OID 16552)
+-- Name: password_changing id; Type: DEFAULT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.password_changing ALTER COLUMN id SET DEFAULT nextval('public.password_changing_id_seq'::regclass);
+
+
+--
+-- TOC entry 3480 (class 2604 OID 16553)
+-- Name: password_forgot id; Type: DEFAULT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.password_forgot ALTER COLUMN id SET DEFAULT nextval('public.password_forgot_id_seq'::regclass);
+
+
+--
+-- TOC entry 3483 (class 2604 OID 16554)
 -- Name: profiles profileId; Type: DEFAULT; Schema: public; Owner: -
 --
 
@@ -804,7 +1047,7 @@ ALTER TABLE ONLY public.profiles ALTER COLUMN "profileId" SET DEFAULT nextval('p
 
 
 --
--- TOC entry 3280 (class 2604 OID 32990)
+-- TOC entry 3486 (class 2604 OID 16555)
 -- Name: roles roleId; Type: DEFAULT; Schema: public; Owner: -
 --
 
@@ -812,7 +1055,7 @@ ALTER TABLE ONLY public.roles ALTER COLUMN "roleId" SET DEFAULT nextval('public.
 
 
 --
--- TOC entry 3305 (class 2604 OID 163851)
+-- TOC entry 3487 (class 2604 OID 16556)
 -- Name: transactionTypes transactionTypeId; Type: DEFAULT; Schema: public; Owner: -
 --
 
@@ -820,7 +1063,7 @@ ALTER TABLE ONLY public."transactionTypes" ALTER COLUMN "transactionTypeId" SET 
 
 
 --
--- TOC entry 3298 (class 2604 OID 33146)
+-- TOC entry 3488 (class 2604 OID 16557)
 -- Name: transactions transactionId; Type: DEFAULT; Schema: public; Owner: -
 --
 
@@ -828,7 +1071,15 @@ ALTER TABLE ONLY public.transactions ALTER COLUMN "transactionId" SET DEFAULT ne
 
 
 --
--- TOC entry 3281 (class 2604 OID 33014)
+-- TOC entry 3494 (class 2604 OID 16842)
+-- Name: userconnections connectionId; Type: DEFAULT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.userconnections ALTER COLUMN "connectionId" SET DEFAULT nextval('public."userconnections_connectionId_seq"'::regclass);
+
+
+--
+-- TOC entry 3496 (class 2604 OID 16823)
 -- Name: usergroups userGroupId; Type: DEFAULT; Schema: public; Owner: -
 --
 
@@ -836,7 +1087,7 @@ ALTER TABLE ONLY public.usergroups ALTER COLUMN "userGroupId" SET DEFAULT nextva
 
 
 --
--- TOC entry 3304 (class 2604 OID 81924)
+-- TOC entry 3491 (class 2604 OID 16558)
 -- Name: userroles userRoleId; Type: DEFAULT; Schema: public; Owner: -
 --
 
@@ -844,7 +1095,7 @@ ALTER TABLE ONLY public.userroles ALTER COLUMN "userRoleId" SET DEFAULT nextval(
 
 
 --
--- TOC entry 3278 (class 2604 OID 32978)
+-- TOC entry 3492 (class 2604 OID 16559)
 -- Name: users userId; Type: DEFAULT; Schema: public; Owner: -
 --
 
@@ -852,7 +1103,7 @@ ALTER TABLE ONLY public.users ALTER COLUMN "userId" SET DEFAULT nextval('public.
 
 
 --
--- TOC entry 3359 (class 2606 OID 33109)
+-- TOC entry 3503 (class 2606 OID 16561)
 -- Name: accounts accounts_pkey; Type: CONSTRAINT; Schema: public; Owner: -
 --
 
@@ -861,7 +1112,7 @@ ALTER TABLE ONLY public.accounts
 
 
 --
--- TOC entry 3376 (class 2606 OID 229385)
+-- TOC entry 3505 (class 2606 OID 16563)
 -- Name: balance balance_pkey; Type: CONSTRAINT; Schema: public; Owner: -
 --
 
@@ -870,7 +1121,7 @@ ALTER TABLE ONLY public.balance
 
 
 --
--- TOC entry 3361 (class 2606 OID 33126)
+-- TOC entry 3509 (class 2606 OID 16565)
 -- Name: categories categories_pkey; Type: CONSTRAINT; Schema: public; Owner: -
 --
 
@@ -879,14 +1130,7 @@ ALTER TABLE ONLY public.categories
 
 
 --
--- TOC entry 3347 (class 2606 OID 33055)
--- Name: currencies currencies_currencyCode_key; Type: CONSTRAINT; Schema: public; Owner: -
---
-
-
-
---
--- TOC entry 3349 (class 2606 OID 33057)
+-- TOC entry 3511 (class 2606 OID 16567)
 -- Name: currencies currencies_currencyName_key; Type: CONSTRAINT; Schema: public; Owner: -
 --
 
@@ -895,7 +1139,7 @@ ALTER TABLE ONLY public.currencies
 
 
 --
--- TOC entry 3351 (class 2606 OID 33053)
+-- TOC entry 3513 (class 2606 OID 16569)
 -- Name: currencies currencies_pkey; Type: CONSTRAINT; Schema: public; Owner: -
 --
 
@@ -904,7 +1148,7 @@ ALTER TABLE ONLY public.currencies
 
 
 --
--- TOC entry 3380 (class 2606 OID 237573)
+-- TOC entry 3515 (class 2606 OID 16571)
 -- Name: currencyRates currencyRates_pkey; Type: CONSTRAINT; Schema: public; Owner: -
 --
 
@@ -913,7 +1157,7 @@ ALTER TABLE ONLY public."currencyRates"
 
 
 --
--- TOC entry 3343 (class 2606 OID 33046)
+-- TOC entry 3517 (class 2606 OID 16573)
 -- Name: currencytype currencytype_currencyTypeName_key; Type: CONSTRAINT; Schema: public; Owner: -
 --
 
@@ -922,7 +1166,7 @@ ALTER TABLE ONLY public.currencytype
 
 
 --
--- TOC entry 3345 (class 2606 OID 33044)
+-- TOC entry 3519 (class 2606 OID 16575)
 -- Name: currencytype currencytype_pkey; Type: CONSTRAINT; Schema: public; Owner: -
 --
 
@@ -931,7 +1175,7 @@ ALTER TABLE ONLY public.currencytype
 
 
 --
--- TOC entry 3388 (class 2606 OID 426008)
+-- TOC entry 3521 (class 2606 OID 16577)
 -- Name: daily_accounts_stats daily_accounts_stats_pkey; Type: CONSTRAINT; Schema: public; Owner: -
 --
 
@@ -940,7 +1184,7 @@ ALTER TABLE ONLY public.daily_accounts_stats
 
 
 --
--- TOC entry 3386 (class 2606 OID 425990)
+-- TOC entry 3523 (class 2606 OID 16579)
 -- Name: daily_categories_stats daily_categories_stats_pkey; Type: CONSTRAINT; Schema: public; Owner: -
 --
 
@@ -949,7 +1193,7 @@ ALTER TABLE ONLY public.daily_categories_stats
 
 
 --
--- TOC entry 3390 (class 2606 OID 426025)
+-- TOC entry 3525 (class 2606 OID 16581)
 -- Name: daily_incomes_stats daily_incomes_stats_pkey; Type: CONSTRAINT; Schema: public; Owner: -
 --
 
@@ -958,7 +1202,7 @@ ALTER TABLE ONLY public.daily_incomes_stats
 
 
 --
--- TOC entry 3382 (class 2606 OID 409608)
+-- TOC entry 3527 (class 2606 OID 16583)
 -- Name: daily_stats daily_stats_userId_date_key; Type: CONSTRAINT; Schema: public; Owner: -
 --
 
@@ -967,7 +1211,7 @@ ALTER TABLE ONLY public.daily_stats
 
 
 --
--- TOC entry 3392 (class 2606 OID 426042)
+-- TOC entry 3529 (class 2606 OID 16585)
 -- Name: daily_transfer_stats daily_transfer_stats_pkey; Type: CONSTRAINT; Schema: public; Owner: -
 --
 
@@ -976,7 +1220,16 @@ ALTER TABLE ONLY public.daily_transfer_stats
 
 
 --
--- TOC entry 3365 (class 2606 OID 33183)
+-- TOC entry 3531 (class 2606 OID 16587)
+-- Name: email_changing email_changing_pkey; Type: CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.email_changing
+    ADD CONSTRAINT email_changing_pkey PRIMARY KEY (id);
+
+
+--
+-- TOC entry 3533 (class 2606 OID 16589)
 -- Name: email_confirmations email_confirmations_pkey; Type: CONSTRAINT; Schema: public; Owner: -
 --
 
@@ -985,7 +1238,16 @@ ALTER TABLE ONLY public.email_confirmations
 
 
 --
--- TOC entry 3339 (class 2606 OID 33030)
+-- TOC entry 3535 (class 2606 OID 16591)
+-- Name: email_confirmations email_confirmations_userId_email_key; Type: CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.email_confirmations
+    ADD CONSTRAINT "email_confirmations_userId_email_key" UNIQUE ("userId", email);
+
+
+--
+-- TOC entry 3537 (class 2606 OID 16593)
 -- Name: groupinvitations groupinvitations_pkey; Type: CONSTRAINT; Schema: public; Owner: -
 --
 
@@ -994,7 +1256,7 @@ ALTER TABLE ONLY public.groupinvitations
 
 
 --
--- TOC entry 3341 (class 2606 OID 33032)
+-- TOC entry 3539 (class 2606 OID 16595)
 -- Name: groupinvitations groupinvitations_userGroupId_invitedEmail_key; Type: CONSTRAINT; Schema: public; Owner: -
 --
 
@@ -1003,7 +1265,16 @@ ALTER TABLE ONLY public.groupinvitations
 
 
 --
--- TOC entry 3357 (class 2606 OID 33090)
+-- TOC entry 3577 (class 2606 OID 16878)
+-- Name: groupshareditem groupshareditem_pkey; Type: CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.groupshareditem
+    ADD CONSTRAINT groupshareditem_pkey PRIMARY KEY ("sharedItemId");
+
+
+--
+-- TOC entry 3541 (class 2606 OID 16597)
 -- Name: incomes incomes_pkey; Type: CONSTRAINT; Schema: public; Owner: -
 --
 
@@ -1012,16 +1283,43 @@ ALTER TABLE ONLY public.incomes
 
 
 --
--- TOC entry 3384 (class 2606 OID 409622)
--- Name: monthly_stats monthly_stats_userId_year_month_key; Type: CONSTRAINT; Schema: public; Owner: -
+-- TOC entry 3543 (class 2606 OID 16599)
+-- Name: password_changing password_changing_pkey; Type: CONSTRAINT; Schema: public; Owner: -
 --
 
-ALTER TABLE ONLY public.monthly_stats
-    ADD CONSTRAINT "monthly_stats_userId_year_month_key" UNIQUE ("userId", year, month);
+ALTER TABLE ONLY public.password_changing
+    ADD CONSTRAINT password_changing_pkey PRIMARY KEY (id);
 
 
 --
--- TOC entry 3353 (class 2606 OID 33071)
+-- TOC entry 3545 (class 2606 OID 16601)
+-- Name: password_changing password_changing_userId_passwordHash_key; Type: CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.password_changing
+    ADD CONSTRAINT "password_changing_userId_passwordHash_key" UNIQUE ("userId", "passwordHash");
+
+
+--
+-- TOC entry 3547 (class 2606 OID 16603)
+-- Name: password_forgot password_forgot_pkey; Type: CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.password_forgot
+    ADD CONSTRAINT password_forgot_pkey PRIMARY KEY (id);
+
+
+--
+-- TOC entry 3549 (class 2606 OID 16605)
+-- Name: password_forgot password_forgot_userId_email_key; Type: CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.password_forgot
+    ADD CONSTRAINT "password_forgot_userId_email_key" UNIQUE ("userId", email);
+
+
+--
+-- TOC entry 3551 (class 2606 OID 16607)
 -- Name: profiles profiles_pkey; Type: CONSTRAINT; Schema: public; Owner: -
 --
 
@@ -1030,7 +1328,7 @@ ALTER TABLE ONLY public.profiles
 
 
 --
--- TOC entry 3355 (class 2606 OID 33073)
+-- TOC entry 3553 (class 2606 OID 16609)
 -- Name: profiles profiles_userId_key; Type: CONSTRAINT; Schema: public; Owner: -
 --
 
@@ -1039,7 +1337,7 @@ ALTER TABLE ONLY public.profiles
 
 
 --
--- TOC entry 3331 (class 2606 OID 32992)
+-- TOC entry 3555 (class 2606 OID 16611)
 -- Name: roles roles_pkey; Type: CONSTRAINT; Schema: public; Owner: -
 --
 
@@ -1048,7 +1346,7 @@ ALTER TABLE ONLY public.roles
 
 
 --
--- TOC entry 3333 (class 2606 OID 32994)
+-- TOC entry 3557 (class 2606 OID 16613)
 -- Name: roles roles_roleType_key; Type: CONSTRAINT; Schema: public; Owner: -
 --
 
@@ -1057,7 +1355,7 @@ ALTER TABLE ONLY public.roles
 
 
 --
--- TOC entry 3372 (class 2606 OID 163853)
+-- TOC entry 3559 (class 2606 OID 16615)
 -- Name: transactionTypes transactionTypes_pkey; Type: CONSTRAINT; Schema: public; Owner: -
 --
 
@@ -1066,7 +1364,7 @@ ALTER TABLE ONLY public."transactionTypes"
 
 
 --
--- TOC entry 3363 (class 2606 OID 33150)
+-- TOC entry 3563 (class 2606 OID 16617)
 -- Name: transactions transactions_pkey; Type: CONSTRAINT; Schema: public; Owner: -
 --
 
@@ -1075,7 +1373,16 @@ ALTER TABLE ONLY public.transactions
 
 
 --
--- TOC entry 3374 (class 2606 OID 172033)
+-- TOC entry 3501 (class 2606 OID 16396)
+-- Name: tutorials tutorials_user_id_unique; Type: CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.tutorials
+    ADD CONSTRAINT tutorials_user_id_unique UNIQUE ("userId");
+
+
+--
+-- TOC entry 3561 (class 2606 OID 16619)
 -- Name: transactionTypes unique_transactiontype; Type: CONSTRAINT; Schema: public; Owner: -
 --
 
@@ -1084,7 +1391,7 @@ ALTER TABLE ONLY public."transactionTypes"
 
 
 --
--- TOC entry 3378 (class 2606 OID 229392)
+-- TOC entry 3507 (class 2606 OID 16621)
 -- Name: balance unique_userid; Type: CONSTRAINT; Schema: public; Owner: -
 --
 
@@ -1093,7 +1400,16 @@ ALTER TABLE ONLY public.balance
 
 
 --
--- TOC entry 3335 (class 2606 OID 33016)
+-- TOC entry 3573 (class 2606 OID 16844)
+-- Name: userconnections userconnections_pkey; Type: CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.userconnections
+    ADD CONSTRAINT userconnections_pkey PRIMARY KEY ("connectionId");
+
+
+--
+-- TOC entry 3575 (class 2606 OID 16825)
 -- Name: usergroups usergroups_pkey; Type: CONSTRAINT; Schema: public; Owner: -
 --
 
@@ -1102,16 +1418,7 @@ ALTER TABLE ONLY public.usergroups
 
 
 --
--- TOC entry 3337 (class 2606 OID 33018)
--- Name: usergroups usergroups_userId_userGroupId_key; Type: CONSTRAINT; Schema: public; Owner: -
---
-
-ALTER TABLE ONLY public.usergroups
-    ADD CONSTRAINT "usergroups_userId_userGroupId_key" UNIQUE ("userId", "userGroupId");
-
-
---
--- TOC entry 3368 (class 2606 OID 81926)
+-- TOC entry 3565 (class 2606 OID 16623)
 -- Name: userroles userroles_pkey; Type: CONSTRAINT; Schema: public; Owner: -
 --
 
@@ -1120,7 +1427,7 @@ ALTER TABLE ONLY public.userroles
 
 
 --
--- TOC entry 3370 (class 2606 OID 81928)
+-- TOC entry 3567 (class 2606 OID 16625)
 -- Name: userroles userroles_userId_roleId_key; Type: CONSTRAINT; Schema: public; Owner: -
 --
 
@@ -1129,7 +1436,7 @@ ALTER TABLE ONLY public.userroles
 
 
 --
--- TOC entry 3327 (class 2606 OID 32985)
+-- TOC entry 3569 (class 2606 OID 16627)
 -- Name: users users_email_key; Type: CONSTRAINT; Schema: public; Owner: -
 --
 
@@ -1138,7 +1445,7 @@ ALTER TABLE ONLY public.users
 
 
 --
--- TOC entry 3329 (class 2606 OID 32983)
+-- TOC entry 3571 (class 2606 OID 16629)
 -- Name: users users_pkey; Type: CONSTRAINT; Schema: public; Owner: -
 --
 
@@ -1147,15 +1454,31 @@ ALTER TABLE ONLY public.users
 
 
 --
--- TOC entry 3366 (class 1259 OID 294912)
--- Name: uniq_email_confirmed; Type: INDEX; Schema: public; Owner: -
+-- TOC entry 3578 (class 1259 OID 16881)
+-- Name: gsi_uq_account; Type: INDEX; Schema: public; Owner: -
 --
 
-CREATE UNIQUE INDEX uniq_email_confirmed ON public.email_confirmations USING btree (email) WHERE (status = 1);
+CREATE UNIQUE INDEX gsi_uq_account ON public.groupshareditem USING btree ("userId", "userGroupId", "accountId");
 
 
 --
--- TOC entry 3399 (class 2606 OID 33115)
+-- TOC entry 3579 (class 1259 OID 16883)
+-- Name: gsi_uq_category; Type: INDEX; Schema: public; Owner: -
+--
+
+CREATE UNIQUE INDEX gsi_uq_category ON public.groupshareditem USING btree ("userId", "userGroupId", "categoryId");
+
+
+--
+-- TOC entry 3580 (class 1259 OID 16882)
+-- Name: gsi_uq_income; Type: INDEX; Schema: public; Owner: -
+--
+
+CREATE UNIQUE INDEX gsi_uq_income ON public.groupshareditem USING btree ("userId", "userGroupId", "incomeId");
+
+
+--
+-- TOC entry 3583 (class 2606 OID 16630)
 -- Name: accounts accounts_currencyCode_fkey; Type: FK CONSTRAINT; Schema: public; Owner: -
 --
 
@@ -1164,7 +1487,7 @@ ALTER TABLE ONLY public.accounts
 
 
 --
--- TOC entry 3400 (class 2606 OID 33110)
+-- TOC entry 3584 (class 2606 OID 16635)
 -- Name: accounts accounts_userId_fkey; Type: FK CONSTRAINT; Schema: public; Owner: -
 --
 
@@ -1173,7 +1496,7 @@ ALTER TABLE ONLY public.accounts
 
 
 --
--- TOC entry 3413 (class 2606 OID 229386)
+-- TOC entry 3585 (class 2606 OID 16640)
 -- Name: balance balance_userId_fkey; Type: FK CONSTRAINT; Schema: public; Owner: -
 --
 
@@ -1182,7 +1505,7 @@ ALTER TABLE ONLY public.balance
 
 
 --
--- TOC entry 3401 (class 2606 OID 33137)
+-- TOC entry 3587 (class 2606 OID 16645)
 -- Name: categories categories_currencyCode_fkey; Type: FK CONSTRAINT; Schema: public; Owner: -
 --
 
@@ -1191,7 +1514,7 @@ ALTER TABLE ONLY public.categories
 
 
 --
--- TOC entry 3402 (class 2606 OID 33132)
+-- TOC entry 3588 (class 2606 OID 16650)
 -- Name: categories categories_userId_fkey; Type: FK CONSTRAINT; Schema: public; Owner: -
 --
 
@@ -1200,7 +1523,7 @@ ALTER TABLE ONLY public.categories
 
 
 --
--- TOC entry 3419 (class 2606 OID 426014)
+-- TOC entry 3589 (class 2606 OID 16655)
 -- Name: daily_accounts_stats daily_accounts_stats_accountId_fkey; Type: FK CONSTRAINT; Schema: public; Owner: -
 --
 
@@ -1209,7 +1532,7 @@ ALTER TABLE ONLY public.daily_accounts_stats
 
 
 --
--- TOC entry 3420 (class 2606 OID 426009)
+-- TOC entry 3590 (class 2606 OID 16660)
 -- Name: daily_accounts_stats daily_accounts_stats_userId_fkey; Type: FK CONSTRAINT; Schema: public; Owner: -
 --
 
@@ -1218,7 +1541,7 @@ ALTER TABLE ONLY public.daily_accounts_stats
 
 
 --
--- TOC entry 3417 (class 2606 OID 425996)
+-- TOC entry 3591 (class 2606 OID 16665)
 -- Name: daily_categories_stats daily_categories_stats_categoryId_fkey; Type: FK CONSTRAINT; Schema: public; Owner: -
 --
 
@@ -1227,7 +1550,7 @@ ALTER TABLE ONLY public.daily_categories_stats
 
 
 --
--- TOC entry 3418 (class 2606 OID 425991)
+-- TOC entry 3592 (class 2606 OID 16670)
 -- Name: daily_categories_stats daily_categories_stats_userId_fkey; Type: FK CONSTRAINT; Schema: public; Owner: -
 --
 
@@ -1236,7 +1559,7 @@ ALTER TABLE ONLY public.daily_categories_stats
 
 
 --
--- TOC entry 3421 (class 2606 OID 426031)
+-- TOC entry 3593 (class 2606 OID 16675)
 -- Name: daily_incomes_stats daily_incomes_stats_incomeId_fkey; Type: FK CONSTRAINT; Schema: public; Owner: -
 --
 
@@ -1245,7 +1568,7 @@ ALTER TABLE ONLY public.daily_incomes_stats
 
 
 --
--- TOC entry 3422 (class 2606 OID 426026)
+-- TOC entry 3594 (class 2606 OID 16680)
 -- Name: daily_incomes_stats daily_incomes_stats_userId_fkey; Type: FK CONSTRAINT; Schema: public; Owner: -
 --
 
@@ -1254,7 +1577,7 @@ ALTER TABLE ONLY public.daily_incomes_stats
 
 
 --
--- TOC entry 3415 (class 2606 OID 409609)
+-- TOC entry 3595 (class 2606 OID 16685)
 -- Name: daily_stats daily_stats_userId_fkey; Type: FK CONSTRAINT; Schema: public; Owner: -
 --
 
@@ -1263,7 +1586,7 @@ ALTER TABLE ONLY public.daily_stats
 
 
 --
--- TOC entry 3423 (class 2606 OID 426048)
+-- TOC entry 3596 (class 2606 OID 16690)
 -- Name: daily_transfer_stats daily_transfer_stats_accountId_fkey; Type: FK CONSTRAINT; Schema: public; Owner: -
 --
 
@@ -1272,7 +1595,7 @@ ALTER TABLE ONLY public.daily_transfer_stats
 
 
 --
--- TOC entry 3424 (class 2606 OID 426053)
+-- TOC entry 3597 (class 2606 OID 16695)
 -- Name: daily_transfer_stats daily_transfer_stats_targetAccountId_fkey; Type: FK CONSTRAINT; Schema: public; Owner: -
 --
 
@@ -1281,7 +1604,7 @@ ALTER TABLE ONLY public.daily_transfer_stats
 
 
 --
--- TOC entry 3425 (class 2606 OID 426043)
+-- TOC entry 3598 (class 2606 OID 16700)
 -- Name: daily_transfer_stats daily_transfer_stats_userId_fkey; Type: FK CONSTRAINT; Schema: public; Owner: -
 --
 
@@ -1290,7 +1613,16 @@ ALTER TABLE ONLY public.daily_transfer_stats
 
 
 --
--- TOC entry 3410 (class 2606 OID 33184)
+-- TOC entry 3599 (class 2606 OID 16715)
+-- Name: email_changing email_changing_userId_fkey; Type: FK CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.email_changing
+    ADD CONSTRAINT "email_changing_userId_fkey" FOREIGN KEY ("userId") REFERENCES public.users("userId") ON DELETE CASCADE;
+
+
+--
+-- TOC entry 3600 (class 2606 OID 16720)
 -- Name: email_confirmations email_confirmations_userId_fkey; Type: FK CONSTRAINT; Schema: public; Owner: -
 --
 
@@ -1299,7 +1631,7 @@ ALTER TABLE ONLY public.email_confirmations
 
 
 --
--- TOC entry 3403 (class 2606 OID 204800)
+-- TOC entry 3607 (class 2606 OID 16725)
 -- Name: transactions fk_targetaccountid; Type: FK CONSTRAINT; Schema: public; Owner: -
 --
 
@@ -1308,7 +1640,7 @@ ALTER TABLE ONLY public.transactions
 
 
 --
--- TOC entry 3404 (class 2606 OID 180230)
+-- TOC entry 3608 (class 2606 OID 16730)
 -- Name: transactions fk_transactiontypes; Type: FK CONSTRAINT; Schema: public; Owner: -
 --
 
@@ -1317,7 +1649,7 @@ ALTER TABLE ONLY public.transactions
 
 
 --
--- TOC entry 3414 (class 2606 OID 229393)
+-- TOC entry 3586 (class 2606 OID 16735)
 -- Name: balance fk_user_id; Type: FK CONSTRAINT; Schema: public; Owner: -
 --
 
@@ -1326,16 +1658,52 @@ ALTER TABLE ONLY public.balance
 
 
 --
--- TOC entry 3394 (class 2606 OID 33033)
--- Name: groupinvitations groupinvitations_userGroupId_fkey; Type: FK CONSTRAINT; Schema: public; Owner: -
+-- TOC entry 3621 (class 2606 OID 16861)
+-- Name: groupshareditem groupshareditem_accountId_fkey; Type: FK CONSTRAINT; Schema: public; Owner: -
 --
 
-ALTER TABLE ONLY public.groupinvitations
-    ADD CONSTRAINT "groupinvitations_userGroupId_fkey" FOREIGN KEY ("userGroupId") REFERENCES public.usergroups("userGroupId");
+ALTER TABLE ONLY public.groupshareditem
+    ADD CONSTRAINT "groupshareditem_accountId_fkey" FOREIGN KEY ("accountId") REFERENCES public.accounts("accountId");
 
 
 --
--- TOC entry 3397 (class 2606 OID 33096)
+-- TOC entry 3622 (class 2606 OID 16871)
+-- Name: groupshareditem groupshareditem_categoryId_fkey; Type: FK CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.groupshareditem
+    ADD CONSTRAINT "groupshareditem_categoryId_fkey" FOREIGN KEY ("categoryId") REFERENCES public.categories("categoryId");
+
+
+--
+-- TOC entry 3623 (class 2606 OID 16866)
+-- Name: groupshareditem groupshareditem_incomeId_fkey; Type: FK CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.groupshareditem
+    ADD CONSTRAINT "groupshareditem_incomeId_fkey" FOREIGN KEY ("incomeId") REFERENCES public.incomes("incomeId");
+
+
+--
+-- TOC entry 3624 (class 2606 OID 16851)
+-- Name: groupshareditem groupshareditem_userGroupId_fkey; Type: FK CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.groupshareditem
+    ADD CONSTRAINT "groupshareditem_userGroupId_fkey" FOREIGN KEY ("userGroupId") REFERENCES public.usergroups("userGroupId");
+
+
+--
+-- TOC entry 3625 (class 2606 OID 16856)
+-- Name: groupshareditem groupshareditem_userId_fkey; Type: FK CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.groupshareditem
+    ADD CONSTRAINT "groupshareditem_userId_fkey" FOREIGN KEY ("userId") REFERENCES public.users("userId");
+
+
+--
+-- TOC entry 3601 (class 2606 OID 16740)
 -- Name: incomes incomes_currencyCode_fkey; Type: FK CONSTRAINT; Schema: public; Owner: -
 --
 
@@ -1344,7 +1712,7 @@ ALTER TABLE ONLY public.incomes
 
 
 --
--- TOC entry 3398 (class 2606 OID 33091)
+-- TOC entry 3602 (class 2606 OID 16745)
 -- Name: incomes incomes_userId_fkey; Type: FK CONSTRAINT; Schema: public; Owner: -
 --
 
@@ -1353,16 +1721,25 @@ ALTER TABLE ONLY public.incomes
 
 
 --
--- TOC entry 3416 (class 2606 OID 409623)
--- Name: monthly_stats monthly_stats_userId_fkey; Type: FK CONSTRAINT; Schema: public; Owner: -
+-- TOC entry 3603 (class 2606 OID 16750)
+-- Name: password_changing password_changing_userId_fkey; Type: FK CONSTRAINT; Schema: public; Owner: -
 --
 
-ALTER TABLE ONLY public.monthly_stats
-    ADD CONSTRAINT "monthly_stats_userId_fkey" FOREIGN KEY ("userId") REFERENCES public.users("userId");
+ALTER TABLE ONLY public.password_changing
+    ADD CONSTRAINT "password_changing_userId_fkey" FOREIGN KEY ("userId") REFERENCES public.users("userId") ON DELETE CASCADE;
 
 
 --
--- TOC entry 3395 (class 2606 OID 33079)
+-- TOC entry 3604 (class 2606 OID 16755)
+-- Name: password_forgot password_forgot_userId_fkey; Type: FK CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.password_forgot
+    ADD CONSTRAINT "password_forgot_userId_fkey" FOREIGN KEY ("userId") REFERENCES public.users("userId") ON DELETE CASCADE;
+
+
+--
+-- TOC entry 3605 (class 2606 OID 16760)
 -- Name: profiles profiles_currencyCode_fkey; Type: FK CONSTRAINT; Schema: public; Owner: -
 --
 
@@ -1371,7 +1748,7 @@ ALTER TABLE ONLY public.profiles
 
 
 --
--- TOC entry 3396 (class 2606 OID 33074)
+-- TOC entry 3606 (class 2606 OID 16765)
 -- Name: profiles profiles_userId_fkey; Type: FK CONSTRAINT; Schema: public; Owner: -
 --
 
@@ -1380,7 +1757,25 @@ ALTER TABLE ONLY public.profiles
 
 
 --
--- TOC entry 3405 (class 2606 OID 33151)
+-- TOC entry 3581 (class 2606 OID 16705)
+-- Name: goals public.goals_userId_fkey; Type: FK CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.goals
+    ADD CONSTRAINT "public.goals_userId_fkey" FOREIGN KEY ("userId") REFERENCES public.users("userId");
+
+
+--
+-- TOC entry 3582 (class 2606 OID 16710)
+-- Name: tutorials public.tutorials_userId_fkey; Type: FK CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.tutorials
+    ADD CONSTRAINT "public.tutorials_userId_fkey" FOREIGN KEY ("userId") REFERENCES public.users("userId");
+
+
+--
+-- TOC entry 3609 (class 2606 OID 16770)
 -- Name: transactions transactions_accountId_fkey; Type: FK CONSTRAINT; Schema: public; Owner: -
 --
 
@@ -1389,7 +1784,7 @@ ALTER TABLE ONLY public.transactions
 
 
 --
--- TOC entry 3406 (class 2606 OID 33166)
+-- TOC entry 3610 (class 2606 OID 16775)
 -- Name: transactions transactions_categoryId_fkey; Type: FK CONSTRAINT; Schema: public; Owner: -
 --
 
@@ -1398,7 +1793,7 @@ ALTER TABLE ONLY public.transactions
 
 
 --
--- TOC entry 3407 (class 2606 OID 33161)
+-- TOC entry 3611 (class 2606 OID 16780)
 -- Name: transactions transactions_currencyCode_fkey; Type: FK CONSTRAINT; Schema: public; Owner: -
 --
 
@@ -1407,7 +1802,7 @@ ALTER TABLE ONLY public.transactions
 
 
 --
--- TOC entry 3408 (class 2606 OID 33171)
+-- TOC entry 3612 (class 2606 OID 16785)
 -- Name: transactions transactions_incomeId_fkey; Type: FK CONSTRAINT; Schema: public; Owner: -
 --
 
@@ -1416,7 +1811,7 @@ ALTER TABLE ONLY public.transactions
 
 
 --
--- TOC entry 3409 (class 2606 OID 33156)
+-- TOC entry 3613 (class 2606 OID 16790)
 -- Name: transactions transactions_userId_fkey; Type: FK CONSTRAINT; Schema: public; Owner: -
 --
 
@@ -1425,16 +1820,52 @@ ALTER TABLE ONLY public.transactions
 
 
 --
--- TOC entry 3393 (class 2606 OID 33019)
--- Name: usergroups usergroups_userId_fkey; Type: FK CONSTRAINT; Schema: public; Owner: -
+-- TOC entry 3616 (class 2606 OID 16832)
+-- Name: userconnections userconnections_memberUserId_fkey; Type: FK CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.userconnections
+    ADD CONSTRAINT "userconnections_memberUserId_fkey" FOREIGN KEY ("memberUserId") REFERENCES public.users("userId");
+
+
+--
+-- TOC entry 3617 (class 2606 OID 16837)
+-- Name: userconnections userconnections_ownerUserId_fkey; Type: FK CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.userconnections
+    ADD CONSTRAINT "userconnections_ownerUserId_fkey" FOREIGN KEY ("ownerUserId") REFERENCES public.users("userId");
+
+
+--
+-- TOC entry 3618 (class 2606 OID 16827)
+-- Name: userconnections userconnections_userGroupId_fkey; Type: FK CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.userconnections
+    ADD CONSTRAINT "userconnections_userGroupId_fkey" FOREIGN KEY ("userGroupId") REFERENCES public.usergroups("userGroupId");
+
+
+--
+-- TOC entry 3620 (class 2606 OID 16818)
+-- Name: usergroups userconnections_userId_fkey; Type: FK CONSTRAINT; Schema: public; Owner: -
 --
 
 ALTER TABLE ONLY public.usergroups
-    ADD CONSTRAINT "usergroups_userId_fkey" FOREIGN KEY ("userId") REFERENCES public.users("userId");
+    ADD CONSTRAINT "userconnections_userId_fkey" FOREIGN KEY ("userId") REFERENCES public.users("userId");
 
 
 --
--- TOC entry 3411 (class 2606 OID 90112)
+-- TOC entry 3619 (class 2606 OID 16888)
+-- Name: userconnections usergroup_memberUserGroupId_fkey; Type: FK CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.userconnections
+    ADD CONSTRAINT "usergroup_memberUserGroupId_fkey" FOREIGN KEY ("memberUserGroupId") REFERENCES public.usergroups("userGroupId");
+
+
+--
+-- TOC entry 3614 (class 2606 OID 16795)
 -- Name: userroles userroles_roles_fk; Type: FK CONSTRAINT; Schema: public; Owner: -
 --
 
@@ -1443,7 +1874,7 @@ ALTER TABLE ONLY public.userroles
 
 
 --
--- TOC entry 3412 (class 2606 OID 81929)
+-- TOC entry 3615 (class 2606 OID 16800)
 -- Name: userroles userroles_userId_fkey; Type: FK CONSTRAINT; Schema: public; Owner: -
 --
 
@@ -1451,10 +1882,18 @@ ALTER TABLE ONLY public.userroles
     ADD CONSTRAINT "userroles_userId_fkey" FOREIGN KEY ("userId") REFERENCES public.users("userId");
 
 
--- Completed on 2026-01-21 16:30:43 CET
+-- Completed on 2026-08-19 20:17:23 CEST
 
 --
 -- PostgreSQL database dump complete
+--
+
+\unrestrict lCvOaAqAKCN5IyrH74nlboqVmtt9MA5YnySFPy6YV7naSlakoUCldHDn2kpQ0Im
+
+
+--
+-- Reference data. `pg_dump --schema-only` leaves it out, but nothing works without it:
+-- registration picks a currency and a role, and every transaction resolves a type.
 --
 INSERT INTO public."transactionTypes" ("transactionTypeId","transactionType") VALUES
     	 (1,'income'),
@@ -1585,43 +2024,3 @@ INSERT INTO public."currencyRates" ("baseCurrency","targetCurrency",rate,"update
 INSERT INTO public.roles ("roleType") VALUES
                                           (1),
                                           (2);
-
---
--- Name: user_oauth_providers; Type: TABLE; Schema: public; Owner: -
---
-
-CREATE TABLE public.user_oauth_providers (
-    id integer NOT NULL,
-    "userId" integer NOT NULL,
-    provider character varying(20) NOT NULL,
-    "providerId" character varying(256) NOT NULL,
-    email character varying(150),
-    "createdAt" timestamp without time zone DEFAULT CURRENT_TIMESTAMP NOT NULL
-);
-
-CREATE SEQUENCE public.user_oauth_providers_id_seq
-    AS integer
-    START WITH 1
-    INCREMENT BY 1
-    NO MINVALUE
-    NO MAXVALUE
-    CACHE 1;
-
-ALTER SEQUENCE public.user_oauth_providers_id_seq OWNED BY public.user_oauth_providers.id;
-ALTER TABLE ONLY public.user_oauth_providers ALTER COLUMN id SET DEFAULT nextval('public.user_oauth_providers_id_seq'::regclass);
-ALTER TABLE ONLY public.user_oauth_providers ADD CONSTRAINT user_oauth_providers_pkey PRIMARY KEY (id);
-ALTER TABLE ONLY public.user_oauth_providers ADD CONSTRAINT user_oauth_providers_provider_providerid_unique UNIQUE (provider, "providerId");
-ALTER TABLE ONLY public.user_oauth_providers ADD CONSTRAINT user_oauth_providers_userid_fkey FOREIGN KEY ("userId") REFERENCES public.users("userId");
-
-
-
--- Completed on 2025-12-28 22:00:47 CET
-
---
--- PostgreSQL database dump complete
---
-
-\unrestrict jSiTkT0UP6ocGFTqHz2zxZbPxDcgKhvTwT0ptVhQcE5w8BmZafqkochGF9w4v94
-
-
-
