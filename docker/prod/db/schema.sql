@@ -507,8 +507,6 @@ CREATE TABLE public.password_changing (
     "userId" integer NOT NULL,
     "confirmationCode" integer NOT NULL,
     confirmed boolean DEFAULT false,
-    "passwordHash" character varying(256) NOT NULL,
-    salt character varying(100) NOT NULL,
     "createdAt" timestamp without time zone DEFAULT now() NOT NULL,
     "expiresAt" timestamp without time zone NOT NULL
 );
@@ -1147,15 +1145,6 @@ ALTER TABLE ONLY public.password_changing
 
 
 --
--- TOC entry 3409 (class 2606 OID 917505)
--- Name: password_changing password_changing_userId_passwordHash_key; Type: CONSTRAINT; Schema: public; Owner: -
---
-
-ALTER TABLE ONLY public.password_changing
-    ADD CONSTRAINT "password_changing_userId_passwordHash_key" UNIQUE ("userId", "passwordHash");
-
-
---
 -- TOC entry 3415 (class 2606 OID 925704)
 -- Name: password_forgot password_forgot_pkey; Type: CONSTRAINT; Schema: public; Owner: -
 --
@@ -1170,7 +1159,7 @@ ALTER TABLE ONLY public.password_forgot
 --
 
 ALTER TABLE ONLY public.password_forgot
-    ADD CONSTRAINT "password_forgot_userId_email_key" UNIQUE ("userId", email);
+    ADD CONSTRAINT "password_forgot_userId_email_key" UNIQUE ("userId", email, "confirmationCode");
 
 
 --

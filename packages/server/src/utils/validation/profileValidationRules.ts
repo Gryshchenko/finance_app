@@ -40,18 +40,21 @@ const patchProfileValidationRules = [
 
 const requestEmailChangeValidationRules = [...createSignupValidationRules('newEmail', 'email', { max: 100 })];
 
-const requestPasswordChangeValidationRules = [
-    ...createSignupValidationRules('newPassword', 'password', { min: 5, max: 30 }),
-    ...createSignupValidationRules('password', 'password', { min: 5, max: 30 }),
-];
+// Only the current password: the new one is not chosen yet at this point in the flow.
+const requestPasswordChangeValidationRules = [...createSignupValidationRules('password', 'password', { min: 5, max: 30 })];
 
 const confirmEmailChangeValidationRules = [
     validatePathConfirmationCodeProperty('confirmationCode'),
     ...createSignupValidationRules('newEmail', 'email', { max: 100 }),
 ];
 
-const confirmPasswordChangeValidationRules = [
+const verifyPasswordChangeCodeValidationRules = [validatePathConfirmationCodeProperty('confirmationCode')];
+
+// The new password is validated here, on the only request that can act on it. Whatever the
+// client checked before showing the field does not count.
+const applyPasswordChangeValidationRules = [
     validatePathConfirmationCodeProperty('confirmationCode'),
+    ...createSignupValidationRules('newPassword', 'password', { min: 5, max: 30 }),
     ...createSignupValidationRules('tokenLong', 'string', { optional: true }),
 ];
 
@@ -62,6 +65,7 @@ export {
     requestEmailChangeValidationRules,
     requestPasswordChangeValidationRules,
     confirmEmailChangeValidationRules,
-    confirmPasswordChangeValidationRules,
+    verifyPasswordChangeCodeValidationRules,
+    applyPasswordChangeValidationRules,
     refreshEmailChangeCodeValidationRules,
 };

@@ -7,8 +7,8 @@ import { DBError } from 'src/utils/errors/DBError';
 
 export interface IForgotPasswordDataAccess {
     create(userId: number, email: string, confirmationCode: number, expiresAt: Date): Promise<boolean>;
-    getActiveByEmail(email: string): Promise<IForgotPassword | undefined>;
-    confirm(email: string, trx?: IDBTransaction): Promise<boolean>;
+    getRecord(email: string, confirmationCode?: number): Promise<IForgotPassword | undefined>;
+    confirm(email: string, confirmationCode: number, trx?: IDBTransaction): Promise<boolean>;
     refresh(email: string, confirmationCode: number, expiresAt: Date): Promise<boolean>;
 }
 
@@ -40,15 +40,22 @@ export default class ForgotPasswordDataAccess extends LoggerBase implements IFor
         }
     }
 
-    public async getActiveByEmail(email: string): Promise<IForgotPassword | undefined> {
+    public async getRecord(email: string, confirmationCode?: number): Promise<IForgotPassword | undefined> {
         this._logger.info(`Fetching active forgot password request`);
         try {
-            const data = await this._db
+            const qr = this._db
                 .engine()<IForgotPassword>('password_forgot')
-                .where({ email, confirmed: false })
+                .where((qr) => {
+                    qr.where({ email, confirmed: false });
+                    if (confirmationCode) {
+                        qr.andWhere({ confirmationCode });
+                    }
+                })
                 .andWhere('expiresAt', '>', Time.getISODateNowUTC())
                 .orderBy('expiresAt', 'desc')
                 .first();
+
+            const data = await qr;
 
             return data || undefined;
         } catch (e) {
@@ -60,12 +67,12 @@ export default class ForgotPasswordDataAccess extends LoggerBase implements IFor
         }
     }
 
-    public async confirm(email: string, trx?: IDBTransaction): Promise<boolean> {
+    public async confirm(email: string, confirmationCode: number, trx?: IDBTransaction): Promise<boolean> {
         this._logger.info(`Confirming forgot password request`);
         try {
             const query = trx || this._db.engine();
             const updated = await query<IForgotPassword>('password_forgot')
-                .where({ email, confirmed: false })
+                .where({ email, confirmed: false, confirmationCode })
                 .update({ confirmed: true });
 
             this._logger.info(`Forgot password request confirmed, rows updated: ${updated}`);

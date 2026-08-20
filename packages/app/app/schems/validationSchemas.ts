@@ -390,19 +390,27 @@ const settingsChangePublicNameShema = Yup.object(publicNameEdit);
 const settingsChangeEmailShema = Yup.object(emailEdit);
 const settingsChangeEmailConfirmationShema = Yup.object(signUpConfirmation);
 
+// Step 1 asks for the current password only: the new one is chosen after the emailed code
+// has been checked, and is validated by settingsChangePasswordNewSchema on the last screen.
 const passwordChange = {
     password: Yup.string().required(translationsKeys.currentPasswordRequired),
-    newPassword: Yup.string()
-        .required(translationsKeys.newPasswordRequired)
-        .min(5, translationsKeys.passwordMinLength)
-        .matches(/[A-Z]/, translationsKeys.passwordUppercase)
-        .matches(/[a-z]/, translationsKeys.passwordLowercase)
-        .matches(/[0-9]/, translationsKeys.passwordNumber)
-        .matches(/[!@#$%^&*]/, translationsKeys.passwordSpecial),
 };
 
 const settingsChangePasswordSchema = Yup.object(passwordChange);
 const settingsChangePasswordConfirmSchema = Yup.object(signUpConfirmation);
+const settingsChangePasswordNewSchema = Yup.object({
+    newPassword: Yup.string()
+        .required(translationsKeys.newPasswordRequired)
+        .min(5, translationsKeys.passwordMinLength)
+        .max(30, translationsKeys.passwordTooLong)
+        .matches(/[A-Z]/, translationsKeys.passwordUppercase)
+        .matches(/[a-z]/, translationsKeys.passwordLowercase)
+        .matches(/[0-9]/, translationsKeys.passwordNumber)
+        .matches(/[!@#$%^&*]/, translationsKeys.passwordSpecial),
+    repeatPassword: Yup.string()
+        .required(translationsKeys.repeatPasswordRequired)
+        .oneOf([Yup.ref('newPassword')], translationsKeys.passwordsDoNotMatch),
+});
 
 export {
     incomeEditSchema,
@@ -419,6 +427,7 @@ export {
     settingsChangeEmailConfirmationShema,
     settingsChangePasswordSchema,
     settingsChangePasswordConfirmSchema,
+    settingsChangePasswordNewSchema,
     loginSchema,
     buildSignUpSchema,
     forgotPasswordChangeSchema,

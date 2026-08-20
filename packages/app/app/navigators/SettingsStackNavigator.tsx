@@ -7,6 +7,7 @@ import { SettingsChangeAvatarScreen } from '@/screens/SettingsScreens/SettingsCh
 import { SettingsChangeEmailConfirmScreen } from '@/screens/SettingsScreens/SettingsChangeEmailConfirmScreen';
 import { SettingsChangeEmailScreen } from '@/screens/SettingsScreens/SettingsChangeEmailScreen';
 import { SettingsChangePasswordConfirmScreen } from '@/screens/SettingsScreens/SettingsChangePasswordConfirmScreen';
+import { SettingsChangePasswordNewScreen } from '@/screens/SettingsScreens/SettingsChangePasswordNewScreen';
 import { SettingsChangePasswordScreen } from '@/screens/SettingsScreens/SettingsChangePasswordScreen';
 import { SettingsChangePublicNameScreen } from '@/screens/SettingsScreens/SettingsChangePublicNameScreen';
 import { SettingsScreen } from '@/screens/SettingsScreens/SettingsScreen';
@@ -28,6 +29,7 @@ export enum SettingsPath {
     ChangeAvatar = 'changeAvatar',
     ChangePassword = 'changePassword',
     ChangePasswordConfirm = 'changePasswordConfirm',
+    ChangePasswordNew = 'changePasswordNew',
     ChangeEmail = 'changeEmail',
     ChangeEmailConfirm = 'changeEmailConfirm',
     ConnectedUsers = 'connectedUsers',
@@ -48,6 +50,9 @@ export type SettingsStackParamList = {
     changeAvatar: { avatar: IAvatarConfig | undefined; seed: string };
     changePassword: undefined;
     changePasswordConfirm: undefined;
+    // No params: the verified code lives in ChangePasswordService, never in navigation state,
+    // which is serialised to storage on every transition.
+    changePasswordNew: undefined;
     changeEmail: {
         email: string;
         originEmail: string;
@@ -89,6 +94,7 @@ function SettingsStackNavigator() {
             <SettingsStack.Screen name={SettingsPath.ChangeEmailConfirm} component={SettingsChangeEmailConfirmScreen} />
             <SettingsStack.Screen name={SettingsPath.ChangePassword} component={SettingsChangePasswordScreen} />
             <SettingsStack.Screen name={SettingsPath.ChangePasswordConfirm} component={SettingsChangePasswordConfirmScreen} />
+            <SettingsStack.Screen name={SettingsPath.ChangePasswordNew} component={SettingsChangePasswordNewScreen} />
             <SettingsStack.Screen name={SettingsPath.ConnectedUsers} component={ConnectedUsersScreen} />
             <SettingsStack.Screen name={SettingsPath.InviteUser} component={InviteUserScreen} />
             <SettingsStack.Screen name={SettingsPath.MemberSettings} component={MemberSettingsScreen} />

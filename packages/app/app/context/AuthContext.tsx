@@ -13,6 +13,7 @@ export interface AuthContextType {
     isUserConfirmed: boolean;
     doSetUserConfirmed: () => void;
     doLogout: () => Promise<boolean>;
+    doSessionEnded: () => Promise<void>;
     doLogin: ({ email, password }: { email: string; password: string }) => Promise<GeneralApiProblem>;
     doSignUp: ({
         password,
@@ -188,12 +189,31 @@ export const AuthProvider: FC<PropsWithChildren<AuthProviderProps>> = ({ childre
         }
     }, []);
 
+    /**
+     * Ends the local session for a caller whose session the server has already revoked - a
+     * completed password change, for instance. `doLogout` cannot be reused there: it calls
+     * /auth/logout, which now answers 401, and its failure branch puts an error toast on top
+     * of a change that actually succeeded.
+     *
+     * The two setState calls are the part that matters. AuthService.unauthorized() clears the
+     * singleton and the credential store, but the navigator switches stacks off `isAuthenticated`
+     * (navigators/AppNavigator.tsx), so without them the authenticated screens stay mounted
+     * with no credentials behind them.
+     */
+    const doSessionEnded = useCallback(async (): Promise<void> => {
+        await AuthService.instance().unauthorized();
+        queryClient.clear();
+        setIsAuthenticated(false);
+        setIsUserConfirmed(false);
+    }, []);
+
     const value: AuthContextType = {
         isAuthenticated,
         isUserConfirmed,
         doLogin,
         doSignUp,
         doLogout,
+        doSessionEnded,
         doSetUserConfirmed,
     };
 

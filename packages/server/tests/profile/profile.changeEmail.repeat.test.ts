@@ -10,7 +10,7 @@
  * three places the address is visible - the `users` row, the profile endpoint, and login.
  *
  * Confirming an email change does not revoke the session (unlike a password change, which
- * blacklists the current token in ProfileController.confirmPasswordChange), so the same
+ * blacklists the current token in ProfileController.applyPasswordChange), so the same
  * authorization header is reused across all rounds.
  */
 

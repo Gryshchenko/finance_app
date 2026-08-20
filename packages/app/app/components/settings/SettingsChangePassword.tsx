@@ -19,16 +19,14 @@ import { OverviewPath } from '@/types/OverviewPath';
 
 interface Form {
     password: string;
-    newPassword: string;
 }
 
 export const SettingsChangePassword: FC = function SettingsChangePassword() {
     const { themed } = useAppTheme();
     const navigation = useNavigation<NavigationProp<OverviewTabParamList>>();
     const [isPasswordHidden, setIsPasswordHidden] = useState<boolean>(true);
-    const [isNewPasswordHidden, setIsNewPasswordHidden] = useState<boolean>(true);
     const { form, handleChange, save, errors, setErrors, withFetching, isFetching } = useEditView<Partial<Form>>(
-        { password: '', newPassword: '' },
+        { password: '' },
         settingsChangePasswordSchema,
     );
 
@@ -36,7 +34,7 @@ export const SettingsChangePassword: FC = function SettingsChangePassword() {
         await withFetching(async () => {
             const changePasswordService = ChangePasswordService.instance();
 
-            const response = await changePasswordService.request(form.newPassword!, form.password!);
+            const response = await changePasswordService.request(form.password!);
             if (response.kind === GeneralApiProblemKind.Ok) {
                 navigation.navigate(OverviewPath.Settings, {
                     screen: SettingsPath.ChangePasswordConfirm,
@@ -70,21 +68,6 @@ export const SettingsChangePassword: FC = function SettingsChangePassword() {
             },
         [isPasswordHidden, colors.textDim],
     );
-    const PasswordRightAccessoryRepeat: ComponentType<TextFieldAccessoryProps> = useMemo(
-        () =>
-            function PasswordRightAccessory(props: TextFieldAccessoryProps) {
-                return (
-                    <PressableIcon
-                        icon={isNewPasswordHidden ? 'view' : 'hidden'}
-                        color={colors.textDim}
-                        containerStyle={props.style}
-                        size={20}
-                        onPress={() => setIsNewPasswordHidden(!isNewPasswordHidden)}
-                    />
-                );
-            },
-        [isNewPasswordHidden, colors.textDim],
-    );
     return (
         <View style={$container}>
             <Text tx="settingsChangePasswordScreen:description" style={themed($description)} />
@@ -99,17 +82,6 @@ export const SettingsChangePassword: FC = function SettingsChangePassword() {
                 secureTextEntry={isPasswordHidden}
                 onChangeText={(v) => handleChange('password', v)}
                 RightAccessory={PasswordRightAccessory}
-            />
-            <TextField
-                preset={'underline'}
-                labelTx={'settingsChangePasswordScreen:newPassword'}
-                placeholderTx="common:passwordNewFieldPlaceholder"
-                value={form.newPassword ?? ''}
-                helperTx={errors?.newPassword}
-                status={errors?.newPassword ? 'error' : undefined}
-                secureTextEntry={isNewPasswordHidden}
-                onChangeText={(v) => handleChange('newPassword', v)}
-                RightAccessory={PasswordRightAccessoryRepeat}
             />
             <View style={$spacer} />
             <EditButtons

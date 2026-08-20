@@ -102,12 +102,8 @@ export class ProfileController {
         const responseBuilder = new ResponseBuilder();
         try {
             const userFromSession = req.user as IUser;
-            const { newPassword, password } = req.body;
-            const result = await ProfileServiceBuilder.build().requestPasswordChange(
-                userFromSession.userId,
-                newPassword,
-                password,
-            );
+            const { password } = req.body;
+            const result = await ProfileServiceBuilder.build().requestPasswordChange(userFromSession.userId, password);
             res.status(HttpCode.OK).json(
                 responseBuilder.setStatus(ResponseStatusType.OK).setData({ expiresAt: result.expiresAt }).build(),
             );
@@ -117,13 +113,45 @@ export class ProfileController {
         }
     }
 
-    public static async confirmPasswordChange(req: Request, res: Response) {
+    /**
+     * Checks the emailed code and nothing else - no row is spent and no session is touched.
+     * It exists so the client can report a wrong code before asking the user to think up a
+     * password; `applyPasswordChange` re-checks the same code, and that check is the binding
+     * one.
+     */
+    public static async verifyPasswordChangeCode(req: Request, res: Response) {
+        const responseBuilder = new ResponseBuilder();
+        try {
+            const userFromSession = req.user as IUser;
+            const { confirmationCode } = req.body;
+            await ProfileServiceBuilder.build().verifyPasswordChangeCode(userFromSession.userId, Number(confirmationCode));
+
+            res.status(HttpCode.OK).json(responseBuilder.setStatus(ResponseStatusType.OK).setData({}).build());
+        } catch (e: unknown) {
+            ProfileController.logger.error(
+                `Verify password change code failed due reason: ${(e as { message: string }).message}`,
+            );
+            generateErrorResponse(res, responseBuilder, e as BaseError, ErrorCode.PROFILE_ERROR);
+        }
+    }
+
+    /**
+     * The only step that changes anything. The new password arrives here and nowhere else, so
+     * there is no window in which the server holds a password the user has not yet committed to.
+     * Sessions are dropped after the change lands, which is why the tokens are blacklisted only
+     * once the service call has returned.
+     */
+    public static async applyPasswordChange(req: Request, res: Response) {
         const responseBuilder = new ResponseBuilder();
         try {
             const token = extractToken(req.headers.authorization);
             const userFromSession = req.user as IUser;
-            const { confirmationCode, tokenLong } = req.body;
-            await ProfileServiceBuilder.build().confirmPasswordChange(userFromSession.userId, Number(confirmationCode));
+            const { confirmationCode, newPassword, tokenLong } = req.body;
+            await ProfileServiceBuilder.build().applyPasswordChange(
+                userFromSession.userId,
+                Number(confirmationCode),
+                newPassword,
+            );
 
             const authService = AuthServiceBuilder.build();
             if (typeof tokenLong === 'string' && tokenLong) {
@@ -143,7 +171,7 @@ export class ProfileController {
 
             res.status(HttpCode.NO_CONTENT).json(responseBuilder.setStatus(ResponseStatusType.OK).setData({}).build());
         } catch (e: unknown) {
-            ProfileController.logger.error(`Confirm password change failed due reason: ${(e as { message: string }).message}`);
+            ProfileController.logger.error(`Apply password change failed due reason: ${(e as { message: string }).message}`);
             generateErrorResponse(res, responseBuilder, e as BaseError, ErrorCode.PROFILE_ERROR);
         }
     }

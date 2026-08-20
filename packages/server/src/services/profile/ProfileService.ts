@@ -22,11 +22,11 @@ export interface IProfileService {
     refreshConfirmationCodeForEmailChange(userId: number, newEmail: string, confirmationId: number): Promise<boolean>;
     requestPasswordChange(
         userId: number,
-        newPassword: string,
         password: string,
         trx?: IDBTransaction,
     ): Promise<{ confirmationCode: number; expiresAt: Date }>;
-    confirmPasswordChange(userId: number, confirmationCode: number, trx?: IDBTransaction): Promise<boolean>;
+    verifyPasswordChangeCode(userId: number, confirmationCode: number): Promise<boolean>;
+    applyPasswordChange(userId: number, confirmationCode: number, newPassword: string): Promise<boolean>;
     refreshConfirmationCodeForPasswordChange(userId: number, confirmationCode: number): Promise<boolean>;
     getUserCurrencyCode(userId: number): Promise<string>;
 }
@@ -83,16 +83,16 @@ export default class ProfileService extends LoggerBase implements IProfileServic
         return await this._emailChangingService.refresh(userId, newEmail);
     }
 
-    public async requestPasswordChange(
-        userId: number,
-        newPassword: string,
-        password: string,
-    ): Promise<{ confirmationCode: number; expiresAt: Date }> {
-        return await this._passwordChangingService.request(userId, newPassword, password);
+    public async requestPasswordChange(userId: number, password: string): Promise<{ confirmationCode: number; expiresAt: Date }> {
+        return await this._passwordChangingService.request(userId, password);
     }
 
-    public async confirmPasswordChange(userId: number, confirmationCode: number): Promise<boolean> {
-        return await this._passwordChangingService.confirm(userId, confirmationCode);
+    public async verifyPasswordChangeCode(userId: number, confirmationCode: number): Promise<boolean> {
+        return await this._passwordChangingService.verifyCode(userId, confirmationCode);
+    }
+
+    public async applyPasswordChange(userId: number, confirmationCode: number, newPassword: string): Promise<boolean> {
+        return await this._passwordChangingService.apply(userId, confirmationCode, newPassword);
     }
     public async refreshConfirmationCodeForPasswordChange(userId: number, confirmationId: number): Promise<boolean> {
         return await this._passwordChangingService.refresh(userId, confirmationId);

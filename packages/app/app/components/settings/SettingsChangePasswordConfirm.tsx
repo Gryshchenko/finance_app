@@ -14,9 +14,7 @@ import { SettingsPath } from '@/navigators/SettingsStackNavigator';
 import { settingsChangePasswordConfirmSchema } from '@/schems/validationSchemas';
 import { $timer } from '@/screens/SignUpConfirmationScreen';
 import { buildGeneralApiBaseHandler, GeneralApiProblemKind, handleBadDataResponse } from '@/services/api/apiProblem';
-import { AuthService } from '@/services/AuthService';
 import { ChangePasswordService } from '@/services/ChangePasswordService';
-import ToastService from '@/services/ToastService';
 import { useAppTheme } from '@/theme/context';
 import type { ThemedStyle } from '@/theme/types';
 import { OverviewPath } from '@/types/OverviewPath';
@@ -62,10 +60,13 @@ export const SettingsChangePasswordConfirmation: FC = function SettingsChangePas
     const confirm = async () => {
         await withFetching(async () => {
             const changePasswordService = ChangePasswordService.instance();
-            const response = await changePasswordService.confirm(Number(form.confirmationCode));
+            // Checks the code only. The password is asked for on the next screen and sent
+            // together with this code, so nothing has changed yet at this point.
+            const response = await changePasswordService.verifyCode(Number(form.confirmationCode));
             if (response.kind === GeneralApiProblemKind.Ok) {
-                ToastService.success({ title: 'common:success', message: 'settingsChangePasswordConfirmScreen:successMessage' });
-                await AuthService.instance().unauthorized();
+                navigation.navigate(OverviewPath.Settings, {
+                    screen: SettingsPath.ChangePasswordNew,
+                });
             } else if (response.kind === GeneralApiProblemKind.BadData) {
                 handleBadDataResponse(response.errors, setErrors);
             } else {

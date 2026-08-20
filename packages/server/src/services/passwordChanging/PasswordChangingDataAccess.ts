@@ -9,14 +9,7 @@ import { isBaseError } from 'src/utils/errors/isBaseError';
 import { ValidationError } from 'src/utils/errors/ValidationError';
 
 export interface IPasswordChangingDataAccess {
-    create(
-        userId: number,
-        passwordHash: string,
-        salt: string,
-        confirmationCode: number,
-        expiresAt: Date,
-        trx?: IDBTransaction,
-    ): Promise<IPasswordChanging>;
+    create(userId: number, confirmationCode: number, expiresAt: Date, trx?: IDBTransaction): Promise<IPasswordChanging>;
     getByUserId(userId: number, expiresAt: string | undefined): Promise<IPasswordChanging | undefined>;
     confirm(userId: number, id: number, trx?: IDBTransaction): Promise<boolean>;
     refresh(userId: number, confirmationId: number, confirmationCode: number, expiresAt: Date): Promise<boolean>;
@@ -30,8 +23,6 @@ export default class PasswordChangingDataAccess extends LoggerBase implements IP
     }
     public async create(
         userId: number,
-        passwordHash: string,
-        salt: string,
         confirmationCode: number,
         expiresAt: Date,
         trx?: IDBTransaction,
@@ -40,7 +31,7 @@ export default class PasswordChangingDataAccess extends LoggerBase implements IP
         try {
             const query = trx || this._db.engine();
             const data = await query<IPasswordChanging>('password_changing')
-                .insert({ userId, passwordHash, salt, confirmationCode, expiresAt }, ['*'])
+                .insert({ userId, confirmationCode, expiresAt }, ['*'])
                 .returning(['*']);
 
             this._logger.info(`Password change request created for userId ${userId}`);

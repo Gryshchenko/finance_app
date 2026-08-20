@@ -70,7 +70,7 @@ export default class ForgotPasswordService extends LoggerBase implements IForgot
     public async refresh(email: string): Promise<void> {
         this._logger.info(`Forgot password refresh requested`);
         try {
-            const record = await this._dataAccess.getActiveByEmail(email);
+            const record = await this._dataAccess.getRecord(email);
             if (!record) {
                 this._logger.error(`Forgot password refresh: no active request found, silently ignoring`);
                 return;
@@ -107,7 +107,7 @@ export default class ForgotPasswordService extends LoggerBase implements IForgot
                 });
             }
             const trx = trxInProcess as unknown as IDBTransaction;
-            const record = await this._dataAccess.getActiveByEmail(email);
+            const record = await this._dataAccess.getRecord(email, confirmationCode);
 
             if (!record) {
                 throw new ValidationError({
@@ -119,7 +119,7 @@ export default class ForgotPasswordService extends LoggerBase implements IForgot
 
             ConfirmationHelper.validateCode(record.confirmationCode, confirmationCode);
 
-            await this._dataAccess.confirm(email, trx);
+            await this._dataAccess.confirm(email, record.confirmationCode, trx);
             // Proving control of the mailbox is enough to lock every existing session out, so
             // an attacker holding a stolen token cannot outlive the reset flow.
             await this._userService.revokeAllSessions(record.userId, trx);

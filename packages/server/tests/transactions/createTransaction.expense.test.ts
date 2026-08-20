@@ -1,7 +1,7 @@
 import { createUser, deleteUserAfterTest, generateSecureRandom, getOverview } from '../TestsUtils.';
 import DatabaseConnection from '../../src/repositories/DatabaseConnection';
 import config from '../../src/config/dbConfig';
-import { KeyValueStoreBuilder } from '../../src/repositories/keyValueStore/KeyValueStoreBuilder';
+import { KeyValueStoreBuilder } from 'src/repositories/keyValueStore/KeyValueStoreBuilder';
 import { ErrorCode, TransactionType } from '@tenpercent/shared';
 import { ResponseStatusType } from '@tenpercent/shared';
 import { HttpCode } from '@tenpercent/shared';

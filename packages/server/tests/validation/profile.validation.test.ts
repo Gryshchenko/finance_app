@@ -7,6 +7,7 @@
  * POST  /user/:userId/profile/email-change/resend
  * POST  /user/:userId/profile/password-change
  * POST  /user/:userId/profile/password-change/verify
+ * POST  /user/:userId/profile/password-change/apply
  * POST  /user/:userId/profile/password-change/resend
  */
 
@@ -192,50 +193,28 @@ describe('POST /user/:userId/profile/password-change - body validation', () => {
     const url = () => `/user/${userId}/profile/password-change`;
 
     it('400 - missing password', async () => {
-        await agent
-            .post(url())
-            .set('authorization', authorization)
-            .send({ newPassword: 'ValidNew1!' })
-            .expect(HttpCode.BAD_REQUEST);
-    });
-
-    it('400 - missing newPassword', async () => {
-        await agent.post(url()).set('authorization', authorization).send({ password: userPassword }).expect(HttpCode.BAD_REQUEST);
-    });
-
-    it('400 - empty body', async () => {
         await agent.post(url()).set('authorization', authorization).send({}).expect(HttpCode.BAD_REQUEST);
     });
 
-    it('400 - newPassword too weak', async () => {
+    it('400 - newPassword is not accepted here', async () => {
+        // The new password belongs to /apply alone. Sending it at this step is a malformed
+        // request, not an early submission.
         await agent
             .post(url())
             .set('authorization', authorization)
-            .send({ password: userPassword, newPassword: 'weakonly' })
-            .expect(HttpCode.BAD_REQUEST);
-    });
-
-    it('400 - newPassword too short (< 5)', async () => {
-        await agent
-            .post(url())
-            .set('authorization', authorization)
-            .send({ password: userPassword, newPassword: 'A1!' })
-            .expect(HttpCode.BAD_REQUEST);
-    });
-
-    it('400 - newPassword too long (> 30)', async () => {
-        await agent
-            .post(url())
-            .set('authorization', authorization)
-            .send({ password: userPassword, newPassword: `ValidPass1!${'a'.repeat(25)}` })
+            .send({ password: userPassword, newPassword: 'ValidNew1!' })
             .expect(HttpCode.BAD_REQUEST);
     });
 
     it('400 - password is a number', async () => {
+        await agent.post(url()).set('authorization', authorization).send({ password: 123456 }).expect(HttpCode.BAD_REQUEST);
+    });
+
+    it('400 - password too long (> 30)', async () => {
         await agent
             .post(url())
             .set('authorization', authorization)
-            .send({ password: 123456, newPassword: 'ValidNew1!' })
+            .send({ password: `ValidPass1!${'a'.repeat(25)}` })
             .expect(HttpCode.BAD_REQUEST);
     });
 
@@ -243,7 +222,7 @@ describe('POST /user/:userId/profile/password-change - body validation', () => {
         await agent
             .post(url())
             .set('authorization', authorization)
-            .send({ password: userPassword, newPassword: 'ValidNew1!', hack: true })
+            .send({ password: userPassword, hack: true })
             .expect(HttpCode.BAD_REQUEST);
     });
 
@@ -251,7 +230,116 @@ describe('POST /user/:userId/profile/password-change - body validation', () => {
         await agent
             .post(`${url()}?foo=bar`)
             .set('authorization', authorization)
-            .send({ password: userPassword, newPassword: 'ValidNew1!' })
+            .send({ password: userPassword })
+            .expect(HttpCode.BAD_REQUEST);
+    });
+});
+
+// ─── POST /user/:userId/profile/password-change/verify ───────────────────────
+
+describe('POST /user/:userId/profile/password-change/verify - body validation', () => {
+    const url = () => `/user/${userId}/profile/password-change/verify`;
+
+    it('400 - missing confirmationCode', async () => {
+        await agent.post(url()).set('authorization', authorization).send({}).expect(HttpCode.BAD_REQUEST);
+    });
+
+    it('400 - confirmationCode is not a number', async () => {
+        await agent
+            .post(url())
+            .set('authorization', authorization)
+            .send({ confirmationCode: 'not-a-code' })
+            .expect(HttpCode.BAD_REQUEST);
+    });
+
+    it('400 - newPassword is not accepted here', async () => {
+        // Only /apply receives a password; offering one to the check step is malformed.
+        await agent
+            .post(url())
+            .set('authorization', authorization)
+            .send({ confirmationCode: 12345678, newPassword: 'ValidNew1!' })
+            .expect(HttpCode.BAD_REQUEST);
+    });
+
+    it('400 - unknown field in body', async () => {
+        await agent
+            .post(url())
+            .set('authorization', authorization)
+            .send({ confirmationCode: 12345678, hack: true })
+            .expect(HttpCode.BAD_REQUEST);
+    });
+
+    it('400 - unexpected query param', async () => {
+        await agent
+            .post(`${url()}?foo=bar`)
+            .set('authorization', authorization)
+            .send({ confirmationCode: 12345678 })
+            .expect(HttpCode.BAD_REQUEST);
+    });
+});
+
+// ─── POST /user/:userId/profile/password-change/apply ─────────────────────────
+
+describe('POST /user/:userId/profile/password-change/apply - body validation', () => {
+    const url = () => `/user/${userId}/profile/password-change/apply`;
+
+    it('400 - empty body', async () => {
+        await agent.post(url()).set('authorization', authorization).send({}).expect(HttpCode.BAD_REQUEST);
+    });
+
+    it('400 - missing newPassword', async () => {
+        await agent
+            .post(url())
+            .set('authorization', authorization)
+            .send({ confirmationCode: 12345678 })
+            .expect(HttpCode.BAD_REQUEST);
+    });
+
+    it('400 - missing confirmationCode', async () => {
+        await agent
+            .post(url())
+            .set('authorization', authorization)
+            .send({ newPassword: 'ValidNew1!' })
+            .expect(HttpCode.BAD_REQUEST);
+    });
+
+    it('400 - newPassword too weak', async () => {
+        await agent
+            .post(url())
+            .set('authorization', authorization)
+            .send({ confirmationCode: 12345678, newPassword: 'weakonly' })
+            .expect(HttpCode.BAD_REQUEST);
+    });
+
+    it('400 - newPassword too short (< 5)', async () => {
+        await agent
+            .post(url())
+            .set('authorization', authorization)
+            .send({ confirmationCode: 12345678, newPassword: 'A1!' })
+            .expect(HttpCode.BAD_REQUEST);
+    });
+
+    it('400 - newPassword too long (> 30)', async () => {
+        await agent
+            .post(url())
+            .set('authorization', authorization)
+            .send({ confirmationCode: 12345678, newPassword: `ValidPass1!${'a'.repeat(25)}` })
+            .expect(HttpCode.BAD_REQUEST);
+    });
+
+    it('400 - unknown field in body', async () => {
+        await agent
+            .post(url())
+            .set('authorization', authorization)
+            .send({ confirmationCode: 12345678, newPassword: 'ValidNew1!', hack: true })
+            .expect(HttpCode.BAD_REQUEST);
+    });
+
+    it('400 - unexpected query param', async () => {
+        await agent
+            .post(`${url()}?foo=bar`)
+            .set('authorization', authorization)
+            .send({ confirmationCode: 12345678, newPassword: 'ValidNew1!' })
             .expect(HttpCode.BAD_REQUEST);
     });
 });

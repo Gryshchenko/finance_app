@@ -1,20 +1,18 @@
 /**
  * Tests - Repeated password change by a logged-in user
  *
- * POST /user/:userId/profile/password-change         - request change
- * POST /user/:userId/profile/password-change/verify  - confirm with code
- *
  * profile.changePassword.test.ts covers one change per user. This file covers the second
- * round, which is the interesting one: confirming a change blacklists the caller's token
- * (ProfileController.confirmPasswordChange calls authService.logout), so the account has
- * to log in again before it can change its password a second time. The full cycle is
+ * round, which is the interesting one: `apply` blacklists the caller's token, so the account
+ * has to log in again before it can change its password a second time. The full cycle is
  *
- *     change -> confirm -> logged out -> log in with the new password -> change again
+ *     request -> verify code -> apply -> logged out -> log in with the new password -> again
  *
  * and every round asserts that exactly one password is accepted afterwards.
  *
- * The last describe - "Superseded pending request" - FAILS ON PURPOSE: it describes what
- * should happen to a request the user abandoned, and that part of the flow is broken today.
+ * The last describe covers the case that motivated the three-step flow: a request the user
+ * abandoned must not be able to move the password later. Because nothing about the new
+ * password is stored when a request is made, an abandoned row can only ever mail a code - it
+ * carries no instruction to set anything.
  */
 
 import { closeTestApp, createUser, generateRandomEmail } from '../TestsUtils.';
@@ -45,7 +43,19 @@ afterAll(async () => {
     await closeTestApp(server, userIds);
 });
 
-/** One complete round: request with the current password, read the code, confirm it. */
+/** The code of the user's active (unconfirmed) request. */
+async function activeCode(userId: number): Promise<number> {
+    const record = await db
+        .engine()('password_changing')
+        .select('confirmationCode')
+        .where({ userId, confirmed: false })
+        .orderBy('id', 'desc')
+        .first();
+    expect(record).toBeDefined();
+    return record.confirmationCode;
+}
+
+/** One complete round: request with the current password, check the code, then apply. */
 async function changePassword(
     agent: ReturnType<typeof request.agent>,
     userId: number,
@@ -56,22 +66,21 @@ async function changePassword(
     await agent
         .post(`/user/${userId}/profile/password-change`)
         .set('authorization', authorization)
-        .send({ password: currentPassword, newPassword })
+        .send({ password: currentPassword })
         .expect(HttpCode.OK);
 
-    const record = await db
-        .engine()('password_changing')
-        .select('confirmationCode')
-        .where({ userId, confirmed: false })
-        .orderBy('id', 'desc')
-        .first();
-
-    expect(record).toBeDefined();
+    const confirmationCode = await activeCode(userId);
 
     await agent
         .post(`/user/${userId}/profile/password-change/verify`)
         .set('authorization', authorization)
-        .send({ confirmationCode: record.confirmationCode })
+        .send({ confirmationCode })
+        .expect(HttpCode.OK);
+
+    await agent
+        .post(`/user/${userId}/profile/password-change/apply`)
+        .set('authorization', authorization)
+        .send({ confirmationCode, newPassword })
         .expect(HttpCode.NO_CONTENT);
 }
 
@@ -97,10 +106,9 @@ describe('Repeated password change - P1 -> P2 -> P3', () => {
         userIds.push(userId);
     });
 
-    it('first change P1 -> P2 confirms and ends the session that made it', async () => {
+    it('first change P1 -> P2 applies and ends the session that made it', async () => {
         await changePassword(agent, userId, authorization, PASSWORD_1, PASSWORD_2);
 
-        // The token used to confirm is blacklisted, so it no longer opens anything.
         await agent.get(`/user/${userId}/profile`).set('authorization', authorization).expect(HttpCode.UNAUTHORIZED);
     });
 
@@ -125,18 +133,13 @@ describe('Repeated password change - P1 -> P2 -> P3', () => {
         await agent.get(`/user/${userId}/profile`).set('authorization', authorization).expect(HttpCode.OK);
     });
 
-    it('records both rounds as separate confirmed rows with distinct hashes', async () => {
+    it('records both rounds as separate confirmed rows', async () => {
         const rows = await db.engine()('password_changing').select('*').where({ userId }).orderBy('id', 'asc');
 
         const confirmed = rows.filter((r: { confirmed: boolean }) => r.confirmed);
         expect(confirmed).toHaveLength(2);
-
-        // password_changing carries UNIQUE ("userId", "passwordHash"). The salt is drawn per
-        // request, so two rounds cannot collide on it - this asserts that assumption rather
-        // than leaving it implicit.
-        const [first, second] = confirmed;
-        expect(first.passwordHash).not.toBe(second.passwordHash);
-        expect(first.salt).not.toBe(second.salt);
+        // Nothing about the passwords themselves is kept; only that the change happened.
+        expect(confirmed[0]).not.toHaveProperty('passwordHash');
     });
 });
 
@@ -159,7 +162,7 @@ describe('Repeated password change - wrong current password on the second round'
         await agent
             .post(`/user/${userId}/profile/password-change`)
             .set('authorization', secondAuth)
-            .send({ password: PASSWORD_1, newPassword: PASSWORD_3 })
+            .send({ password: PASSWORD_1 })
             .expect(HttpCode.BAD_REQUEST);
 
         await agent.post('/auth/login').send({ email, password: PASSWORD_2 }).expect(HttpCode.OK);
@@ -167,15 +170,8 @@ describe('Repeated password change - wrong current password on the second round'
     });
 });
 
-describe('Superseded pending request', () => {
-    // FAILS ON PURPOSE. A request the user abandoned stays confirmable for its full
-    // 10-minute window (CHANGE_CODE_EXPIRES_IN in PasswordChangingService), even after a
-    // later request has been completed: PasswordChangingService.confirm picks the newest
-    // unconfirmed, unexpired row and applies whatever password that row was created with.
-    // The abandoned code therefore rolls the account onto a third password minutes after
-    // the user believes they finished changing it, and locks them out of the one they set.
-
-    it('an abandoned request cannot be confirmed once a newer change completed', async () => {
+describe('Abandoned request', () => {
+    it('cannot move the password once a newer change completed', async () => {
         const agent = request.agent(server);
         const email = generateRandomEmail();
         const { userId, authorization } = await createUser({
@@ -186,31 +182,63 @@ describe('Superseded pending request', () => {
         });
         userIds.push(userId);
 
-        // Round A: requested, code delivered, then abandoned - the user never confirms it.
+        // Round A: requested, code delivered, then abandoned - the user never applies it.
         await agent
             .post(`/user/${userId}/profile/password-change`)
             .set('authorization', authorization)
-            .send({ password: PASSWORD_1, newPassword: PASSWORD_3 })
+            .send({ password: PASSWORD_1 })
             .expect(HttpCode.OK);
 
-        const abandoned = await db
-            .engine()('password_changing')
-            .select('id', 'confirmationCode')
-            .where({ userId, confirmed: false })
-            .orderBy('id', 'desc')
-            .first();
+        const abandonedCode = await activeCode(userId);
 
         // Round B: requested and completed. This is the change the user actually made.
         await changePassword(agent, userId, authorization, PASSWORD_1, PASSWORD_2);
         const secondAuth = await login(agent, email, PASSWORD_2);
 
+        // Round B re-coded the same row, so round A's code is no longer anything.
         await agent
             .post(`/user/${userId}/profile/password-change/verify`)
             .set('authorization', secondAuth)
-            .send({ confirmationCode: abandoned.confirmationCode })
+            .send({ confirmationCode: abandonedCode })
+            .expect(HttpCode.BAD_REQUEST);
+
+        await agent
+            .post(`/user/${userId}/profile/password-change/apply`)
+            .set('authorization', secondAuth)
+            .send({ confirmationCode: abandonedCode, newPassword: PASSWORD_3 })
             .expect(HttpCode.BAD_REQUEST);
 
         // The password the user set stands, and round A's target never becomes valid.
+        await agent.post('/auth/login').send({ email, password: PASSWORD_2 }).expect(HttpCode.OK);
+        await agent.post('/auth/login').send({ email, password: PASSWORD_3 }).expect(HttpCode.BAD_REQUEST);
+    });
+
+    it('an unfinished request left behind after a change grants nothing on its own', async () => {
+        const agent = request.agent(server);
+        const email = generateRandomEmail();
+        const { userId, authorization } = await createUser({
+            agent,
+            databaseConnection: db,
+            email,
+            password: PASSWORD_1,
+        });
+        userIds.push(userId);
+
+        await changePassword(agent, userId, authorization, PASSWORD_1, PASSWORD_2);
+        const secondAuth = await login(agent, email, PASSWORD_2);
+
+        // A pending row exists again, and is then left alone.
+        await agent
+            .post(`/user/${userId}/profile/password-change`)
+            .set('authorization', secondAuth)
+            .send({ password: PASSWORD_2 })
+            .expect(HttpCode.OK);
+
+        const pending = await db.engine()('password_changing').select('*').where({ userId, confirmed: false }).first();
+        expect(pending).toBeDefined();
+
+        // Nothing in it says which password to set, so nothing happens until someone supplies
+        // both the code and a password on `apply`.
         await agent.post('/auth/login').send({ email, password: PASSWORD_2 }).expect(HttpCode.OK);
         await agent.post('/auth/login').send({ email, password: PASSWORD_3 }).expect(HttpCode.BAD_REQUEST);
     });

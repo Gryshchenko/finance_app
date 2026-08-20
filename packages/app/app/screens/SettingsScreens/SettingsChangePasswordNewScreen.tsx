@@ -6,35 +6,31 @@ import { NativeStackScreenProps } from '@react-navigation/native-stack';
 import { BackButton } from '@/components/BackButton';
 import { Header } from '@/components/Header';
 import { Screen } from '@/components/Screen';
-import { SettingsChangeAvatar } from '@/components/settings/SettingsChangeAvatar';
+import { SettingsChangePasswordNew } from '@/components/settings/SettingsChangePasswordNew';
 import { translate } from '@/i18n/translate';
 import { OverviewTabParamList } from '@/navigators/OverviewNavigator';
 import { SettingsPath, SettingsStackParamList } from '@/navigators/SettingsStackNavigator';
 import { $styles } from '@/theme/styles';
-import { OverviewPath } from '@/types/OverviewPath';
 
-type Props = NativeStackScreenProps<SettingsStackParamList, SettingsPath.ChangeAvatar>;
+type Props = NativeStackScreenProps<SettingsStackParamList, SettingsPath.ChangePasswordNew>;
 
-export const SettingsChangeAvatarScreen: FC<Props> = function SettingsChangeAvatarScreen(_props) {
-    const avatar = _props.route?.params?.avatar;
+export const SettingsChangePasswordNewScreen: FC<Props> = function SettingsChangePasswordNewScreen() {
     const navigation = useNavigation<NavigationProp<OverviewTabParamList>>();
-    const seed = _props.route?.params?.seed ?? 'Clara Barton';
     return (
         <Screen preset="fixed" contentContainerStyle={[$styles.screen, $topAlignScreen]} safeAreaEdges={['bottom']}>
             <Header
-                title={translate('settingsChangeAvatarScreen:name')}
+                title={translate('settingsChangePasswordNewScreen:name')}
                 titleMode="flex"
                 titleStyle={$rightAlignTitle}
                 LeftActionComponent={
                     <BackButton
                         onPress={() => {
-                            navigation.navigate(OverviewPath.Settings, { screen: SettingsPath.Settings });
+                            navigation.goBack();
                         }}
                     />
                 }
-                RightActionComponent={undefined}
             />
-            <SettingsChangeAvatar avatar={avatar} seed={seed} />
+            <SettingsChangePasswordNew />
         </Screen>
     );
 };
