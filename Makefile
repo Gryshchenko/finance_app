@@ -46,22 +46,6 @@ build-prod: ## Build the production server image for this machine's architecture
 		--load \
 		.
 
-.PHONY: push-prod
-push-prod: ## Build for the deployment platform and push. Needs PROD_REGISTRY=<registry path>.
-	@test -n "$(PROD_REGISTRY)" || { echo "PROD_REGISTRY is required, e.g. make push-prod PROD_REGISTRY=ghcr.io/<user>"; exit 1; }
-	docker buildx build \
-		--platform $(PROD_PLATFORM) \
-		-f docker/prod/Dockerfile \
-		-t $(PROD_REGISTRY)/$(PROD_IMAGE):$(PROD_TAG) \
-		--push \
-		.
-	@echo
-	@echo "pushed $(PROD_REGISTRY)/$(PROD_IMAGE):$(PROD_TAG)"
-	@echo "in docker/prod/.env on the instance set:"
-	@echo "  SERVER_IMAGE=$(PROD_REGISTRY)/$(PROD_IMAGE)"
-	@echo "  SERVER_IMAGE_TAG=$(PROD_TAG)"
-	@echo "  SENTRY_RELEASE=$(PROD_TAG)"
-
 .PHONY: start-prod
 start-prod: ## Start the production stack locally. Needs a filled-in docker/prod/.env.
 	docker compose -f docker/prod/compose.yaml up -d --no-build

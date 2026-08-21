@@ -4,10 +4,13 @@ on:
             - main
     pull_request:
         types: [opened, synchronize, reopened]
+    # Called by release.yml, so a manual release runs these exact tests instead of
+    # a second copy of them that can drift.
+    workflow_call:
 
 jobs:
-    sonarcloud:
-        name: SonarCloud
+    build:
+        name: build
         runs-on: ubuntu-latest
 
         steps:

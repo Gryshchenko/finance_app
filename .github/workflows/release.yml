@@ -1,0 +1,80 @@
+name: release
+
+on:
+    workflow_dispatch:
+
+concurrency:
+    group: release
+    cancel-in-progress: false
+
+jobs:
+    tests:
+        uses: ./.github/workflows/build.yml
+
+    push-image:
+        name: push image to ECR
+        needs: tests
+        runs-on: ubuntu-24.04-arm
+
+        permissions:
+            id-token: write
+            contents: read
+
+        env:
+            ECR_REPOSITORY: pagoda/tenpercent
+
+        steps:
+            - uses: actions/checkout@v4
+
+            - name: Check AWS configuration
+              env:
+                  ROLE_ARN: ${{ secrets.AWS_ROLE_ARN }}
+                  REGION: ${{ vars.AWS_REGION }}
+              run: |
+                  test -n "$ROLE_ARN" || { echo "secret AWS_ROLE_ARN is not set"; exit 1; }
+                  test -n "$REGION" || { echo "variable AWS_REGION is not set"; exit 1; }
+
+            - name: Configure AWS credentials
+              uses: aws-actions/configure-aws-credentials@v4
+              with:
+                  role-to-assume: ${{ secrets.AWS_ROLE_ARN }}
+                  role-session-name: github-actions-${{ github.run_id }}
+                  aws-region: ${{ vars.AWS_REGION }}
+
+            - name: Log in to Amazon ECR
+              id: ecr
+              uses: aws-actions/amazon-ecr-login@v2
+
+            - name: Build production image
+              id: image
+              run: |
+                  echo "ref=${{ steps.ecr.outputs.registry }}/$ECR_REPOSITORY" >> "$GITHUB_OUTPUT"
+                  echo "tag=$(git rev-parse --short HEAD)" >> "$GITHUB_OUTPUT"
+                  make build-prod \
+                      PROD_IMAGE="${{ steps.ecr.outputs.registry }}/$ECR_REPOSITORY" \
+                      PROD_TAG="$(git rev-parse --short HEAD)"
+
+            - name: Push to ECR
+              env:
+                  REF: ${{ steps.image.outputs.ref }}
+                  TAG: ${{ steps.image.outputs.tag }}
+              run: |
+                  docker push "$REF:$TAG"
+                  docker push "$REF:latest"
+
+            - name: Summary
+              env:
+                  REF: ${{ steps.image.outputs.ref }}
+                  TAG: ${{ steps.image.outputs.tag }}
+              run: |
+                  {
+                      echo "### Pushed \`$REF:$TAG\`"
+                      echo
+                      echo 'In `docker/prod/.env` on the instance set:'
+                      echo
+                      echo '```'
+                      echo "SERVER_IMAGE=$REF"
+                      echo "SERVER_IMAGE_TAG=$TAG"
+                      echo "SENTRY_RELEASE=$TAG"
+                      echo '```'
+                  } >> "$GITHUB_STEP_SUMMARY"
