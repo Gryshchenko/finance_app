@@ -1,4 +1,5 @@
 import { FC } from 'react';
+import { StyleProp, ViewStyle } from 'react-native';
 import { NavigationProp, useNavigation } from '@react-navigation/native';
 import { IConnectedMember } from '@tenpercent/shared';
 
@@ -76,7 +77,7 @@ export const MemberSettings: FC<{ data: IConnectedMember | undefined }> = functi
     useHeaderRightAction(data ? onDelete : undefined, { disabled: isFetching });
 
     if (!data) {
-        return <EmptyState buttonOnPress={goBack} />;
+        return <EmptyState buttonOnPress={goBack} style={containerStyleOverride} />;
     }
 
     return (
@@ -88,4 +89,7 @@ export const MemberSettings: FC<{ data: IConnectedMember | undefined }> = functi
             handleSave={handleSave}
         />
     );
+};
+const containerStyleOverride: StyleProp<ViewStyle> = {
+    margin: 'auto',
 };

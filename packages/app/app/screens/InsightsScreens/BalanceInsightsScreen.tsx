@@ -25,7 +25,7 @@ export const BalanceInsightsScreen = function BalanceInsightsScreen({ navigation
     const [headerHeight, setHeaderHeight] = useState(0);
 
     return (
-        <Screen preset="fixed" contentContainerStyle={[$styles.screen, $topAlignScreen]}>
+        <Screen preset="fixed" contentContainerStyle={[$styles.screen, $topAlignScreen]} safeAreaEdges={['bottom']}>
             <BalanceInsights onScroll={onScroll} contentPaddingTop={headerHeight} contentPaddingBottom={BLUR_FOOTER_HEIGHT} />
 
             <ScrollBlurHeader

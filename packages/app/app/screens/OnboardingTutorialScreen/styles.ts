@@ -10,8 +10,6 @@ export const ACCOUNT_COLORS = { navy: '#2C3E50', teal: '#16A085', green: '#27AE6
 export const $screen: ThemedStyle<ViewStyle> = ({ colors }) => ({
     flex: 1,
     backgroundColor: colors.background,
-    paddingHorizontal: spacing.lg,
-    paddingBottom: spacing.md,
     justifyContent: 'space-between',
 });
 export const $skipRow: ViewStyle = { minHeight: 24, alignItems: 'flex-end' };
@@ -57,7 +55,7 @@ export const $back: ViewStyle = { flex: 1 };
 export const $next: ViewStyle = { flex: 2 };
 
 // Box + chip (dashboard box vocabulary)
-export const $chip: ViewStyle = { width: 62, alignItems: 'center', gap: 6 };
+export const $chip: ViewStyle = { width: 75, alignItems: 'center', gap: 6 };
 export const $box: ViewStyle = { width: 56, height: 56, borderRadius: 2, alignItems: 'center', justifyContent: 'center' };
 export const $boxFill: ViewStyle = {
     ...({ position: 'absolute' } as ViewStyle),
@@ -112,7 +110,7 @@ export const $chipValue: ThemedStyle<TextStyle> = ({ colors, typography }) => ({
 export const $rowGap: ViewStyle = { flexDirection: 'row', gap: spacing.lg };
 export const $flex1: ViewStyle = { flex: 1 };
 export const $previewWide: ViewStyle = { width: 310, gap: spacing.lg };
-export const $absoluteIcon: ImageStyle = { position: 'absolute' };
+export const $absoluteIcon: ImageStyle = { position: 'absolute', top: -13, left: -11 };
 
 // Dashboard balance
 export const $balanceRow: ViewStyle = { flexDirection: 'row', alignItems: 'flex-end', justifyContent: 'space-between' };
@@ -139,6 +137,7 @@ export const $totalValue: ThemedStyle<TextStyle> = ({ colors, typography }) => (
     fontFamily: typography.fonts.funnelSans.bold,
     fontSize: 30,
     letterSpacing: -0.5,
+    lineHeight: 30,
     color: colors.text,
 });
 export const $totalDecimals: ThemedStyle<TextStyle> = ({ colors, typography }) => ({

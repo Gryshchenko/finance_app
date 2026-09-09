@@ -25,7 +25,6 @@ export const BaseScreen: FC<BaseScreenProps> = ({ titleTx, children }) => {
                         <Icon icon="more" color={theme.colors.text} size={headerIconSize} />
                     </View>
                 }
-                safeAreaEdges={[]}
             />
             <View>{children}</View>
         </View>

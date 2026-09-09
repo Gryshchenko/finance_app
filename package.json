@@ -12,6 +12,7 @@
         "@babel/core": "^7.20.0",
         "@babel/preset-env": "^7.20.0",
         "@babel/runtime": "^7.20.0",
+        "@changesets/cli": "^3.0.1",
         "@eslint/js": "9.39.4",
         "@types/jest": "^29.5.14",
         "@types/node": "20.11.0",
@@ -37,6 +38,9 @@
         "start:app": "pnpm --filter './packages/app' run start",
         "start:server": "pnpm --filter './packages/server' run start",
         "postinstall": "husky install",
+        "changeset": "changeset",
+        "changeset:version": "changeset version",
+        "changeset:status": "changeset status",
         "prettier:write": "prettier \"**/*\" --write --ignore-unknown",
         "prettier:check": "prettier \"**/*\" --check --ignore-unknown",
         "eslint": "pnpm --filter './packages/server' run eslint && pnpm --filter './packages/app' run eslint && pnpm --filter './packages/shared' run eslint",
@@ -50,5 +54,6 @@
             "react-native"
         ],
         "publicHoistPattern": []
-    }
+    },
+    "packageManager": "pnpm@8.15.9+sha512.499434c9d8fdd1a2794ebf4552b3b25c0a633abcee5bb15e7b5de90f32f47b513aca98cd5cfd001c31f0db454bc3804edccd578501e4ca293a6816166bbd9f81"
 }

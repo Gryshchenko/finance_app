@@ -30,7 +30,7 @@ export const SettingsScreen: FC<Props> = function SettingsScreen(_props) {
     const [headerHeight, setHeaderHeight] = useState(0);
 
     return (
-        <Screen preset="fixed" contentContainerStyle={[$styles.screen, $topAlignScreen]}>
+        <Screen preset="fixed" contentContainerStyle={[$styles.screen, $topAlignScreen]} safeAreaEdges={['bottom']}>
             <Settings onScroll={onScroll} contentPaddingTop={headerHeight} contentPaddingBottom={BLUR_FOOTER_HEIGHT} />
 
             <ScrollBlurHeader

@@ -42,13 +42,12 @@ export function GenericListScreen<T, B>({
     const headerActions = useMemo(() => ({ setRightAction: setContentRightAction }), []);
 
     return (
-        <Screen preset="fixed" contentContainerStyle={[$styles.screen, $topAlignScreen]} safeAreaEdges={['top']}>
+        <Screen preset="fixed" contentContainerStyle={[$styles.screen, $topAlignScreen]} safeAreaEdges={['bottom']}>
             <Header
                 title={name}
                 subtitle={subtitle}
                 titleMode="flex"
                 titleStyle={$rightAlignTitle}
-                safeAreaEdges={[]}
                 LeftActionComponent={onBack ? <BackButton onPress={onBack} /> : undefined}
                 RightActionComponent={RightActionComponent ?? contentRightAction ?? undefined}
             />

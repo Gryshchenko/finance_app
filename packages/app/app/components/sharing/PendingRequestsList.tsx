@@ -27,7 +27,9 @@ export const PendingRequestsList: FC<IProps> = function PendingRequestsList({ da
     const { themed } = useAppTheme();
 
     if (!data?.length) {
-        return <EmptyState headingTx={'sharing:pendingTitle'} contentTx={'sharing:pendingEmpty'} />;
+        return (
+            <EmptyState headingTx={'sharing:pendingTitle'} contentTx={'sharing:pendingEmpty'} style={containerStyleOverride} />
+        );
     }
 
     return (
@@ -155,4 +157,8 @@ const $actions: ViewStyle = {
 
 const $actionButton: ViewStyle = {
     padding: spacing.xs,
+};
+
+const containerStyleOverride: ViewStyle = {
+    margin: 'auto',
 };

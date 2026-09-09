@@ -1,12 +1,17 @@
 {
     "cli": {
-        "version": ">= 3.15.1",
-        "appVersionSource": "local"
+        "version": ">= 16.0.0",
+        "appVersionSource": "remote"
     },
     "build": {
         "development": {
             "extends": "production",
             "distribution": "internal",
+            "environment": "development",
+            "autoIncrement": false,
+            "env": {
+                "EXPO_PUBLIC_SENTRY_ENVIRONMENT": "development"
+            },
             "android": {
                 "gradleCommand": ":app:assembleDebug"
             },
@@ -26,6 +31,11 @@
         "preview": {
             "extends": "production",
             "distribution": "internal",
+            "environment": "preview",
+            "autoIncrement": false,
+            "env": {
+                "EXPO_PUBLIC_SENTRY_ENVIRONMENT": "preview"
+            },
             "ios": { "simulator": true },
             "android": { "buildType": "apk" }
         },
@@ -33,7 +43,14 @@
             "extends": "preview",
             "ios": { "simulator": false }
         },
-        "production": {}
+        "production": {
+            "environment": "production",
+            "autoIncrement": true,
+            "env": {
+                "EXPO_PUBLIC_SENTRY_ENVIRONMENT": "production",
+                "EXPO_PUBLIC_SENTRY_TRACES_SAMPLE_RATE": "0.1"
+            }
+        }
     },
     "submit": {
         "production": {}

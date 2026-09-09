@@ -13,6 +13,7 @@ import { forgotPasswordRequestSchema } from '@/schems/validationSchemas';
 import { buildGeneralApiBaseHandler, GeneralApiProblemKind, handleBadDataResponse } from '@/services/api/apiProblem';
 import { ForgotPasswordService } from '@/services/ForgotPasswordService';
 import { useAppTheme } from '@/theme/context';
+import { $styles } from '@/theme/styles';
 import type { ThemedStyle } from '@/theme/types';
 import { AppPath } from '@/types/AppPath';
 
@@ -55,7 +56,11 @@ export const ForgotPasswordRequestScreen: FC<Props> = (_props) => {
     }
 
     return (
-        <Screen preset="fixed" contentContainerStyle={themed($screenContentContainer)} safeAreaEdges={['top', 'bottom']}>
+        <Screen
+            preset="fixed"
+            contentContainerStyle={[$styles.screen, themed($screenContentContainer)]}
+            safeAreaEdges={['bottom']}
+        >
             <HeaderTitle subLogoText="forgotPasswordRequestScreen:name" />
             <Text tx="forgotPasswordRequestScreen:description" style={themed($description)} />
             <View style={$container}>

@@ -23,7 +23,7 @@ export function ErrorDetails(props: ErrorDetailsProps) {
     } = useAppTheme();
 
     return (
-        <Screen preset="fixed" safeAreaEdges={['top', 'bottom']} contentContainerStyle={themed($contentContainer)}>
+        <Screen preset="fixed" safeAreaEdges={['bottom']} contentContainerStyle={themed($contentContainer)}>
             <View style={themed($iconContainer)}>
                 <Icon icon="ladybug" size={64} color={colors.palette.neutral900} />
             </View>

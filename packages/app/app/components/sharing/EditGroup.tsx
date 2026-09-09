@@ -1,4 +1,5 @@
 import { FC } from 'react';
+import { StyleProp, ViewStyle } from 'react-native';
 import { NavigationProp, useNavigation } from '@react-navigation/native';
 import { IConnectedMember, IGroupSharedItem, IShareGroup } from '@tenpercent/shared';
 
@@ -109,7 +110,7 @@ export const EditGroup: FC<{ data?: IShareGroup }> = function EditGroup({ data }
     useHeaderRightAction(data ? onDelete : undefined, { disabled: isFetching });
 
     if (!data) {
-        return <EmptyState buttonOnPress={goBack} />;
+        return <EmptyState buttonOnPress={goBack} style={containerStyleOverride} />;
     }
 
     return (
@@ -124,4 +125,7 @@ export const EditGroup: FC<{ data?: IShareGroup }> = function EditGroup({ data }
             handleSave={handleSave}
         />
     );
+};
+const containerStyleOverride: StyleProp<ViewStyle> = {
+    margin: 'auto',
 };

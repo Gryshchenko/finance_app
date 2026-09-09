@@ -1,5 +1,6 @@
 import { FC } from 'react';
 import { NativeScrollEvent, NativeSyntheticEvent, ScrollView, View, ViewStyle } from 'react-native';
+import { nativeApplicationVersion } from 'expo-application';
 import { NavigationProp, useNavigation } from '@react-navigation/native';
 
 import { SettingsLogoutButton } from '@/components/settings/SettingsLogoutButton';
@@ -13,7 +14,11 @@ import { $styles } from '@/theme/styles';
 import { OverviewPath } from '@/types/OverviewPath';
 import { openLinkInBrowser } from '@/utils/openLinkInBrowser';
 
-const APP_VERSION = 'v1.0.0';
+// Read out of the installed binary rather than written here: the number comes from
+// packages/app/package.json (see app.config.ts), and a literal in this file would keep
+// showing whatever it said on the day it was typed. Null only in contexts with no native
+// build behind them, such as a unit test renderer.
+const APP_VERSION = nativeApplicationVersion ? `v${nativeApplicationVersion}` : '-';
 
 // Placeholder URLs - replace with real endpoints before release
 const PRIVACY_POLICY_URL = '';

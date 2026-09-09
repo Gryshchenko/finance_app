@@ -16,6 +16,7 @@ import { $timer } from '@/screens/SignUpConfirmationScreen';
 import { buildGeneralApiBaseHandler, GeneralApiProblemKind, handleBadDataResponse } from '@/services/api/apiProblem';
 import { ForgotPasswordService } from '@/services/ForgotPasswordService';
 import { useAppTheme } from '@/theme/context';
+import { $styles } from '@/theme/styles';
 import type { ThemedStyle } from '@/theme/types';
 import { AppPath } from '@/types/AppPath';
 
@@ -97,7 +98,11 @@ export const ForgotPasswordConfirmScreen: FC<Props> = (_props) => {
     };
 
     return (
-        <Screen preset="fixed" contentContainerStyle={themed($screenContentContainer)} safeAreaEdges={['top', 'bottom']}>
+        <Screen
+            preset="fixed"
+            contentContainerStyle={[$styles.screen, themed($screenContentContainer)]}
+            safeAreaEdges={['bottom']}
+        >
             <HeaderTitle subLogoText="forgotPasswordConfirmScreen:name" />
             <View style={$container}>
                 <View style={$body}>

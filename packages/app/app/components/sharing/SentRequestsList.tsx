@@ -26,7 +26,7 @@ export const SentRequestsList: FC<IProps> = function SentRequestsList({ data, on
     const { themed } = useAppTheme();
 
     if (!data?.length) {
-        return <EmptyState headingTx={'sharing:sentTitle'} contentTx={'sharing:sentEmpty'} />;
+        return <EmptyState headingTx={'sharing:sentTitle'} contentTx={'sharing:sentEmpty'} style={containerStyleOverride} />;
     }
 
     return (
@@ -136,4 +136,8 @@ const $actions: ViewStyle = {
 
 const $actionButton: ViewStyle = {
     padding: spacing.xs,
+};
+
+const containerStyleOverride: ViewStyle = {
+    margin: 'auto',
 };

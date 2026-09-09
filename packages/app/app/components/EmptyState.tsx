@@ -76,7 +76,7 @@ interface EmptyStateProps {
     /**
      * The button text to display if not using `buttonTx`.
      */
-    button?: TextProps['text'];
+    button?: TextProps['text'] | null;
     /**
      * Button text which is looked up via i18n.
      */
@@ -198,7 +198,7 @@ export function EmptyState(props: EmptyStateProps) {
                 <Button
                     preset="reversed"
                     onPress={buttonOnPress}
-                    text={button}
+                    text={button ?? ''}
                     tx={buttonTx}
                     txOptions={buttonTxOptions}
                     textStyle={$buttonTextStyleOverride}

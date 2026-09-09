@@ -179,7 +179,11 @@ export const SignUpScreen: FC<SignUpScreenProps> = (_props) => {
     );
 
     return (
-        <Screen preset="fixed" contentContainerStyle={themed($screenContentContainer)} safeAreaEdges={['top']}>
+        <Screen
+            preset="fixed"
+            contentContainerStyle={[$styles.screen, themed($screenContentContainer)]}
+            safeAreaEdges={['bottom']}
+        >
             <KeyboardAwareScrollView
                 bottomOffset={62}
                 style={$styles.flex1}

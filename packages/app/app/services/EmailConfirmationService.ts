@@ -52,7 +52,7 @@ export class EmailConfirmationService extends ApiAbstract {
             this._logger.info('Confirm signup email');
             const userId = this._authService.userId;
             return this.authPost(`/register/signup/${userId}/email-confirmation/verify`, {
-                confirmationCode,
+                confirmationCode: Number(confirmationCode),
             });
         });
     }

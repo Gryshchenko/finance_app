@@ -2,7 +2,6 @@
     "name": "TenPercent",
     "slug": "tenpercent",
     "scheme": "tenpercent",
-    "version": "1.0.0",
     "orientation": "portrait",
     "userInterfaceStyle": "automatic",
     "icon": "./assets/images/TenPercent-1024.png",

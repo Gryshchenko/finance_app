@@ -196,7 +196,12 @@ export const BalanceInsights: FC<IProps> = ({ onScroll, contentPaddingTop, conte
                     </View>
 
                     {categoryItems.length === 0 ? (
-                        <EmptyState headingTx={'insights:categories'} contentTx={'insights:categoriesEmpty'} />
+                        <EmptyState
+                            headingTx={'insights:categories'}
+                            contentTx={'insights:categoriesEmpty'}
+                            style={containerStyleOverride}
+                            button={null}
+                        />
                     ) : (
                         categoryItems.map((item, index) => {
                             const amount = item.amount ?? 0;
@@ -268,3 +273,7 @@ const $sectionTitle: ThemedStyle<TextStyle> = ({ colors, typography }) => ({
     color: colors.textDim,
     fontFamily: typography.primary.medium,
 });
+const containerStyleOverride: ViewStyle = {
+    marginTop: 30,
+    margin: 'auto',
+};

@@ -5,6 +5,7 @@ import Svg, { Path } from 'react-native-svg';
 
 import { BackButton } from '@/components/BackButton';
 import { Button } from '@/components/buttons/Button';
+import { Header } from '@/components/Header';
 import { Screen } from '@/components/Screen';
 import { Text } from '@/components/Text';
 import { useAppQuery } from '@/hooks/useAppQuery';
@@ -14,6 +15,7 @@ import { fetchSelectedGoals, GoalService } from '@/services/GoalService';
 import { QueryKeys, QueryStaleTimes } from '@/services/QueryCacheService';
 import { useAppTheme } from '@/theme/context';
 import { spacing } from '@/theme/spacing';
+import { $styles } from '@/theme/styles';
 import { ThemedStyle } from '@/theme/types';
 
 const GOALS: { id: string; titleTx: TxKeyPath }[] = [
@@ -64,18 +66,22 @@ export function SignUpGoalsScreen({ onDone, onBack }: Props) {
               : translate('signUpGoalsScreen:selectedCount', { total: count });
 
     return (
-        <Screen preset="fixed" contentContainerStyle={themed($screen)} safeAreaEdges={['top', 'bottom']}>
-            {!!onBack && (
-                <View style={$backRow}>
-                    <BackButton onPress={onBack} />
-                </View>
-            )}
-            <View style={$header}>
-                <Text tx="signUpGoalsScreen:kicker" style={themed($kicker)} />
-                <Text tx="signUpGoalsScreen:title" style={themed($title)} />
-                <Text tx="signUpGoalsScreen:body" style={themed($body)} />
-            </View>
-
+        <Screen preset="fixed" contentContainerStyle={[$styles.screen, themed($screen)]} safeAreaEdges={['bottom']}>
+            <Header
+                title={countLabel}
+                titleMode="flex"
+                titleStyle={$rightAlignTitle}
+                LeftActionComponent={
+                    onBack ? (
+                        <BackButton
+                            onPress={() => {
+                                onBack?.();
+                            }}
+                        />
+                    ) : undefined
+                }
+                RightActionComponent={undefined}
+            />
             <View style={$list}>
                 {GOALS.map((g) => {
                     const on = !!sel[g.id];
@@ -112,31 +118,13 @@ export function SignUpGoalsScreen({ onDone, onBack }: Props) {
 const $screen: ThemedStyle<ViewStyle> = ({ colors }) => ({
     flex: 1,
     backgroundColor: colors.background,
-    paddingHorizontal: spacing.lg,
-    paddingBottom: spacing.md,
 });
-const $backRow: ViewStyle = { alignItems: 'flex-start', marginTop: spacing.xs };
-const $header: ViewStyle = { gap: spacing.xs, marginTop: spacing.lg, marginBottom: spacing.lg };
-const $kicker: ThemedStyle<TextStyle> = ({ colors, typography }) => ({
-    fontSize: 12,
-    letterSpacing: 1.4,
+
+const $rightAlignTitle: TextStyle = {
+    textAlign: 'center',
     textTransform: 'uppercase',
-    color: colors.tint,
-    fontFamily: typography.primary.medium,
-});
-const $title: ThemedStyle<TextStyle> = ({ colors, typography }) => ({
-    fontSize: 26,
-    lineHeight: 31,
-    color: colors.text,
-    fontFamily: typography.primary.semiBold,
-});
-const $body: ThemedStyle<TextStyle> = ({ colors, typography }) => ({
-    fontSize: 15,
-    lineHeight: 22,
-    color: colors.textDim,
-    fontFamily: typography.primary.normal,
-});
-const $list: ViewStyle = { flex: 1, gap: 4 };
+};
+const $list: ViewStyle = { flex: 1, gap: 4, marginTop: 40 };
 const $row: ThemedStyle<ViewStyle> = ({ colors }) => ({
     flexDirection: 'row',
     alignItems: 'center',

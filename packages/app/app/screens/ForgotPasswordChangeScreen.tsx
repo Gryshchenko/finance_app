@@ -15,6 +15,7 @@ import { buildGeneralApiBaseHandler, GeneralApiProblemKind, handleBadDataRespons
 import { ForgotPasswordService } from '@/services/ForgotPasswordService';
 import ToastService from '@/services/ToastService';
 import { useAppTheme } from '@/theme/context';
+import { $styles } from '@/theme/styles';
 import type { ThemedStyle } from '@/theme/types';
 import { AppPath } from '@/types/AppPath';
 
@@ -94,7 +95,11 @@ export const ForgotPasswordChangeScreen: FC<Props> = (_props) => {
     );
 
     return (
-        <Screen preset="fixed" contentContainerStyle={themed($screenContentContainer)} safeAreaEdges={['top', 'bottom']}>
+        <Screen
+            preset="fixed"
+            contentContainerStyle={[$styles.screen, themed($screenContentContainer)]}
+            safeAreaEdges={['bottom']}
+        >
             <HeaderTitle subLogoText={'forgotPasswordScreen:name'} />
             <Text tx="forgotPasswordScreen:description" style={themed($description)} />
             <View style={$container}>

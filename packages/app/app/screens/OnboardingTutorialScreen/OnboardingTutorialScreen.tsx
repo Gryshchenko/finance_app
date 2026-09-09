@@ -7,6 +7,7 @@ import { Text } from '@/components/Text';
 import { useTutorials } from '@/hooks/useTutorials';
 import { TxKeyPath } from '@/i18n';
 import { useAppTheme } from '@/theme/context';
+import { $styles } from '@/theme/styles';
 
 import { SlideKey, SlidePreview } from './SlidePreviews';
 import {
@@ -99,7 +100,7 @@ export function OnboardingTutorialScreen({ onDone, reportView = false }: Props) 
     };
 
     return (
-        <Screen preset="fixed" contentContainerStyle={themed($screen)} safeAreaEdges={['top', 'bottom']}>
+        <Screen preset="fixed" contentContainerStyle={[$styles.screen, themed($screen)]} safeAreaEdges={['bottom']}>
             <View style={$skipRow}>
                 {!isLast && (
                     <Pressable onPress={() => goTo(SLIDES.length - 1)} hitSlop={12}>

@@ -13,11 +13,24 @@ require('ts-node/register');
  * You can read more about Expo's Configuration Resolution Rules here:
  * https://docs.expo.dev/workflow/configuration/#configuration-resolution-rules
  */
+/**
+ * The store-facing version number, owned by `package.json` so that Changesets is the one
+ * thing that moves it: `pnpm changeset` describes the release, `pnpm changeset:version`
+ * bumps the package, and the next build carries that number into App Store Connect and
+ * Play. `app.json` deliberately has no `version` key - two copies of the same number drift.
+ *
+ * The build number under it is a different counter and is not kept here at all: eas.json
+ * sets `appVersionSource: "remote"`, so EAS holds `ios.buildNumber` / `android.versionCode`
+ * and increments them per production build.
+ */
+const { version } = require('./package.json') as { version: string };
+
 module.exports = ({ config }: ConfigContext): Partial<ExpoConfig> => {
     const existingPlugins = config.plugins ?? [];
 
     return {
         ...config,
+        version,
         ios: {
             ...config.ios,
             // This privacyManifests is to get you started.

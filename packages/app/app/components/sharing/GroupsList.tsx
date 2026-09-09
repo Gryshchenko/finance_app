@@ -20,7 +20,7 @@ export const GroupsList: FC<IProps> = function GroupsList({ data, onPressGroup }
     const { themed } = useAppTheme();
 
     if (!data?.length) {
-        return <EmptyState headingTx={'sharing:groupsTitle'} contentTx={'sharing:groupsEmpty'} />;
+        return <EmptyState headingTx={'sharing:groupsTitle'} contentTx={'sharing:groupsEmpty'} style={containerStyleOverride} />;
     }
 
     return (
@@ -123,3 +123,6 @@ const $description: ThemedStyle<TextStyle> = ({ colors, typography }) => ({
     fontFamily: typography.primary.normal,
     marginTop: 2,
 });
+const containerStyleOverride: ViewStyle = {
+    margin: 'auto',
+};

@@ -19,7 +19,13 @@ export const ConnectedUsersList: FC<IProps> = function ConnectedUsersList({ data
     const { themed } = useAppTheme();
 
     if (!data?.length) {
-        return <EmptyState headingTx={'sharing:connectedUsersTitle'} contentTx={'sharing:connectedUsersEmpty'} />;
+        return (
+            <EmptyState
+                headingTx={'sharing:connectedUsersTitle'}
+                contentTx={'sharing:connectedUsersEmpty'}
+                style={containerStyleOverride}
+            />
+        );
     }
 
     return (
@@ -41,3 +47,7 @@ const $caption: ThemedStyle<TextStyle> = ({ colors, typography }) => ({
     fontFamily: typography.primary.normal,
     marginBottom: spacing.md,
 });
+
+const containerStyleOverride: ViewStyle = {
+    margin: 'auto',
+};

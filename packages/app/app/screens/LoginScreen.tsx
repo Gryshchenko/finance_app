@@ -77,7 +77,7 @@ export const LoginScreen: FC<LoginScreenProps> = (_props) => {
     );
 
     return (
-        <Screen preset="auto" contentContainerStyle={themed($screenContentContainer)} safeAreaEdges={['top', 'bottom']}>
+        <Screen preset="auto" contentContainerStyle={themed($screenContentContainer)} safeAreaEdges={['bottom']}>
             <HeaderTitle subLogoText={'loginScreen:authorization'} />
 
             <TextField

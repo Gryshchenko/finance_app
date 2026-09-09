@@ -105,7 +105,7 @@ export const SignUpConfirmationScreen: FC<SignUpConfirmationScreenProps> = () =>
     }, [handleChange, setErrors, withFetching]);
 
     return (
-        <Screen preset="auto" contentContainerStyle={themed($screenContentContainer)} safeAreaEdges={['top', 'bottom']}>
+        <Screen preset="auto" contentContainerStyle={themed($screenContentContainer)} safeAreaEdges={['bottom']}>
             <HeaderTitle subLogoText={'loginScreen:authorization'} />
             <View style={themed($content)}>
                 <View style={themed($header)}>

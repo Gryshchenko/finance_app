@@ -35,7 +35,7 @@ function DashboardContent() {
 
 export const DashboardScreen = function IncomesScreen(_props: Props) {
     return (
-        <Screen preset="fixed" contentContainerStyle={[$styles.screen, $topAlignScreen]} safeAreaEdges={['top']}>
+        <Screen preset="fixed" contentContainerStyle={[$styles.screen, $topAlignScreen]} safeAreaEdges={['top', 'bottom']}>
             <DragOverlayProvider>
                 <DashboardContent />
             </DragOverlayProvider>
